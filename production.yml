@@ -12,7 +12,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-    image: starterkit_production_django
+    image: habmap_production_django
     #container_name: django
     depends_on:
       - postgres
@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: starterkit_production_postgres
+    image: habmap_production_postgres
     #container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
@@ -43,7 +43,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
-    image: starterkit_production_nginx
+    image: habmap_production_nginx
     #container_name: nginx
     depends_on:
       - django

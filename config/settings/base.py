@@ -5,7 +5,7 @@ Base settings to build other settings files upon.
 import environ
 
 ROOT_DIR = environ.Path(__file__) - 3  # (starterkit/config/settings/base.py - 3 = starterkit/)
-APPS_DIR = ROOT_DIR.path('starterkit')
+APPS_DIR = ROOT_DIR.path('habmap')
 
 env = environ.Env()
 
@@ -69,7 +69,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
 ]
 LOCAL_APPS = [
-    'starterkit.users.apps.UsersAppConfig',
+    'habmap.users.apps.UsersAppConfig',
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
