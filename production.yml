@@ -3,7 +3,9 @@ version: '3'
 volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
-  production_caddy: {}
+  production_nginx: {}
+  static_volume: {}
+  media_volume: {}
 
 services:
   django:
@@ -11,12 +13,17 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: starterkit_production_django
+    #container_name: django
     depends_on:
       - postgres
       - redis
+    volumes:
+      - static_volume:/app/staticfiles  # <-- bind the static files
+      - media_volume:/app/media  # <-- bind the media files
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
+    restart: unless-stopped
     command: /start
 
   postgres:
@@ -24,26 +31,31 @@ services:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: starterkit_production_postgres
+    #container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
     env_file:
       - ./.envs/.production/.postgres
+    restart: unless-stopped
 
-  caddy:
+  nginx:
     build:
       context: .
-      dockerfile: ./compose/production/caddy/Dockerfile
-    image: starterkit_production_caddy
+      dockerfile: ./compose/production/nginx/Dockerfile
+    image: starterkit_production_nginx
+    #container_name: nginx
     depends_on:
       - django
     volumes:
-      - production_caddy:/root/.caddy
-    env_file:
-      - ./.envs/.production/.caddy
+      - production_nginx:/var/log/nginx
+      - static_volume:/app/staticfiles  # <-- bind the static files
+      - media_volume:/app/media  # <-- bind the media files
     ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
+      - "8000:80"
+      #- "0.0.0.0:80:80"
+      #- "0.0.0.0:443:443"
+    restart: unless-stopped
 
   redis:
     image: redis:3.2
