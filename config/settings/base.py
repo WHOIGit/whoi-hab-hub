@@ -79,7 +79,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
 MIGRATION_MODULES = {
-    'sites': 'starterkit.contrib.sites.migrations'
+    'sites': 'habmap.contrib.sites.migrations'
 }
 
 # AUTHENTICATION
@@ -241,9 +241,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = 'starterkit.users.adapters.AccountAdapter'
+ACCOUNT_ADAPTER = 'habmap.users.adapters.AccountAdapter'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = 'starterkit.users.adapters.SocialAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'habmap.users.adapters.SocialAccountAdapter'
 
 
 # Your stuff...

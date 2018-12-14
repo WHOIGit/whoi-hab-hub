@@ -3,7 +3,7 @@ from django.apps import AppConfig
 
 class UsersAppConfig(AppConfig):
 
-    name = "starterkit.users"
+    name = "habmap.users"
     verbose_name = "Users"
 
     def ready(self):
