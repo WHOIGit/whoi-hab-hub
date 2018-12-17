@@ -15,9 +15,8 @@ class Station(models.Model):
     species = models.CharField(max_length=100)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
 
-
-    class MPTTMeta:
-        order_insertion_by = ['weight', 'name']
+    class Meta:
+        ordering = ['state', 'station_name']
 
     def __str__(self):
-        return self.name
+        return self.station_name
