@@ -10,8 +10,8 @@ class Station(models.Model):
 
     station_name = models.CharField(max_length=100)
     station_location = models.CharField(max_length=100)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
     species = models.CharField(max_length=100)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
 
