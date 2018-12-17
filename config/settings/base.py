@@ -67,6 +67,7 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
+    'import_export',
 ]
 LOCAL_APPS = [
     'habmap.users.apps.UsersAppConfig',
@@ -249,3 +250,5 @@ SOCIALACCOUNT_ADAPTER = 'habmap.users.adapters.SocialAccountAdapter'
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+#Django Import Export settings
+IMPORT_EXPORT_USE_TRANSACTIONS = True
