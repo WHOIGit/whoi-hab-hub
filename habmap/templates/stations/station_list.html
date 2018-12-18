@@ -5,7 +5,7 @@
 {% block content %}
 
 <p>New England HAB map - Maine and Massachusetts</p>
-<div id="mapid" style="height:800px;"></div>
+<div id="habmap" style="height:800px;"></div>
 
 <ul>
 {% for station in stations %}
@@ -24,18 +24,28 @@
 {% block javascript %}
 <script>
 
-    var habmap = L.map('mapid').setView([42.2783, -70.7979], 8);
+    var habmap = L.map('habmap').setView([42.37477, -70.79589], 7);
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
-        id: 'mapbox.satellite',
+        id: 'mapbox.streets',
         accessToken: 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2pwc21yMHVjMW1ycTQydDIyNHlqNGh2ZCJ9.n9-zinl02aN28s-JOe_Y4g'
     }).addTo(habmap);
 
-    L.marker([42.2783, -70.7979]).addTo(habmap)
-    .bindPopup('Cohasset Harbor')
-    .openPopup();
+    {% for station in stations %}
+        var markerLat = '{{ station.latitude }}';
+        var markerLong = '{{ station.longitude }}';
+        var popupContent = '<p>{{ station.station_name }} - {{ station.station_location }}</p>';
+
+        L.marker([markerLat, markerLong]).addTo(habmap)
+        .bindPopup(popupContent)
+        .openPopup();
+    {% endfor %}
+
+    habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
+
+
 
 </script>
 {% endblock javascript %}
