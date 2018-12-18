@@ -25,7 +25,7 @@ class Station(models.Model):
 
 
 class Datapoint(models.Model):
-    station = models.ForeignKey(Station, related_name='station',
+    station = models.ForeignKey(Station, related_name='datapoint',
                                 on_delete=models.CASCADE, null=False)
     measurement = models.CharField(max_length=20, null=False, blank=True)
     measurement_date = models.DateTimeField(default=now, null=False)

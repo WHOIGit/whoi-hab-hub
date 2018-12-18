@@ -1,11 +1,23 @@
 {% extends "base.html" %}
 
-{% load static %}
+{% load static i18n %}
 
 {% block content %}
 
 <p>New England HAB map - Maine and Massachusetts</p>
 <div id="mapid" style="height:800px;"></div>
+
+<ul>
+{% for station in stations %}
+    <li>{{ station.station_name }} - {{ station.station_location }}
+        <ul>
+            {% for datapoint in station.datapoint.all %}
+                <li> {{ datapoint.measurement }} </li>
+            {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
 
 {% endblock content %}
 
