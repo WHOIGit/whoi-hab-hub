@@ -14,7 +14,6 @@ class Station(models.Model):
     station_location = models.CharField(max_length=100)
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
-    species = models.CharField(max_length=100)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
 
     class Meta:
@@ -24,11 +23,21 @@ class Station(models.Model):
         return self.station_name
 
 
+class Species(models.Model):
+    species_name = models.CharField(max_length=100)
+    italicize = models.BooleanField(blank=False, default=False)
+
+    def __str__(self):
+        return self.species_name
+
+
 class Datapoint(models.Model):
     station = models.ForeignKey(Station, related_name='datapoint',
                                 on_delete=models.CASCADE, null=False)
     measurement = models.CharField(max_length=20, null=False, blank=True)
     measurement_date = models.DateTimeField(default=now, null=False)
+    species = models.ForeignKey(Species, related_name='datapoint',
+                                on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return '%s - %s' % (self.station.station_name, self.measurement_date)
