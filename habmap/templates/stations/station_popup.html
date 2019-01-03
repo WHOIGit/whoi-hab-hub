@@ -1,0 +1,7 @@
+<h6>{{ station.station_name }} - {{ station.station_location }}</h6>
+
+{% for datapoint in station.datapoint.all %}
+    {% if datapoint.measurement %}
+        <p>{{ datapoint.measurement_date }} - {{ datapoint.measurement}} - {{ datapoint.species.species_name }}</p>
+    {% endif %}
+{% endfor %}

@@ -9,7 +9,6 @@ from habmap.stations import views
 
 urlpatterns = [
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path('', view=views.StationListView.as_view(), name='home'),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),
@@ -23,7 +22,9 @@ urlpatterns = [
         include("habmap.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
+    # Custom HAB urls
+    path('', view=views.StationListView.as_view(), name='home'),
+    path('ajax/load-station-data/', views.load_station_data, name='ajax_load_station_data'),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )

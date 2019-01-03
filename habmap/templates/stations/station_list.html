@@ -5,7 +5,7 @@
 {% block content %}
 
 <p>New England HAB map - Maine and Massachusetts</p>
-<div id="habmap" style="height:800px;"></div>
+<div id="habmap" style="height:1000px;"></div>
 
 <!--
 <ul>
@@ -38,16 +38,33 @@
     {% for station in stations %}
         var markerLat = '{{ station.latitude }}';
         var markerLong = '{{ station.longitude }}';
-        var popupContent = '<h6>{{ station.station_name }} - {{ station.station_location }}</h6>';
 
-        {% for datapoint in station.datapoint.all|slice:":10" %}
-            {% if datapoint.measurement %}
-                var popupContent = popupContent + '<p>{{ datapoint.measurement_date }} - {{ datapoint.measurement}} - {{ datapoint.species.species_name }}</p>';
-            {% endif %}
-        {% endfor %}
+        var marker = L.marker([markerLat, markerLong]).addTo(habmap)
 
-        L.marker([markerLat, markerLong]).addTo(habmap)
-        .bindPopup(popupContent);
+        marker.bindPopup(function() {
+            var el = document.createElement('div');
+
+            $(el).addClass('station-popup');
+
+            $.get('/ajax/load-station-data/', { station_id: '{{ station.id }}' }).done(function(data) {
+              el.innerHTML =  data;
+            });
+
+            return el;
+         });
+         /*
+        .bindPopup(function() {
+            var el = $('<div/>');
+
+            jQuery.get("/ajax/load-station-data/").done(function(data) {
+                console.log(data);
+                el.setContent(data);
+                el.update();
+            });
+
+            return el;
+        });
+        */
     {% endfor %}
 
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });

@@ -11,3 +11,9 @@
   background-color: #f2dede;
   border-color: #eed3d7;
 }
+
+.station-popup {
+    width: 300px;
+    max-height: 400px;
+    overflow-y: scroll;
+}
