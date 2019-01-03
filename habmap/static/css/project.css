@@ -12,8 +12,10 @@
   border-color: #eed3d7;
 }
 
+.leaflet-popup-content { width:400px !important; }
+
 .station-popup {
-    width: 300px;
+    width: 400px;
     max-height: 400px;
     overflow-y: scroll;
 }

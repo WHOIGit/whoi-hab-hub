@@ -1,7 +1,23 @@
 <h6>{{ station.station_name }} - {{ station.station_location }}</h6>
 
-{% for datapoint in station.datapoint.all %}
-    {% if datapoint.measurement %}
-        <p>{{ datapoint.measurement_date }} - {{ datapoint.measurement}} - {{ datapoint.species.species_name }}</p>
-    {% endif %}
-{% endfor %}
+<table class="table popup-datatable">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Data (ug/100g) </th>
+      <th scope="col">Species</th>
+    </tr>
+  </thead>
+  <tbody>
+        {% for datapoint in station.datapoint.all %}
+            {% if datapoint.measurement %}
+            <tr>
+              <td>{{ datapoint.measurement_date|date:'m-d-Y' }}</td>
+              <td>{{ datapoint.measurement}}</td>
+              <td><em>{{ datapoint.species.species_name }}</em></td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+
+  </tbody>
+</table>

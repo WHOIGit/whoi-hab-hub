@@ -7,20 +7,6 @@
 <p>New England HAB map - Maine and Massachusetts</p>
 <div id="habmap" style="height:1000px;"></div>
 
-<!--
-<ul>
-{% for station in stations %}
-    <li>{{ station.station_name }} - {{ station.station_location }}
-        <ul>
-            {% for datapoint in station.datapoint.all %}
-                <li> {{ datapoint.measurement }} </li>
-            {% endfor %}
-        </ul>
-    </li>
-{% endfor %}
-</ul>
--->
-
 {% endblock content %}
 
 {% block javascript %}
@@ -41,7 +27,11 @@
 
         var marker = L.marker([markerLat, markerLong]).addTo(habmap)
 
-        marker.bindPopup(function() {
+        var popup = L.popup({
+            maxWidth:600
+        });
+
+        marker.bindPopup( function() {
             var el = document.createElement('div');
 
             $(el).addClass('station-popup');
@@ -52,19 +42,6 @@
 
             return el;
          });
-         /*
-        .bindPopup(function() {
-            var el = $('<div/>');
-
-            jQuery.get("/ajax/load-station-data/").done(function(data) {
-                console.log(data);
-                el.setContent(data);
-                el.update();
-            });
-
-            return el;
-        });
-        */
     {% endfor %}
 
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });

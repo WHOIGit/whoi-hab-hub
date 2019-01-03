@@ -39,5 +39,8 @@ class Datapoint(models.Model):
     species = models.ForeignKey(Species, related_name='datapoint',
                                 on_delete=models.CASCADE, null=True)
 
+    class Meta:
+        ordering = ['-measurement_date']
+
     def __str__(self):
         return '%s - %s' % (self.station.station_name, self.measurement_date)
