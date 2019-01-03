@@ -20,6 +20,7 @@ class Station(models.Model):
         ordering = ['state', 'station_name']
 
     def __str__(self):
+        return '%s - %s' % (self.station_name, self.station_location)
         return self.station_name
 
 
