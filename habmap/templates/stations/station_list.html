@@ -27,21 +27,20 @@
 
         var marker = L.marker([markerLat, markerLong]).addTo(habmap)
 
-        var popup = L.popup({
-            maxWidth:600
-        });
+        var popupOptions = {
+            'maxWidth': '500',
+            'className' : 'station-popup'
+        }
 
         marker.bindPopup( function() {
             var el = document.createElement('div');
-
-            $(el).addClass('station-popup');
 
             $.get('/ajax/load-station-data/', { station_id: '{{ station.id }}' }).done(function(data) {
               el.innerHTML =  data;
             });
 
             return el;
-         });
+        }, popupOptions);
     {% endfor %}
 
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
