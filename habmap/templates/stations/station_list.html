@@ -5,6 +5,7 @@
 {% block content %}
 
 <p>New England HAB map - Maine and Massachusetts</p>
+
 <div id="habmap" style="height:1000px;"></div>
 
 {% endblock content %}
@@ -22,6 +23,7 @@
     }).addTo(habmap);
 
     {% for station in stations %}
+
         var markerLat = '{{ station.latitude }}';
         var markerLong = '{{ station.longitude }}';
 
@@ -29,7 +31,9 @@
 
         var popupOptions = {
             'maxWidth': '500',
-            'className' : 'station-popup'
+            'maxHeight': '400',
+            'className' : 'station-popup',
+            'autopan': true,
         }
 
         marker.bindPopup( function() {
@@ -40,7 +44,8 @@
             });
 
             return el;
-        }, popupOptions);
+        }, popupOptions );
+
     {% endfor %}
 
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
