@@ -22,12 +22,19 @@
         accessToken: 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2pwc21yMHVjMW1ycTQydDIyNHlqNGh2ZCJ9.n9-zinl02aN28s-JOe_Y4g'
     }).addTo(habmap);
 
+    // Create the Station Layer, add to Map
+    var stationLayer = L.featureGroup();
+    stationLayer.addTo(habmap);
+
+    var stationMarkers = [];
+
+    // use Django to loop through stations and populate markers with data
     {% for station in stations %}
 
         var markerLat = '{{ station.latitude }}';
         var markerLong = '{{ station.longitude }}';
 
-        var marker = L.marker([markerLat, markerLong]).addTo(habmap)
+        var marker = L.marker([markerLat, markerLong]);
 
         var popupOptions = {
             'maxWidth': '500',
@@ -46,7 +53,16 @@
             return el;
         }, popupOptions );
 
+        stationMarkers.push(marker);
+
     {% endfor %}
+
+    for (var i = 0; i < stationMarkers.length; i++) {
+        var currentMarker = stationMarkers[i];
+        currentMarker.addTo(stationLayer);
+    }
+
+    // Create the ESP Layer, add to Map
 
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
 
