@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic import View, DetailView, ListView
 
 from .models import Station, Datapoint
+from habmap.esp_instrument.models import Deployment
 
 # AJAX Views
 
@@ -21,3 +22,10 @@ class StationListView(ListView):
     model = Station
     template_name = 'stations/station_list.html'
     context_object_name = 'stations'
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        context['esp_deployments'] = Deployment.objects.all()
+        return context

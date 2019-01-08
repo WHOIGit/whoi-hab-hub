@@ -22,6 +22,16 @@
         accessToken: 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2pwc21yMHVjMW1ycTQydDIyNHlqNGh2ZCJ9.n9-zinl02aN28s-JOe_Y4g'
     }).addTo(habmap);
 
+    var greenIcon = L.icon({
+        iconUrl: '{% static 'images/green-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [41, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -41],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
     // Create the Station Layer, add to Map
     var stationLayer = L.featureGroup();
     stationLayer.addTo(habmap);
@@ -64,6 +74,46 @@
 
     // Create the ESP Layer, add to Map
 
+    var espLayer = L.featureGroup();
+    espLayer.addTo(habmap);
+
+    var espMarkers = [];
+
+    // use Django to loop through stations and populate markers with data
+    {% for esp_deployment in esp_deployments %}
+
+        var markerLat = '{{ esp_deployment.latitude }}';
+        var markerLong = '{{ esp_deployment.longitude }}';
+
+        var marker = L.marker([markerLat, markerLong], {icon: greenIcon});
+
+        var popupOptions = {
+            'maxWidth': '500',
+            'maxHeight': '400',
+            'className' : 'station-popup',
+            'autopan': true,
+        }
+
+        marker.bindPopup( function() {
+            var el = document.createElement('div');
+
+            $.get('/ajax/load-station-data/', { station_id: '{{ esp_deployment.id }}' }).done(function(data) {
+              el.innerHTML =  data;
+            });
+
+            return el;
+        }, popupOptions );
+
+        espMarkers.push(marker);
+
+    {% endfor %}
+
+    for (var i = 0; i < espMarkers.length; i++) {
+        var currentMarker = espMarkers[i];
+        currentMarker.addTo(espLayer);
+    }
+
+     // Debug in console
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
 
 
