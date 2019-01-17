@@ -1,0 +1,23 @@
+<h6>{{ esp_deployment.year }} - {{ esp_deployment.mooring_name }} - {{ esp_deployment.espinstrument }}</h6>
+
+<table class="table popup-datatable">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Data (ug/100g) </th>
+      <th scope="col">Species</th>
+    </tr>
+  </thead>
+  <tbody>
+        {% for datapoint in station.datapoint.all %}
+            {% if datapoint.measurement %}
+            <tr>
+              <td>{{ datapoint.measurement_date|date:'m-d-Y' }}</td>
+              <td>{{ datapoint.measurement}}</td>
+              <td><em>{{ datapoint.species.species_name }}</em></td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+
+  </tbody>
+</table>

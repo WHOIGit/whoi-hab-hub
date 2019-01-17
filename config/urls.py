@@ -5,7 +5,8 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
-from habmap.stations import views
+from habmap.stations import views as stations_views
+from habmap.esp_instrument import views as esp_instrument_views
 
 urlpatterns = [
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -22,9 +23,12 @@ urlpatterns = [
         include("habmap.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
+
     # Custom HAB urls
-    path('', view=views.StationListView.as_view(), name='home'),
-    path('ajax/load-station-data/', views.load_station_data, name='ajax_load_station_data'),
+    path('', view=stations_views.StationListView.as_view(), name='home'),
+    path('ajax/load-station-data/', stations_views.load_station_data, name='ajax_load_station_data'),
+    path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
+
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )

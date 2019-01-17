@@ -97,7 +97,7 @@
         marker.bindPopup( function() {
             var el = document.createElement('div');
 
-            $.get('/ajax/load-station-data/', { station_id: '{{ esp_deployment.id }}' }).done(function(data) {
+            $.get('/ajax/load-esp-deployment-data/', { esp_deployment_id: '{{ esp_deployment.id }}' }).done(function(data) {
               el.innerHTML =  data;
             });
 
