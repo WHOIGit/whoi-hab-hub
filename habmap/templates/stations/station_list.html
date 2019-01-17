@@ -113,6 +113,15 @@
         currentMarker.addTo(espLayer);
     }
 
+    // Create the overlay controls
+
+    var overlayStationTypes = {
+        "Stations": stationLayer,
+        "ESP Deployments": espLayer
+    };
+
+    L.control.layers(null, overlayStationTypes).addTo(habmap);
+
      // Debug in console
     habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
 
