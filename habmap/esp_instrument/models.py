@@ -41,7 +41,7 @@ class EspDatapoint(models.Model):
                                 on_delete=models.CASCADE, null=False)
     measurement = models.CharField(max_length=20, null=False, blank=True)
     measurement_date = models.DateTimeField(default=now, null=False)
-    algal_species = models.CharField(max_length=50, choices=ALGAL_SPECIES, null=False, blank=True)
+    algal_species = models.CharField(max_length=50, choices=ALGAL_SPECIES, null=False, blank=True, default='Alexandrium fundyense')
 
     class Meta:
         ordering = ['-measurement_date']
