@@ -14,7 +14,7 @@
 
 .station-popup {
     width: 400px;
-    max-height: 400px;
+    max-height: 350px;
     min-height: 120px;
     overflow-y: scroll;
 }
