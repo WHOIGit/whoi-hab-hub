@@ -27,7 +27,17 @@
         //shadowUrl: 'leaf-shadow.png',
         iconSize: [41, 41],
         iconAnchor: [20, 40],
-        popupAnchor: [0, -41],
+        popupAnchor: [0, -31],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var redIcon = L.icon({
+        iconUrl: '{% static 'images/red-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -31],
         //shadowSize: [68, 95],
         //shadowAnchor: [22, 94]
     });
@@ -74,7 +84,7 @@
 
     // Create the ESP Layer, add to Map
 
-    var espLayer = L.featureGroup();
+    var espLayer = L.markerClusterGroup();
     espLayer.addTo(habmap);
 
     var espMarkers = [];

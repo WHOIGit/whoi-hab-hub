@@ -9,12 +9,12 @@
     </tr>
   </thead>
   <tbody>
-        {% for datapoint in station.datapoint.all %}
+        {% for datapoint in esp_deployment.esp_datapoint.all %}
             {% if datapoint.measurement %}
             <tr>
               <td>{{ datapoint.measurement_date|date:'m-d-Y' }}</td>
-              <td>{{ datapoint.measurement}}</td>
-              <td><em>{{ datapoint.species.species_name }}</em></td>
+              <td>{{ datapoint.measurement }}</td>
+              <td><em>{{ datapoint.algal_species }}</em></td>
             </tr>
             {% endif %}
         {% endfor %}
