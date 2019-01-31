@@ -25,7 +25,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
 
     # Custom HAB urls
-    path('', view=stations_views.StationListView.as_view(), name='home'),
+    path('', stations_views.StationListView.as_view(), name='home'),
     path('ajax/load-station-data/', stations_views.load_station_data, name='ajax_load_station_data'),
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
 
