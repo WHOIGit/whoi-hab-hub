@@ -4,9 +4,8 @@
     {
       "type": "Feature",
       "properties": {
-          "name": "HAB Syndrome: ASP",
-          "season": "Fall-Winter",
-          "popupContent": "Fall-Winter. HAB Syndrome: ASP"
+          "name": "Maine",
+          "popupContent": "Maine Coastal Region"
       },
       "geometry": {
         "type": "Polygon",

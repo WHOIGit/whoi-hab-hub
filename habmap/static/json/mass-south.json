@@ -1,9 +1,8 @@
 {
   "type": "Feature",
   "properties": {
-      "name": "HAB Syndrome: ASP",
-      "season": "Fall-Winter",
-      "popupContent": "Fall-Winter. HAB Syndrome: ASP"
+      "name": "Massachusetts South",
+      "popupContent": "Massachusetts South Coast"
   },
   "geometry": {
     "type": "Polygon",
