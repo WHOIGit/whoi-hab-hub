@@ -42,6 +42,51 @@
         //shadowAnchor: [22, 94]
     });
 
+    var orangeLayerStyle = {
+        "color": "#ff7800",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var redLayerStyle = {
+        "color": "red",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var greenLayerStyle = {
+        "color": "green",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    function onEachFeature(feature, layer) {
+    // if feature have a property named popupContent, add Popup to GeoJSON layer
+        if (feature.properties && feature.properties.popupContent) {
+            layer.bindPopup(feature.properties.popupContent);
+        }
+    }
+
+    var syndromeASPLayer = new L.GeoJSON.AJAX("/static/json/maine.json", {
+                            style: orangeLayerStyle,
+                            onEachFeature: onEachFeature
+                        });
+    syndromeASPLayer.addUrl("/static/json/mass-south.json");
+    syndromeASPLayer.addTo(habmap);
+
+    var syndromePSPLayer = new L.GeoJSON.AJAX("/static/json/maine.json", {
+                            style: redLayerStyle,
+                            onEachFeature: onEachFeature
+                        });
+    syndromePSPLayer.addUrl("/static/json/mass-north.json");
+    syndromePSPLayer.addTo(habmap);
+
+    var syndromeCPolyLayer = new L.GeoJSON.AJAX("/static/json/mass-south.json", {
+                            style: greenLayerStyle,
+                            onEachFeature: onEachFeature
+                        });
+    syndromeCPolyLayer.addTo(habmap);
+
     // Create the Station Layer, add to Map
     var stationLayer = L.featureGroup();
     stationLayer.addTo(habmap);
@@ -127,7 +172,10 @@
 
     var overlayStationTypes = {
         "Stations": stationLayer,
-        "ESP Deployments": espLayer
+        "ESP Deployments": espLayer,
+        "HAB Syndrome: ASP": syndromeASPLayer,
+        "HAB Syndrome: PSP": syndromePSPLayer,
+        "HAB Syndrome: C. Polyknikoides": syndromeCPolyLayer,
     };
 
     L.control.layers(null, overlayStationTypes).addTo(habmap);
