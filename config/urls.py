@@ -28,7 +28,7 @@ urlpatterns = [
     path('', stations_views.StationListView.as_view(), name='home'),
     path('ajax/load-station-data/', stations_views.load_station_data, name='ajax_load_station_data'),
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
-    path('ifcb_cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
+    path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
 
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

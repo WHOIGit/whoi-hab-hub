@@ -195,7 +195,7 @@
             marker.bindPopup( function() {
                 var el = document.createElement('div');
 
-                $.get('/ajax/load-ifcb-data/', { ifcb_datapoint_id: '{{ datapoint.id }}' }).done(function(data) {
+                $.get('/ifcb-cruises/ajax/load-ifcb-data/', { ifcb_datapoint_id: '{{ datapoint.id }}' }).done(function(data) {
                   el.innerHTML =  data;
                 });
 

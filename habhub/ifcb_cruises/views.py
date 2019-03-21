@@ -7,7 +7,7 @@ from .models import Cruise, IFCBDatapoint
 
 # Function to load data for each IFCB datapoint dynamically on marker click
 def load_ifcb_cruise_data(request):
-    ifcb_datapoint_id = request.GET.get('stationifcb_datapoint_id_id')
+    ifcb_datapoint_id = request.GET.get('ifcb_datapoint_id')
 
     if ifcb_datapoint_id:
         datapoint = IFCBDatapoint.objects.get(id=ifcb_datapoint_id)
