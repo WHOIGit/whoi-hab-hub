@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<p>New England HAB map - Maine and Massachusetts</p>
+<p>WHOI HAB Hub</p>
 
 <div id="habmap" style="height:1000px;"></div>
 
@@ -87,6 +87,7 @@
                         });
     syndromeCPolyLayer.addTo(habmap);
 
+    // ******** STATIONS ******** //
     // Create the Station Layer, add to Map
     var stationLayer = L.featureGroup();
     stationLayer.addTo(habmap);
@@ -127,6 +128,7 @@
         currentMarker.addTo(stationLayer);
     }
 
+    // ******** ESP Deployments ******** //
     // Create the ESP Layer, add to Map
 
     var espLayer = L.markerClusterGroup();
@@ -168,11 +170,53 @@
         currentMarker.addTo(espLayer);
     }
 
+    // ******** IFCB Cruises ******** //
+    // Create the IFCB Cruise Layer, add to Map
+    var ifcbLayer = L.featureGroup();
+    ifcbLayer.addTo(habmap);
+
+    var ifcbMarkers = [];
+
+    // use Django to loop through IFCB Cruises and populate markers with data
+    {% for cruise in ifcb_cruises %}
+        {% for datapoint in cruise.ifcb_datapoint.all %}
+            var markerLat = '{{ datapoint.latitude }}';
+            var markerLong = '{{ datapoint.longitude }}';
+
+            var marker = L.marker([markerLat, markerLong]);
+
+            var popupOptions = {
+                'maxWidth': '500',
+                'maxHeight': '350',
+                'className' : 'station-popup',
+                'autopan': true,
+            }
+
+            marker.bindPopup( function() {
+                var el = document.createElement('div');
+
+                $.get('/ajax/load-ifcb-data/', { ifcb_datapoint_id: '{{ datapoint.id }}' }).done(function(data) {
+                  el.innerHTML =  data;
+                });
+
+                return el;
+            }, popupOptions );
+
+            ifcbMarkers.push(marker);
+        {% endfor %}
+    {% endfor %}
+
+    for (var i = 0; i < ifcbMarkers.length; i++) {
+        var currentMarker = ifcbMarkers[i];
+        currentMarker.addTo(ifcbLayer);
+    }
+
     // Create the overlay controls
 
     var overlayStationTypes = {
         "Stations": stationLayer,
         "ESP Deployments": espLayer,
+        "IFCB Cruises": ifcbLayer,
         "HAB Syndrome: ASP": syndromeASPLayer,
         "HAB Syndrome: PSP": syndromePSPLayer,
         "HAB Syndrome: <i>Cochlodinium polykrikoides</i>": syndromeCPolyLayer,

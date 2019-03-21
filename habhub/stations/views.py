@@ -3,6 +3,7 @@ from django.views.generic import View, DetailView, ListView
 
 from .models import Station, Datapoint
 from habhub.esp_instrument.models import Deployment
+from habhub.ifcb_cruises.models import Cruise
 
 # AJAX Views
 
@@ -28,4 +29,6 @@ class StationListView(ListView):
         context = super().get_context_data(**kwargs)
         # Add in a QuerySet of all the ESP Deployments
         context['esp_deployments'] = Deployment.objects.all()
+        # Add in a QuerySet of all the IFCB Cruises
+        context['ifcb_cruises'] = Cruise.objects.all()
         return context
