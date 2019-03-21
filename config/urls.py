@@ -5,8 +5,8 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
-from habmap.stations import views as stations_views
-from habmap.esp_instrument import views as esp_instrument_views
+from habhub.stations import views as stations_views
+from habhub.esp_instrument import views as esp_instrument_views
 
 urlpatterns = [
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -20,7 +20,7 @@ urlpatterns = [
     # User management
     path(
         "users/",
-        include("habmap.users.urls", namespace="users"),
+        include("habhub.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
 

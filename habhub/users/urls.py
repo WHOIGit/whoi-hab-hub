@@ -1,6 +1,6 @@
 from django.urls import path
 
-from habmap.users.views import (
+from habhub.users.views import (
     user_list_view,
     user_redirect_view,
     user_update_view,

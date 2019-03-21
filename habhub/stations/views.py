@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import View, DetailView, ListView
 
 from .models import Station, Datapoint
-from habmap.esp_instrument.models import Deployment
+from habhub.esp_instrument.models import Deployment
 
 # AJAX Views
 

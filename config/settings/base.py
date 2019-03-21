@@ -5,7 +5,7 @@ Base settings to build other settings files upon.
 import environ
 
 ROOT_DIR = environ.Path(__file__) - 3  # (starterkit/config/settings/base.py - 3 = starterkit/)
-APPS_DIR = ROOT_DIR.path('habmap')
+APPS_DIR = ROOT_DIR.path('habhub')
 
 env = environ.Env()
 
@@ -70,10 +70,10 @@ THIRD_PARTY_APPS = [
     'import_export',
 ]
 LOCAL_APPS = [
-    'habmap.users.apps.UsersAppConfig',
+    'habhub.users.apps.UsersAppConfig',
     # Your stuff: custom apps go here
-    'habmap.stations',
-    'habmap.esp_instrument',
+    'habhub.stations',
+    'habhub.esp_instrument',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -82,7 +82,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
 MIGRATION_MODULES = {
-    'sites': 'habmap.contrib.sites.migrations'
+    'sites': 'habhub.contrib.sites.migrations'
 }
 
 # AUTHENTICATION
@@ -244,9 +244,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = 'habmap.users.adapters.AccountAdapter'
+ACCOUNT_ADAPTER = 'habhub.users.adapters.AccountAdapter'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = 'habmap.users.adapters.SocialAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'habhub.users.adapters.SocialAccountAdapter'
 
 
 # Your stuff...
