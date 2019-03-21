@@ -74,6 +74,7 @@ LOCAL_APPS = [
     # Your stuff: custom apps go here
     'habhub.stations',
     'habhub.esp_instrument',
+    'habhub.ifcb_cruises',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
