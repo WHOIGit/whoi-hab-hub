@@ -42,6 +42,26 @@
         //shadowAnchor: [22, 94]
     });
 
+    var orangeIcon = L.icon({
+        iconUrl: '{% static 'images/orange-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [12, 20],
+        iconAnchor: [6, 20],
+        popupAnchor: [0, -14],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var pushPinRedIcon = L.icon({
+        iconUrl: '{% static 'images/red-pushpin.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [5, -30],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
     var orangeLayerStyle = {
         "color": "#ff7800",
         "weight": 5,
@@ -183,12 +203,12 @@
             var markerLat = '{{ datapoint.latitude }}';
             var markerLong = '{{ datapoint.longitude }}';
 
-            var marker = L.marker([markerLat, markerLong]);
+            var marker = L.marker([markerLat, markerLong], {icon: orangeIcon});
 
             var popupOptions = {
                 'maxWidth': '500',
                 'maxHeight': '350',
-                'className' : 'station-popup',
+                'className' : 'cruise-popup',
                 'autopan': true,
             }
 

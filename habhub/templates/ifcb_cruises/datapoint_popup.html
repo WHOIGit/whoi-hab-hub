@@ -1,3 +1,10 @@
 
-<h1>Hello</h1>
-<h6>{{ datapoint.file_name }}</h6>
+<h6>Cruise: {{ datapoint.cruise.cruise_name }} <br>
+    ({{ datapoint.cruise.start_date|date:"Y-m-d" }} to {{ datapoint.cruise.end_date|date:"Y-m-d" }})
+</h6>
+
+<p>
+    <a href="{{ datapoint.get_ifcb_dashboard_link }}" target="_blank">
+        Click to view data in a new window
+    </a>
+</p>

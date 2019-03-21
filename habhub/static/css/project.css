@@ -18,3 +18,8 @@
     min-height: 120px;
     overflow-y: scroll;
 }
+
+.cruise-popup {
+    width: 400px;
+    max-height: 350px;
+}

@@ -24,3 +24,10 @@ class IFCBDatapoint(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.cruise.cruise_name, self.file_name)
+
+    # Turn the file name into correct URL format for IFCB dashboard
+    def get_ifcb_dashboard_link(self):
+        file_name = self.file_name
+        link_format = file_name.split('.')[0]
+        dashboard_link = 'https://hablab.whoi.edu/ifcball/dashboard/https://hablab.whoi.edu:8888/ifcball/%s' % (link_format)
+        return dashboard_link
