@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<p>WHOI HAB Hub</p>
+<h2>WHOI HAB Hub</h2>
 
 <div id="habmap" style="height:1000px;"></div>
 
@@ -23,9 +23,9 @@
     }).addTo(habmap);
 
     var greenIcon = L.icon({
-        iconUrl: '{% static 'images/green-marker.png' %}',
+        iconUrl: '{% static 'images/green2-marker.png' %}',
         //shadowUrl: 'leaf-shadow.png',
-        iconSize: [41, 41],
+        iconSize: [25, 41],
         iconAnchor: [20, 40],
         popupAnchor: [0, -31],
         //shadowSize: [68, 95],

@@ -12,9 +12,23 @@
   border-color: #eed3d7;
 }
 
+/* Base Template styling */
+
+.navbar-brand {
+    width: 80px;
+}
+
+svg#navbar-logo {
+    fill: #25578a;
+    float: left;
+    width: 100%;
+}
+
+/* Pop up window styling */
+
 .station-popup {
     width: 400px;
-    max-height: 350px;
+    height: 350px;
     min-height: 120px;
     overflow-y: scroll;
 }
