@@ -266,8 +266,9 @@ tags
 
 
 ### Project template
+.ssl/
 
-starterkit/media/
+habhub/media/
 
 .pytest_cache/
 

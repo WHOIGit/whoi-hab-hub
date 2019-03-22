@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: habmap_production_django
-    #container_name: django
+    container_name: django
     depends_on:
       - postgres
       - redis
@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: habmap_production_postgres
-    #container_name: postgres
+    container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
@@ -44,17 +44,15 @@ services:
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
     image: habmap_production_nginx
-    #container_name: nginx
+    container_name: nginx
     depends_on:
       - django
     volumes:
       - production_nginx:/var/log/nginx
-      - static_volume:/app/staticfiles  # <-- bind the static files
-      - media_volume:/app/media  # <-- bind the media files
+      - ./.ssl/habhub_certs:/etc/ssl/habhub_certs/ # bind a local directory with the WHOI SSL certs
     ports:
-      - "8000:80"
-      #- "0.0.0.0:80:80"
-      #- "0.0.0.0:443:443"
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
     restart: unless-stopped
 
   redis:
