@@ -81,7 +81,7 @@
     };
 
     function onEachFeature(feature, layer) {
-    // if feature have a property named popupContent, add Popup to GeoJSON layer
+        // if feature have a property named popupContent, add Popup to GeoJSON layer
         if (feature.properties && feature.properties.popupContent) {
             layer.bindPopup(feature.properties.popupContent);
         }
@@ -89,23 +89,27 @@
 
     var syndromeASPLayer = new L.GeoJSON.AJAX("/static/json/maine.json", {
                             style: orangeLayerStyle,
-                            onEachFeature: onEachFeature
+                            //onEachFeature: onEachFeature
                         });
     syndromeASPLayer.addUrl("/static/json/mass-south.json");
     syndromeASPLayer.addTo(habmap);
+    syndromeASPLayer.bindPopup("HAB Syndrome: ASP");
+
 
     var syndromePSPLayer = new L.GeoJSON.AJAX("/static/json/maine.json", {
                             style: redLayerStyle,
-                            onEachFeature: onEachFeature
+                            //onEachFeature: onEachFeature
                         });
     syndromePSPLayer.addUrl("/static/json/mass-north.json");
     syndromePSPLayer.addTo(habmap);
+    syndromePSPLayer.bindPopup("HAB Syndrome: PSP");
 
     var syndromeCPolyLayer = new L.GeoJSON.AJAX("/static/json/mass-south.json", {
                             style: greenLayerStyle,
-                            onEachFeature: onEachFeature
+                            //onEachFeature: onEachFeature
                         });
     syndromeCPolyLayer.addTo(habmap);
+    syndromeCPolyLayer.bindPopup("HAB Syndrome: <i>Cochlodinium polykrikoides</i>");
 
     // ******** STATIONS ******** //
     // Create the Station Layer, add to Map
