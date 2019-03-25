@@ -49,7 +49,7 @@ services:
       - django
     volumes:
       - production_nginx:/var/log/nginx
-      - ./.ssl/habhub_certs:/etc/ssl/habhub_certs/ # bind a local directory with the WHOI SSL certs
+      - ./.ssl/whoi_certs:/etc/ssl/whoi_certs/ # bind a local directory with the WHOI SSL certs
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"

@@ -267,7 +267,7 @@ tags
 
 ### Project template
 .ssl/
-
+backups/
 habhub/media/
 
 .pytest_cache/
