@@ -79,7 +79,7 @@
         "weight": 5,
         "opacity": 0.65
     };
-
+    /*
     function onEachFeature(feature, layer) {
         // if feature have a property named popupContent, add Popup to GeoJSON layer
         if (feature.properties && feature.properties.popupContent) {
@@ -110,6 +110,7 @@
                         });
     syndromeCPolyLayer.addTo(habmap);
     syndromeCPolyLayer.bindPopup("HAB Syndrome: <i>Cochlodinium polykrikoides</i>");
+    */
 
     // ******** STATIONS ******** //
     // Create the Station Layer, add to Map
@@ -241,9 +242,9 @@
         "Stations": stationLayer,
         "ESP Deployments": espLayer,
         "IFCB Cruises": ifcbLayer,
-        "HAB Syndrome: ASP": syndromeASPLayer,
-        "HAB Syndrome: PSP": syndromePSPLayer,
-        "HAB Syndrome: <i>Cochlodinium polykrikoides</i>": syndromeCPolyLayer,
+        //"HAB Syndrome: ASP": syndromeASPLayer,
+        //"HAB Syndrome: PSP": syndromePSPLayer,
+        //"HAB Syndrome: <i>Cochlodinium polykrikoides</i>": syndromeCPolyLayer,
     };
 
     L.control.layers(null, overlayStationTypes).addTo(habmap);
