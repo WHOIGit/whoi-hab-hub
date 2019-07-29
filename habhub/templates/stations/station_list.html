@@ -119,6 +119,20 @@
 
     var stationMarkers = [];
 
+    var popupOptions = {
+        'maxWidth': '500',
+        'maxHeight': '350',
+        'className' : 'station-popup',
+        'autopan': true,
+    }
+
+    var stationCirleOptions = {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: 15000,
+    };
+
     // use Django to loop through stations and populate markers with data
     {% for station in stations %}
 
@@ -126,13 +140,6 @@
         var markerLong = '{{ station.longitude }}';
 
         var marker = L.marker([markerLat, markerLong]);
-
-        var popupOptions = {
-            'maxWidth': '500',
-            'maxHeight': '350',
-            'className' : 'station-popup',
-            'autopan': true,
-        }
 
         marker.bindPopup( function() {
             var el = document.createElement('div');
@@ -151,6 +158,31 @@
     for (var i = 0; i < stationMarkers.length; i++) {
         var currentMarker = stationMarkers[i];
         currentMarker.addTo(stationLayer);
+    }
+
+
+    // ******** Station Warning Circles ******** //
+    // Create the Station Warning Circles Layer, add to Map
+    var warningCirclesLayer = L.featureGroup();
+    warningCirclesLayer.addTo(habmap);
+
+    var warningCircles = [];
+
+    // use Django to loop through stations and populate markers with data
+    {% for station in stations %}
+
+        var markerLat = '{{ station.latitude }}';
+        var markerLong = '{{ station.longitude }}';
+
+        var circle = L.circle([markerLat, markerLong], stationCirleOptions);
+
+        warningCircles.push(circle);
+
+    {% endfor %}
+
+    for (var i = 0; i < warningCircles.length; i += 4) {
+        var currentMarker = warningCircles[i];
+        currentMarker.addTo(warningCirclesLayer);
     }
 
     // ******** ESP Deployments ******** //
