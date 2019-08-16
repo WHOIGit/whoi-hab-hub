@@ -13,7 +13,7 @@
 {% block javascript %}
 <script>
 
-    var habmap = L.map('habmap').setView([43.17563913659245, -68.65223407745363], 7);
+    var habmap = L.map('habmap').setView([42.651131867449024, -69.22275066375734], 8);
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -79,19 +79,19 @@
         "weight": 5,
         "opacity": 0.65
     };
-    /*
+
     function onEachFeature(feature, layer) {
         // if feature have a property named popupContent, add Popup to GeoJSON layer
-        if (feature.properties && feature.properties.popupContent) {
-            layer.bindPopup(feature.properties.popupContent);
+        if (feature.properties && feature.properties.AREA_DESC) {
+            layer.bindPopup(feature.properties.AREA_DESC);
         }
     }
 
-    var syndromeASPLayer = new L.GeoJSON.AJAX("/static/json/maine.json", {
+    var syndromeASPLayer = new L.GeoJSON.AJAX("/static/json/nh-shellfish-areas.json", {
                             style: orangeLayerStyle,
                             //onEachFeature: onEachFeature
                         });
-    syndromeASPLayer.addUrl("/static/json/mass-south.json");
+    //syndromeASPLayer.addUrl("/static/json/nh-shellfish-areas.json");
     syndromeASPLayer.addTo(habmap);
     syndromeASPLayer.bindPopup("HAB Syndrome: ASP");
 
@@ -100,17 +100,17 @@
                             style: redLayerStyle,
                             //onEachFeature: onEachFeature
                         });
-    syndromePSPLayer.addUrl("/static/json/mass-north.json");
+    //syndromePSPLayer.addUrl("/static/json/mass-north.json");
     syndromePSPLayer.addTo(habmap);
     syndromePSPLayer.bindPopup("HAB Syndrome: PSP");
 
-    var syndromeCPolyLayer = new L.GeoJSON.AJAX("/static/json/mass-south.json", {
+    var syndromeCPolyLayer = new L.GeoJSON.AJAX("/static/json/ma-barnstable.json", {
                             style: greenLayerStyle,
-                            //onEachFeature: onEachFeature
+                            onEachFeature: onEachFeature
                         });
     syndromeCPolyLayer.addTo(habmap);
-    syndromeCPolyLayer.bindPopup("HAB Syndrome: <i>Cochlodinium polykrikoides</i>");
-    */
+    //syndromeCPolyLayer.bindPopup("HAB Syndrome: <i>Cochlodinium polykrikoides</i>");
+
 
     // ******** STATIONS ******** //
     // Create the Station Layer, add to Map
@@ -130,7 +130,7 @@
         color: 'red',
         fillColor: '#f03',
         fillOpacity: 0.5,
-        radius: 15000,
+        radius: 1500,
     };
 
     // use Django to loop through stations and populate markers with data
@@ -274,9 +274,9 @@
         "Stations": stationLayer,
         "ESP Deployments": espLayer,
         "IFCB Cruises": ifcbLayer,
-        //"HAB Syndrome: ASP": syndromeASPLayer,
-        //"HAB Syndrome: PSP": syndromePSPLayer,
-        //"HAB Syndrome: <i>Cochlodinium polykrikoides</i>": syndromeCPolyLayer,
+        "HAB Syndrome: ASP": syndromeASPLayer,
+        "HAB Syndrome: PSP": syndromePSPLayer,
+        "HAB Syndrome: <i>Cochlodinium polykrikoides</i>": syndromeCPolyLayer,
     };
 
     L.control.layers(null, overlayStationTypes).addTo(habmap);
