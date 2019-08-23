@@ -12,7 +12,7 @@ class ClosureArea(models.Model):
 
     name = models.CharField(max_length=100)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
-    geometry = PolygonField()
+    geom = PolygonField()
     acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
     area_description = models.CharField(max_length=1000, null=True, blank=True)
     area_class = models.CharField(max_length=100, null=True, blank=True)
