@@ -4,24 +4,62 @@
 
 {% block content %}
 
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.css' rel='stylesheet' />
+
 <h1 class="display-4">WHOI HAB Hub</h1>
 
-<div id="habmap" style="height:1000px;"></div>
+<div id="map" style="height:1000px;"></div>
 
 {% endblock content %}
 
 {% block javascript %}
 <script>
 
-    var habmap = L.map('habmap').setView([41.89001042401827, -69.75769042968751], 8);
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
 
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        center: [-69.75, 41.89],
+        zoom: 7,
+    });
 
-    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox.streets',
-        accessToken: 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug'
-    }).addTo(habmap);
+    map.on('load', function() {
+        // Add a new source from our GeoJSON data and set the
+        // 'cluster' option to true. GL-JS will add the point_count property to your source data.
+        map.addSource("closed_areas_src", {
+            type: "geojson",
+            data: "{% url 'closures:ajax_load_closure_areas_status' 'Closed' %}",
+        });
+
+        map.addSource("warning_areas_src", {
+            type: "geojson",
+            data: "{% url 'closures:ajax_load_closure_areas_status' 'Warning' %}",
+        });
+
+        map.addLayer({
+            id: "closed_areas",
+            type: "fill",
+            source: "closed_areas_src",
+            layout: {},
+            paint: {
+                'fill-color': 'red',
+                'fill-opacity': 0.5,
+            }
+        });
+
+        map.addLayer({
+            id: "warning_areas",
+            type: "fill",
+            source: "warning_areas_src",
+            layout: {},
+            paint: {
+                'fill-color': 'orange',
+                'fill-opacity': 0.5,
+            }
+        });
+    });
 
     var greenIcon = L.icon({
         iconUrl: '{% static 'images/green2-marker.png' %}',
@@ -81,30 +119,6 @@
         "opacity": 0.65
     };
 
-    function onEachFeature(feature, layer) {
-        // if feature have a property named popupContent, add Popup to GeoJSON layer
-        if (feature.properties && feature.properties.name) {
-            layer.bindPopup(feature.properties.name);
-        }
-    }
-
-
-    var closureAreasNHLayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'NH' %}", {
-                            style: orangeLayerStyle,
-                            onEachFeature: onEachFeature
-                        });
-    closureAreasNHLayer.addTo(habmap);
-
-    var closureAreasMALayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'MA' %}", {
-                            style: greenLayerStyle,
-                            onEachFeature: onEachFeature
-                        });
-    closureAreasMALayer.addTo(habmap);
-
-
-
-     // Debug in console
-    habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
 
 
 

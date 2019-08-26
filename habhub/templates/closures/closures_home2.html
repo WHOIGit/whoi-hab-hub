@@ -89,14 +89,14 @@
     }
 
 
-    var closureAreasNHLayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'NH' %}", {
-                            style: orangeLayerStyle,
+    var closureAreasNHLayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_status' 'Closed' %}", {
+                            style: redLayerStyle,
                             onEachFeature: onEachFeature
                         });
     closureAreasNHLayer.addTo(habmap);
 
-    var closureAreasMALayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'MA' %}", {
-                            style: greenLayerStyle,
+    var closureAreasMALayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_status' 'Warning' %}", {
+                            style: orangeLayerStyle,
                             onEachFeature: onEachFeature
                         });
     closureAreasMALayer.addTo(habmap);
