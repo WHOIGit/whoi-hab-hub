@@ -16,6 +16,7 @@
 {% block javascript %}
 <script>
 
+
     mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
 
     var map = new mapboxgl.Map({
@@ -26,43 +27,41 @@
     });
 
     map.on('load', function() {
-        // Add a new source from our GeoJSON data 
-        map.addSource("closed_areas_src", {
-            type: "geojson",
-            data: "{% url 'closures:ajax_load_closure_areas_status' 'Closed' %}",
-            buffer: 0,
-            maxzoom: 12,
-        });
+        fetch('{% url 'closures:ajax_closures_data' %}')
+            .then((response) => response.json()) // Transform the data into json
+            .then(function(data) {
+                console.log(data);
 
-        map.addLayer({
-            id: "closed_areas",
-            type: "fill",
-            source: "closed_areas_src",
-            layout: {},
-            paint: {
-                'fill-color': 'red',
-                'fill-opacity': 0.5,
-            }
-        });
+                data.map(function(data) {
 
-        // When a click event occurs on a feature in the states layer, open a popup at the
-        // location of the click, with description HTML from its properties.
-        map.on('click', 'closed_areas', function (e) {
-            new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(e.features[0].properties.name)
-            .addTo(map);
-        });
+                    fetch("/closures/ajax/load-geojson-detail/" + data.id)
+                        .then((response) => response.json()) // Transform the data into json
+                        .then(function(data) {
+                            console.log(data);
+                            source_id = Math.random();
+                            // Add a new source from our GeoJSON data
+                            map.addSource("closed_areas_src" + source_id, {
+                                type: "geojson",
+                                data: data,
+                                buffer: 0,
+                                maxzoom: 12,
+                            });
 
-        // Change the cursor to a pointer when the mouse is over the states layer.
-        map.on('mouseenter', 'closed_areas', function () {
-            map.getCanvas().style.cursor = 'pointer';
-        });
+                            map.addLayer({
+                                id: "closed_areas" + source_id,
+                                type: "fill",
+                                source: "closed_areas_src" + source_id,
+                                layout: {},
+                                paint: {
+                                    'fill-color': 'red',
+                                    'fill-opacity': 0.5,
+                                }
+                            });
+                        })
+                    console.log(data.id);
+                })
+            })
 
-        // Change it back to a pointer when it leaves.
-        map.on('mouseleave', 'closed_areas', function () {
-            map.getCanvas().style.cursor = '';
-        });
     });
 
     var greenIcon = L.icon({
