@@ -8,6 +8,10 @@ from django.views import defaults as default_views
 from habhub.stations import views as stations_views
 from habhub.esp_instrument import views as esp_instrument_views
 
+admin.site.site_header = 'WHOI HABHub Administration'                    # default: "Django Administration"
+admin.site.index_title = 'Site administration'                 # default: "Site administration"
+admin.site.site_title = 'WHOI HABHub Administration' # default: "Django site admin"
+
 urlpatterns = [
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(

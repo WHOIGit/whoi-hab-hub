@@ -1,0 +1,5 @@
+/* Django admin style extras and overrides */
+
+#id_closure_areas {
+    min-height: 300px;
+}
