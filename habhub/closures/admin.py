@@ -5,11 +5,11 @@ from .models import ClosureArea, Species, ClosureNotice
 
 # Register your models here.
 
-class ClosureAreaAdmin(admin.ModelAdmin):
+class ClosureAreaAdmin(LeafletGeoAdmin):
     ordering = ['name']
     search_fields = ['name']
 
-class ClosureNoticeAdmin(LeafletGeoAdmin):
+class ClosureNoticeAdmin(admin.ModelAdmin):
     autocomplete_fields = ['closure_areas']
 
 admin.site.register(ClosureArea, ClosureAreaAdmin)
