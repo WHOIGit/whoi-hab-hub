@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.1/mapbox-gl.css' rel='stylesheet' />
+
+<h1 class="display-4">WHOI HAB Hub</h1>
+
+<div id="map" style="height:1000px;"></div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        center: [-69.75, 41.89],
+        zoom: 7,
+    });
+
+    map.on('load', function() {
+        fetch('{% url 'closures:ajax_closures_data' %}')
+            .then((response) => response.json()) // Transform the data into json
+            .then(function(data) {
+                console.log(data);
+
+                data.map(function(data) {
+
+                    fetch("/closures/ajax/load-geojson-detail/" + data.id)
+                        .then((response) => response.json()) // Transform the data into json
+                        .then(function(data) {
+                            console.log(data);
+                            source_id = Math.random();
+                            // Add a new source from our GeoJSON data
+                            map.addSource("closed_areas_src" + source_id, {
+                                type: "geojson",
+                                data: data,
+                                buffer: 0,
+                                maxzoom: 12,
+                            });
+
+                            map.addLayer({
+                                id: "closed_areas" + source_id,
+                                type: "fill",
+                                source: "closed_areas_src" + source_id,
+                                layout: {},
+                                paint: {
+                                    'fill-color': 'red',
+                                    'fill-opacity': 0.5,
+                                }
+                            });
+                        })
+                    console.log(data.id);
+                })
+            })
+            .catch(function(error) {
+                console.log(error);
+            });  
+
+    });
+
+    var greenIcon = L.icon({
+        iconUrl: '{% static 'images/green2-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -31],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var redIcon = L.icon({
+        iconUrl: '{% static 'images/red-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -31],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var orangeIcon = L.icon({
+        iconUrl: '{% static 'images/orange-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [12, 20],
+        iconAnchor: [6, 20],
+        popupAnchor: [0, -14],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var pushPinRedIcon = L.icon({
+        iconUrl: '{% static 'images/red-pushpin.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [5, -30],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var orangeLayerStyle = {
+        "color": "#ff7800",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var redLayerStyle = {
+        "color": "red",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var greenLayerStyle = {
+        "color": "green",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+
+
+
+</script>
+{% endblock javascript %}

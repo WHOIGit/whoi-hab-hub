@@ -69,11 +69,14 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'rest_framework',
     'import_export',
+    'djgeojson',
+    'leaflet',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
     # Your stuff: custom apps go here
     'habhub.stations',
+    'habhub.closures',
     'habhub.esp_instrument',
     'habhub.ifcb_cruises',
 ]

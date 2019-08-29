@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+<h1 class="display-4">WHOI HAB Hub</h1>
+
+<div id="habmap" style="height:1000px;"></div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+    var habmap = L.map('habmap').setView([41.89001042401827, -69.75769042968751], 8);
+
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox.streets',
+        accessToken: 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug'
+    }).addTo(habmap);
+
+    var greenIcon = L.icon({
+        iconUrl: '{% static 'images/green2-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -31],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var redIcon = L.icon({
+        iconUrl: '{% static 'images/red-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -31],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var orangeIcon = L.icon({
+        iconUrl: '{% static 'images/orange-marker.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [12, 20],
+        iconAnchor: [6, 20],
+        popupAnchor: [0, -14],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var pushPinRedIcon = L.icon({
+        iconUrl: '{% static 'images/red-pushpin.png' %}',
+        //shadowUrl: 'leaf-shadow.png',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [5, -30],
+        //shadowSize: [68, 95],
+        //shadowAnchor: [22, 94]
+    });
+
+    var orangeLayerStyle = {
+        "color": "#ff7800",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var redLayerStyle = {
+        "color": "red",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    var greenLayerStyle = {
+        "color": "green",
+        "weight": 5,
+        "opacity": 0.65
+    };
+
+    function onEachFeature(feature, layer) {
+        // if feature have a property named popupContent, add Popup to GeoJSON layer
+        if (feature.properties && feature.properties.name) {
+            layer.bindPopup(feature.properties.name);
+        }
+    }
+
+
+    var closureAreasNHLayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'NH' %}", {
+                            style: orangeLayerStyle,
+                            onEachFeature: onEachFeature
+                        });
+    closureAreasNHLayer.addTo(habmap);
+
+    var closureAreasMALayer = new L.GeoJSON.AJAX("{% url 'closures:ajax_load_closure_areas_state' 'MA' %}", {
+                            style: greenLayerStyle,
+                            onEachFeature: onEachFeature
+                        });
+    closureAreasMALayer.addTo(habmap);
+
+
+
+     // Debug in console
+    habmap.on("zoomend", function (e) { console.log( "ZOOMEND", this.getZoom(), this.getCenter() ); });
+
+
+
+</script>
+{% endblock javascript %}
