@@ -9,7 +9,11 @@ class ClosureAreaAdmin(LeafletGeoAdmin):
     ordering = ['name']
     search_fields = ['name']
 
+<<<<<<< HEAD
 class ClosureNoticeAdmin(admin.ModelAdmin):
+=======
+class ClosureNoticeAdmin(LeafletGeoAdmin):
+>>>>>>> develop
     #autocomplete_fields = ['closure_areas']
     pass
 
