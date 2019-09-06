@@ -269,6 +269,7 @@ tags
 .ssl/
 backups/
 habhub/media/
+media/
 
 .pytest_cache/
 
