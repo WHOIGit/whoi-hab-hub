@@ -53,15 +53,23 @@ class ClosureNotice(models.Model):
     SYNDROME = (
         ('PSP', 'Paralytic Shellfish Poison (PSP)'),
         ('DSP', 'Diarrhetic shellfish poisoning (DSP)'),
-        ('ASP', 'Amnesic shellfish poisoning (ASP)')
+        ('ASP', 'Amnesic shellfish poisoning (ASP)'),
+    )
+
+    ORGANISMS = (
+        ('Alexandrium spp.', 'Alexandrium spp.'),
+        ('Dinophysis sp.', 'Dinophysis sp.'),
     )
 
     title = models.CharField(max_length=100)
     date = models.DateField(default=timezone.now)
-    closure_areas = models.ManyToManyField(ClosureArea)
-    species = models.ManyToManyField(Species)
-    notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, null=False, blank=True, default='Open')
+    closure_areas = models.ManyToManyField(ClosureArea, related_name='closure_notices')
+    species = models.ManyToManyField(Species, related_name='closure_notices')
+    notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, default='Open')
     syndrome = models.CharField(max_length=50, choices=SYNDROME, null=False, blank=True, default='PSP')
+    causative_organism = models.CharField(max_length=50, choices=ORGANISMS, null=False, blank=True)
+    document = models.FileField(upload_to='closure_notices/', null=True, blank=True)
+    comments = models.TextField(null=False, blank=True)
 
     class Meta:
         ordering = ['date', 'title']

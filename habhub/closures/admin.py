@@ -10,7 +10,8 @@ class ClosureAreaAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 class ClosureNoticeAdmin(LeafletGeoAdmin):
-    autocomplete_fields = ['closure_areas']
+    #autocomplete_fields = ['closure_areas']
+    pass
 
 admin.site.register(ClosureArea, ClosureAreaAdmin)
 
