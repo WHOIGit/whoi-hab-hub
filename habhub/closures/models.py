@@ -77,7 +77,9 @@ class ClosureNotice(models.Model):
     species = models.ManyToManyField(Species, related_name='closure_notices')
     notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, default='Open')
     syndrome = models.CharField(max_length=50, choices=SYNDROME, null=False, blank=True, default='PSP')
-    causative_organism = models.CharField(max_length=50, choices=ORGANISMS, null=False, blank=True)
+    organism = models.CharField(max_length=50, choices=ORGANISMS, null=False, blank=True)
+    causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_notices',
+                                on_delete=models.SET_NULL, null=True, blank=True)
     document = models.FileField(upload_to='closure_notices/', null=True, blank=True)
     comments = models.TextField(null=False, blank=True)
 
