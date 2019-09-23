@@ -40,6 +40,7 @@ USE_TZ = True
 DATABASES = {
     'default': env.db('DATABASE_URL'),
 }
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 # URLS
@@ -61,6 +62,7 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize', # Handy template tags
     'django.contrib.admin',
+    'django.contrib.gis', # enable GeoDjango
 ]
 THIRD_PARTY_APPS = [
     'crispy_forms',
