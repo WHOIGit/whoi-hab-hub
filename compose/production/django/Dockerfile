@@ -1,15 +1,22 @@
-FROM python:3.7-alpine
+FROM python:3.7-slim-buster
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apk update \
+RUN apt-get update \
   # psycopg2 dependencies
-  && apk add --virtual build-deps gcc g++ python3-dev musl-dev \
-  && apk add postgresql-dev \
+  && apt-get -y install gcc g++ python3-dev python3-setuptools musl-dev \
   # Pillow dependencies
-  && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
+  libtiff5-dev libjpeg62-turbo-dev libopenjp2-7-dev zlib1g-dev \
+  libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev \
+  python3-tk \
   # CFFI dependencies
-  && apk add libffi-dev py-cffi
+  libffi-dev \
+  # Translations dependencies
+  gettext \
+  # geodjango
+  gdal-bin binutils libproj-dev libgdal-dev \
+  # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
+  postgresql-client
 
 RUN addgroup -S django \
     && adduser -S -G django django
