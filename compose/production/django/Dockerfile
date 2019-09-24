@@ -18,8 +18,8 @@ RUN apt-get update \
   # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
   postgresql-client
 
-RUN addgroup -S django \
-    && adduser -S -G django django
+RUN groupadd django \
+    && useradd -G django django
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
