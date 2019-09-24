@@ -19,7 +19,7 @@ RUN apt-get update \
   postgresql-client
 
 RUN groupadd django \
-    && useradd -g django django
+    && useradd -s /bin/bash -g django -G sudo django
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
@@ -40,7 +40,7 @@ COPY . /app
 
 RUN mkdir /app/staticfiles && mkdir /app/media
 
-RUN chown -R django /app
+RUN chown -R django:django /app
 
 USER django
 
