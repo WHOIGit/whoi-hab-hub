@@ -1,5 +1,5 @@
 /* Django admin style extras and overrides */
 
-#id_closure_areas {
+#id_closure_areas, #id_shellfish_areas {
     min-height: 300px;
 }

@@ -1,7 +1,6 @@
 FROM python:3.7-slim-buster
 
 ENV PYTHONUNBUFFERED 1
-ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update \
   # psycopg2 dependencies
