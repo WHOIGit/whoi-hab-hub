@@ -1,25 +1,34 @@
-FROM python:3.7-slim-buster
+FROM python:3.7-alpine
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update \
+RUN apk update \
   # psycopg2 dependencies
-  && apt-get -y install gcc g++ python3-dev python3-setuptools musl-dev \
+  && apk add --virtual build-deps gcc python3-dev musl-dev \
+  && apk add postgresql-dev \
   # Pillow dependencies
-  libtiff5-dev libjpeg62-turbo-dev libopenjp2-7-dev zlib1g-dev \
-  libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev \
-  python3-tk \
+  && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
   # CFFI dependencies
-  libffi-dev \
-  # Translations dependencies
-  gettext \
-  # geodjango
-  gdal-bin binutils libproj-dev libgdal-dev \
-  # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
-  postgresql-client
+  && apk add libffi-dev py-cffi
+  # GeoDjango Requirements
+  && apk add --no-cache --virtual .build-deps \
+        autoconf \
+        automake \
+        g++ \
+        json-c-dev \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    \
+  && apk add --no-cache --virtual .build-deps-edge \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
+        gdal-dev \
+        geos-dev
 
-RUN groupadd django \
-    && useradd -rm -s /bin/bash -g django -G sudo django
+RUN addgroup -S django \
+    && adduser -S -G django django
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
@@ -39,8 +48,6 @@ RUN chown django /start
 COPY . /app
 
 RUN mkdir /app/staticfiles && mkdir /app/media
-
-RUN chmod -R 755 /app
 
 RUN chown -R django /app
 
