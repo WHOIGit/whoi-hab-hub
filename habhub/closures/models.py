@@ -94,6 +94,7 @@ class ClosureNotice(models.Model):
 
     title = models.CharField(max_length=100)
     date = models.DateField(default=timezone.now)
+    shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
     closure_areas = models.ManyToManyField(ClosureArea, related_name='closure_notices')
     species = models.ManyToManyField(Species, related_name='closure_notices')
     notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, default='Open')
