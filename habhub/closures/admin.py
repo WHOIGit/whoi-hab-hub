@@ -6,8 +6,9 @@ from .models import ClosureArea, Species, ClosureNotice, ClosureNoticeMaine, Cau
 # Register your models here.
 
 class ShellfishAreaAdmin(LeafletGeoAdmin):
-    ordering = ['name']
+    ordering = ['state', 'name']
     search_fields = ['name']
+    list_display = ('name', 'state')
 
 
 class ClosureAreaAdmin(LeafletGeoAdmin):
@@ -17,6 +18,7 @@ class ClosureAreaAdmin(LeafletGeoAdmin):
 
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
+    list_display = ('title', 'notice_date')
     exclude = ('west_border', 'east_border')
 
     def get_queryset(self, request):
