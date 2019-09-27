@@ -113,6 +113,12 @@ class ClosureNotice(models.Model):
     def __str__(self):
         return self.title
 
+    def get_state(self):
+        area = self.shellfish_areas.first()
+        state = area.get_state_display()
+        return state
+    get_state.short_description = 'State'
+
 
 class ClosureNoticeMaine(ClosureNotice):
     class Meta:

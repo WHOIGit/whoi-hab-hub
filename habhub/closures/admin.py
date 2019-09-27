@@ -18,7 +18,7 @@ class ClosureAreaAdmin(LeafletGeoAdmin):
 
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
-    list_display = ('title', 'notice_date')
+    list_display = ('title', 'notice_date', 'get_state')
     exclude = ('west_border', 'east_border')
 
     def get_queryset(self, request):
