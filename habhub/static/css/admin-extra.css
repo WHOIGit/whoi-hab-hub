@@ -3,3 +3,7 @@
 #id_closure_areas, #id_shellfish_areas {
     min-height: 300px;
 }
+
+#id_west_border-map, #id_east_border-map {
+    width: 800px !important;
+}

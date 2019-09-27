@@ -257,7 +257,15 @@ ACCOUNT_ADAPTER = 'habhub.users.adapters.AccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'habhub.users.adapters.SocialAccountAdapter'
 
 
-# Your stuff...
+# Custom HABHub stuff
 # ------------------------------------------------------------------------------
 #Django Import Export settings
 IMPORT_EXPORT_USE_TRANSACTIONS = True
+
+# Leaflet default settings
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (42.651, -69.222),
+    'DEFAULT_ZOOM': 8,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+}

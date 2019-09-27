@@ -93,9 +93,12 @@ class ClosureNotice(models.Model):
     )
 
     title = models.CharField(max_length=100)
-    date = models.DateField(default=timezone.now)
+    notice_date = models.DateField(default=timezone.now)
+    effective_date = models.DateField(default=timezone.now)
     shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
     closure_areas = models.ManyToManyField(ClosureArea, related_name='closure_notices')
+    west_border =  models.LineStringField(srid=4326, null=True, blank=True)
+    east_border =  models.LineStringField(srid=4326, null=True, blank=True)
     species = models.ManyToManyField(Species, related_name='closure_notices')
     notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, default='Open')
     syndrome = models.CharField(max_length=50, choices=SYNDROME, null=False, blank=True, default='PSP')
@@ -105,7 +108,14 @@ class ClosureNotice(models.Model):
     comments = models.TextField(null=False, blank=True)
 
     class Meta:
-        ordering = ['date', 'title']
+        ordering = ['notice_date', 'title']
 
     def __str__(self):
         return self.title
+
+
+class ClosureNoticeMaine(ClosureNotice):
+    class Meta:
+        proxy = True
+        verbose_name = 'Closure notice (Maine)'
+        verbose_name_plural = 'Closure notices (Maine)'
