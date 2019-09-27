@@ -34,6 +34,8 @@ urlpatterns = [
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
     path('closures/', include('habhub.closures.urls', namespace='closures')),
     path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
+    # Summernote WYSIWYG
+    path('summernote/', include('django_summernote.urls')),
 
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

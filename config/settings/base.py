@@ -73,6 +73,7 @@ THIRD_PARTY_APPS = [
     'import_export',
     'djgeojson',
     'leaflet',
+    'django_summernote', #WYSIWYG
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
@@ -268,4 +269,36 @@ LEAFLET_CONFIG = {
     'DEFAULT_ZOOM': 8,
     'MIN_ZOOM': 3,
     'MAX_ZOOM': 18,
+}
+
+# Summernote config
+SUMMERNOTE_THEME = 'bs4'
+SUMMERNOTE_CONFIG = {
+    # Using SummernoteWidget - iframe mode, default
+    'iframe': False,
+
+    # Or, you can set it as False to use SummernoteInplaceWidget by default - no iframe mode
+    # In this case, you have to load Bootstrap/jQuery stuff by manually.
+    # Use this when you're already using Bootstraip/jQuery based themes.
+    #'iframe': False,
+
+    # You can put custom Summernote settings
+    'summernote': {
+        # As an example, using Summernote Air-mode
+        'airMode': False,
+
+        # Change editor size
+        'width': '100%',
+        'height': '480',
+
+        'toolbar': [
+
+          ['style', ['bold', 'italic', 'underline', 'clear']],
+          ['font', ['strikethrough', 'superscript', 'subscript']],
+          ['para', ['ul', 'ol', 'paragraph']],
+          ['insert', ['link', 'picture']],
+          ['view', ['fullscreen', 'codeview', 'help']],
+        ]
+
+    },
 }

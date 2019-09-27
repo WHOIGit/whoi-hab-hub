@@ -1,5 +1,8 @@
 from django.contrib.gis import admin
+from django.contrib.gis.db import models
+
 from leaflet.admin import LeafletGeoAdmin
+from django_summernote.widgets import SummernoteWidget
 
 from .models import ClosureArea, Species, ClosureNotice, ClosureNoticeMaine, CausativeOrganism, ShellfishArea
 
@@ -21,6 +24,10 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
     list_display = ('title', 'notice_date', 'get_state')
     exclude = ('west_border', 'east_border')
 
+    formfield_overrides = {
+        models.TextField: {'widget': SummernoteWidget},
+    }
+
     def get_queryset(self, request):
         return ClosureNotice.objects.exclude(shellfish_areas__state='ME')
 
@@ -31,6 +38,10 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     settings_overrides = {
        'DEFAULT_CENTER': (43.786, -69.159),
        'DEFAULT_ZOOM': 8,
+    }
+
+    formfield_overrides = {
+        models.TextField: {'widget': SummernoteWidget},
     }
 
     def get_queryset(self, request):
