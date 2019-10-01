@@ -48,6 +48,9 @@ class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
 
 
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
+    list_display = ('title', 'notice_date', 'get_state', 'custom_geom')
+    list_editable = ('custom_geom', )
+
     #exclude = ('custom_geom', )
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
@@ -70,8 +73,6 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
         super().save_model(request, obj, form, change)
 
         if obj.custom_borders:
-            print(obj.title, obj.custom_borders)
-
             try:
                 base_shape = BaseAreaShape.objects.get(name="Maine Coastline")
             except BaseAreaShape.DoesNotExist:

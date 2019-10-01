@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib.gis.db import models
 from django.utils import timezone
+from django.utils.html import format_html
 from djgeojson.fields import PointField, PolygonField
 
 # Closure app models.
