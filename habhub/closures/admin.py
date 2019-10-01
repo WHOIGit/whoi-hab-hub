@@ -37,6 +37,8 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
 class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
     model = ExceptionArea
 
+    extra = 3
+
     settings_overrides = {
        'DEFAULT_CENTER': (43.786, -69.159),
        'DEFAULT_ZOOM': 8,
@@ -50,8 +52,7 @@ class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     list_display = ('title', 'notice_date', 'get_state', 'custom_geom')
     list_editable = ('custom_geom', )
-
-    #exclude = ('custom_geom', )
+    exclude = ('custom_geom', )
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {
@@ -80,7 +81,9 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
             if base_shape:
                 base_polygon = base_shape.geom
+                # create polygon from custom border lines
                 polygon_mask = obj.custom_borders.convex_hull
+                # create new geometry from base map with the mask
                 new_shape = base_polygon.intersection(polygon_mask)
                 obj.custom_geom = new_shape
                 obj.save()

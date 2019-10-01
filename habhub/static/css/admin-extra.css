@@ -4,6 +4,6 @@
     min-height: 300px;
 }
 
-#id_west_border-map, #id_east_border-map {
+#id_custom_borders-map {
     width: 800px !important;
 }
