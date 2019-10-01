@@ -1,5 +1,6 @@
 from django.contrib.gis import admin
 from django.contrib.gis.db import models
+from django.contrib.gis.geos import GEOSGeometry
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
 from leaflet.forms.widgets import LeafletWidget
@@ -47,7 +48,7 @@ class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
 
 
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
-    exclude = ('custom_geom', )
+    #exclude = ('custom_geom', )
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {
@@ -63,6 +64,25 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
     def get_queryset(self, request):
         return ClosureNotice.objects.filter(shellfish_areas__state='ME')
+
+    # Override save method to create the custom geometry if custom_borders exist
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+
+        if obj.custom_borders:
+            print(obj.title, obj.custom_borders)
+
+            try:
+                base_shape = BaseAreaShape.objects.get(name="Maine Coastline")
+            except BaseAreaShape.DoesNotExist:
+                base_shape = None
+
+            if base_shape:
+                base_polygon = base_shape.geom
+                polygon_mask = obj.custom_borders.convex_hull
+                new_shape = base_polygon.intersection(polygon_mask)
+                obj.custom_geom = new_shape
+                obj.save()
 
 
 admin.site.register(ShellfishArea, ShellfishAreaAdmin)
