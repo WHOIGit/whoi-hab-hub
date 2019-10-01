@@ -97,8 +97,8 @@ class ClosureNotice(models.Model):
     effective_date = models.DateField(default=timezone.now)
     shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
     closure_areas = models.ManyToManyField(ClosureArea, related_name='closure_notices')
-    west_border =  models.LineStringField(srid=4326, null=True, blank=True)
-    east_border =  models.LineStringField(srid=4326, null=True, blank=True)
+    custom_borders =  models.MultiLineStringField(srid=4326, null=True, blank=True)
+    custom_geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
     species = models.ManyToManyField(Species, related_name='closure_notices')
     notice_action = models.CharField(max_length=50, choices=NOTICE_ACTION, default='Open')
     syndrome = models.CharField(max_length=50, choices=SYNDROME, null=False, blank=True, default='PSP')
@@ -140,3 +140,21 @@ class ExceptionArea(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class BaseAreaShape(models.Model):
+    STATES = (
+        ('ME', 'Maine'),
+        ('MA', 'Massachusetts'),
+        ('NH', 'New Hampshire'),
+    )
+
+    name = models.CharField(max_length=100)
+    geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
+    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, db_index=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

@@ -23,7 +23,7 @@ class ClosureAreaAdmin(LeafletGeoAdmin):
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
     list_display = ('title', 'notice_date', 'get_state')
-    exclude = ('west_border', 'east_border')
+    exclude = ('custom_borders', 'custom_geom')
 
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
@@ -47,6 +47,7 @@ class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
 
 
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
+    exclude = ('custom_geom', )
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {
@@ -77,3 +78,5 @@ admin.site.register(Species)
 admin.site.register(CausativeOrganism)
 
 admin.site.register(ExceptionArea, LeafletGeoAdmin)
+
+admin.site.register(BaseAreaShape, LeafletGeoAdmin)
