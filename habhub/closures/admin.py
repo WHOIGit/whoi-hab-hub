@@ -34,7 +34,7 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
         return ClosureNotice.objects.exclude(shellfish_areas__state='ME')
 
 
-class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
+class ExceptionAreaAdminInline(admin.StackedInline):
     model = ExceptionArea
 
     extra = 3
@@ -44,8 +44,15 @@ class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
        'DEFAULT_ZOOM': 8,
     }
 
+    LEAFLET_WIDGET_ATTRS = {
+        'map_height': '500px',
+        'map_width': '100%',
+        'loadevent': '',
+    }
+
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
+        models.MultiPolygonField: {'widget': LeafletWidget(attrs=LEAFLET_WIDGET_ATTRS)}
     }
 
 
