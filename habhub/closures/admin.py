@@ -4,7 +4,9 @@ from django.contrib.gis.geos import GEOSGeometry
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
 from leaflet.forms.widgets import LeafletWidget
+
 from django_summernote.widgets import SummernoteWidget
+from django_summernote.admin import SummernoteModelAdmin, SummernoteInlineModelAdmin
 
 from .models import *
 
@@ -14,12 +16,14 @@ class ShellfishAreaAdmin(LeafletGeoAdmin):
     ordering = ['state', 'name']
     search_fields = ['name']
     list_display = ('name', 'state')
+    list_filter = ('state',)
 
 
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
-    list_display = ('title', 'notice_date', 'get_state')
+    list_display = ('title', 'notice_date', 'notice_action', 'get_state', 'get_shellfish_areas')
     exclude = ('custom_borders', 'custom_geom')
+    list_filter = ('shellfish_areas__state', 'notice_action',)
 
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
@@ -29,32 +33,33 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
         return ClosureNotice.objects.exclude(shellfish_areas__state='ME')
 
 
-class ExceptionAreaAdminInline(admin.StackedInline):
+class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
     model = ExceptionArea
 
-    extra = 3
+    extra = 1
 
     settings_overrides = {
        'DEFAULT_CENTER': (43.786, -69.159),
        'DEFAULT_ZOOM': 8,
     }
 
-    LEAFLET_WIDGET_ATTRS = {
-        'map_height': '500px',
-        'map_width': '100%',
-        'loadevent': '',
-    }
+    # LEAFLET_WIDGET_ATTRS = {
+    #     'map_height': '500px',
+    #     'map_width': '100%',
+    #     'loadevent': '',
+    # }
 
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
-        models.MultiPolygonField: {'widget': LeafletWidget(attrs=LEAFLET_WIDGET_ATTRS)}
+        #models.MultiPolygonField: {'widget': LeafletWidget(attrs=LEAFLET_WIDGET_ATTRS)}
     }
 
 
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
-    list_display = ('title', 'notice_date', 'get_state', 'custom_geom')
+    list_display = ('title', 'notice_date', 'notice_action', 'get_state', 'get_shellfish_areas', 'custom_geom')
     list_editable = ('custom_geom', )
     exclude = ('custom_geom', )
+    list_filter = ('notice_action',)
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {

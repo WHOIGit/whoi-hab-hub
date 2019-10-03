@@ -275,7 +275,7 @@ LEAFLET_CONFIG = {
 SUMMERNOTE_THEME = 'bs4'
 SUMMERNOTE_CONFIG = {
     # Using SummernoteWidget - iframe mode, default
-    'iframe': False,
+    'iframe': True,
 
     # Or, you can set it as False to use SummernoteInplaceWidget by default - no iframe mode
     # In this case, you have to load Bootstrap/jQuery stuff by manually.

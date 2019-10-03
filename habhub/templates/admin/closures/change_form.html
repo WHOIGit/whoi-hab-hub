@@ -1,0 +1,47 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static leaflet_tags %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% leaflet_css plugins="ALL" %}
+<style>
+/* Force leaflet controls underneath header (z-index 1000) and
+   above leaflet tiles (z-index 400)*/
+.leaflet-top{z-index:999;}
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{% leaflet_js plugins="ALL" %}
+<script>
+(function($){
+    var updateIframeIndex = function(elt, prefix, index) {
+        var id_regex_underscore = new RegExp("(" + prefix + "_(\\d+|__prefix__))");
+        var id_regex_hyphen = new RegExp("(" + prefix + "-(\\d+|__prefix__))");
+        var us_replacement = prefix + "_" + index;
+        var hyph_replacement = prefix + "-" + index;
+        elt.prev().html(elt.prev().html().replace(id_regex_underscore, us_replacement));
+        $.globalEval(elt.prev().html());
+        if (elt.attr('id')) {
+            elt.attr('id', elt.attr('id').replace(id_regex_underscore, us_replacement));
+        }
+        if (elt.attr('src')) {
+            elt.attr('src', elt.attr('src').replace(id_regex_hyphen, hyph_replacement));
+        }
+    };
+    $(document).on('formset:added', function(e, row, prefix){
+        var total_forms = $("#id_" + prefix + "-TOTAL_FORMS").prop("autocomplete", "off");
+        var iframe_selector = '#id_' + prefix + '_' + '__prefix__' + '_body_iframe'
+        updateIframeIndex($(iframe_selector), prefix, total_forms.val() - 1);
+    });
+    $(document).on('formset:removed', function(e, row, prefix) {
+        var iframe_selector = 'iframe[id^=id_' + prefix + '_][id$=_body_iframe]';
+        var iframe_extra_selector = '#id_' + prefix + '___prefix___body_iframe';
+        $(iframe_selector).not(iframe_extra_selector).each(function( index ) {
+            updateIframeIndex($(this), prefix, index);
+        });
+    });
+})(django.jQuery);
+</script>
+{% endblock %}

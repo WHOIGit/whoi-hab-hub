@@ -87,6 +87,10 @@ class ClosureNotice(models.Model):
     def __str__(self):
         return self.title
 
+    def get_shellfish_areas(self):
+        return ", ".join([str(area) for area in self.shellfish_areas.all()])
+    get_shellfish_areas.short_description = 'Shellfish Areas'
+
     def get_state(self):
         area = self.shellfish_areas.first()
         state = area.get_state_display()
