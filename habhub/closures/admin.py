@@ -16,11 +16,6 @@ class ShellfishAreaAdmin(LeafletGeoAdmin):
     list_display = ('name', 'state')
 
 
-class ClosureAreaAdmin(LeafletGeoAdmin):
-    ordering = ['name']
-    search_fields = ['name']
-
-
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
     list_display = ('title', 'notice_date', 'get_state')
@@ -97,8 +92,6 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
 
 admin.site.register(ShellfishArea, ShellfishAreaAdmin)
-
-admin.site.register(ClosureArea, ClosureAreaAdmin)
 
 admin.site.register(ClosureNotice, ClosureNoticeAdmin)
 
