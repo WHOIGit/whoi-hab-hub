@@ -24,7 +24,8 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
     list_display = ('title', 'notice_date', 'notice_action', 'get_state', 'get_shellfish_areas')
     exclude = ('custom_borders', 'custom_geom')
     list_filter = ('shellfish_areas__state', 'notice_action',)
-
+    filter_horizontal = ('shellfish_areas', )
+    
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
     }
@@ -60,6 +61,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     list_editable = ('custom_geom', )
     exclude = ('custom_geom', )
     list_filter = ('notice_action',)
+    filter_horizontal = ('shellfish_areas', )
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {
