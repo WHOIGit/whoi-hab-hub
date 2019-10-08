@@ -1,6 +1,7 @@
 from django.contrib.gis import admin
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import Polygon, MultiPolygon
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
 from leaflet.forms.widgets import LeafletWidget
@@ -25,7 +26,7 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
     exclude = ('custom_borders', 'custom_geom')
     list_filter = ('shellfish_areas__state', 'notice_action',)
     filter_horizontal = ('shellfish_areas', )
-    
+
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
     }
@@ -94,6 +95,10 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 polygon_mask = obj.custom_borders.convex_hull
                 # create new geometry from base map with the mask
                 new_shape = base_polygon.intersection(polygon_mask)
+
+                if isinstance(new_shape, Polygon):
+                    new_shape = MultiPolygon(new_shape)
+
                 obj.custom_geom = new_shape
                 obj.save()
 
