@@ -7,3 +7,5 @@ IPYTHONDIR=/app/.ipython
 # ------------------------------------------------------------------------------
 REDIS_URL=redis://redis:6379/0
 
+DJANGO_SECRET_KEY=uiFrVYuvyHj4jJiZDqq362HAQ86Qxnt5bCLcWqYQR0Dq8nqDA4oVNTDAKXe5L5OW
+DJANGO_ADMIN_URL=admin/

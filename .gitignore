@@ -273,6 +273,9 @@ media/
 
 .pytest_cache/
 
+# celery beat schedule file
+celerybeat-schedule
+
 .ipython/
 .env
 .envs/*
