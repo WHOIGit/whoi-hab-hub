@@ -108,7 +108,6 @@ class ClosureNoticeMaine(ClosureNotice):
 class ExceptionArea(models.Model):
     title = models.CharField(max_length=100)
     species = models.ManyToManyField(Species, related_name='exception_areas')
-    geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
     closure_notice = models.ForeignKey(ClosureNotice, related_name='exception_areas',
                                 on_delete=models.CASCADE, null=True, blank=True)
     description = models.TextField(null=False, blank=True)

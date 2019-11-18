@@ -19,6 +19,7 @@ class LandmarkAdmin(LeafletGeoAdmin):
     list_display = ('name', 'state', 'coords')
     list_editable = ('coords', )
 
+
 class ShellfishAreaAdmin(LeafletGeoAdmin):
     ordering = ['state', 'name']
     search_fields = ['name']
@@ -41,21 +42,10 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
         return ClosureNotice.objects.exclude(shellfish_areas__state='ME')
 
 
-class ExceptionAreaAdminInline(LeafletGeoAdminMixin, admin.StackedInline):
+class ExceptionAreaAdminInline(admin.StackedInline):
     model = ExceptionArea
 
     extra = 1
-
-    settings_overrides = {
-       'DEFAULT_CENTER': (43.786, -69.159),
-       'DEFAULT_ZOOM': 8,
-    }
-
-    # LEAFLET_WIDGET_ATTRS = {
-    #     'map_height': '500px',
-    #     'map_width': '100%',
-    #     'loadevent': '',
-    # }
 
     formfield_overrides = {
         models.TextField: {'widget': SummernoteWidget},
