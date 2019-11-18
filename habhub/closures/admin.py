@@ -116,3 +116,5 @@ admin.site.register(CausativeOrganism)
 admin.site.register(ExceptionArea, LeafletGeoAdmin)
 
 admin.site.register(BaseAreaShape, LeafletGeoAdmin)
+
+admin.site.register(Landmark)

@@ -136,3 +136,21 @@ class BaseAreaShape(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Landmark(models.Model):
+    STATES = (
+        ('ME', 'Maine'),
+        ('MA', 'Massachusetts'),
+        ('NH', 'New Hampshire'),
+    )
+
+    name = models.CharField(max_length=100)
+    coords =  models.PointField(srid=4326, null=False)
+    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, default='ME')
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

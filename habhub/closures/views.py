@@ -16,14 +16,14 @@ class ClosureHomeView2(TemplateView):
     template_name = 'closures/closures_home2.html'
     context_object_name = 'closures'
 
-"""
+
 class ClosureHomeView3(TemplateView):
     template_name = 'closures/closures_home3.html'
     context_object_name = 'closures'
 
     def get_context_data(self, **kwargs):
         context = super(ClosureHomeView3, self).get_context_data(**kwargs)
-        queryset = ClosureArea.objects.filter(current_status='Closed').values('id', 'name')
+        queryset = ShellfishArea.objects.filter(current_status='Closed').values('id', 'name')
         closures_list = list(queryset)  # important: convert the QuerySet to a list object)
 
         context.update({
@@ -35,38 +35,37 @@ class ClosureHomeView3(TemplateView):
 class ClosureAreaAjaxView(View):
 
     def get(self, request, *args, **kwargs):
-        queryset = ClosureArea.objects.filter(current_status='Closed').order_by('-acres').values('id', 'name')
+        queryset = ShellfishArea.objects.filter(current_status='Closed').order_by('-acres').values('id', 'name')
         closures_list = list(queryset)  # convert the QuerySet to a list object)
         return JsonResponse(closures_list, safe=False)
 
 
 class ClosureAreaAjaxGeoLayerByStateView(GeoJSONResponseMixin, ListView):
-    model = ClosureArea
+    model = ShellfishArea
     properties = ['name']
 
     def get_queryset(self):
         state_code = self.kwargs['state_code']
-        queryset = ClosureArea.objects.filter(state=state_code)
+        queryset = ShellfishArea.objects.filter(state=state_code)
         return queryset
 
 
 class ClosureAreaAjaxGeoLayerSingleView(GeoJSONResponseMixin, ListView):
-    model = ClosureArea
+    model = ShellfishArea
     properties = ['name']
 
     def get_queryset(self):
         feature_id = self.kwargs['pk']
-        queryset = ClosureArea.objects.filter(id=feature_id)
+        queryset = ShellfishArea.objects.filter(id=feature_id)
         return queryset
 
 
 class ClosureAreaAjaxGeoLayerByStatusView(GeoJSONResponseMixin, ListView):
-    model = ClosureArea
+    model = ShellfishArea
     properties = ['name']
     simplify = 0.5
 
     def get_queryset(self):
         current_status = self.kwargs['current_status']
-        queryset = ClosureArea.objects.filter(current_status=current_status)
+        queryset = ShellfishArea.objects.filter(current_status=current_status)
         return queryset
-"""        
