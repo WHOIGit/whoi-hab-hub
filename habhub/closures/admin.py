@@ -10,8 +10,14 @@ from django_summernote.widgets import SummernoteWidget
 from django_summernote.admin import SummernoteModelAdmin, SummernoteInlineModelAdmin
 
 from .models import *
+from .forms import LandmarkForm
 
 # Register your models here.
+
+class LandmarkAdmin(LeafletGeoAdmin):
+    form = LandmarkForm
+    list_display = ('name', 'state', 'coords')
+    list_editable = ('coords', )
 
 class ShellfishAreaAdmin(LeafletGeoAdmin):
     ordering = ['state', 'name']
@@ -109,6 +115,8 @@ admin.site.register(ClosureNotice, ClosureNoticeAdmin)
 
 admin.site.register(ClosureNoticeMaine, ClosureNoticeMaineAdmin)
 
+admin.site.register(Landmark, LandmarkAdmin)
+
 admin.site.register(Species)
 
 admin.site.register(CausativeOrganism)
@@ -116,5 +124,3 @@ admin.site.register(CausativeOrganism)
 admin.site.register(ExceptionArea, LeafletGeoAdmin)
 
 admin.site.register(BaseAreaShape, LeafletGeoAdmin)
-
-admin.site.register(Landmark)

@@ -7,3 +7,7 @@
 #id_custom_borders-map {
     width: 800px !important;
 }
+
+.model-landmark #changelist .paginator input {
+    display: none;
+}
