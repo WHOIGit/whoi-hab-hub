@@ -34,6 +34,24 @@ class ShellfishArea(models.Model):
         return self.name
 
 
+class Landmark(models.Model):
+    STATES = (
+        ('ME', 'Maine'),
+        ('MA', 'Massachusetts'),
+        ('NH', 'New Hampshire'),
+    )
+
+    name = models.CharField(max_length=100)
+    coords =  models.PointField(srid=4326, null=True, blank=True)
+    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, default='ME')
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Species(models.Model):
     name = models.CharField(max_length=100)
 
@@ -71,6 +89,8 @@ class ClosureNotice(models.Model):
     notice_date = models.DateField(default=timezone.now)
     effective_date = models.DateField(default=timezone.now)
     shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
+    border_east = models.ManyToManyField(Landmark, related_name='closure_notices_east')
+    border_west = models.ManyToManyField(Landmark, related_name='closure_notices_west')
     custom_borders =  models.MultiLineStringField(srid=4326, null=True, blank=True)
     custom_geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
     species = models.ManyToManyField(Species, related_name='closure_notices')
@@ -129,24 +149,6 @@ class BaseAreaShape(models.Model):
     name = models.CharField(max_length=100)
     geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, db_index=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
-class Landmark(models.Model):
-    STATES = (
-        ('ME', 'Maine'),
-        ('MA', 'Massachusetts'),
-        ('NH', 'New Hampshire'),
-    )
-
-    name = models.CharField(max_length=100)
-    coords =  models.PointField(srid=4326, null=True, blank=True)
-    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, default='ME')
 
     class Meta:
         ordering = ['name']

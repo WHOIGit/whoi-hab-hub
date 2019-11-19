@@ -30,7 +30,7 @@ class ShellfishAreaAdmin(LeafletGeoAdmin):
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
     list_display = ('title', 'notice_date', 'notice_action', 'get_state', 'get_shellfish_areas')
-    exclude = ('custom_borders', 'custom_geom')
+    exclude = ('custom_borders', 'custom_geom', 'border_east', 'border_west')
     list_filter = ('shellfish_areas__state', 'notice_action',)
     filter_horizontal = ('shellfish_areas', )
 
@@ -56,9 +56,9 @@ class ExceptionAreaAdminInline(admin.StackedInline):
 class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     list_display = ('title', 'notice_date', 'notice_action', 'get_state', 'get_shellfish_areas', 'custom_geom')
     list_editable = ('custom_geom', )
-    exclude = ('custom_geom', )
+    exclude = ('custom_geom', 'custom_borders')
     list_filter = ('notice_action',)
-    filter_horizontal = ('shellfish_areas', )
+    filter_horizontal = ('shellfish_areas', 'border_east', 'border_west')
     #autocomplete_fields = ['closure_areas']
     # Set Leaflet map settings to Maine coast
     settings_overrides = {
