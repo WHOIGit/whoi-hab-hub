@@ -2,12 +2,16 @@ from django.contrib.gis import admin
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.db.models import FloatField, ExpressionWrapper, Func
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
 from leaflet.forms.widgets import LeafletWidget
 
 from django_summernote.widgets import SummernoteWidget
 from django_summernote.admin import SummernoteModelAdmin, SummernoteInlineModelAdmin
+
+import geopy
+import geopy.distance
 
 from .models import *
 from .forms import LandmarkForm
@@ -79,6 +83,29 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
+        if obj.border_east.exists():
+            try:
+                base_shape = BaseAreaShape.objects.get(name="Maine Coastline")
+            except BaseAreaShape.DoesNotExist:
+                base_shape = None
+
+            if base_shape:
+                base_polygon = base_shape.geom
+                # loop through border points to make line
+                #border_east = obj.border_east.all()
+                border_east = obj.border_east.all().annotate(lat=ExpressionWrapper(Func('coords', function='ST_Y'), output_field=FloatField())).order_by('-lat')
+
+                for i, point in enumerate(border_east):
+                    if i == 0:
+                        d = geopy.distance.distance(kilometers = 50)
+                        north_point = d.destination(point=(point.coords.y, point.coords.x), bearing=315)
+                        print(point.coords.y)
+                        print(north_point.latitude)
+                        print(north_point.longitude)
+                    if i == len(border_east) - 1:
+                        print(point)
+
+        """
         if obj.custom_borders:
             try:
                 base_shape = BaseAreaShape.objects.get(name="Maine Coastline")
@@ -97,7 +124,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
                 obj.custom_geom = new_shape
                 obj.save()
-
+        """
 
 admin.site.register(ShellfishArea, ShellfishAreaAdmin)
 
