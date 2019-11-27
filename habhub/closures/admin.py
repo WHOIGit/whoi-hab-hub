@@ -30,6 +30,15 @@ class ShellfishAreaAdmin(LeafletGeoAdmin):
     list_display = ('name', 'state')
     list_filter = ('state',)
 
+    def get_queryset(self, request):
+        if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
+            qs = ShellfishArea.objects.filter(state='MA')
+        elif request.user.groups.filter(name = 'Closures - New Hampshire Only').exists():
+            qs = ShellfishArea.objects.filter(state='NH')
+        else:
+            qs = ShellfishArea.objects.all()
+        return qs
+
 
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
@@ -43,7 +52,25 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
     }
 
     def get_queryset(self, request):
-        return ClosureNotice.objects.exclude(shellfish_areas__state='ME')
+        if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
+            qs = ClosureNotice.objects.filter(shellfish_areas__state='MA').distinct()
+        elif request.user.groups.filter(name = 'Closures - New Hampshire Only').exists():
+            qs = ClosureNotice.objects.filter(shellfish_areas__state='NH').distinct()
+        else:
+            qs = ClosureNotice.objects.exclude(shellfish_areas__state='ME')
+        return qs
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        state_filter = None
+
+        if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
+            state_filter = 'MA'
+        elif request.user.groups.filter(name = 'Closures - New Hampshire Only').exists():
+            state_filter = 'NH'
+
+        if db_field.name == 'shellfish_areas' and state_filter:
+            kwargs["queryset"] = ShellfishArea.objects.filter(state=state_filter)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 class ExceptionAreaAdminInline(admin.StackedInline):
@@ -78,6 +105,11 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
     def get_queryset(self, request):
         return ClosureNotice.objects.filter(shellfish_areas__state='ME')
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == 'shellfish_areas':
+            kwargs["queryset"] = ShellfishArea.objects.filter(state='ME')
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     # Override save method to create the custom geometry if custom_borders exist
     def save_model(self, request, obj, form, change):
