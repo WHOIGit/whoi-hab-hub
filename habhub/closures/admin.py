@@ -39,6 +39,22 @@ class ShellfishAreaAdmin(LeafletGeoAdmin):
             qs = ShellfishArea.objects.all()
         return qs
 
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        if db_field.name == 'state':
+            if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
+                kwargs['choices'] = (
+                    ('MA', 'Massachusetts'),
+                )
+            elif request.user.groups.filter(name = 'Closures - Maine Only').exists():
+                kwargs['choices'] = (
+                    ('ME', 'Maine'),
+                )
+            elif request.user.groups.filter(name = 'Closures - New Hampshire Only').exists():
+                kwargs['choices'] = (
+                    ('NH', 'New Hampshire'),
+                )
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
+
 
 class ClosureNoticeAdmin(admin.ModelAdmin):
     #autocomplete_fields = ['closure_areas']
