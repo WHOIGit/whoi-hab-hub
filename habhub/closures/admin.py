@@ -1,7 +1,7 @@
 from django.contrib.gis import admin
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.contrib.gis.geos import Point, LineString, MultiLineString, Polygon, MultiPolygon
 from django.db.models import FloatField, ExpressionWrapper, Func
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
@@ -20,8 +20,8 @@ from .forms import LandmarkForm
 
 class LandmarkAdmin(LeafletGeoAdmin):
     form = LandmarkForm
-    list_display = ('name', 'state', 'coords')
-    list_editable = ('coords', )
+    list_display = ('name', 'state', 'geom')
+    list_editable = ('geom', )
 
 
 class ShellfishAreaAdmin(LeafletGeoAdmin):
@@ -93,17 +93,35 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 base_polygon = base_shape.geom
                 # loop through border points to make line
                 #border_east = obj.border_east.all()
-                border_east = obj.border_east.all().annotate(lat=ExpressionWrapper(Func('coords', function='ST_Y'), output_field=FloatField())).order_by('-lat')
+                border_east_coords = []
+                border_east = obj.border_east.all().annotate(lat=ExpressionWrapper(Func('geom', function='ST_Y'), output_field=FloatField())).order_by('-lat')
 
                 for i, point in enumerate(border_east):
+                    # most northern point
                     if i == 0:
-                        d = geopy.distance.distance(kilometers = 50)
-                        north_point = d.destination(point=(point.coords.y, point.coords.x), bearing=315)
-                        print(point.coords.y)
+                        d = geopy.distance.distance(kilometers = 100)
+                        north_point = d.destination(point=(point.geom.y, point.geom.x), bearing=315)
+                        print(point.geom.y)
                         print(north_point.latitude)
                         print(north_point.longitude)
+                        # convert geopy point to GEOS
+                        north_point_geos = Point(north_point.longitude, north_point.latitude)
+                        border_east_coords.append(north_point_geos.coords)
+
+                    # add the selected point to line
+                    border_east_coords.append(point.geom.coords)
+
+                    # most southern point
                     if i == len(border_east) - 1:
-                        print(point)
+                        d = geopy.distance.distance(kilometers = 100)
+                        south_point = d.destination(point=(point.geom.y, point.geom.x), bearing=135)
+                        print(south_point.latitude)
+                        print(south_point.longitude)
+                        # convert geopy point to GEOS
+                        south_point_geos = Point(south_point.longitude, south_point.latitude)
+                        border_east_coords.append(south_point_geos.coords)
+
+                print(border_east_coords)
 
         """
         if obj.custom_borders:

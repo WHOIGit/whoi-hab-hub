@@ -20,12 +20,12 @@ class LandmarkForm(forms.ModelForm):
     class Meta(object):
         model = Landmark
         exclude = []
-        fields = ['name', 'state', 'latitude', 'longitude', 'coords' ]
-        widgets = {'coords': forms.HiddenInput()}
+        fields = ['name', 'state', 'latitude', 'longitude', 'geom' ]
+        widgets = {'geom': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        coordinates = self.initial.get('coords', None)
+        coordinates = self.initial.get('geom', None)
         if isinstance(coordinates, Point):
             self.initial['longitude'], self.initial['latitude'] = coordinates.tuple
 
@@ -33,7 +33,7 @@ class LandmarkForm(forms.ModelForm):
         data = super().clean()
         latitude = data.get('latitude')
         longitude = data.get('longitude')
-        coords = data.get('coords')
+        geom = data.get('geom')
         if latitude and longitude:
-            data['coords'] = Point(longitude, latitude)
+            data['geom'] = Point(longitude, latitude)
         return data

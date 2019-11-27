@@ -42,7 +42,7 @@ class Landmark(models.Model):
     )
 
     name = models.CharField(max_length=100)
-    coords =  models.PointField(srid=4326, null=True, blank=True)
+    geom =  models.PointField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, default='ME')
 
     class Meta:
