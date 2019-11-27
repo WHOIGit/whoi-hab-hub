@@ -91,7 +91,8 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
             if base_shape:
                 base_polygon = base_shape.geom
-
+                # Set the distance to go North/South from final points to set polygon mask
+                distance_togo = geopy.distance.distance(kilometers = 100)
                 # Create custom eastern border
                 border_east_coords = []
                 border_east = obj.border_east.all().annotate(lat=ExpressionWrapper(Func('geom', function='ST_Y'), output_field=FloatField())).order_by('-lat')
@@ -99,8 +100,8 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 for i, point in enumerate(border_east):
                     # most northern point
                     if i == 0:
-                        d = geopy.distance.distance(kilometers = 100)
-                        north_point = d.destination(point=(point.geom.y, point.geom.x), bearing=315)
+                        # Create new Point that is 100km North of last point
+                        north_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=315)
                         # convert geopy point to GEOS
                         north_point_geos = Point(north_point.longitude, north_point.latitude)
                         border_east_coords.append(north_point_geos.coords)
@@ -110,8 +111,8 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
                     # most southern point
                     if i == len(border_east) - 1:
-                        d = geopy.distance.distance(kilometers = 100)
-                        south_point = d.destination(point=(point.geom.y, point.geom.x), bearing=135)
+                        # Create new Point that is 100km South of last point
+                        south_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=135)
                         # convert geopy point to GEOS
                         south_point_geos = Point(south_point.longitude, south_point.latitude)
                         border_east_coords.append(south_point_geos.coords)
@@ -123,8 +124,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 for i, point in enumerate(border_west):
                     # most northern point
                     if i == 0:
-                        d = geopy.distance.distance(kilometers = 100)
-                        north_point = d.destination(point=(point.geom.y, point.geom.x), bearing=315)
+                        north_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=0)
                         # convert geopy point to GEOS
                         north_point_geos = Point(north_point.longitude, north_point.latitude)
                         border_west_coords.append(north_point_geos.coords)
@@ -134,20 +134,14 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
                     # most southern point
                     if i == len(border_west) - 1:
-                        d = geopy.distance.distance(kilometers = 100)
-                        south_point = d.destination(point=(point.geom.y, point.geom.x), bearing=135)
+                        south_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=180)
                         # convert geopy point to GEOS
                         south_point_geos = Point(south_point.longitude, south_point.latitude)
                         border_west_coords.append(south_point_geos.coords)
 
-                print(border_east_coords)
+                # create linestrings from the lists of points
                 border_east_linestring = LineString([coords for coords in border_east_coords])
-                print(border_east_linestring)
-
-                print(border_west_coords)
                 border_west_linestring = LineString([coords for coords in border_west_coords])
-                print(border_west_linestring)
-
                 multi_line = MultiLineString(border_east_linestring, border_west_linestring)
                 # create polygon from custom border lines
                 polygon_mask = multi_line.convex_hull
