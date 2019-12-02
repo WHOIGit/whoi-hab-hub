@@ -140,7 +140,8 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
             if base_shape:
                 base_polygon = base_shape.geom
                 # Set the distance to go North/South from final points to set polygon mask
-                distance_togo = geopy.distance.distance(kilometers = 100)
+                distance_togo_north = geopy.distance.distance(kilometers = 5)
+                distance_togo_south = geopy.distance.distance(kilometers = 100)
                 # Create custom eastern border
                 border_east_coords = []
                 border_east = obj.border_east.all().annotate(lat=ExpressionWrapper(Func('geom', function='ST_Y'), output_field=FloatField())).order_by('-lat')
@@ -149,7 +150,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     # most northern point
                     if i == 0:
                         # Create new Point that is 100km North of last point
-                        north_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=315)
+                        north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
                         # convert geopy point to GEOS
                         north_point_geos = Point(north_point.longitude, north_point.latitude)
                         border_east_coords.append(north_point_geos.coords)
@@ -160,7 +161,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     # most southern point
                     if i == len(border_east) - 1:
                         # Create new Point that is 100km South of last point
-                        south_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=135)
+                        south_point = distance_togo_south.destination(point=(point.geom.y, point.geom.x), bearing=180)
                         # convert geopy point to GEOS
                         south_point_geos = Point(south_point.longitude, south_point.latitude)
                         border_east_coords.append(south_point_geos.coords)
@@ -172,7 +173,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 for i, point in enumerate(border_west):
                     # most northern point
                     if i == 0:
-                        north_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=0)
+                        north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
                         # convert geopy point to GEOS
                         north_point_geos = Point(north_point.longitude, north_point.latitude)
                         border_west_coords.append(north_point_geos.coords)
@@ -182,7 +183,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
 
                     # most southern point
                     if i == len(border_west) - 1:
-                        south_point = distance_togo.destination(point=(point.geom.y, point.geom.x), bearing=180)
+                        south_point = distance_togo_south.destination(point=(point.geom.y, point.geom.x), bearing=180)
                         # convert geopy point to GEOS
                         south_point_geos = Point(south_point.longitude, south_point.latitude)
                         border_west_coords.append(south_point_geos.coords)
@@ -191,9 +192,9 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 border_east_linestring = LineString([coords for coords in border_east_coords])
                 border_west_linestring = LineString([coords for coords in border_west_coords])
                 multi_line = MultiLineString(border_east_linestring, border_west_linestring)
+
                 # create polygon from custom border lines
                 polygon_mask = multi_line.convex_hull
-                print(polygon_mask)
 
                 # create new geometry from base map with the mask
                 new_shape = base_polygon.intersection(polygon_mask)
@@ -204,26 +205,6 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 obj.custom_geom = new_shape
                 obj.save()
 
-        """
-        if obj.custom_borders:
-            try:
-                base_shape = BaseAreaShape.objects.get(name="Maine Coastline")
-            except BaseAreaShape.DoesNotExist:
-                base_shape = None
-
-            if base_shape:
-                base_polygon = base_shape.geom
-                # create polygon from custom border lines
-                polygon_mask = obj.custom_borders.convex_hull
-                # create new geometry from base map with the mask
-                new_shape = base_polygon.intersection(polygon_mask)
-
-                if isinstance(new_shape, Polygon):
-                    new_shape = MultiPolygon(new_shape)
-
-                obj.custom_geom = new_shape
-                obj.save()
-        """
 
 admin.site.register(ShellfishArea, ShellfishAreaAdmin)
 
