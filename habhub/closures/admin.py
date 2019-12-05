@@ -22,6 +22,7 @@ class LandmarkAdmin(LeafletGeoAdmin):
     form = LandmarkForm
     list_display = ('name', 'state', 'geom')
     list_editable = ('geom', )
+    filter_horizontal = ('shellfish_areas', )
 
 
 class ShellfishAreaAdmin(LeafletGeoAdmin):

@@ -44,6 +44,7 @@ class Landmark(models.Model):
     name = models.CharField(max_length=100)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, default='ME')
+    shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='landmarks')
 
     class Meta:
         ordering = ['name']

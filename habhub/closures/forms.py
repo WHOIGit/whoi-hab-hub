@@ -20,7 +20,7 @@ class LandmarkForm(forms.ModelForm):
     class Meta(object):
         model = Landmark
         exclude = []
-        fields = ['name', 'state', 'latitude', 'longitude', 'geom' ]
+        fields = ['name', 'state', 'shellfish_areas', 'latitude', 'longitude', 'geom' ]
         widgets = {'geom': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
