@@ -3,6 +3,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos import Point, LineString, MultiLineString, Polygon, MultiPolygon
 from django.db.models import FloatField, ExpressionWrapper, Func
+from django.utils.text import slugify
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
 from leaflet.forms.widgets import LeafletWidget
@@ -143,15 +144,14 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 base_polygon = base_shape.geom
                 # Set up the default ME borders in case only one border is different
                 default_borders = {}
-                default_borders['Area 100a_east'] = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
-                border_100a_east = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
-                border_100a_west = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
+                default_borders['area-100-a-east'] = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
+                default_borders['area-100-a-west'] = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
 
-                border_164a_east = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
-                border_164a_west = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
+                default_borders['area-164-a-east'] = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
+                default_borders['area-164-a-west'] = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
 
-                border_164b_east = [(-67.066040, 45.650528), (-66.331398, 43.927572), (-65.494995, 44.020472)]
-                border_164b_west = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
+                default_borders['area-164-b-east']= [(-67.066040, 45.650528), (-66.331398, 43.927572), (-65.494995, 44.020472)]
+                default_borders['area-164-b-west'] = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
                 # Set the distance to go North/South from final points to set polygon mask
                 distance_togo_north = geopy.distance.distance(kilometers = 80)
                 distance_togo_south = geopy.distance.distance(kilometers = 100)
@@ -159,7 +159,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 if not notice_obj.border_east.exists():
                     # If no custom border_east, set it to the default border for this Shellfish Area
                     shellfish_area = notice_obj.shellfish_areas.first()
-                    border_east_name = shellfish_area.name + '_east'
+                    border_east_name = slugify(shellfish_area.name) + '-east'
                     print(border_east_name)
                     border_east_coords = default_borders[border_east_name]
                 else:
@@ -171,7 +171,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                         # Need to check if this is the Canadian border
                         if point.name == 'Maine/Canada Border':
                             print(point)
-                            border_east_coords = border_164b_east
+                            border_east_coords = default_borders['area-164-b-east']
                             break
                         else:
                             # most northern point
@@ -201,7 +201,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     # Need to check if this is the NH border
                     if point.name == 'Maine/NH Border':
                         print(point)
-                        border_west_coords = border_100a_west
+                        border_west_coords = default_borders['area-100-a-west']
                         break
                     else:
                         # most northern point
