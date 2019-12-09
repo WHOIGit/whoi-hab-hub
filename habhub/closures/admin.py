@@ -152,10 +152,16 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 default_borders['area-100-b-east'] = [(-68.846420, 44.458964), (-68.863179, 44.258705), (-68.868086, 44.214246), (-68.783640, 44.189524), (-68.719059, 44.166838), (-68.727250, 44.014249), (-68.431091, 43.721490)]
                 default_borders['area-100-b-west'] = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
 
+                default_borders['area-64-a-east'] = [(-67.395363, 44.69667), (-67.339325, 44.639346), (-67.317352, 44.370987)]
+                default_borders['area-64-a-west'] = [(-68.877531, 44.443131), (-68.88024, 44.39334), (-68.931997, 44.2335), (-68.846142, 44.18396879), (-68.782654, 43.946361)]
+
+                default_borders['area-64-b-east'] = [(-67.066040, 45.650528), (-66.331398, 43.927572), (-65.494995, 44.020472)]
+                default_borders['area-64-b-west'] = [(-67.395363, 44.69667), (-67.339325, 44.639346), (-67.317352, 44.370987)]
+
                 default_borders['area-164-a-east'] = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
                 default_borders['area-164-a-west'] = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
 
-                default_borders['area-164-b-east']= [(-67.066040, 45.650528), (-66.331398, 43.927572), (-65.494995, 44.020472)]
+                default_borders['area-164-b-east']= [(-67.066040, 45.650528), (-66.192627, 44.972571), (-65.494995, 44.020472)]
                 default_borders['area-164-b-west'] = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
                 # Set the distance to go North/South from final points to set polygon mask
                 distance_togo_north = geopy.distance.distance(kilometers = 80)
@@ -165,7 +171,6 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     # If no custom border_east, set it to the default border for this Shellfish Area
                     shellfish_area = notice_obj.shellfish_areas.first()
                     border_east_name = slugify(shellfish_area.name) + '-east'
-                    print(border_east_name)
                     border_east_coords = default_borders[border_east_name]
                 else:
                     # Create custom eastern border
@@ -175,14 +180,13 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     for i, point in enumerate(border_east):
                         # Need to check if this is the Canadian border
                         if point.name == 'Maine/Canada Border':
-                            print(point)
                             border_east_coords = default_borders['area-164-b-east']
                             break
                         else:
                             # most northern point
                             if i == 0:
                                 # Create new Point that is some distance North of last point
-                                north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
+                                north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=355)
                                 # convert geopy point to GEOS
                                 north_point_geos = Point(north_point.longitude, north_point.latitude)
                                 border_east_coords.append(north_point_geos.coords)
@@ -202,7 +206,6 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     # If no custom border_west, set it to the default border for this Shellfish Area
                     shellfish_area = notice_obj.shellfish_areas.first()
                     border_west_name = slugify(shellfish_area.name) + '-west'
-                    print(border_west_name)
                     border_west_coords = default_borders[border_west_name]
                 else:
                     # Create custom western border
@@ -212,13 +215,12 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                     for i, point in enumerate(border_west):
                         # Need to check if this is the NH border
                         if point.name == 'Maine/NH Border':
-                            print(point)
                             border_west_coords = default_borders['area-100-a-west']
                             break
                         else:
                             # most northern point
                             if i == 0:
-                                north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
+                                north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=355)
                                 # convert geopy point to GEOS
                                 north_point_geos = Point(north_point.longitude, north_point.latitude)
                                 border_west_coords.append(north_point_geos.coords)
