@@ -14,6 +14,8 @@ from django_summernote.admin import SummernoteModelAdmin, SummernoteInlineModelA
 import geopy
 import geopy.distance
 
+#from shapely.geometry import Polygon
+
 from .models import *
 from .forms import LandmarkForm
 
@@ -147,6 +149,9 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 default_borders['area-100-a-east'] = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
                 default_borders['area-100-a-west'] = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
 
+                default_borders['area-100-b-east'] = [(-68.846420, 44.458964), (-68.863179, 44.258705), (-68.868086, 44.214246), (-68.783640, 44.189524), (-68.719059, 44.166838), (-68.727250, 44.014249), (-68.431091, 43.721490)]
+                default_borders['area-100-b-west'] = [(-69.488525, 43.927572), (-69.513031, 43.831688), (-69.509811, 43.654460)]
+
                 default_borders['area-164-a-east'] = [(-68.075428, 44.666838), (-68.060993, 44.333023), (-68.027344, 43.592328)]
                 default_borders['area-164-a-west'] = [(-71.262817, 43.393074), (-70.540466, 42.890051), (-70.543213, 42.809507)]
 
@@ -193,35 +198,51 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                                 south_point_geos = Point(south_point.longitude, south_point.latitude)
                                 border_east_coords.append(south_point_geos.coords)
 
-                # Create custom western border
-                border_west_coords = []
-                border_west = notice_obj.border_west.all().annotate(lat=ExpressionWrapper(Func('geom', function='ST_Y'), output_field=FloatField())).order_by('-lat')
+                if not notice_obj.border_west.exists():
+                    # If no custom border_west, set it to the default border for this Shellfish Area
+                    shellfish_area = notice_obj.shellfish_areas.first()
+                    border_west_name = slugify(shellfish_area.name) + '-west'
+                    print(border_west_name)
+                    border_west_coords = default_borders[border_west_name]
+                else:
+                    # Create custom western border
+                    border_west_coords = []
+                    border_west = notice_obj.border_west.all().annotate(lat=ExpressionWrapper(Func('geom', function='ST_Y'), output_field=FloatField())).order_by('-lat')
 
-                for i, point in enumerate(border_west):
-                    # Need to check if this is the NH border
-                    if point.name == 'Maine/NH Border':
-                        print(point)
-                        border_west_coords = default_borders['area-100-a-west']
-                        break
-                    else:
-                        # most northern point
-                        if i == 0:
-                            north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
-                            # convert geopy point to GEOS
-                            north_point_geos = Point(north_point.longitude, north_point.latitude)
-                            border_west_coords.append(north_point_geos.coords)
+                    for i, point in enumerate(border_west):
+                        # Need to check if this is the NH border
+                        if point.name == 'Maine/NH Border':
+                            print(point)
+                            border_west_coords = default_borders['area-100-a-west']
+                            break
+                        else:
+                            # most northern point
+                            if i == 0:
+                                north_point = distance_togo_north.destination(point=(point.geom.y, point.geom.x), bearing=0)
+                                # convert geopy point to GEOS
+                                north_point_geos = Point(north_point.longitude, north_point.latitude)
+                                border_west_coords.append(north_point_geos.coords)
 
-                        # add the selected point to line
-                        border_west_coords.append(point.geom.coords)
+                            # add the selected point to line
+                            border_west_coords.append(point.geom.coords)
 
-                        # most southern point
-                        if i == len(border_west) - 1:
-                            south_point = distance_togo_south.destination(point=(point.geom.y, point.geom.x), bearing=180)
-                            # convert geopy point to GEOS
-                            south_point_geos = Point(south_point.longitude, south_point.latitude)
-                            border_west_coords.append(south_point_geos.coords)
+                            # most southern point
+                            if i == len(border_west) - 1:
+                                south_point = distance_togo_south.destination(point=(point.geom.y, point.geom.x), bearing=180)
+                                # convert geopy point to GEOS
+                                south_point_geos = Point(south_point.longitude, south_point.latitude)
+                                border_west_coords.append(south_point_geos.coords)
 
-                # create linestrings from the lists of points
+                # Create polygon from custom border lines
+                # reverse one of the border lines to make the point list a valid polygon
+                border_east_coords.reverse()
+                # make one list of coordinates
+                polygon_line = border_west_coords + border_east_coords
+                # add the first point to the end to create linear ring
+                polygon_line.append(polygon_line[0])
+                # create polygon
+                polygon_mask = Polygon(polygon_line)
+                """
                 border_east_linestring = LineString([coords for coords in border_east_coords])
                 border_west_linestring = LineString([coords for coords in border_west_coords])
                 multi_line = MultiLineString(border_east_linestring, border_west_linestring)
@@ -229,6 +250,8 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
                 # create polygon from custom border lines
                 polygon_mask = multi_line.convex_hull
                 # create new geometry from base map with the mask
+
+                """
                 new_shape = base_polygon.intersection(polygon_mask)
 
                 if isinstance(new_shape, Polygon):
