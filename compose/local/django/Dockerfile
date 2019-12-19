@@ -1,35 +1,17 @@
-FROM python:3.7-alpine
+FROM python:3.7-slim-buster
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apk update \
-  # psycopg2 dependencies
-  && apk add --virtual build-deps gcc python3-dev musl-dev \
-  && apk add postgresql-dev \
-  # Pillow dependencies
-  && apk add jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
-  # CFFI dependencies
-  && apk add libffi-dev py-cffi \
-  # Translations dependencies
-  && apk add gettext \
-  # https://docs.djangoproject.com/en/dev/ref/django-admin/#dbshell
-  && apk add postgresql-client \
-  # GeoDjango Requirements
-  && apk add --no-cache --virtual .build-deps \
-        autoconf \
-        automake \
-        g++ \
-        json-c-dev \
-        libtool \
-        libxml2-dev \
-        make \
-        perl \
-    \
-  && apk add --no-cache --virtual .build-deps-edge \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-        gdal-dev \
-        geos-dev
+RUN apt-get update -qq && apt-get install -y -qq \
+    # std libs
+    unzip wget sudo less nano curl git gosu build-essential software-properties-common \
+    # python basic libs
+    python3.7-dev python3.7-venv gettext \
+    # geodjango
+    gdal-bin binutils libproj-dev libgdal-dev \
+    # postgresql
+    libpq-dev postgresql-client && \
+    apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
