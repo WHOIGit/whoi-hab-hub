@@ -74,6 +74,7 @@ THIRD_PARTY_APPS = [
     'djgeojson',
     'leaflet',
     'django_summernote', #WYSIWYG
+    'multiselectfield',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
