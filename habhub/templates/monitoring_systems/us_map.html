@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Monitoring Systems</title>
+<title>US HAB Monitoring Systems</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
@@ -25,7 +25,7 @@
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
-        center: [-95.4492, 27.2155],
+        center: [-95.4492, 37.2155],
         zoom: 4
     });
 
@@ -55,8 +55,8 @@
 
         // Create a popup, but don't add it to the map yet.
         var popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
+            closeButton: true,
+            closeOnClick: true,
         });
 
         map.on('mouseenter', 'places', function(e) {
@@ -64,7 +64,12 @@
             map.getCanvas().style.cursor = 'pointer';
 
             var coordinates = e.features[0].geometry.coordinates.slice();
-            var description = e.features[0].properties.description;
+            var system_name = '<h3>' + e.features[0].properties.name + '</h3>';
+            var location = '<p>' + e.features[0].properties.location + '</p>';
+            var url = '<p><a href="' + e.features[0].properties.url + '" target="_blank">More info</p>';
+            var system_type = '<p>' + e.features[0].properties.system_type + '</p>';
+            var description = '<p>' + e.features[0].properties.description + '</p>';
+            var popup_html = system_name + location + system_type + description + url;
 
             // Ensure that if the map is zoomed out such that multiple
             // copies of the feature are visible, the popup appears
@@ -77,14 +82,15 @@
             // based on the feature found.
             popup
                 .setLngLat(coordinates)
-                .setHTML(description)
+                .setHTML(popup_html)
                 .addTo(map);
         });
-
+        /*
         map.on('mouseleave', 'places', function() {
             map.getCanvas().style.cursor = '';
             popup.remove();
         });
+        */
     });
 </script>
 
