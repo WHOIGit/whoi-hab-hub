@@ -15,8 +15,8 @@ class MonitoringSystem(models.Model):
     location = models.CharField(max_length=100, null=False, blank=True)
     alt_url = models.URLField(max_length=200, null=False, blank=True)
     alt_location = models.CharField(max_length=100, null=False, blank=True)
-    latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    latitude = models.CharField(max_length=100, null=False, blank=True)
+    longitude = models.CharField(max_length=100, null=False, blank=True)
 
     class Meta:
         ordering = ['name']
