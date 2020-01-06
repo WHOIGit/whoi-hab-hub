@@ -33,6 +33,7 @@ urlpatterns = [
     path('ajax/load-station-data/', stations_views.load_station_data, name='ajax_load_station_data'),
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
     path('closures/', include('habhub.closures.urls', namespace='closures')),
+    path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
     path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
