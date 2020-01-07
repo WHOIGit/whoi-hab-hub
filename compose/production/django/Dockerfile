@@ -35,7 +35,9 @@ COPY . /app
 
 RUN mkdir /app/staticfiles && mkdir /app/media
 
-RUN chown -R django /app
+RUN chown -R django:django /app
+
+RUN chmod -R 755 /app
 
 USER django
 
