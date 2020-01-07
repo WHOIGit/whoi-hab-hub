@@ -35,7 +35,7 @@ COPY . /app
 WORKDIR /app
 
 # Add any static environment variables needed by Django or your settings file here:
-ENV DJANGO_SETTINGS_MODULE=config.settings.production
+#ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
 RUN DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} \
     DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
