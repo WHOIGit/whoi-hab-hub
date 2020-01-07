@@ -14,7 +14,7 @@ RUN apt-get update -qq && apt-get install -y -qq \
     apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
 RUN groupadd django \
-    && useradd -G django django
+    && useradd -g django django
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
