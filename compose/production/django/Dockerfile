@@ -37,7 +37,7 @@ WORKDIR /app
 # Add any static environment variables needed by Django or your settings file here:
 ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
-RUN DATABASE_URL='' CELERY_BROKER_URL='' USE_DOCKER='yes' python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput
 
 #RUN mkdir /app/staticfiles && mkdir /app/media
 
