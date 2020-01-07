@@ -37,7 +37,7 @@ WORKDIR /app
 # Add any static environment variables needed by Django or your settings file here:
 ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
-RUN DATABASE_URL='postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}' CELERY_BROKER_URL='${REDIS_URL}' USE_DOCKER='yes' python manage.py collectstatic --noinput
+RUN DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} CELERY_BROKER_URL=${REDIS_URL} USE_DOCKER='yes' python manage.py collectstatic --noinput
 
 #RUN mkdir /app/staticfiles && mkdir /app/media
 
