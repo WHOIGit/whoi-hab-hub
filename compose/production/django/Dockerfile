@@ -40,7 +40,9 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.production
 RUN DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} \
     DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
     REDIS_URL=${REDIS_URL} \
-    CELERY_BROKER_URL=${REDIS_URL} USE_DOCKER='yes' \
+    CELERY_BROKER_URL=${REDIS_URL} \
+    DJANGO_ADMIN_URL=${DJANGO_ADMIN_URL} \
+    USE_DOCKER='yes' \
     python manage.py collectstatic --noinput
 
 #RUN mkdir /app/staticfiles && mkdir /app/media
