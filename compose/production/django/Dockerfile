@@ -33,7 +33,7 @@ RUN chown django /start
 
 COPY . /app
 
-RUN mkdir /app/staticfiles && mkdir /app/media
+#RUN mkdir /app/staticfiles && mkdir /app/media
 
 RUN chown -R django:django /app
 
