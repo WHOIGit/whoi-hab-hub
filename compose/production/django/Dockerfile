@@ -43,6 +43,9 @@ RUN DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOS
     REDIS_URL=${REDIS_URL} \
     CELERY_BROKER_URL=${REDIS_URL} \
     DJANGO_ADMIN_URL=${DJANGO_ADMIN_URL} \
+    MAILGUN_API_KEY='' \
+    DJANGO_SERVER_EMAIL='' \
+    MAILGUN_DOMAIN='' \
     USE_DOCKER='yes' \
     python manage.py collectstatic --noinput
 
