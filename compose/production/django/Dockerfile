@@ -34,7 +34,7 @@ RUN chown django /start
 COPY . /app
 WORKDIR /app
 
-RUN python manage.py collectstatic --noinput
+RUN DATABASE_URL='' python manage.py collectstatic --noinput
 
 #RUN mkdir /app/staticfiles && mkdir /app/media
 
