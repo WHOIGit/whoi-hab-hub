@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r /requirements/production.txt \
     && rm -rf /requirements
 
 RUN groupadd -r django \
-    && useradd -r -g django django
+    && useradd --no-log-init -r -g django django
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r//' /entrypoint
@@ -32,15 +32,16 @@ RUN chmod +x /start
 RUN chown django /start
 
 COPY . /app
+WORKDIR /app
 
-RUN mkdir /app/staticfiles && mkdir /app/media
+RUN python manage.py collectstatic --noinput
+
+#RUN mkdir /app/staticfiles && mkdir /app/media
 
 RUN chown -R django /app
 
 #RUN chmod -R 775 /app
 
 USER django
-
-WORKDIR /app
 
 ENTRYPOINT ["/entrypoint"]
