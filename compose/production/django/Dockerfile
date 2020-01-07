@@ -13,8 +13,10 @@ RUN apt-get update -qq && apt-get install -y -qq \
     libpq-dev postgresql-client && \
     apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
-RUN groupadd --system django \
-    && useradd --system -g django django
+#RUN groupadd --system django \
+#    && useradd --system -g django django
+
+RUN ["adduser", "django", "--disabled-password", "--ingroup", "www-data", "--quiet"]
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
@@ -35,9 +37,9 @@ COPY . /app
 
 RUN mkdir /app/staticfiles && mkdir /app/media
 
-RUN chown -R django /app
+RUN chown -R django:www-data /app
 
-RUN chmod -R 755 /app
+RUN chmod -R 775 /app
 
 USER django
 
