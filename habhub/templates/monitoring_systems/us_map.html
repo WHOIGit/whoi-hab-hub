@@ -62,7 +62,7 @@
         map.on('mouseenter', 'places', function(e) {
             // Change the cursor style as a UI indicator.
             map.getCanvas().style.cursor = 'pointer';
-
+            // Set up the HTML for popup from JSON properties
             var coordinates = e.features[0].geometry.coordinates.slice();
             var system_name = '<h3>' + e.features[0].properties.name + '</h3>';
             var location = '<p>' + e.features[0].properties.location + '</p>';
