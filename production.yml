@@ -5,7 +5,7 @@ volumes:
   production_postgres_data_backups: {}
   production_nginx: {}
   static_volume_habhub: {}
-  static_volume_habhub: {}
+  media_volume_habhub: {}
 
 services:
   django:
