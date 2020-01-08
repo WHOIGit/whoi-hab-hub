@@ -34,26 +34,9 @@ RUN chown django /start
 COPY . /app
 WORKDIR /app
 
-# Add any static environment variables needed by Django or your settings file here:
-#ENV DJANGO_SETTINGS_MODULE=config.settings.production
-
-#RUN DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} \
-#    DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
-#    SECRET_KEY=${DJANGO_SECRET_KEY} \
-#    REDIS_URL=${REDIS_URL} \
-#    CELERY_BROKER_URL=${REDIS_URL} \
-#    DJANGO_ADMIN_URL=${DJANGO_ADMIN_URL} \
-#    MAILGUN_API_KEY='' \
-#    DJANGO_SERVER_EMAIL='' \
-#    MAILGUN_DOMAIN='' \
-#    USE_DOCKER='yes' \
-#    python manage.py collectstatic --noinput
-
 RUN mkdir /app/staticfiles && mkdir /app/media
 
 RUN chown -R django /app
-
-#RUN chmod -R 775 /app
 
 USER django
 
