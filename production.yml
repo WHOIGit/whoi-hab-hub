@@ -4,8 +4,8 @@ volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
   production_nginx: {}
-  static_volume: {}
-  media_volume: {}
+  static_volume_habhub: {}
+  static_volume_habhub: {}
 
 services:
   django:
@@ -18,8 +18,8 @@ services:
       - postgres
       - redis
     volumes:
-      - static_volume:/app/staticfiles  # <-- bind the static files
-      - media_volume:/app/media  # <-- bind the media files
+      - static_volume_habhub:/app/staticfiles  # <-- bind the static files
+      - media_volume_habhub:/app/media  # <-- bind the media files
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
