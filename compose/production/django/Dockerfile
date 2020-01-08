@@ -49,7 +49,7 @@ WORKDIR /app
 #    USE_DOCKER='yes' \
 #    python manage.py collectstatic --noinput
 
-#RUN mkdir /app/staticfiles && mkdir /app/media
+RUN mkdir /app/staticfiles && mkdir /app/media
 
 RUN chown -R django /app
 
