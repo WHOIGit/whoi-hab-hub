@@ -25,7 +25,7 @@
         top: 10px;
         right: 10px;
         border-radius: 3px;
-        width: 120px;
+        width: 200px;
         border: 1px solid rgba(0, 0, 0, 0.4);
         font-family: 'Open Sans', sans-serif;
     }
@@ -59,6 +59,22 @@
     #menu a.active:hover {
         background: #3074a4;
     }
+
+    #menu a#monitoring_systems,
+    #menu a#monitoring_systems:hover {
+        background-image: url('/static/images/Monitoring-icon.png');
+        background-size: 30px 30px;
+        background-position: 2px center;
+        background-repeat: no-repeat;
+    }
+
+    #menu a#forecasting_systems,
+    #menu a#forecasting_systems:hover {
+        background-image: url('/static/images/Forecasting-icon.png');
+        background-size: 30px 30px;
+        background-position: 2px center;
+        background-repeat: no-repeat;
+    }
 </style>
 
 <nav id="menu"></nav>
@@ -70,8 +86,8 @@
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
-        center: [-95.4492, 37.2155],
-        zoom: 4
+        center: [-95.4492, 45.2155],
+        zoom: 3.4
     });
 
     map.on('load', function() {
@@ -93,7 +109,8 @@
                 'source': 'monitoring_systems_src',
                 'layout': {
                     'icon-image': 'monitoring-marker',
-                    'icon-allow-overlap': true
+                    'icon-allow-overlap': true,
+                    'visibility': 'visible'
                 }
             })
         });
@@ -115,9 +132,68 @@
                 'source': 'forecasting_systems_src',
                 'layout': {
                     'icon-image': 'forecasting-marker',
-                    'icon-allow-overlap': true
+                    'icon-allow-overlap': true,
+                    'visibility': 'visible'
                 }
             })
+        });
+
+        // Create a popup, but don't add it to the map yet.
+        var popup = new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+        });
+
+        map.on('mouseenter', 'monitoring_systems', function(e) {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+            // Set up the HTML for popup from JSON properties
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var system_name = '<h3>' + e.features[0].properties.name + '</h3>';
+            var url = '<p><a href="' + e.features[0].properties.url + '" target="_blank">More info</p>';
+            var system_type = '<p>' + e.features[0].properties.system_type + '</p>';
+            var description = '<p>' + e.features[0].properties.description + '</p>';
+            var popup_html = system_name + system_type + description + url;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            // Populate the popup and set its coordinates
+            // based on the feature found.
+            popup
+                .setLngLat(coordinates)
+                .setHTML(popup_html)
+                .addTo(map);
+        });
+
+        map.on('mouseenter', 'forecasting_systems', function(e) {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+            // Set up the HTML for popup from JSON properties
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var system_name = '<h3>' + e.features[0].properties.name + '</h3>';
+            var url = '<p><a href="' + e.features[0].properties.url + '" target="_blank">More info</p>';
+            var system_type = '<p>' + e.features[0].properties.system_type + '</p>';
+            var description = '<p>' + e.features[0].properties.description + '</p>';
+            var popup_html = system_name + system_type + description + url;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            // Populate the popup and set its coordinates
+            // based on the feature found.
+            popup
+                .setLngLat(coordinates)
+                .setHTML(popup_html)
+                .addTo(map);
         });
     });
 
@@ -129,15 +205,20 @@
         var link = document.createElement('a');
         link.href = '#';
         link.className = 'active';
-        link.textContent = id;
+        link.id = id;
+        if (id == 'monitoring_systems') {
+            link.textContent = 'Monitoring Systems';
+        } else {
+            link.textContent = 'Forecasting Systems';
+        }
 
         link.onclick = function(e) {
-            var clickedLayer = this.textContent;
+            var clickedLayer = this.id;
             e.preventDefault();
             e.stopPropagation();
 
             var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
-
+            console.log(visibility);
             if (visibility === 'visible') {
                 map.setLayoutProperty(clickedLayer, 'visibility', 'none');
                 this.className = '';
@@ -150,6 +231,8 @@
         var layers = document.getElementById('menu');
         layers.appendChild(link);
     }
+
+
 </script>
 
 <!--
