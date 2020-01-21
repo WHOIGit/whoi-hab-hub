@@ -17,9 +17,10 @@ class ClosureAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
-        #closures_qs = ClosureNotice.objects.all().prefetch_related('shellfish_areas')
-        closures_qs = ClosureNotice.objects.filter(notice_action='Closed')
-
+        #closures_qs = ClosureNotice.objects.filter(shellfish_areas__isnull=False).prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.all().prefetch_related('shellfish_areas')
+        #closures_qs = ClosureNotice.objects.filter(id=6)
+        print(closures_qs.count())
         geojson_data = {
             'type': 'FeatureCollection',
             'features': []
@@ -27,21 +28,25 @@ class ClosureAjaxGetAllView(View):
 
         for closure in closures_qs:
             for shellfish_area in closure.shellfish_areas.all():
-                if closure.custom_geom:
-                    geom = closure.custom_geom.coords
-                else:
-                    geom = shellfish_area.geom.coords
+                if shellfish_area.state == 'MA':
+                    if closure.custom_geom:
+                        geom = closure.custom_geom.simplify(0.001).coords
+                    elif not shellfish_area.geom.empty:
+                        geom = shellfish_area.geom.simplify(0.001).coords
+                    else:
+                        geom = None
 
-                closure_data = {"type": "Feature",
-                                "properties": {
-                                    "title":  closure.title,
-                                    "id":  closure.id },
-                                "geometry": {
-                                  "type": "MultiPolygon",
-                                  "coordinates": geom }
-                                }
-
-            geojson_data['features'].append(closure_data)
+                    print(geom, shellfish_area.id)
+                    closure_data = {"type": "Feature",
+                                    "properties": {
+                                        "title":  closure.title,
+                                        "id":  closure.id },
+                                    "geometry": {
+                                      "type": shellfish_area.geom.geom_type,
+                                      "coordinates": geom }
+                                    }
+                    if geom:
+                        geojson_data['features'].append(closure_data)
         return JsonResponse(geojson_data)
 
 
