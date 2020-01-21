@@ -38,7 +38,8 @@ def build_closure_notice_geojson(closures_qs):
                             "properties": {
                                 "title":  closure.title,
                                 "id":  closure.id,
-                                "state": shellfish_area.state
+                                "state": shellfish_area.state,
+                                "species": [species.name for species in closure.species.all()]
                                 },
                             "geometry": {
                               "type": shellfish_area.geom.geom_type,
@@ -57,7 +58,7 @@ class ClosureNoticeAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
-        closures_qs = ClosureNotice.objects.all().prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed').prefetch_related('shellfish_areas')
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = build_closure_notice_geojson(closures_qs)
@@ -70,7 +71,7 @@ class ClosureNoticeAjaxGetLayerByState(View):
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
         state_code = self.kwargs['state_code']
-        closures_qs = ClosureNotice.objects.filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed').filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
         print(closures_qs.count())
         geojson_data = build_closure_notice_geojson(closures_qs)
         return JsonResponse(geojson_data)

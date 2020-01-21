@@ -90,10 +90,12 @@ a {
             paint: {
                 'fill-color': 'red',
                 'fill-opacity': 0.5,
-            }
+            },
+            filter: ['in', ['literal', 'Moon snails'], ['get', 'species']]
         });
 
         // Add a new source from Django GeoJSON data
+        /*
         map.addSource("closures_me_src", {
             type: "geojson",
             data: "{% url 'closures:ajax_load_closures_by_state' 'ME' %}",
@@ -111,6 +113,7 @@ a {
                 'fill-opacity': 0.5,
             }
         });
+        */
 
     });
 
