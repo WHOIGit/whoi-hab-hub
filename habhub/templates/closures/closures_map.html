@@ -74,18 +74,37 @@ a {
     });
 
     map.on('load', function() {
-        // Add a new source from our GeoJSON data
-        map.addSource("closures_src", {
+        // Add a new source from Django GeoJSON data
+        map.addSource("closures_ma_src", {
             type: "geojson",
-            data: "{% url 'closures:ajax_closures_all' %}",
+            data: "{% url 'closures:ajax_load_closures_by_state' 'MA' %}",
             buffer: 0,
             maxzoom: 12,
         });
 
         map.addLayer({
-            id: "closures",
+            id: "closures_ma",
             type: "fill",
-            source: "closures_src",
+            source: "closures_ma_src",
+            layout: {},
+            paint: {
+                'fill-color': 'red',
+                'fill-opacity': 0.5,
+            }
+        });
+
+        // Add a new source from Django GeoJSON data
+        map.addSource("closures_me_src", {
+            type: "geojson",
+            data: "{% url 'closures:ajax_load_closures_by_state' 'ME' %}",
+            buffer: 0,
+            maxzoom: 12,
+        });
+
+        map.addLayer({
+            id: "closures_me",
+            type: "fill",
+            source: "closures_me_src",
             layout: {},
             paint: {
                 'fill-color': 'red',

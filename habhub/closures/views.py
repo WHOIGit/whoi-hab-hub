@@ -5,49 +5,81 @@ from django.views.generic import View, DetailView, ListView, TemplateView
 from djgeojson.views import GeoJSONResponseMixin
 
 from .models import *
-# Create your views here.
 
-class ClosureMapView(TemplateView):
-    template_name = 'closures/closures_map.html'
-    context_object_name = 'closures'
+########## Functions to use within Closure CBVs ###########
+
+"""
+Function to build cusom geojson objects to populate the dynamic maps
+Parameters:
+closures_qs: Django queryset of ClosureNotice model
+"""
+def build_closure_notice_geojson(closures_qs):
+    geojson_data = {
+        'type': 'FeatureCollection',
+        'features': []
+    }
+
+    for closure in closures_qs:
+        for shellfish_area in closure.shellfish_areas.all():
+            if closure.custom_geom:
+                geom = closure.custom_geom.simplify(0.001)
+                # Need to check if the simplify method went too far and made the geom empty
+                if shellfish_area.geom.simplify(0.001).empty:
+                    geom = shellfish_area.geom
+            elif not shellfish_area.geom.empty:
+                geom = shellfish_area.geom.simplify(0.001)
+                # Need to check if the simplify method went too far and made the geom empty
+                if shellfish_area.geom.simplify(0.001).empty:
+                    geom = shellfish_area.geom
+            else:
+                geom = None
+
+            closure_data = {"type": "Feature",
+                            "properties": {
+                                "title":  closure.title,
+                                "id":  closure.id,
+                                "state": shellfish_area.state
+                                },
+                            "geometry": {
+                              "type": shellfish_area.geom.geom_type,
+                              "coordinates": geom.coords
+                              }
+                            }
+            if geom:
+                geojson_data['features'].append(closure_data)
+
+    return geojson_data
 
 
-# AJAX views to get GeoJSON responses for maps
-class ClosureAjaxGetAllView(View):
+######### AJAX Views to return geoJSON for maps #############
+# AJAX views to get all ClosureNotice objects for maps
+class ClosureNoticeAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
-        #closures_qs = ClosureNotice.objects.filter(shellfish_areas__isnull=False).prefetch_related('shellfish_areas')
         closures_qs = ClosureNotice.objects.all().prefetch_related('shellfish_areas')
-        #closures_qs = ClosureNotice.objects.filter(id=6)
         print(closures_qs.count())
-        geojson_data = {
-            'type': 'FeatureCollection',
-            'features': []
-        }
-
-        for closure in closures_qs:
-            for shellfish_area in closure.shellfish_areas.all():
-                if shellfish_area.state == 'MA':
-                    if closure.custom_geom:
-                        geom = closure.custom_geom.simplify(0.001).coords
-                    elif not shellfish_area.geom.empty:
-                        geom = shellfish_area.geom.simplify(0.001).coords
-                    else:
-                        geom = None
-
-                    print(geom, shellfish_area.id)
-                    closure_data = {"type": "Feature",
-                                    "properties": {
-                                        "title":  closure.title,
-                                        "id":  closure.id },
-                                    "geometry": {
-                                      "type": shellfish_area.geom.geom_type,
-                                      "coordinates": geom }
-                                    }
-                    if geom:
-                        geojson_data['features'].append(closure_data)
+        # Create custom geojson response object with custom function
+        geojson_data = build_closure_notice_geojson(closures_qs)
         return JsonResponse(geojson_data)
+
+
+# AJAX views to get GeoJSON responses for map layers by State code
+class ClosureNoticeAjaxGetLayerByState(View):
+
+    def get(self, request, *args, **kwargs):
+        # Get Closure notice data, format for GeoJson response
+        state_code = self.kwargs['state_code']
+        closures_qs = ClosureNotice.objects.filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
+        print(closures_qs.count())
+        geojson_data = build_closure_notice_geojson(closures_qs)
+        return JsonResponse(geojson_data)
+
+
+######### CBV Views for basic templates #############
+class ClosureMapView(TemplateView):
+    template_name = 'closures/closures_map.html'
+    context_object_name = 'closures'
 
 
 class ClosureHomeView(TemplateView):
