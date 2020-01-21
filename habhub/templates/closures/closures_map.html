@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+<style>
+
+#map-container {
+    position: relative;
+    height: 1000px;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+h2 {
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: #2dc4b2;
+}
+
+#console {
+  position: absolute;
+  width: 240px;
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: white;
+}
+
+</style>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+
+<h1 class="display-4">WHOI HAB Hub</h1>
+
+<div id="map-container">
+    <div id='map'></div>
+
+    <div id='console'>
+      <h1>Shellfish Area Closures</h1>
+      <p>Data: <a href='#'>download</a></p>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [-69.75, 41.89],
+        zoom: 7,
+    });
+
+    map.on('load', function() {
+        // Add a new source from our GeoJSON data
+        map.addSource("closures_src", {
+            type: "geojson",
+            data: "{% url 'closures:ajax_closures_all' %}",
+            buffer: 0,
+            maxzoom: 12,
+        });
+
+        map.addLayer({
+            id: "closures",
+            type: "fill",
+            source: "closures_src",
+            layout: {},
+            paint: {
+                'fill-color': 'red',
+                'fill-opacity': 0.5,
+            }
+        });
+
+    });
+
+</script>
+{% endblock javascript %}

@@ -1,10 +1,48 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.core.serializers import serialize
 from django.views.generic import View, DetailView, ListView, TemplateView
 from djgeojson.views import GeoJSONResponseMixin
 
 from .models import *
 # Create your views here.
+
+class ClosureMapView(TemplateView):
+    template_name = 'closures/closures_map.html'
+    context_object_name = 'closures'
+
+
+# AJAX views to get GeoJSON responses for maps
+class ClosureAjaxGetAllView(View):
+
+    def get(self, request, *args, **kwargs):
+        # Get Closure notice data, format for GeoJson response
+        #closures_qs = ClosureNotice.objects.all().prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed')
+
+        geojson_data = {
+            'type': 'FeatureCollection',
+            'features': []
+        }
+
+        for closure in closures_qs:
+            for shellfish_area in closure.shellfish_areas.all():
+                if closure.custom_geom:
+                    geom = closure.custom_geom.coords
+                else:
+                    geom = shellfish_area.geom.coords
+
+                closure_data = {"type": "Feature",
+                                "properties": {
+                                    "title":  closure.title,
+                                    "id":  closure.id },
+                                "geometry": {
+                                  "type": "MultiPolygon",
+                                  "coordinates": geom }
+                                }
+
+            geojson_data['features'].append(closure_data)
+        return JsonResponse(geojson_data)
 
 
 class ClosureHomeView(TemplateView):
