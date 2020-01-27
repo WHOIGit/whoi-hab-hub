@@ -1,0 +1,4 @@
+I got an error message (see screen shot) after drawing a border for Maine 164B. I was able to save the work after getting the message, which was:
+
+"RequestData TooBig at /admin/closurenoticemaine/
+Request body exceeded settings DATA_UPLOAD_MAX_MEMORY_SIZE
