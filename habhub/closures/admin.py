@@ -124,7 +124,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
     inlines = (ExceptionAreaAdminInline, )
 
     def get_queryset(self, request):
-        return ClosureNotice.objects.filter(shellfish_areas__state='ME')
+        return ClosureNotice.objects.filter(shellfish_areas__state='ME').prefetch_related('shellfish_areas')
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == 'shellfish_areas':
