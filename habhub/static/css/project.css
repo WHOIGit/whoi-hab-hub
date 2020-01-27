@@ -24,6 +24,15 @@ svg#navbar-logo {
     width: 100%;
 }
 
+/* Map Styles */
+
+/* Console styles */
+
+.console-btn-reset {
+    padding: .10rem .5rem;
+    font-size: .8rem;
+}
+
 /* Pop up window styling */
 
 .station-popup {

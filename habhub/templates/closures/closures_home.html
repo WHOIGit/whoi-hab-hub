@@ -26,10 +26,10 @@
     });
 
     map.on('load', function() {
-        // Add a new source from our GeoJSON data 
+        // Add a new source from our GeoJSON data
         map.addSource("closed_areas_src", {
             type: "geojson",
-            data: "{% url 'closures:ajax_load_closure_areas_status' 'Closed' %}",
+            data: "{% url 'closures:ajax_load_closures_by_state' 'MA' %}",
             buffer: 0,
             maxzoom: 12,
         });

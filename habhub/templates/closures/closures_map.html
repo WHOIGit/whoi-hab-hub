@@ -54,7 +54,32 @@ a {
 
     <div id='console'>
       <h1>Shellfish Area Closures</h1>
+      <form>
+
+
+      <div class='session form-group' id='year-sliderbar'>
+          <button type="button" class="btn btn-primary btn-sm float-right console-btn-reset" id="reset-year-btn">Reset</button>
+          <h2>Filter by Year: <label id='active-year'>All</label></h2>
+          <input id='year-slider' class='form-control' type='range' min='2010' max='2019' step='1' value='2010' />
+
+      </div>
+      <div class='session form-group' id='month-sliderbar'>
+          <button type="button" class="btn btn-primary btn-sm float-right console-btn-reset" id="reset-month-btn">Reset</button>
+          <h2>Filter by Month: <label id='active-month'>All</label></h2>
+          <input id='month-slider' class='form-control' type='range' min='1' max='12' step='1' value='1' />
+      </div>
+
+      <div class="form-group">
+        <label for="state-select" class="col-form-label col-form-label-sm">Filter by state</label>
+        <select class="form-control form-control-sm" id="state-select">
+          <option value="MA">Massachusetts</option>
+          <option value="ME">Maine</option>
+        </select>
+      </div>
+      </form>
+
       <p>Data: <a href='#'>download</a></p>
+
     </div>
 </div>
 
@@ -74,11 +99,15 @@ a {
     });
 
     map.on('load', function() {
+        // Set default filters that return everything
+        var filterYear = ['!=', ['number', ['get', 'year']], 1900];
+        var filterMonth = ['!=', ['number', ['get', 'month']], 13];
+
         // Add a new source from Django GeoJSON data
         map.addSource("closures_ma_src", {
             type: "geojson",
             data: "{% url 'closures:ajax_load_closures_by_state' 'MA' %}",
-            buffer: 0,
+            buffer: 10,
             maxzoom: 12,
         });
 
@@ -88,14 +117,15 @@ a {
             source: "closures_ma_src",
             layout: {},
             paint: {
-                'fill-color': 'red',
+                'fill-color': 'orange',
                 'fill-opacity': 0.5,
             },
-            filter: ['in', ['literal', 'Moon snails'], ['get', 'species']]
+            filter: ['all', filterYear, filterMonth]
+            //filter: ['in', ['literal', 'Oysters'], ['get', 'species']]
         });
 
         // Add a new source from Django GeoJSON data
-        /*
+
         map.addSource("closures_me_src", {
             type: "geojson",
             data: "{% url 'closures:ajax_load_closures_by_state' 'ME' %}",
@@ -109,11 +139,48 @@ a {
             source: "closures_me_src",
             layout: {},
             paint: {
-                'fill-color': 'red',
+                'fill-color': 'orange',
                 'fill-opacity': 0.5,
-            }
+            },
+            filter: ['all', filterYear, filterMonth]
         });
-        */
+
+
+        document.getElementById('year-slider').addEventListener('input', function(e) {
+            var year = parseInt(e.target.value);
+            // update the map
+            filterYear = ['==', ['number', ['get', 'year']], year];
+            map.setFilter('closures_ma', ['all', filterYear, filterMonth]);
+            map.setFilter('closures_me', ['all', filterYear, filterMonth]);
+            // update text in the UI
+            document.getElementById('active-year').innerText = year;
+        });
+
+        document.getElementById('month-slider').addEventListener('input', function(e) {
+            var month = parseInt(e.target.value);
+            // update the map
+            filterMonth = ['==', ['number', ['get', 'month']], month];
+            map.setFilter('closures_ma', ['all', filterYear, filterMonth]);
+            map.setFilter('closures_me', ['all', filterYear, filterMonth]);
+            // update text in the UI
+            document.getElementById('active-month').innerText = month;
+        });
+
+        document.getElementById("reset-year-btn").addEventListener("click", function(e){
+            filterYear = ['!=', ['number', ['get', 'year']], 1];
+            map.setFilter('closures_ma', ['all', filterYear, filterMonth]);
+            map.setFilter('closures_me', ['all', filterYear, filterMonth]);
+            document.getElementById('active-year').innerText = 'All';
+            document.getElementById('year-slider').value = '2010';
+        });
+
+        document.getElementById("reset-month-btn").addEventListener("click", function(e){
+            filterMonth = ['!=', ['number', ['get', 'year']], 13];
+            map.setFilter('closures_ma', ['all', filterYear, filterMonth]);
+            map.setFilter('closures_me', ['all', filterYear, filterMonth]);
+            document.getElementById('active-month').innerText = 'All';
+            document.getElementById('year-slider').value = '1';
+        });
 
     });
 

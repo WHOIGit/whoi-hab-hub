@@ -16,11 +16,16 @@ closures_qs: Django queryset of ClosureNotice model
 def build_closure_notice_geojson(closures_qs):
     geojson_data = {
         'type': 'FeatureCollection',
-        'features': []
+        'features': [],
+        'crs': {
+            'href': 'https://spatialreference.org/ref/epsg/4326/',
+            'type': 'proj4'
+        }
     }
 
     for closure in closures_qs:
         for shellfish_area in closure.shellfish_areas.all():
+
             if closure.custom_geom:
                 geom = closure.custom_geom.simplify(0.001)
                 # Need to check if the simplify method went too far and made the geom empty
@@ -28,8 +33,9 @@ def build_closure_notice_geojson(closures_qs):
                     geom = shellfish_area.geom
             elif not shellfish_area.geom.empty:
                 geom = shellfish_area.geom.simplify(0.001)
+                #geom = shellfish_area.geom
                 # Need to check if the simplify method went too far and made the geom empty
-                if shellfish_area.geom.simplify(0.001).empty:
+                if not geom.geom_type == "MultiPolygon":
                     geom = shellfish_area.geom
             else:
                 geom = None
@@ -39,11 +45,13 @@ def build_closure_notice_geojson(closures_qs):
                                 "title":  closure.title,
                                 "id":  closure.id,
                                 "state": shellfish_area.state,
-                                "species": [species.name for species in closure.species.all()]
+                                "year": closure.effective_date.year,
+                                "month": closure.effective_date.month,
+                                "species": [species.name for species in closure.species.all()],
                                 },
                             "geometry": {
                               "type": shellfish_area.geom.geom_type,
-                              "coordinates": geom.coords
+                              "coordinates": geom.coords,
                               }
                             }
             if geom:
