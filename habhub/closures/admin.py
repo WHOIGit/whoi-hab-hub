@@ -73,11 +73,11 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
-            qs = ClosureNotice.objects.filter(shellfish_areas__state='MA').distinct()
+            qs = ClosureNotice.objects.filter(shellfish_areas__state='MA').distinct().prefetch_related('shellfish_areas')
         elif request.user.groups.filter(name = 'Closures - New Hampshire Only').exists():
-            qs = ClosureNotice.objects.filter(shellfish_areas__state='NH').distinct()
+            qs = ClosureNotice.objects.filter(shellfish_areas__state='NH').distinct().prefetch_related('shellfish_areas')
         else:
-            qs = ClosureNotice.objects.exclude(shellfish_areas__state='ME')
+            qs = ClosureNotice.objects.exclude(shellfish_areas__state='ME').prefetch_related('shellfish_areas')
         return qs
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
