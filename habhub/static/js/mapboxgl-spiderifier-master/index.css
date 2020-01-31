@@ -1,0 +1,70 @@
+.spider-leg-container {
+  width: 1px;
+  height: 1px;
+  overflow: display;
+  will-change: transform;
+}
+
+.spider-leg-container:hover { cursor: pointer }
+
+.spider-leg-container .spider-leg-pin {
+  position: relative;
+  z-index: 1;
+}
+
+.spider-leg-container .spider-leg-pin.default-spider-pin{
+  position: relative;
+  width: 25px;
+  height: 41px;
+  margin-left: -11.5px;
+  margin-top: -38.5px;
+  background-image: url(https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/images/marker-icon.png);
+}
+
+.spider-leg-container .spider-leg-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background-color: #343434;
+  opacity: 0.45;
+  transform-origin: bottom;
+  z-index: 0;
+  height: 0;
+}
+
+.spider-leg-container:hover .spider-leg-line { opacity: 1 }
+
+/* Animations specific styles */
+
+.spider-leg-container.animate {
+  -webkit-transition: margin 0.15s linear;
+  -moz-transition: margin 0.15s linear;
+  -ms-transition: margin 0.15s linear;
+  -o-transition: margin 0.15s linear;
+  transition: margin 0.15s linear;
+}
+
+.spider-leg-container.initial,
+.spider-leg-container.exit {
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  height: 0;
+}
+
+.spider-leg-container.animate .spider-leg-line {
+  -webkit-transition: all 0.15s linear;
+  -moz-transition: all 0.15s linear;
+  -ms-transition: all 0.15s linear;
+  -o-transition: all 0.15s linear;
+  transition: all 0.15s linear;
+
+  -webkit-transition-delay: inherit;
+  -moz-transition-delay: inherit;
+  -ms-transition-delay: inherit;
+  -o-transition-delay: inherit;
+  transition-delay: inherit;
+}
+
+.spider-leg-container.animate.initial .spider-leg-line,
+.spider-leg-container.animate.exit .spider-leg-line { height: 0 !important }
