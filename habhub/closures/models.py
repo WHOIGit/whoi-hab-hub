@@ -7,6 +7,18 @@ from djgeojson.fields import PointField, PolygonField
 
 # Closure app models.
 
+class ShellfishAreaStatusManager(models.Manager):
+    def get_current_status(self):
+        print(self)
+        closures_qs = self.closure_notices.all()
+        if closures_qs:
+            last_notice = closures_qs.latest('effective_date')
+            status = last_notice.notice_action
+        else:
+            status = 'Open'
+        return status
+
+
 class ShellfishArea(models.Model):
     STATES = (
         ('ME', 'Maine'),
@@ -25,7 +37,7 @@ class ShellfishArea(models.Model):
     acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
     area_description = models.CharField(max_length=1000, null=False, blank=True)
     area_class = models.CharField(max_length=100, null=False, blank=True)
-    current_status = models.CharField(max_length=100, choices=CURRENT_STATUS, null=False, blank=True, default='Open', db_index=True)
+    objects = ShellfishAreaStatusManager()
 
     class Meta:
         ordering = ['state', 'name']
@@ -122,23 +134,18 @@ class ClosureNotice(models.Model):
     # Get the total duration of the Closure
     def get_closure_duration(self, shellfish_area_obj):
         if self.notice_action == 'Closed':
-            open_notice_obj = ClosureNotice.objects.filter(shellfish_areas=shellfish_area_obj) \
-                                                   .filter(effective_date__gte=self.effective_date) \
-                                                   .filter(notice_action='Open') \
-                                                   .first()
-            print(open_notice_obj)
-            if open_notice_obj:
+            try:
+                open_notice_obj = ClosureNotice.objects.filter(shellfish_areas=shellfish_area_obj) \
+                                                       .filter(effective_date__gte=self.effective_date) \
+                                                       .filter(notice_action='Open') \
+                                                       .earliest('effective_date')
                 duration = open_notice_obj.effective_date - self.effective_date
-            else:
+            except:
                 duration = None
-            print(duration)
-            print(shellfish_area_obj)
             return duration
         else:
             duration = None
             return duration
-
-
 
 
 class ClosureNoticeMaine(ClosureNotice):
