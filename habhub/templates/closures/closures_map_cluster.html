@@ -137,10 +137,11 @@ a {
     SPIDERFY_FROM_ZOOM = 10;
 
     function initializeSpiderLeg(spiderLeg){
-        var $spiderPinCustom = $('<div>', {class: 'spider-point-circle'});
         var pinElem = spiderLeg.elements.pin;
         var feature = spiderLeg.feature;
         var popup;
+        var $spiderPinCustom = $('<div>', {class: 'spider-point-circle'});
+        //$($spiderPinCustom).append('<span>' + feature.shellfish_area_name +'</span>');
 
         $(pinElem).append($spiderPinCustom);
         $spiderPinCustom.css({
@@ -158,21 +159,27 @@ a {
           .on('mouseenter', function(){
             popup = new mapboxgl.Popup({
               closeButton: true,
-              closeOnClick: false,
+              closeOnClick: true,
               offset: MapboxglSpiderifier.popupOffsetForSpiderLeg(spiderLeg)
             });
 
-            popup.setHTML('Title: <b>fa-' + feature.title+'</b>')
+            popupHTML = '<p>Shellfish Area: ' + feature.shellfish_area_name + '</p>';
+            popupHTML = popupHTML + '<p>Effective Date: ' + feature.effective_date + '</p>';
+            popupHTML = popupHTML + '<p>Causative Organism: ' + feature.causative_organism + '</p>';
+            popupHTML = popupHTML + '<p>Species: ' + feature.species + '</p>';
+
+            popup.setHTML(popupHTML)
               .addTo(map)
 
             spiderLeg.mapboxMarker.setPopup(popup);
 
           })
+
           .on('mouseleave', function(){
             if(popup){
               popup.remove();
             }
-          });
+        });
       }
 
     map.on('load', function() {
@@ -406,12 +413,8 @@ a {
 
                 if(typeof mapLayer === 'undefined' && ! rendered_shellfish_areas.includes(leaf_props.shellfish_area_id)) {
                     rendered_shellfish_areas.push(leaf_props.shellfish_area_id)
-                    console.log(mapLayer);
-                    console.log(leaf_props.shellfish_area_id);
                     // Send AJAX request to get the Shellfish Area geojson shape
                     $.get('/closures/maps/ajax/load-geojson-detail/' + leaf_props.shellfish_area_id + '/').done(function(data) {
-                        console.log(data.features[0].id);
-                        console.log(leaf_props.shellfish_area_id);
                         map.addSource('shellfish-area-src-' + data.features[0].id, {
                             type: 'geojson',
                             data: data,

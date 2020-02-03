@@ -108,10 +108,14 @@ def build_closure_notice_points_geojson(closures_qs):
                                 "title":  closure.title,
                                 "id":  closure.id,
                                 "shellfish_area_id": shellfish_area.id,
+                                "shellfish_area_name": shellfish_area.name,
                                 "state": shellfish_area.state,
                                 "year": closure.effective_date.year,
                                 "month": closure.effective_date.month,
                                 "species": [species.name for species in closure.species.all()],
+                                "causative_organism": closure.causative_organism.name,
+                                "effective_date" : closure.effective_date,
+                                "duration": closure.get_closure_duration(shellfish_area)
                                 },
                             "geometry": {
                               "type": geom.geom_type,

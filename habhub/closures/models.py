@@ -119,6 +119,27 @@ class ClosureNotice(models.Model):
         return state
     get_state.short_description = 'State'
 
+    # Get the total duration of the Closure
+    def get_closure_duration(self, shellfish_area_obj):
+        if self.notice_action == 'Closed':
+            open_notice_obj = ClosureNotice.objects.filter(shellfish_areas=shellfish_area_obj) \
+                                                   .filter(effective_date__gte=self.effective_date) \
+                                                   .filter(notice_action='Open') \
+                                                   .first()
+            print(open_notice_obj)
+            if open_notice_obj:
+                duration = open_notice_obj.effective_date - self.effective_date
+            else:
+                duration = None
+            print(duration)
+            print(shellfish_area_obj)
+            return duration
+        else:
+            duration = None
+            return duration
+
+
+
 
 class ClosureNoticeMaine(ClosureNotice):
     class Meta:
