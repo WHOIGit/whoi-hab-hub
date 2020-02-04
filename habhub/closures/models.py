@@ -7,18 +7,6 @@ from djgeojson.fields import PointField, PolygonField
 
 # Closure app models.
 
-class ShellfishAreaStatusManager(models.Manager):
-    def get_current_status(self):
-        print(self)
-        closures_qs = self.closure_notices.all()
-        if closures_qs:
-            last_notice = closures_qs.latest('effective_date')
-            status = last_notice.notice_action
-        else:
-            status = 'Open'
-        return status
-
-
 class ShellfishArea(models.Model):
     STATES = (
         ('ME', 'Maine'),
@@ -37,13 +25,22 @@ class ShellfishArea(models.Model):
     acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
     area_description = models.CharField(max_length=1000, null=False, blank=True)
     area_class = models.CharField(max_length=100, null=False, blank=True)
-    objects = ShellfishAreaStatusManager()
 
     class Meta:
         ordering = ['state', 'name']
 
     def __str__(self):
         return self.name
+
+    def get_current_status(self):
+        print(self)
+        closures_qs = self.closure_notices.all()
+        if closures_qs:
+            last_notice = closures_qs.latest('effective_date')
+            status = last_notice.notice_action
+        else:
+            status = 'Open'
+        return status    
 
 
 class Landmark(models.Model):

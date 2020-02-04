@@ -224,7 +224,10 @@ class ClosureNoticeAjaxGetLayerByStatePointsView(View):
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
         state_code = self.kwargs['state_code']
-        closures_qs = ClosureNotice.objects.filter(notice_action='Closed').filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
+                                        .filter(shellfish_areas__state=state_code) \
+                                        .distinct().prefetch_related('shellfish_areas') \
+                                        .order_by('effective_date')
         print(closures_qs.count())
         geojson_data = build_closure_notice_points_geojson(closures_qs)
         return JsonResponse(geojson_data)

@@ -75,11 +75,11 @@ a {
 <h1 class="display-4">WHOI HAB Hub</h1>
 <div class="alert alert-info">
   Current zoom is <strong id="zoomvalue"></strong>.
-  On cluster click, behavior is <strong class="" id="zoombehavior"></strong>.
+  <!--On cluster click, behavior is <strong class="" id="zoombehavior"></strong>.-->
 </div>
 <div id="map-container">
     <div id='map'></div>
-
+<!--
     <div id='console'>
       <h1>Shellfish Area Closures</h1>
       <form>
@@ -109,6 +109,7 @@ a {
       <p>Data: <a href='#'>download</a></p>
 
     </div>
+    -->
 </div>
 
 {% endblock content %}
@@ -256,7 +257,7 @@ a {
                 'circle-stroke-color': '#fff'
             }
         });
-
+        /*
         // Add a new source for Maine from Django GeoJSON data
         map.addSource("closures_me_src", {
             type: "geojson",
@@ -326,7 +327,7 @@ a {
                 'circle-stroke-color': '#fff'
             }
         });
-
+        */
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
         map.on('zoomstart', function(){
@@ -335,7 +336,7 @@ a {
         });
         setZoomInfoText();
 
-
+/*
         document.getElementById('year-slider').addEventListener('input', function(e) {
             var year = parseInt(e.target.value);
             // update the map
@@ -372,8 +373,9 @@ a {
             document.getElementById('year-slider').value = '1';
         });
 
-    });
 
+*/
+    });
     function setZoomInfoText(){
       document.getElementById('zoomvalue').innerHTML = map.getZoom();
       document.getElementById('zoombehavior').innerHTML = (map.getZoom() < SPIDERFY_FROM_ZOOM) ?  'zoom' : 'spiderfy';
