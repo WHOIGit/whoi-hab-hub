@@ -261,6 +261,11 @@ class ClosureMapClusterView2(TemplateView):
     context_object_name = 'closures'
 
 
+class ClosureMapClusterNoSpiderView(TemplateView):
+    template_name = 'closures/closures_map_cluster_nospider.html'
+    context_object_name = 'closures'    
+
+
 class ClosureHomeView(TemplateView):
     template_name = 'closures/closures_home.html'
     context_object_name = 'closures'

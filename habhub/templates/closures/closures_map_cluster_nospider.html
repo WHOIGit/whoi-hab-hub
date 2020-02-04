@@ -41,25 +41,6 @@ a {
   padding: 10px 20px;
   background-color: white;
 }
-/*
-.spider-leg-container .spider-leg-pin{
-  position: relative;
-  width: 22px;
-  height: 22px;
-  margin-left: -8px;
-  margin-top: -22px;
- background-image: url(https://api.mapbox.com/styles/v1/mapbox/dark-v9/sprite.png?access_token=pk.eyJ1Ijoic29jcmF0YSIsImEiOiJjaXJxc2wzam0waGU5ZmZtODhqd2ttamdxIn0.1ZQEByXoDD7fGIa9lUHIqg);
-  background-position: -110px -110px;
-}*/
-
-.spider-leg-container .spider-leg-line {
-  background-color: none;
-  display: none;
-}
-    /*
-    .spider-leg-container:hover .spider-leg-line {
-      background-color: orange;
-    }*/
 
 </style>
 
@@ -73,10 +54,7 @@ a {
  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 
 <h1 class="display-4">WHOI HAB Hub</h1>
-<div class="alert alert-info">
-  Current zoom is <strong id="zoomvalue"></strong>.
-  <!--On cluster click, behavior is <strong class="" id="zoombehavior"></strong>.-->
-</div>
+
 <div id="map-container">
     <div id='map'></div>
 <!--
@@ -126,16 +104,7 @@ a {
         zoom: 7,
     });
 
-    var spiderifier = new MapboxglSpiderifier(map, {
-      customPin: true,
-      //spiralLengthStart: 20,
-      circleFootSeparation: 40,
-      onClick: function(e, spiderLeg){
-          console.log(spiderLeg);
-        },
-      initializeLeg: initializeSpiderLeg
-    }),
-    SPIDERFY_FROM_ZOOM = 11;
+    POPUP_FROM_ZOOM = 11;
 
     function initializeSpiderLeg(spiderLeg){
         var pinElem = spiderLeg.elements.pin;
@@ -330,11 +299,6 @@ a {
         */
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
-        map.on('zoomstart', function(){
-          spiderifier.unspiderfy();
-          setZoomInfoText();
-        });
-        setZoomInfoText();
 
 /*
         document.getElementById('year-slider').addEventListener('input', function(e) {
@@ -376,65 +340,43 @@ a {
 
 */
     });
-    function setZoomInfoText(){
-      document.getElementById('zoomvalue').innerHTML = map.getZoom();
-      //document.getElementById('zoombehavior').innerHTML = (map.getZoom() < SPIDERFY_FROM_ZOOM) ?  'zoom' : 'spiderfy';
-    }
 
     function mouseClick(e) {
       var features = map.queryRenderedFeatures(e.point, {
           layers: ['closures_ma_clusters']
         });
 
-      spiderifier.unspiderfy();
       if (!features.length) {
-        return;
-      } else if (map.getZoom() < SPIDERFY_FROM_ZOOM) {
-        map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
+          return;
+      } else if (map.getZoom() < POPUP_FROM_ZOOM) {
+          map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-        map.getSource('closures_ma_src').getClusterLeaves(
-          features[0].properties.cluster_id,
-          100,
-          0,
-          function(err, leafFeatures){
+          console.log(features);
+          map.getSource('closures_ma_src').getClusterLeaves(
+            features[0].properties.cluster_id,
+            500,
+            0,
+            function(err, leafFeatures){
+            console.log(leafFeatures);
+
+            new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML('Text goes here')
+                .addTo(map);
+
             if (err) {
                 return console.error('error while getting leaves of a cluster', err);
             }
             var markers = leafFeatures.map(function(leafFeature){
                 return leafFeature.properties;
             });
-            spiderifier.spiderfy(features[0].geometry.coordinates, markers);
 
             // Render the Shellfish Area geojson shape on clicking the point
             rendered_shellfish_areas = [];
 
             leafFeatures.forEach(function(item, index, arr){
                 leaf_props = item.properties;
-
-                var mapLayer = map.getLayer('shellfish-area-' + leaf_props.shellfish_area_id);
-
-                if(typeof mapLayer === 'undefined' && ! rendered_shellfish_areas.includes(leaf_props.shellfish_area_id)) {
-                    rendered_shellfish_areas.push(leaf_props.shellfish_area_id)
-                    // Send AJAX request to get the Shellfish Area geojson shape
-                    $.get('/closures/maps/ajax/load-geojson-detail/' + leaf_props.shellfish_area_id + '/').done(function(data) {
-                        map.addSource('shellfish-area-src-' + data.features[0].id, {
-                            type: 'geojson',
-                            data: data,
-                            buffer: 10,
-                            maxzoom: 12,
-                        });
-
-                        map.addLayer({
-                            id: 'shellfish-area-' + data.features[0].id,
-                            type: 'fill',
-                            source: 'shellfish-area-src-' + data.features[0].id,
-                            paint: {
-                                'fill-color': 'orange',
-                                'fill-opacity': 0.5,
-                            },
-                        });
-                    });
-                }
+                console.log(leaf_props);
 
             })
 

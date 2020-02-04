@@ -9,6 +9,7 @@ urlpatterns = [
     path('map-status/', views.ClosureMapShapeView.as_view(), name='closures_map_shapes'),
     path('map-cluster/', views.ClosureMapClusterView.as_view(), name='closures_map_cluster'),
     path('map-cluster2/', views.ClosureMapClusterView2.as_view(), name='closures_map_cluster2'),
+    path('map-cluster-nospider/', views.ClosureMapClusterNoSpiderView.as_view(), name='closures_map_cluster_nospider'),    
     path('status/', views.ClosureHomeView2.as_view(), name='closures_home2'),
     path('status3/', views.ClosureHomeView3.as_view(), name='closures_home3'),
     # AJAX paths
