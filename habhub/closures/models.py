@@ -40,7 +40,7 @@ class ShellfishArea(models.Model):
             status = last_notice.notice_action
         else:
             status = 'Open'
-        return status    
+        return status
 
 
 class Landmark(models.Model):
@@ -150,6 +150,20 @@ class ClosureNoticeMaine(ClosureNotice):
         proxy = True
         verbose_name = 'Closure notice (Maine)'
         verbose_name_plural = 'Closure notices (Maine)'
+
+
+class ClosureDataEvent(models.Model):
+    closure_notice = models.ForeignKey(ClosureNotice, related_name='closure_data_points',
+                                on_delete=models.CASCADE, null=False)
+    shellfish_area = models.ForeignKey(ShellfishArea, related_name='closure_data_points',
+                                on_delete=models.CASCADE, null=False)
+    species = models.ForeignKey(Species, related_name='closure_data_points',
+                                on_delete=models.CASCADE, null=False)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(null=True, blank=True)
+    notice_action = models.CharField(max_length=50, default='Open')
+    causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_data_points',
+                                on_delete=models.CASCADE, null=True, blank=True)
 
 
 class ExceptionArea(models.Model):

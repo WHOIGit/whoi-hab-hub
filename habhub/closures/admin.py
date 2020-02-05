@@ -71,6 +71,24 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
         models.TextField: {'widget': SummernoteWidget},
     }
 
+    # Custom save method to create granular ClosureDataEvent objects
+    def save_related(self, request, form, formsets, change):
+        super(ClosureNoticeAdmin, self).save_related(request, form, formsets, change)
+        notice_obj = form.instance
+
+        if not change:
+            #print(self.shellfish_areas)
+            for shellfish_area in notice_obj.shellfish_areas.all():
+                for species in notice_obj.species.all():
+                    print(shellfish_area)
+                    print(species)
+                    event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
+                                                            shellfish_area=shellfish_area,
+                                                            species=species,
+                                                            start_date=notice_obj.effective_date,
+                                                            notice_action=notice_obj.notice_action,
+                                                            causative_organism=notice_obj.causative_organism)
+
     def get_queryset(self, request):
         if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():
             qs = ClosureNotice.objects.filter(shellfish_areas__state='MA').distinct().prefetch_related('shellfish_areas')
@@ -274,6 +292,8 @@ admin.site.register(Landmark, LandmarkAdmin)
 admin.site.register(Species)
 
 admin.site.register(CausativeOrganism)
+
+admin.site.register(ClosureDataEvent)
 
 admin.site.register(ExceptionArea, LeafletGeoAdmin)
 
