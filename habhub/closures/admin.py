@@ -86,7 +86,7 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
                 event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
                                                         shellfish_area=shellfish_area,
                                                         species=species,
-                                                        start_date=notice_obj.effective_date,
+                                                        effective_date=notice_obj.effective_date,
                                                         notice_action=notice_obj.notice_action,
                                                         causative_organism=notice_obj.causative_organism)
 

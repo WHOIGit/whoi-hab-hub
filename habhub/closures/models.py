@@ -159,7 +159,6 @@ class ClosureDataEvent(models.Model):
         if self.notice_action == 'Closed':
             try:
                 open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
-                                                              .filter(closure_notice=self.closure_notice) \
                                                               .filter(species=self.species) \
                                                               .filter(effective_date__gte=self.effective_date) \
                                                               .filter(notice_action='Open') \
@@ -176,7 +175,6 @@ class ClosureDataEvent(models.Model):
         if self.notice_action == 'Closed':
             try:
                 open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
-                                                          .filter(closure_notice=self.closure_notice) \
                                                           .filter(species=self.species) \
                                                           .filter(effective_date__gte=self.effective_date) \
                                                           .filter(notice_action='Open') \
