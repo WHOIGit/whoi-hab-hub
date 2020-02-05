@@ -33,11 +33,14 @@ class ShellfishArea(models.Model):
         return self.name
 
     def get_current_status(self):
-        print(self)
-        closures_qs = self.closure_notices.all()
-        if closures_qs:
-            last_notice = closures_qs.latest('effective_date')
-            status = last_notice.notice_action
+        events_qs = self.closure_data_points.all()
+        if events_qs:
+            for event in events_qs:
+                if event.get_current_status() == 'Closed':
+                    status = 'Closed'
+                    break
+                else:
+                    status = 'Open'
         else:
             status = 'Open'
         return status
@@ -128,22 +131,6 @@ class ClosureNotice(models.Model):
         return state
     get_state.short_description = 'State'
 
-    # Get the total duration of the Closure
-    def get_closure_duration(self, shellfish_area_obj):
-        if self.notice_action == 'Closed':
-            try:
-                open_notice_obj = ClosureNotice.objects.filter(shellfish_areas=shellfish_area_obj) \
-                                                       .filter(effective_date__gte=self.effective_date) \
-                                                       .filter(notice_action='Open') \
-                                                       .earliest('effective_date')
-                duration = open_notice_obj.effective_date - self.effective_date
-            except:
-                duration = None
-            return duration
-        else:
-            duration = None
-            return duration
-
 
 class ClosureNoticeMaine(ClosureNotice):
     class Meta:
@@ -154,23 +141,59 @@ class ClosureNoticeMaine(ClosureNotice):
 
 class ClosureDataEvent(models.Model):
     closure_notice = models.ForeignKey(ClosureNotice, related_name='closure_data_points',
-                                on_delete=models.CASCADE, null=False)
+                                       on_delete=models.CASCADE, null=False)
     shellfish_area = models.ForeignKey(ShellfishArea, related_name='closure_data_points',
-                                on_delete=models.CASCADE, null=False)
+                                       on_delete=models.CASCADE, null=False)
     species = models.ForeignKey(Species, related_name='closure_data_points',
                                 on_delete=models.CASCADE, null=False)
-    start_date = models.DateField(default=timezone.now)
-    end_date = models.DateField(null=True, blank=True)
+    effective_date = models.DateField(default=timezone.now)
     notice_action = models.CharField(max_length=50, default='Open')
     causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_data_points',
-                                on_delete=models.CASCADE, null=True, blank=True)
+                                           on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.closure_notice, self.shellfish_area, self.species)
+
+    # Get current status of this Closure Event
+    def get_current_status(self):
+        if self.notice_action == 'Closed':
+            try:
+                open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
+                                                              .filter(closure_notice=self.closure_notice) \
+                                                              .filter(species=self.species) \
+                                                              .filter(effective_date__gte=self.effective_date) \
+                                                              .filter(notice_action='Open') \
+                                                              .earliest('effective_date')
+                current_status = 'Open'
+            except ClosureDataEvent.DoesNotExist:
+                current_status = 'Closed'
+        else:
+            current_status = 'Open'
+        return current_status
+
+    # Get the total duration of the Closure Event
+    def get_closure_duration(self):
+        if self.notice_action == 'Closed':
+            try:
+                open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
+                                                          .filter(closure_notice=self.closure_notice) \
+                                                          .filter(species=self.species) \
+                                                          .filter(effective_date__gte=self.effective_date) \
+                                                          .filter(notice_action='Open') \
+                                                          .earliest('effective_date')
+                duration = open_notice_obj.effective_date - self.effective_date
+            except:
+                duration = None
+        else:
+            duration = None
+        return duration
 
 
 class ExceptionArea(models.Model):
     title = models.CharField(max_length=100)
     species = models.ManyToManyField(Species, related_name='exception_areas')
     closure_notice = models.ForeignKey(ClosureNotice, related_name='exception_areas',
-                                on_delete=models.CASCADE, null=True, blank=True)
+                                       on_delete=models.CASCADE, null=True, blank=True)
     description = models.TextField(null=False, blank=True)
 
     class Meta:

@@ -75,19 +75,20 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super(ClosureNoticeAdmin, self).save_related(request, form, formsets, change)
         notice_obj = form.instance
+        if change:
+            events_qs = ClosureDataEvent.objects.filter(closure_notice=notice_obj)
+            events_qs.delete()
 
-        if not change:
-            #print(self.shellfish_areas)
-            for shellfish_area in notice_obj.shellfish_areas.all():
-                for species in notice_obj.species.all():
-                    print(shellfish_area)
-                    print(species)
-                    event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
-                                                            shellfish_area=shellfish_area,
-                                                            species=species,
-                                                            start_date=notice_obj.effective_date,
-                                                            notice_action=notice_obj.notice_action,
-                                                            causative_organism=notice_obj.causative_organism)
+        for shellfish_area in notice_obj.shellfish_areas.all():
+            for species in notice_obj.species.all():
+                print(shellfish_area)
+                print(species)
+                event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
+                                                        shellfish_area=shellfish_area,
+                                                        species=species,
+                                                        start_date=notice_obj.effective_date,
+                                                        notice_action=notice_obj.notice_action,
+                                                        causative_organism=notice_obj.causative_organism)
 
     def get_queryset(self, request):
         if request.user.groups.filter(name = 'Closures - Massachusetts Only').exists():

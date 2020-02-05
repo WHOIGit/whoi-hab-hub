@@ -115,7 +115,6 @@ def build_closure_notice_points_geojson(closures_qs):
                                 "species": [species.name for species in closure.species.all()],
                                 "causative_organism": closure.causative_organism.name,
                                 "effective_date" : closure.effective_date,
-                                "duration": closure.get_closure_duration(shellfish_area)
                                 },
                             "geometry": {
                               "type": geom.geom_type,
@@ -263,7 +262,7 @@ class ClosureMapClusterView2(TemplateView):
 
 class ClosureMapClusterNoSpiderView(TemplateView):
     template_name = 'closures/closures_map_cluster_nospider.html'
-    context_object_name = 'closures'    
+    context_object_name = 'closures'
 
 
 class ClosureHomeView(TemplateView):
