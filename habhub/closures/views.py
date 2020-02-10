@@ -16,12 +16,68 @@ class GeneratePoints(GeoFunc):
 
 ########## Functions to use within Closure CBVs ###########
 
+
+"""
+Function to build custom JSON objects to return ClosureDataEvent objects.
+Returns JSON
+Parameters: 'events_qs' - Django queryset of ClosureDataEvent model, 'notice_obj' object
+"""
+def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
+    geojson_data = {
+            'closure_notice': notice_obj.title,
+            'closure_id': notice_obj.id,
+            'shellfish_area': events_qs.first().shellfish_area.name,
+            'effective_date': notice_obj.effective_date,
+            'features': [],
+    }
+
+    for event in events_qs:
+        event_data = {"event": {
+                            "title":  event.__str__(),
+                            "id":  event.id,
+                            "shellfish_area": event.shellfish_area.name,
+                            "year": event.effective_date.year,
+                            "month": event.effective_date.month,
+                            "species": event.species.name,
+                            },
+                        }
+
+        geojson_data['features'].append(event_data)
+
+    return geojson_data
+
+"""
+Function to build custom JSON objects to return ClosureDataEvent objects.
+Returns JSON
+Parameters: 'events_qs' - Django queryset of ClosureDataEvent model
+"""
+def _build_closure_data_event_geojson(events_qs):
+    geojson_data = {
+            'features': [],
+    }
+
+    for event in events_qs:
+        event_data = {"event": {
+                            "title":  event.__str__(),
+                            "id":  event.id,
+                            "shellfish_area": event.shellfish_area.name,
+                            "year": event.effective_date.year,
+                            "month": event.effective_date.month,
+                            "species": event.species.name,
+                            },
+                        }
+
+        geojson_data['features'].append(event_data)
+
+    return geojson_data
+
+
 """
 Function to build cusom geojson objects to populate the dynamic maps
 Parameters: 'closures_qs' - Django queryset of ClosureNotice model
 """
 
-def build_closure_notice_geojson(closures_qs):
+def _build_closure_notice_geojson(closures_qs):
     geojson_data = {
         'type': 'FeatureCollection',
         'features': [],
@@ -73,7 +129,7 @@ Function to build custom geojson objects to populate the dynamic maps.
 Returns the center Point of polygonal shellfish areas instead of shape.
 Parameters: 'closures_qs' - Django queryset of ClosureNotice model
 """
-def build_closure_notice_points_geojson(closures_qs):
+def _build_closure_notice_points_geojson(closures_qs):
     geojson_data = {
         'type': 'FeatureCollection',
         'features': [],
@@ -103,6 +159,11 @@ def build_closure_notice_points_geojson(closures_qs):
             if geom:
                 geom = geom.centroid
 
+            if closure.causative_organism:
+                causative_organism = closure.causative_organism.name
+            else:
+                causative_organism = 'Unknown'
+
             closure_data = {"type": "Feature",
                             "properties": {
                                 "title":  closure.title,
@@ -113,7 +174,7 @@ def build_closure_notice_points_geojson(closures_qs):
                                 "year": closure.effective_date.year,
                                 "month": closure.effective_date.month,
                                 "species": [species.name for species in closure.species.all()],
-                                "causative_organism": closure.causative_organism.name,
+                                "causative_organism": causative_organism,
                                 "effective_date" : closure.effective_date,
                                 },
                             "geometry": {
@@ -132,7 +193,7 @@ Function to build custom geojson objects to populate the dynamic maps.
 Returns the Point on circle around the centroid of polygonal shellfish areas instead of shape.
 Parameters: 'closures_qs' - Django queryset of ClosureNotice model
 """
-def build_closure_notice_circle_points_geojson(closures_qs):
+def _build_closure_notice_circle_points_geojson(closures_qs):
     geojson_data = {
         'type': 'FeatureCollection',
         'features': [],
@@ -181,6 +242,42 @@ def build_closure_notice_circle_points_geojson(closures_qs):
     return geojson_data
 
 ######### AJAX Views to return geoJSON for maps #############
+# AJAX views to get GeoJSON responses for map layers by State code
+class ClosureDataEventAjaxGetByAreaView(View):
+
+    def get(self, request, *args, **kwargs):
+        # Get Closure notice data, format for GeoJson response
+        shellfish_area_id = self.kwargs['shellfish_area_id']
+        events_qs = ClosureDataEvent.objects.filter(shellfish_area__id=shellfish_area_id) \
+                                        .filter(notice_action='Closed') \
+                                        .order_by('effective_date')
+        print(events_qs.count())
+        geojson_data = _build_closure_data_event_geojson(events_qs)
+        return JsonResponse(geojson_data)
+
+
+# AJAX views to get GeoJSON responses for map layers by State code
+class ClosureDataEventAjaxGetByNoticeView(View):
+
+    def get(self, request, *args, **kwargs):
+        # Get Closure notice data, format for GeoJson response
+        notice_id = self.kwargs['notice_id']
+        shellfish_area_id = self.kwargs['shellfish_area_id']
+
+        try:
+            notice_obj = ClosureNotice.objects.get(id=notice_id)
+        except ClosureNotice.DoesNotExist:
+            notice_obj = None
+
+        events_qs = ClosureDataEvent.objects.filter(closure_notice__id=notice_id) \
+                                        .filter(shellfish_area__id=shellfish_area_id) \
+                                        .filter(notice_action='Closed') \
+                                        .order_by('effective_date')
+        print(events_qs.count())
+        geojson_data = _build_closure_data_event_by_notice_geojson(events_qs, notice_obj)
+        return JsonResponse(geojson_data)
+
+
 # AJAX views to get all ClosureNotice objects for maps
 class ClosureNoticeAjaxGetAllView(View):
 
@@ -189,7 +286,7 @@ class ClosureNoticeAjaxGetAllView(View):
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed').prefetch_related('shellfish_areas')
         print(closures_qs.count())
         # Create custom geojson response object with custom function
-        geojson_data = build_closure_notice_geojson(closures_qs)
+        geojson_data = _build_closure_notice_geojson(closures_qs)
         return JsonResponse(geojson_data)
 
 
@@ -201,7 +298,7 @@ class ClosureNoticeAjaxGetLayerByStateView(View):
         state_code = self.kwargs['state_code']
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed').filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
         print(closures_qs.count())
-        geojson_data = build_closure_notice_geojson(closures_qs)
+        geojson_data = _build_closure_notice_geojson(closures_qs)
         return JsonResponse(geojson_data)
 
 
@@ -213,7 +310,7 @@ class ClosureNoticeAjaxGetAllPointsView(View):
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed').prefetch_related('shellfish_areas')
         print(closures_qs.count())
         # Create custom geojson response object with custom function
-        geojson_data = build_closure_notice_points_geojson(closures_qs)
+        geojson_data = _build_closure_notice_points_geojson(closures_qs)
         return JsonResponse(geojson_data)
 
 
@@ -227,8 +324,7 @@ class ClosureNoticeAjaxGetLayerByStatePointsView(View):
                                         .filter(shellfish_areas__state=state_code) \
                                         .distinct().prefetch_related('shellfish_areas') \
                                         .order_by('effective_date')
-        print(closures_qs.count())
-        geojson_data = build_closure_notice_points_geojson(closures_qs)
+        geojson_data = _build_closure_notice_points_geojson(closures_qs)
         return JsonResponse(geojson_data)
 
 
@@ -240,7 +336,7 @@ class ClosureNoticeAjaxGetLayerByStatePointsCircleView(View):
         state_code = self.kwargs['state_code']
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed').filter(shellfish_areas__state=state_code).distinct().prefetch_related('shellfish_areas')
         print(closures_qs.count())
-        geojson_data = build_closure_notice_circle_points_geojson(closures_qs)
+        geojson_data = _build_closure_notice_circle_points_geojson(closures_qs)
         return JsonResponse(geojson_data)
 
 

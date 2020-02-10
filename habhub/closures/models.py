@@ -131,6 +131,25 @@ class ClosureNotice(models.Model):
         return state
     get_state.short_description = 'State'
 
+    # Custom save method to create granular ClosureDataEvent objects
+    def save(self, *args, **kwargs):
+        super(ClosureNotice, self).save(*args, **kwargs)
+        notice_obj = self
+        if notice_obj.pk:
+            events_qs = ClosureDataEvent.objects.filter(closure_notice=notice_obj)
+            events_qs.delete()
+
+        for shellfish_area in notice_obj.shellfish_areas.all():
+            for species in notice_obj.species.all():
+                print(shellfish_area)
+                print(species)
+                event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
+                                                        shellfish_area=shellfish_area,
+                                                        species=species,
+                                                        effective_date=notice_obj.effective_date,
+                                                        notice_action=notice_obj.notice_action,
+                                                        causative_organism=notice_obj.causative_organism)
+
 
 class ClosureNoticeMaine(ClosureNotice):
     class Meta:
