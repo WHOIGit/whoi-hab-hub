@@ -91,12 +91,12 @@ def _build_closure_notice_geojson(closures_qs):
         for shellfish_area in closure.shellfish_areas.all():
 
             if closure.custom_geom:
-                geom = closure.custom_geom.simplify(0.001)
+                geom = closure.custom_geom.simplify(0.0001)
                 # Need to check if the simplify method went too far and made the geom empty
-                if shellfish_area.geom.simplify(0.001).empty:
+                if shellfish_area.geom.simplify(0.0001).empty:
                     geom = shellfish_area.geom
             elif not shellfish_area.geom.empty:
-                geom = shellfish_area.geom.simplify(0.001)
+                geom = shellfish_area.geom.simplify(0.0001)
                 #geom = shellfish_area.geom
                 # Need to check if the simplify method went too far and made the geom empty
                 if not geom.geom_type == "MultiPolygon":

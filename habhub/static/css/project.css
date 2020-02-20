@@ -26,6 +26,10 @@ svg#navbar-logo {
 
 /* Map Styles */
 
+.notice-popup {
+    transform: none !important;
+}
+
 /* Console styles */
 
 .console-btn-reset {

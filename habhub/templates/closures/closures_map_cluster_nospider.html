@@ -104,58 +104,36 @@ a {
         zoom: 7,
     });
 
-    POPUP_FROM_ZOOM = 10;
-
-    function initializeSpiderLeg(spiderLeg){
-        var pinElem = spiderLeg.elements.pin;
-        var feature = spiderLeg.feature;
-        var popup;
-        var $spiderPinCustom = $('<div>', {class: 'spider-point-circle'});
-        //$($spiderPinCustom).append('<span>' + feature.shellfish_area_name +'</span>');
-
-        $(pinElem).append($spiderPinCustom);
-        $spiderPinCustom.css({
-        'width': '30px',
-        'height':'30px',
-        'margin-left': '-15px',
-        'margin-top': '-15px',
-        'background-color': '#fed976',
-        'border-radius': '50%',
-        'border': '2px solid #feb24c',
-        'opacity': 0.8
-      });
-
-        $(pinElem)
-          .on('mouseenter', function(){
-            popup = new mapboxgl.Popup({
-              closeButton: true,
-              closeOnClick: true,
-              offset: MapboxglSpiderifier.popupOffsetForSpiderLeg(spiderLeg)
-            });
-
-            popupHTML = '<p>Shellfish Area: ' + feature.shellfish_area_name + '</p>';
-            popupHTML = popupHTML + '<p>Closure Date: ' + feature.effective_date + '</p>';
-            popupHTML = popupHTML + '<p>Causative Organism: ' + feature.causative_organism + '</p>';
-            popupHTML = popupHTML + '<p>Species: ' + feature.species + '</p>';
-
-            popup.setHTML(popupHTML)
-              .addTo(map)
-
-            spiderLeg.mapboxMarker.setPopup(popup);
-
-          })
-
-          .on('mouseleave', function(){
-            if(popup){
-              popup.remove();
-            }
-        });
-      }
+    var popupFromZoom = 10;
+    var loadShapesFromZoom = 8;
 
     map.on('load', function() {
         // Set default filters that return everything
         var filterYear = ['!=', ['number', ['get', 'year']], 1900];
         var filterMonth = ['!=', ['number', ['get', 'month']], 13];
+
+        // Add a new source from Django GeoJSON data for MA shellfish_area shapes
+        map.addSource("closures_areas_ma_src", {
+            type: "geojson",
+            data: "{% url 'closures:ajax_load_closures_by_state' 'MA' %}",
+            buffer: 10,
+            maxzoom: 12,
+        });
+
+        map.addLayer({
+            id: "closures_areas_ma",
+            type: "fill",
+            source: "closures_areas_ma_src",
+            'minzoom': loadShapesFromZoom,
+            layout: {},
+            paint: {
+                'fill-color': 'orange',
+                'fill-opacity': 0.5,
+                'fill-outline-color': '#fc4e2a',
+            },
+            //filter: ['all', filterYear, filterMonth]
+            //filter: ['in', ['literal', 'Oysters'], ['get', 'species']]
+        });
 
         // Add a new source from Django GeoJSON data
         map.addSource("closures_ma_src", {
@@ -226,7 +204,8 @@ a {
                 'circle-stroke-color': '#feb24c'
             }
         });
-        /*
+
+/*
         // Add a new source for Maine from Django GeoJSON data
         map.addSource("closures_me_src", {
             type: "geojson",
@@ -297,8 +276,21 @@ a {
             }
         });
         */
+
+        //var stateLegendEl = document.getElementById('state-legend');
+        //var countyLegendEl = document.getElementById('county-legend');
+
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
+        map.on('zoom', function() {
+            if (map.getZoom() > loadShapesFromZoom) {
+                //stateLegendEl.style.display = 'none';
+                //countyLegendEl.style.display = 'block';
+            } else {
+                //stateLegendEl.style.display = 'block';
+                //countyLegendEl.style.display = 'none';
+            }
+        });
 
 /*
         document.getElementById('year-slider').addEventListener('input', function(e) {
@@ -348,7 +340,7 @@ a {
 
       if (!features.length) {
           return;
-      } else if (map.getZoom() < POPUP_FROM_ZOOM) {
+      } else if (map.getZoom() < popupFromZoom) {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
           console.log(features);
@@ -362,10 +354,22 @@ a {
             function(err, leafFeatures){
                 //console.log(leafFeatures);
 
-                new mapboxgl.Popup({className: 'notice-popup', anchor: 'right', maxWidth: '300px'})
+                var popup = new mapboxgl.Popup({className: 'notice-popup', anchor: 'right', maxWidth: '300px'})
                     .setLngLat(e.lngLat)
                     .setHTML('<div class="notice-popup-title">&nbsp;</div>')
                     .addTo(map);
+
+                popup.on('close', function(e) {
+                    allLayers = map.getStyle().layers
+                    console.log(allLayers);
+
+                    allLayers.forEach(function(item, index, arr){
+                        if (item['id'].includes('shellfish-area')) {
+                            console.log(item);
+                            map.removeLayer(item['id']);
+                        }
+                    });
+                })
 
                 // Group the JSON objects by Shellfish Area
                 var grouped = _.groupBy(leafFeatures, function(feature) {
@@ -382,18 +386,21 @@ a {
                 console.log(grouped_shellfish_areas);
 
                 grouped_shellfish_areas.forEach(function(item_group, index_group, arr_group){
-                    var shellfish_area_id = item_group['closure_events'][0].properties.shellfish_area_id
-                    console.log(shellfish_area_id);
+                    var shellfish_area_id = item_group['closure_events'][0].properties.shellfish_area_id;
                     var shellfish_area = '<div id="popup-shellfish-area-' + index_group + '"><b>Shellfish Area: ' + item_group['shellfish_area'] + '</b></div>';
                     $( ".notice-popup-title" ).append( shellfish_area );
 
                     var mapLayer = map.getLayer('shellfish-area-' + shellfish_area_id);
 
                     if(typeof mapLayer === 'undefined') {
-                        //rendered_shellfish_areas.push(shellfish_area_id)
                         // Send AJAX request to get the Shellfish Area geojson shape
                         $.get('/closures/maps/ajax/load-geojson-detail/' + shellfish_area_id + '/').done(function(data) {
-                            map.addSource('shellfish-area-src-' + data.features[0].id, {
+                            var sourceName = 'shellfish-area-src-' + data.features[0].id;
+                            var layerName = 'shellfish-area-' + data.features[0].id;
+                            // Append new layerName to the collection array so we can remove on popup close
+
+
+                            map.addSource(sourceName, {
                                 type: 'geojson',
                                 data: data,
                                 buffer: 10,
@@ -401,11 +408,11 @@ a {
                             });
 
                             map.addLayer({
-                                id: 'shellfish-area-' + data.features[0].id,
+                                id: layerName,
                                 type: 'fill',
-                                source: 'shellfish-area-src-' + data.features[0].id,
+                                source: sourceName,
                                 paint: {
-                                    'fill-color': 'orange',
+                                    'fill-color': 'red',
                                     'fill-opacity': 0.5,
                                 },
                             });
