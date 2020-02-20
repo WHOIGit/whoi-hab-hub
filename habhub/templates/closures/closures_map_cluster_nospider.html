@@ -352,8 +352,6 @@ a {
             500,
             0,
             function(err, leafFeatures){
-                //console.log(leafFeatures);
-
                 var popup = new mapboxgl.Popup({className: 'notice-popup', anchor: 'right', maxWidth: '300px'})
                     .setLngLat(e.lngLat)
                     .setHTML('<div class="notice-popup-title">&nbsp;</div>')
@@ -367,6 +365,7 @@ a {
                         if (item['id'].includes('shellfish-area')) {
                             console.log(item);
                             map.removeLayer(item['id']);
+                            map.removeSource(item['source']);
                         }
                     });
                 })
@@ -397,8 +396,6 @@ a {
                         $.get('/closures/maps/ajax/load-geojson-detail/' + shellfish_area_id + '/').done(function(data) {
                             var sourceName = 'shellfish-area-src-' + data.features[0].id;
                             var layerName = 'shellfish-area-' + data.features[0].id;
-                            // Append new layerName to the collection array so we can remove on popup close
-
 
                             map.addSource(sourceName, {
                                 type: 'geojson',
