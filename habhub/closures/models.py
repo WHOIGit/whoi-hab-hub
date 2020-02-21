@@ -99,7 +99,7 @@ class ClosureNotice(models.Model):
     )
 
     title = models.CharField(max_length=100)
-    notice_date = models.DateField(default=timezone.now)
+    created_date = models.DateField(default=timezone.now)
     effective_date = models.DateField(default=timezone.now)
     data_source = models.CharField(max_length=255, null=False, blank=True)
     shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
@@ -116,7 +116,7 @@ class ClosureNotice(models.Model):
     comments = models.TextField(null=False, blank=True)
 
     class Meta:
-        ordering = ['notice_date', 'title']
+        ordering = ['effective_date', 'title']
 
     def __str__(self):
         return self.title
@@ -131,6 +131,25 @@ class ClosureNotice(models.Model):
         return state
     get_state.short_description = 'State'
 
+    # Get the total duration of the Closure Notice by finding the longest ClosureEvent
+    def get_total_closure_duration(self):
+        closure_events_qs = self.closure_data_events.all()
+        if closure_events_qs:
+            durations = []
+            for event in closure_events_qs:
+                try:
+                    event_duration = event.get_closure_duration().days
+                    durations.append(event_duration)
+                except:
+                    durations = None
+                    total_duration = 'Ongoing'
+            if durations:
+                total_duration = '%s days' % (max(durations))
+        else:
+            total_duration = None
+
+        return total_duration
+
     # Custom save method to create granular ClosureDataEvent objects
     def save(self, *args, **kwargs):
         super(ClosureNotice, self).save(*args, **kwargs)
@@ -141,8 +160,6 @@ class ClosureNotice(models.Model):
 
         for shellfish_area in notice_obj.shellfish_areas.all():
             for species in notice_obj.species.all():
-                print(shellfish_area)
-                print(species)
                 event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
                                                         shellfish_area=shellfish_area,
                                                         species=species,
@@ -159,15 +176,15 @@ class ClosureNoticeMaine(ClosureNotice):
 
 
 class ClosureDataEvent(models.Model):
-    closure_notice = models.ForeignKey(ClosureNotice, related_name='closure_data_points',
+    closure_notice = models.ForeignKey(ClosureNotice, related_name='closure_data_events',
                                        on_delete=models.CASCADE, null=False)
-    shellfish_area = models.ForeignKey(ShellfishArea, related_name='closure_data_points',
+    shellfish_area = models.ForeignKey(ShellfishArea, related_name='closure_data_events',
                                        on_delete=models.CASCADE, null=False)
-    species = models.ForeignKey(Species, related_name='closure_data_points',
+    species = models.ForeignKey(Species, related_name='closure_data_events',
                                 on_delete=models.CASCADE, null=False)
     effective_date = models.DateField(default=timezone.now)
     notice_action = models.CharField(max_length=50, default='Open')
-    causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_data_points',
+    causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_data_events',
                                            on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):

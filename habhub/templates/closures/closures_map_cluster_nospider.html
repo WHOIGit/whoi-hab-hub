@@ -199,8 +199,8 @@ a {
             filter: ['!', ['has', 'point_count']],
             paint: {
                 'circle-color': '#fed976',
-                'circle-radius': 9,
-                'circle-stroke-width': 1,
+                'circle-radius': 10,
+                'circle-stroke-width': 0,
                 'circle-stroke-color': '#feb24c'
             }
         });
@@ -432,14 +432,16 @@ a {
                             // Send AJAX request to get the ClosureDataEvent list for each Closure
                             $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + leaf_props.shellfish_area_id + '/' + leaf_props.id + '/').done(function(data) {
                                 console.log(data);
-                                var effective_date = '<p>Effective Date: ' + data.effective_date + '</p>';
+                                var effective_date = '<p>Effective Date: ' + data.effective_date + '<br>' +
+                                                     'Total Duration: ' + data.total_duration + '</p>';
                                 $( "#popup-shellfish-area-" + index_group ).append( effective_date );
 
                                 var $species_list = $('<ul>', {id: 'species-list-' + data.closure_id});
                                 $( "#popup-shellfish-area-" + index_group ).append( $species_list );
                                 data['features'].forEach(function(item, index, arr){
                                     console.log(item);
-                                    var species = '<li>' + item.event.species + '</li>';
+                                    var species = '<li>' + item.event.species + '<br>' +
+                                                  'Total Duration: ' + item.event.duration + '</li>';
                                     $( '#species-list-' + data.closure_id ).append( species );
                                 });
                             });

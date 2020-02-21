@@ -28,17 +28,24 @@ def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
             'closure_id': notice_obj.id,
             'shellfish_area': events_qs.first().shellfish_area.name,
             'effective_date': notice_obj.effective_date,
+            'total_duration': notice_obj.get_total_closure_duration(),
             'features': [],
     }
 
     for event in events_qs:
-        event_data = {"event": {
-                            "title":  event.__str__(),
-                            "id":  event.id,
-                            "shellfish_area": event.shellfish_area.name,
-                            "year": event.effective_date.year,
-                            "month": event.effective_date.month,
-                            "species": event.species.name,
+        if event.get_closure_duration():
+            duration = '%s days' % (event.get_closure_duration().days)
+        else:
+            duration = 'Ongoing'
+
+        event_data = {'event': {
+                            'title':  event.__str__(),
+                            'id':  event.id,
+                            'shellfish_area': event.shellfish_area.name,
+                            'year': event.effective_date.year,
+                            'month': event.effective_date.month,
+                            'species': event.species.name,
+                            'duration': duration,
                             },
                         }
 
