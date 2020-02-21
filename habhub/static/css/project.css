@@ -28,6 +28,9 @@ svg#navbar-logo {
 
 .notice-popup {
     transform: none !important;
+    overflow-y: scroll;
+    max-height: 100%;
+    background-color: white;
 }
 
 /* Console styles */

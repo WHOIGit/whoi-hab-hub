@@ -441,7 +441,7 @@ a {
                                 data['features'].forEach(function(item, index, arr){
                                     console.log(item);
                                     var species = '<li>' + item.event.species + '<br>' +
-                                                  'Total Duration: ' + item.event.duration + '</li>';
+                                                  'Duration: ' + item.event.duration + '</li>';
                                     $( '#species-list-' + data.closure_id ).append( species );
                                 });
                             });
