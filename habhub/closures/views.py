@@ -20,13 +20,14 @@ class GeneratePoints(GeoFunc):
 """
 Function to build custom JSON objects to return ClosureDataEvent objects.
 Returns JSON
-Parameters: 'events_qs' - Django queryset of ClosureDataEvent model, 'notice_obj' object
+Args: 'events_qs' - Django queryset of ClosureDataEvent model, 'notice_obj' object
 """
 def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
     geojson_data = {
             'closure_notice': notice_obj.title,
             'closure_id': notice_obj.id,
             'shellfish_area': events_qs.first().shellfish_area.name,
+            'shellfish_area_description': events_qs.first().shellfish_area.area_description,
             'effective_date': notice_obj.effective_date,
             'total_duration': notice_obj.get_total_closure_duration(),
             'features': [],
@@ -56,7 +57,7 @@ def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
 """
 Function to build custom JSON objects to return ClosureDataEvent objects.
 Returns JSON
-Parameters: 'events_qs' - Django queryset of ClosureDataEvent model
+Args: 'events_qs' - Django queryset of ClosureDataEvent model
 """
 def _build_closure_data_event_geojson(events_qs):
     geojson_data = {
@@ -81,7 +82,7 @@ def _build_closure_data_event_geojson(events_qs):
 
 """
 Function to build cusom geojson objects to populate the dynamic maps
-Parameters: 'closures_qs' - Django queryset of ClosureNotice model
+Args: 'closures_qs' - Django queryset of ClosureNotice model
 """
 
 def _build_closure_notice_geojson(closures_qs):
@@ -134,7 +135,7 @@ def _build_closure_notice_geojson(closures_qs):
 """
 Function to build custom geojson objects to populate the dynamic maps.
 Returns the center Point of polygonal shellfish areas instead of shape.
-Parameters: 'closures_qs' - Django queryset of ClosureNotice model
+Args: 'closures_qs' - Django queryset of ClosureNotice model
 """
 def _build_closure_notice_points_geojson(closures_qs):
     geojson_data = {
@@ -177,6 +178,7 @@ def _build_closure_notice_points_geojson(closures_qs):
                                 "id":  closure.id,
                                 "shellfish_area_id": shellfish_area.id,
                                 "shellfish_area_name": shellfish_area.name,
+                                "shellfish_area_description": shellfish_area.area_description,
                                 "state": shellfish_area.state,
                                 "year": closure.effective_date.year,
                                 "month": closure.effective_date.month,
@@ -198,7 +200,7 @@ def _build_closure_notice_points_geojson(closures_qs):
 """
 Function to build custom geojson objects to populate the dynamic maps.
 Returns the Point on circle around the centroid of polygonal shellfish areas instead of shape.
-Parameters: 'closures_qs' - Django queryset of ClosureNotice model
+Args: 'closures_qs' - Django queryset of ClosureNotice model
 """
 def _build_closure_notice_circle_points_geojson(closures_qs):
     geojson_data = {

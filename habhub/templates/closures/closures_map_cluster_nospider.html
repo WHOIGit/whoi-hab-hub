@@ -283,81 +283,6 @@ a {
             }
         });
 
-/*
-        // Add a new source for Maine from Django GeoJSON data
-        map.addSource("closures_me_src", {
-            type: "geojson",
-            data: "{% url 'closures:ajax_load_closures_by_state_points' 'ME' %}",
-            buffer: 10,
-            maxzoom: 16,
-            cluster: true,
-            clusterMaxZoom: 16, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-        });
-
-        map.addLayer({
-            id: "closures_me_clusters",
-            type: "circle",
-            source: "closures_me_src",
-            layout: {},
-            paint: {
-                // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-                // with three steps to implement three types of circles:
-                //   * Blue, 20px circles when point count is less than 10
-                //   * Yellow, 30px circles when point count is between 10 and 50
-                //   * Pink, 40px circles when point count is greater than or equal to 50
-                'circle-color': [
-                    'step',
-                    ['get', 'point_count'],
-                    '#51bbd6',
-                    10,
-                    '#f1f075',
-                    50,
-                    '#f28cb1'
-                ],
-                'circle-radius': [
-                    'step',
-                    ['get', 'point_count'],
-                    20,
-                    10,
-                    30,
-                    50,
-                    40
-                ]
-            },
-            filter: ['all', ['has', 'point_count']]
-            //filter: ['in', ['literal', 'Oysters'], ['get', 'species']]
-        });
-
-        map.addLayer({
-            id: 'closures_me_clusters_count',
-            type: 'symbol',
-            source: 'closures_me_src',
-            filter: ['all', ['has', 'point_count']],
-            layout: {
-                'text-field': '{point_count_abbreviated}',
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 12
-            }
-        });
-
-        map.addLayer({
-            id: 'unclustered-point-me',
-            type: 'circle',
-            source: 'closures_me_src',
-            filter: ['!', ['has', 'point_count']],
-            paint: {
-                'circle-color': '#11b4da',
-                'circle-radius': 4,
-                'circle-stroke-width': 1,
-                'circle-stroke-color': '#fff'
-            }
-        });
-        */
-
-        //var stateLegendEl = document.getElementById('state-legend');
-        //var countyLegendEl = document.getElementById('county-legend');
-
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
         map.on('zoom', function() {
@@ -411,6 +336,74 @@ a {
 */
     });
 
+    // Function to create the popup content and map overlay for Shellfish Area on clicking cluster
+    function buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc) {
+        let shellfishAreaTitle = `
+            <div id="popup-shellfish-area-${shellfishAreaID}">
+                <h6>${shellfishAreaDesc}</h6>
+                <p>Shellfish Area: ${shellfishAreaName}</p>
+            </div>
+        `
+        $( ".notice-popup-content" ).append( shellfishAreaTitle );
+
+        let mapLayer = map.getLayer('shellfish-area-' + shellfishAreaID);
+
+        if(typeof mapLayer === 'undefined') {
+            // Send AJAX request to get the Shellfish Area geojson shape
+            $.get('/closures/maps/ajax/load-geojson-detail/' + shellfishAreaID + '/').done(function(data) {
+                let sourceName = 'shellfish-area-src-' + data.features[0].id;
+                let layerName = 'shellfish-area-' + data.features[0].id;
+
+                map.addSource(sourceName, {
+                    type: 'geojson',
+                    data: data,
+                    buffer: 10,
+                    maxzoom: 12,
+                });
+
+                map.addLayer({
+                    id: layerName,
+                    type: 'fill',
+                    source: sourceName,
+                    paint: {
+                        'fill-color': 'red',
+                        'fill-opacity': 0.5,
+                    },
+                });
+            });
+        }
+    }
+
+    // Function to build the list of Closure Events for each Notice
+    function buildClosureEventList(shellfishAreaID, noticeID) {
+        // Send AJAX request to get the ClosureDataEvent list for each Closure
+        $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfishAreaID + '/' + noticeID + '/').done(function(data) {
+            console.log(data);
+            let eventCard = `
+            <div class="card mb-2">
+                <div class="card-header">
+                    Closure Date: ${data.effective_date}<br>
+                    Total Duration: ${data.total_duration}
+                </div>
+                <ul class="list-group list-group-flush" id="species-list-${data.closure_id}">
+                </ul>
+            </div>
+            `
+            $( "#popup-shellfish-area-" + shellfishAreaID ).append( eventCard );
+
+            data['features'].forEach(function(item, index, arr){
+                console.log(item);
+                let species = `
+                    <li class="list-group-item">
+                        ${item.event.species}<br>
+                        Duration: ${item.event.duration}
+                    </li>
+                `
+                $( '#species-list-' + data.closure_id ).append( species );
+            });
+        });
+    }
+
     function mouseClick(e) {
       let features = map.queryRenderedFeatures(e.point, {
           layers: ['closures_ma_clusters', 'closures_ma_unclusted']
@@ -421,15 +414,13 @@ a {
       } else if (map.getZoom() < popupFromZoom) {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-          console.log(features);
           let popup = new mapboxgl.Popup({className: 'notice-popup', anchor: 'right', maxWidth: '300px'})
               .setLngLat(e.lngLat)
-              .setHTML('<div class="notice-popup-title">&nbsp;</div>')
+              .setHTML('<div class="notice-popup-content">&nbsp;</div>')
               .addTo(map);
 
           popup.on('close', function(e) {
-              allLayers = map.getStyle().layers
-              console.log(allLayers);
+              let allLayers = map.getStyle().layers;
 
               allLayers.forEach(function(item, index, arr){
                   if (item['id'].includes('shellfish-area')) {
@@ -458,59 +449,20 @@ a {
                                     .map((value, key) => ({ shellfish_area: key, closure_events: value }))
                                     .value()
 
-                    console.log(grouped_shellfish_areas);
-
                     grouped_shellfish_areas.forEach(function(item_group, index_group, arr_group){
-                        let shellfish_area_id = item_group['closure_events'][0].properties.shellfish_area_id;
-                        let shellfish_area = '<div id="popup-shellfish-area-' + index_group + '"><b>Shellfish Area: ' + item_group['shellfish_area'] + '</b></div>';
-                        $( ".notice-popup-title" ).append( shellfish_area );
-
-                        let mapLayer = map.getLayer('shellfish-area-' + shellfish_area_id);
-
-                        if(typeof mapLayer === 'undefined') {
-                            // Send AJAX request to get the Shellfish Area geojson shape
-                            $.get('/closures/maps/ajax/load-geojson-detail/' + shellfish_area_id + '/').done(function(data) {
-                                let sourceName = 'shellfish-area-src-' + data.features[0].id;
-                                let layerName = 'shellfish-area-' + data.features[0].id;
-
-                                map.addSource(sourceName, {
-                                    type: 'geojson',
-                                    data: data,
-                                    buffer: 10,
-                                    maxzoom: 12,
-                                });
-
-                                map.addLayer({
-                                    id: layerName,
-                                    type: 'fill',
-                                    source: sourceName,
-                                    paint: {
-                                        'fill-color': 'red',
-                                        'fill-opacity': 0.5,
-                                    },
-                                });
-                            });
-                        }
+                        console.log(item_group);
+                        let shellfishAreaID = item_group['closure_events'][0].properties.shellfish_area_id;
+                        let shellfishAreaName = item_group['shellfish_area'];
+                        let shellfishAreaDesc = item_group['closure_events'][0].properties.shellfish_area_description
+                        // Call the function to create the popup content and map overlay
+                        buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc);
 
                         item_group['closure_events'].forEach(function(item, index, arr){
-                            leaf_props = item.properties;
-                            //console.log(leaf_props);
-                            // Send AJAX request to get the ClosureDataEvent list for each Closure
-                            $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + leaf_props.shellfish_area_id + '/' + leaf_props.id + '/').done(function(data) {
-                                console.log(data);
-                                let effective_date = '<p>Effective Date: ' + data.effective_date + '<br>' +
-                                                     'Total Duration: ' + data.total_duration + '</p>';
-                                $( "#popup-shellfish-area-" + index_group ).append( effective_date );
-
-                                let $species_list = $('<ul>', {id: 'species-list-' + data.closure_id});
-                                $( "#popup-shellfish-area-" + index_group ).append( $species_list );
-                                data['features'].forEach(function(item, index, arr){
-                                    console.log(item);
-                                    let species = '<li>' + item.event.species + '<br>' +
-                                                  'Duration: ' + item.event.duration + '</li>';
-                                    $( '#species-list-' + data.closure_id ).append( species );
-                                });
-                            });
+                            let leaf_props = item.properties;
+                            let shellfishAreaID = leaf_props.shellfish_area_id;
+                            let noticeID = leaf_props.id;
+                            // Call the function to build the list of Closure Events
+                            buildClosureEventList(shellfishAreaID, noticeID);
                         });
                     });
 
@@ -522,51 +474,12 @@ a {
             );
         } else {
             console.log(features);
-            let notice_id = features[0].properties.id;
-            let shellfish_area_id = features[0].properties.shellfish_area_id;
-            let shellfish_area = '<div id="popup-shellfish-area-' + notice_id + '"><b>Shellfish Area: ' + features[0].properties.shellfish_area_name + '</b></div>';
-            $( ".notice-popup-title" ).append( shellfish_area );
-
-            let mapLayer = map.getLayer('shellfish-area-' + shellfish_area_id);
-
-            if(typeof mapLayer === 'undefined') {
-                // Send AJAX request to get the Shellfish Area geojson shape
-                $.get('/closures/maps/ajax/load-geojson-detail/' + shellfish_area_id + '/').done(function(data) {
-                    let sourceName = 'shellfish-area-src-' + data.features[0].id;
-                    let layerName = 'shellfish-area-' + data.features[0].id;
-
-                    map.addSource(sourceName, {
-                        type: 'geojson',
-                        data: data,
-                        buffer: 10,
-                        maxzoom: 12,
-                    });
-
-                    map.addLayer({
-                        id: layerName,
-                        type: 'fill',
-                        source: sourceName,
-                        paint: {
-                            'fill-color': 'red',
-                            'fill-opacity': 0.5,
-                        },
-                    });
-                });
-            }
-
-            $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfish_area_id + '/' + notice_id + '/').done(function(data) {
-                console.log(data);
-                let effective_date = '<p>Effective Date: ' + data.effective_date + '</p>';
-                $( "#popup-shellfish-area-" + notice_id ).append( effective_date );
-
-                let $species_list = $('<ul>', {id: 'species-list-' + data.closure_id});
-                $( "#popup-shellfish-area-" + notice_id ).append( $species_list );
-                data['features'].forEach(function(item, index, arr){
-                    console.log(item);
-                    let species = '<li>' + item.event.species + '</li>';
-                    $( '#species-list-' + data.closure_id ).append( species );
-                });
-            });
+            let noticeID = features[0].properties.id;
+            let shellfishAreaID = features[0].properties.shellfish_area_id;
+            let shellfishAreaName = features[0].properties.shellfish_area_name;
+            let shellfishAreaDesc = features[0].properties.shellfish_area_description;
+            buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc);
+            buildClosureEventList(shellfishAreaID, noticeID);
         }
       }
     }
