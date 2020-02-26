@@ -1,4 +1,5 @@
 import random
+import datetime
 
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
@@ -291,11 +292,27 @@ class ClosureDataEventAjaxGetByNoticeView(View):
 class ClosureNoticeAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
-        # Get Closure notice data, format for GeoJson response
+        # Get Closure notice data
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
                                            .exclude(shellfish_areas__state='ME') \
-                                           .distinct() \
                                            .prefetch_related('shellfish_areas')
+
+        # Check if there are search query parameters in the AJAX request, assign variables
+        if request.GET:
+            start_date = request.GET.get('start-date')
+            end_date = request.GET.get('end-date')
+            species = request.GET.get('species')
+            organism = request.GET.get('organism', '')
+            start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
+            end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
+            print(species)
+
+            # Chain extra filter queries if used.
+            if start_date_obj:
+                closures_qs = closures_qs.filter(effective_date__range=[start_date_obj, end_date_obj])
+            if species:
+                closures_qs = closures_qs.filter(species__name=species)
+
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_geojson(closures_qs)
@@ -321,8 +338,24 @@ class ClosureNoticeAjaxGetAllPointsView(View):
         # Get Closure notice data, format for GeoJson response
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
                                            .exclude(shellfish_areas__state='ME') \
-                                           .distinct() \
                                            .prefetch_related('shellfish_areas')
+
+        # Check if there are search query parameters in the AJAX request, assign variables
+        if request.GET:
+            start_date = request.GET.get('start-date')
+            end_date = request.GET.get('end-date')
+            species = request.GET.get('species')
+            organism = request.GET.get('organism', '')
+            start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
+            end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
+            print(species)
+
+            # Chain extra filter queries if used.
+            if start_date_obj:
+                closures_qs = closures_qs.filter(effective_date__range=[start_date_obj, end_date_obj])
+            if species:
+                closures_qs = closures_qs.filter(species__name=species)
+                
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_points_geojson(closures_qs)

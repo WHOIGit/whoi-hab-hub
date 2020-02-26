@@ -119,12 +119,21 @@ a {
 
 {% block javascript %}
 <script>
-$(function () {
-    $('#closure-map-filters').submit(function(event) {
-        event.preventDefault();
-        let values = $(this).serializeArray();
-        console.log(values);
+
+window.onload = function() {
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [-69.75, 41.89],
+        zoom: 6.7,
     });
+
+    const popupFromZoom = 10;
+    const loadShapesFromZoom = 8;
+
     $('#datepicker-start').datetimepicker({
         format: 'MM/DD/YYYY',
         icons: {
@@ -154,21 +163,29 @@ $(function () {
             close: 'fa fa-times'
         }
     });
-});
 
-window.onload= function() {
+    $('#closure-map-filters').submit(function(event) {
+        event.preventDefault();
+        let values = $(this).serializeArray();
+        console.log(values);
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all' %}",
+            data: values,
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_areas_src').setData(data);
+            }
+        });
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
-
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/light-v10',
-        center: [-69.75, 41.89],
-        zoom: 6.7,
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all_points' %}",
+            data: values,
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_notices_src').setData(data);
+            }
+        });
     });
-
-    const popupFromZoom = 10;
-    const loadShapesFromZoom = 8;
 
     map.on('load', function() {
         // Set default filters that return everything
