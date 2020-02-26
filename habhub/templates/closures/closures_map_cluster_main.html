@@ -89,7 +89,9 @@ a {
             <label class="sr-only" for="inlineFormInputGroup">Filter by Species</label>
             <select name="species" class="custom-select custom-select-sm">
               <option value="">Filter by shellfish species</option>
-              <option value="Oysters">Oysters</option>
+              {% for species in species_qs.all %}
+                  <option value="{{ species.id }}">{{ species.name }}</option>
+              {% endfor %}
             </select>
         </div>
 

@@ -355,7 +355,7 @@ class ClosureNoticeAjaxGetAllPointsView(View):
                 closures_qs = closures_qs.filter(effective_date__range=[start_date_obj, end_date_obj])
             if species:
                 closures_qs = closures_qs.filter(species__name=species)
-                
+
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_points_geojson(closures_qs)
@@ -404,9 +404,22 @@ class ClosureMapClusterView2(TemplateView):
     context_object_name = 'closures'
 
 
-class ClosureMapClusterNoSpiderView(TemplateView):
-    template_name = 'closures/closures_map_cluster_nospider.html'
+class ClosureMapClusterMainView(TemplateView):
+    template_name = 'closures/closures_map_cluster_main.html'
     context_object_name = 'closures'
+
+    def get_context_data(self, **kwargs):
+        context = super(ClosureMapClusterMainView, self).get_context_data(**kwargs)
+        # Get current Species list for filter form
+        species_qs = Species.objects.all()
+        # Get current Causative organism list for filter form
+        organisms_qs = CausativeOrganism.objects.all()
+
+        context.update({
+            'species_qs': species_qs,
+            'organisms_qs': organisms_qs,
+        })
+        return context
 
 
 class ClosureHomeView(TemplateView):
