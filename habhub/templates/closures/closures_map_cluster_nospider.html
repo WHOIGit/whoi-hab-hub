@@ -34,14 +34,6 @@ a {
   color: #2dc4b2;
 }
 
-#console {
-  position: relative;
-  width: 100%;
-  margin: 10px;
-  padding: 10px 20px;
-  background-color: white;
-}
-
 </style>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
@@ -53,14 +45,14 @@ a {
 
 <h1 class="display-4">WHOI HAB Hub</h1>
 
-<div id='console'>
+<div class="alert alert-info" id='console'>
     <form id="closure-map-filters">
       <div class="form-row align-items-center">
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Start date</label>
             <div class='input-group date' id='datepicker-start'>
 
-              <input type='text' class="form-control form-control-sm" />
+              <input type='text' name="start-date" class="form-control form-control-sm" />
               <div class="input-group-addon input-group-append">
 
                     <span class="input-group-text">
@@ -81,7 +73,7 @@ a {
             <label class="sr-only" for="inlineFormInputGroup">End date</label>
             <div class='input-group date' id='datepicker-end'>
 
-              <input type='text' class="form-control form-control-sm" />
+              <input type='text' name="end-date" class="form-control form-control-sm" />
               <div class="input-group-addon input-group-append">
 
                     <span class="input-group-text">
@@ -95,7 +87,7 @@ a {
 
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Filter by Species</label>
-            <select class="custom-select custom-select-sm">
+            <select name="species" class="custom-select custom-select-sm">
               <option value="">Filter by shellfish species</option>
               <option value="Oysters">Oysters</option>
             </select>
@@ -103,7 +95,7 @@ a {
 
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Filter by Causative Organism</label>
-            <select class="custom-select custom-select-sm">
+            <select name="organism" class="custom-select custom-select-sm">
               <option value="">Filter by causative organism</option>
               <option value="">Oysters</option>
             </select>
@@ -127,39 +119,44 @@ a {
 
 {% block javascript %}
 <script>
-    $(function () {
-        $('#datepicker-start').datetimepicker({
-            format: 'MM/DD/YYYY',
-            icons: {
-                time: 'fa fa-clock-o',
-                date: 'fa fa-calendar',
-                up: 'fa fa-chevron-up',
-                down: 'fa fa-chevron-down',
-                previous: 'fa fa-chevron-left',
-                next: 'fa fa-chevron-right',
-                today: 'fa fa-check',
-                clear: 'fa fa-trash',
-                close: 'fa fa-times'
-            }
-        });
-
-        $('#datepicker-end').datetimepicker({
-            format: 'MM/DD/YYYY',
-            icons: {
-                time: 'fa fa-clock-o',
-                date: 'fa fa-calendar',
-                up: 'fa fa-chevron-up',
-                down: 'fa fa-chevron-down',
-                previous: 'fa fa-chevron-left',
-                next: 'fa fa-chevron-right',
-                today: 'fa fa-check',
-                clear: 'fa fa-trash',
-                close: 'fa fa-times'
-            }
-        });
+$(function () {
+    $('#closure-map-filters').submit(function(event) {
+        event.preventDefault();
+        let values = $(this).serializeArray();
+        console.log(values);
+    });
+    $('#datepicker-start').datetimepicker({
+        format: 'MM/DD/YYYY',
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
     });
 
-    window.onload= function() {
+    $('#datepicker-end').datetimepicker({
+        format: 'MM/DD/YYYY',
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+});
+
+window.onload= function() {
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
 
@@ -179,9 +176,9 @@ a {
         let filterMonth = ['!=', ['number', ['get', 'month']], 13];
 
         // Add a new source from Django GeoJSON data for MA shellfish_area shapes
-        map.addSource("closures_areas_ma_src", {
+        map.addSource("closures_areas_src", {
             type: "geojson",
-            data: "{% url 'closures:ajax_load_closures_by_state' 'MA' %}",
+            data: "{% url 'closures:ajax_load_closures_all' %}",
             buffer: 10,
             maxzoom: 12,
         });
@@ -189,7 +186,7 @@ a {
         map.addLayer({
             id: "closures_areas_ma",
             type: "fill",
-            source: "closures_areas_ma_src",
+            source: "closures_areas_src",
             minzoom: loadShapesFromZoom,
             layout: {},
             paint: {
@@ -202,9 +199,9 @@ a {
         });
 
         // Add a new source from Django GeoJSON data
-        map.addSource("closures_ma_src", {
+        map.addSource("closures_notices_src", {
             type: "geojson",
-            data: "{% url 'closures:ajax_load_closures_by_state_points' 'MA' %}",
+            data: "{% url 'closures:ajax_load_closures_all_points' %}",
             buffer: 10,
             maxzoom: 16,
             cluster: true,
@@ -213,9 +210,9 @@ a {
         });
 
         map.addLayer({
-            id: "closures_ma_clusters",
+            id: "closures_notices_clusters",
             type: "circle",
-            source: "closures_ma_src",
+            source: "closures_notices_src",
             layout: {},
             paint: {
                 // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -247,9 +244,9 @@ a {
         });
 
         map.addLayer({
-            id: 'closures_ma_clusters_count',
+            id: 'closures_notices_clusters_count',
             type: 'symbol',
-            source: 'closures_ma_src',
+            source: 'closures_notices_src',
             filter: ['all', ['has', 'point_count']],
             layout: {
                 'text-field': '{point_count_abbreviated}',
@@ -259,9 +256,9 @@ a {
         });
 
         map.addLayer({
-            id: 'closures_ma_unclusted',
+            id: 'closures_notices_unclustered',
             type: 'circle',
-            source: 'closures_ma_src',
+            source: 'closures_notices_src',
             filter: ['!', ['has', 'point_count']],
             paint: {
                 'circle-color': '#fed976',
@@ -272,9 +269,9 @@ a {
         });
 
         map.addLayer({
-            id: 'closures_ma_unclusted_count',
+            id: 'closures_notices_unclustered_count',
             type: 'symbol',
-            source: 'closures_ma_src',
+            source: 'closures_notices_src',
             filter: ['!', ['has', 'point_count']],
             layout: {
                 'text-field': '1',
@@ -382,7 +379,7 @@ a {
             let eventCard = `
             <div class="card mb-2">
                 <div class="card-header">
-                    Closure Date: ${data.effective_date}<br>
+                    <strong>Closure Date: ${data.effective_date}</strong><br>
                     Total Duration: ${data.total_duration}
                 </div>
                 <ul class="list-group list-group-flush" id="species-list-${data.closure_id}">
@@ -406,7 +403,7 @@ a {
 
     function mouseClick(e) {
       let features = map.queryRenderedFeatures(e.point, {
-          layers: ['closures_ma_clusters', 'closures_ma_unclusted']
+          layers: ['closures_notices_clusters', 'closures_notices_unclustered']
       });
 
       if (!features.length) {
@@ -432,7 +429,7 @@ a {
           })
 
           if (features[0].properties.cluster) {
-              map.getSource('closures_ma_src').getClusterLeaves(
+              map.getSource('closures_notices_src').getClusterLeaves(
                 features[0].properties.cluster_id,
                 500,
                 0,
@@ -486,7 +483,7 @@ a {
 
     function mouseMove(e) {
       let features = map.queryRenderedFeatures(e.point, {
-        layers: ['closures_ma_clusters', 'closures_ma_unclusted']
+        layers: ['closures_notices_clusters', 'closures_notices_unclustered']
       });
       map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
     }

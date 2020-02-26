@@ -292,7 +292,10 @@ class ClosureNoticeAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
-        closures_qs = ClosureNotice.objects.filter(notice_action='Closed').prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
+                                           .exclude(shellfish_areas__state='ME') \
+                                           .distinct() \
+                                           .prefetch_related('shellfish_areas')
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_geojson(closures_qs)
@@ -316,7 +319,10 @@ class ClosureNoticeAjaxGetAllPointsView(View):
 
     def get(self, request, *args, **kwargs):
         # Get Closure notice data, format for GeoJson response
-        closures_qs = ClosureNotice.objects.filter(notice_action='Closed').prefetch_related('shellfish_areas')
+        closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
+                                           .exclude(shellfish_areas__state='ME') \
+                                           .distinct() \
+                                           .prefetch_related('shellfish_areas')
         print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_points_geojson(closures_qs)
