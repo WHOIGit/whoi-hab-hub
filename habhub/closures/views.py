@@ -24,6 +24,10 @@ Returns JSON
 Args: 'events_qs' - Django queryset of ClosureDataEvent model, 'notice_obj' object
 """
 def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
+    document_url = None
+    if notice_obj.document:
+        document_url = notice_obj.document.url
+
     geojson_data = {
             'closure_notice': notice_obj.title,
             'closure_id': notice_obj.id,
@@ -31,6 +35,8 @@ def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
             'shellfish_area_description': events_qs.first().shellfish_area.area_description,
             'effective_date': notice_obj.effective_date,
             'total_duration': notice_obj.get_total_closure_duration(),
+            'causative_organism': notice_obj.causative_organism.name,
+            'document_url': document_url,
             'features': [],
     }
 

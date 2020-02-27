@@ -436,7 +436,9 @@ window.onload = function() {
             <div class="card mb-2">
                 <div class="card-header">
                     <strong>Closure Date: ${data.effective_date}</strong><br>
-                    Total Duration: ${data.total_duration}
+                    Total Duration: ${data.total_duration}<br>
+                    Causative Organism: <i>${data.causative_organism}</i><br>
+                    <a href="${data.document_url}" target="_blank">View notice</a>
                 </div>
                 <ul class="list-group list-group-flush" id="species-list-${data.closure_id}">
                 </ul>
