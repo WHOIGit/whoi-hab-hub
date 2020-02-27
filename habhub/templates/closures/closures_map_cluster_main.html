@@ -183,7 +183,9 @@ window.onload = function() {
     $('#closure-map-filters').submit(function(event) {
         event.preventDefault();
         let values = $(this).serializeArray();
-        console.log(values);
+        // Close any existing Popups
+        map.fire('closeAllPopups');
+
         $.ajax({
             url: "{% url 'closures:ajax_load_closures_all' %}",
             data: values,
@@ -209,6 +211,9 @@ window.onload = function() {
         $('#datepicker-end').data("DateTimePicker").date(moment());
         $('#species').val('');
         $('#organism').val('');
+        // Close any existing Popups
+        map.fire('closeAllPopups');
+
         $.ajax({
             url: "{% url 'closures:ajax_load_closures_all' %}",
             success: function (data) {
@@ -485,6 +490,11 @@ window.onload = function() {
                   }
               });
           })
+
+          // Add a custom event listener to the map to close Popups
+          map.on('closeAllPopups', () => {
+            popup.remove();
+          });
 
           if (features[0].properties.cluster) {
               map.getSource('closures_notices_src').getClusterLeaves(
