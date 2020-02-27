@@ -34,6 +34,10 @@ a {
   color: #2dc4b2;
 }
 
+#console {
+    font-size: 14px;
+}
+
 </style>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
@@ -87,7 +91,7 @@ a {
 
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Filter by Species</label>
-            <select name="species" class="custom-select custom-select-sm">
+            <select name="species" class="custom-select custom-select-sm" id="species">
               <option value="">Filter by shellfish species</option>
               {% for species in species_qs.all %}
                   <option value="{{ species.id }}">{{ species.name }}</option>
@@ -97,15 +101,22 @@ a {
 
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Filter by Causative Organism</label>
-            <select name="organism" class="custom-select custom-select-sm">
+            <select name="organism" class="custom-select custom-select-sm" id="organism">
               <option value="">Filter by causative organism</option>
-              <option value="">Oysters</option>
+              {% for organism in organisms_qs.all %}
+                  <option value="{{ organism.id }}">{{ organism.name }}</option>
+              {% endfor %}
             </select>
         </div>
 
         <div class="col-auto">
           <button type="submit" class="btn btn-sm btn-primary">Submit</button>
         </div>
+
+        <div class="col-auto">
+          <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
+        </div>
+
       </div>
     </form>
 
@@ -138,6 +149,7 @@ window.onload = function() {
 
     $('#datepicker-start').datetimepicker({
         format: 'MM/DD/YYYY',
+        defaultDate: '{{ earliest_date }}',
         icons: {
             time: 'fa fa-clock-o',
             date: 'fa fa-calendar',
@@ -153,6 +165,8 @@ window.onload = function() {
 
     $('#datepicker-end').datetimepicker({
         format: 'MM/DD/YYYY',
+        defaultDate: moment(),
+        useCurrent: true,
         icons: {
             time: 'fa fa-clock-o',
             date: 'fa fa-calendar',
@@ -182,6 +196,29 @@ window.onload = function() {
         $.ajax({
             url: "{% url 'closures:ajax_load_closures_all_points' %}",
             data: values,
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_notices_src').setData(data);
+            }
+        });
+    });
+
+    $('#filter-reset').click(function(event) {
+        // Reset the form field values to defaults
+        $('#datepicker-start').data("DateTimePicker").date('{{ earliest_date }}');
+        $('#datepicker-end').data("DateTimePicker").date(moment());
+        $('#species').val('');
+        $('#organism').val('');
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all' %}",
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_areas_src').setData(data);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all_points' %}",
             success: function (data) {
               console.log(data);
               map.getSource('closures_notices_src').setData(data);

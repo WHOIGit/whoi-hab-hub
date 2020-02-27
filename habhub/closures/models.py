@@ -117,6 +117,7 @@ class ClosureNotice(models.Model):
 
     class Meta:
         ordering = ['effective_date', 'title']
+        get_latest_by = 'effective_date'
 
     def __str__(self):
         return self.title

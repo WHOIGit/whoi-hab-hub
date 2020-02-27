@@ -302,16 +302,20 @@ class ClosureNoticeAjaxGetAllView(View):
             start_date = request.GET.get('start-date')
             end_date = request.GET.get('end-date')
             species = request.GET.get('species')
-            organism = request.GET.get('organism', '')
-            start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
-            end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
-            print(species)
+            organism = request.GET.get('organism')
+
+            if start_date:
+                start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
+            if end_date:
+                end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
 
             # Chain extra filter queries if used.
-            if start_date_obj:
+            if start_date_obj and end_date_obj:
                 closures_qs = closures_qs.filter(effective_date__range=[start_date_obj, end_date_obj])
             if species:
-                closures_qs = closures_qs.filter(species__name=species)
+                closures_qs = closures_qs.filter(species__in=species)
+            if organism:
+                closures_qs = closures_qs.filter(causative_organism=organism)
 
         print(closures_qs.count())
         # Create custom geojson response object with custom function
@@ -345,16 +349,20 @@ class ClosureNoticeAjaxGetAllPointsView(View):
             start_date = request.GET.get('start-date')
             end_date = request.GET.get('end-date')
             species = request.GET.get('species')
-            organism = request.GET.get('organism', '')
-            start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
-            end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
-            print(species)
+            organism = request.GET.get('organism')
+
+            if start_date:
+                start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
+            if end_date:
+                end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
 
             # Chain extra filter queries if used.
-            if start_date_obj:
+            if start_date_obj and end_date_obj:
                 closures_qs = closures_qs.filter(effective_date__range=[start_date_obj, end_date_obj])
             if species:
-                closures_qs = closures_qs.filter(species__name=species)
+                closures_qs = closures_qs.filter(species__in=species)
+            if organism:
+                closures_qs = closures_qs.filter(causative_organism=organism)
 
         print(closures_qs.count())
         # Create custom geojson response object with custom function
@@ -414,10 +422,17 @@ class ClosureMapClusterMainView(TemplateView):
         species_qs = Species.objects.all()
         # Get current Causative organism list for filter form
         organisms_qs = CausativeOrganism.objects.all()
+        # Get the earliest available notice date for the filter form
+        notice_obj = ClosureNotice.objects.filter(notice_action='Closed') \
+                                           .exclude(shellfish_areas__state='ME') \
+                                           .earliest()
+        earliest_date = notice_obj.effective_date.strftime("%m/%d/%Y")
+        print(earliest_date)
 
         context.update({
             'species_qs': species_qs,
             'organisms_qs': organisms_qs,
+            'earliest_date': earliest_date,
         })
         return context
 
