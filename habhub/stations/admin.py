@@ -1,15 +1,23 @@
-from django.contrib import admin
+from django.contrib.gis import admin
+
+from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
+from leaflet.forms.widgets import LeafletWidget
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
+
 from .models import Station, Datapoint, Species
+from .forms import StationForm
 
 # Register your models here.
 
 admin.site.register(Species)
 
 @admin.register(Station)
-class StationAdmin(ImportExportModelAdmin):
-    pass
+class StationAdmin(LeafletGeoAdminMixin, ImportExportModelAdmin):
+    form = StationForm
+    list_display = ('station_name', 'station_location', 'state', 'geom')
+    list_editable = ('geom', )
+    list_filter = ('state',)
 
 @admin.register(Datapoint)
 class DatapointAdmin(ImportExportModelAdmin):

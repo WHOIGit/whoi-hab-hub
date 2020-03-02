@@ -1,19 +1,20 @@
 from django.utils.timezone import now
-
-from django.db import models
+from django.contrib.gis.db import models
 
 # Create your models here.
 
 class Station(models.Model):
     STATES = (
-        ('Maine', 'Maine'),
-        ('Massachusetts', 'Massachusetts'),
+        ('ME', 'Maine'),
+        ('MA', 'Massachusetts'),
+        ('NH', 'New Hampshire'),
     )
 
     station_name = models.CharField(max_length=100)
     station_location = models.CharField(max_length=100)
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
+    geom =  models.PointField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
 
     class Meta:
@@ -33,11 +34,11 @@ class Species(models.Model):
 
 
 class Datapoint(models.Model):
-    station = models.ForeignKey(Station, related_name='datapoint',
+    station = models.ForeignKey(Station, related_name='datapoints',
                                 on_delete=models.CASCADE, null=False)
     measurement = models.CharField(max_length=20, null=False, blank=True)
     measurement_date = models.DateTimeField(default=now, null=False)
-    species = models.ForeignKey(Species, related_name='datapoint',
+    species = models.ForeignKey(Species, related_name='datapoints',
                                 on_delete=models.CASCADE, null=True)
 
     class Meta:
