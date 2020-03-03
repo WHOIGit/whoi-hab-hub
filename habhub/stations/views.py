@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.db.models import Avg, Max
 from django.views.generic import View, DetailView, ListView, TemplateView
 
 from .models import Station, Datapoint
@@ -25,6 +26,10 @@ def _build_stations_geojson(stations_qs):
     }
 
     for station in stations_qs:
+        station_aggs = station.datapoints.aggregate(Avg('measurement'), Max('measurement'))
+        station_mean = round(station_aggs['measurement__avg'], 1)
+        station_max = round(station_aggs['measurement__max'], 1)
+
         station_data = {"type": "Feature",
                         "properties": {
                             "station_name":  station.station_name,
@@ -32,6 +37,8 @@ def _build_stations_geojson(stations_qs):
                             "state": station.state,
                             "station_location": station.station_location,
                             "datapoint_count": station.datapoints.count(),
+                            "station_mean": station_mean,
+                            "station_max": station_max,
                             },
                         "geometry": {
                           "type": station.geom.geom_type,
@@ -57,8 +64,17 @@ def load_station_data(request):
 
 
 ######### AJAX Views to return geoJSON for maps #############
-# AJAX views to get GeoJSON responses for map layers by State code
+# AJAX views to get GeoJSON responses for all Stations map layer
 class StationAjaxGetAllView(View):
+
+    def get(self, request, *args, **kwargs):
+        stations_qs = Station.objects.all()
+        geojson_data = _build_stations_geojson(stations_qs)
+        return JsonResponse(geojson_data)
+
+
+# AJAX views to get GeoJSON responses for all Stations map layer
+class StationAjaxGetPopupView(View):
 
     def get(self, request, *args, **kwargs):
         stations_qs = Station.objects.all()

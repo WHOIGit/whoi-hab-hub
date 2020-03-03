@@ -250,7 +250,7 @@ window.onload = function() {
       let features = map.queryRenderedFeatures(e.point, {
           layers: ['stations']
       });
-
+      console.log(features);
       if (!features.length) {
           return;
       } else if (map.getZoom() < popupFromZoom) {

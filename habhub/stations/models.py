@@ -34,7 +34,6 @@ class Species(models.Model):
 class Datapoint(models.Model):
     station = models.ForeignKey(Station, related_name='datapoints',
                                 on_delete=models.CASCADE, null=False)
-    measurement_old = models.CharField(max_length=20, null=False, blank=True)
     measurement = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     measurement_date = models.DateTimeField(default=now, null=False)
     species = models.ForeignKey(Species, related_name='datapoints',
