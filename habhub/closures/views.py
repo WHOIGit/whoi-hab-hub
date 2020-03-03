@@ -16,8 +16,6 @@ class GeneratePoints(GeoFunc):
     function='ST_GeneratePoints'
 
 ########## Functions to use within Closure CBVs ###########
-
-
 """
 Function to build custom JSON objects to return ClosureDataEvent objects.
 Returns JSON

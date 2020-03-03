@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+<style>
+
+#map-container {
+    position: relative;
+    height: 1000px;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+h2 {
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: #2dc4b2;
+}
+
+#console {
+    font-size: 14px;
+}
+
+</style>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.2/lodash.js"></script>
+<script src="{% static 'js/mapboxgl-spiderifier-master/index.js' %}"></script>
+<link href="{% static 'js/mapboxgl-spiderifier-master/index.css' %}" rel="stylesheet" />
+
+<h1 class="display-4">WHOI HAB Hub</h1>
+
+<div class="alert alert-info" id='console'>
+    <form id="closure-map-filters">
+      <div class="form-row align-items-center">
+        <div class="col-auto">
+            <label class="sr-only" for="inlineFormInputGroup">Start date</label>
+            <div class='input-group date' id='datepicker-start'>
+
+              <input type='text' name="start-date" class="form-control form-control-sm" />
+              <div class="input-group-addon input-group-append">
+
+                    <span class="input-group-text">
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </span>
+
+              </div>
+
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <span> - to - </span>
+
+        </div>
+
+        <div class="col-auto">
+            <label class="sr-only" for="inlineFormInputGroup">End date</label>
+            <div class='input-group date' id='datepicker-end'>
+
+              <input type='text' name="end-date" class="form-control form-control-sm" />
+              <div class="input-group-addon input-group-append">
+
+                    <span class="input-group-text">
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </span>
+
+              </div>
+
+            </div>
+        </div>
+
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+        </div>
+
+        <div class="col-auto">
+          <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
+        </div>
+
+      </div>
+    </form>
+
+</div>
+
+<div id="map-container">
+
+    <div id='map'></div>
+
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+window.onload = function() {
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [-69.75, 41.89],
+        zoom: 6.7,
+    });
+
+    const popupFromZoom = 8;
+
+    $('#datepicker-start').datetimepicker({
+        format: 'MM/DD/YYYY',
+        defaultDate: '{{ earliest_date }}',
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+
+    $('#datepicker-end').datetimepicker({
+        format: 'MM/DD/YYYY',
+        defaultDate: moment(),
+        useCurrent: true,
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+
+    $('#closure-map-filters').submit(function(event) {
+        event.preventDefault();
+        let values = $(this).serializeArray();
+        // Close any existing Popups
+        map.fire('closeAllPopups');
+
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all' %}",
+            data: values,
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_areas_src').setData(data);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all_points' %}",
+            data: values,
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_notices_src').setData(data);
+            }
+        });
+    });
+
+    $('#filter-reset').click(function(event) {
+        // Reset the form field values to defaults
+        $('#datepicker-start').data("DateTimePicker").date('{{ earliest_date }}');
+        $('#datepicker-end').data("DateTimePicker").date(moment());
+        $('#species').val('');
+        $('#organism').val('');
+        // Close any existing Popups
+        map.fire('closeAllPopups');
+
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all' %}",
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_areas_src').setData(data);
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'closures:ajax_load_closures_all_points' %}",
+            success: function (data) {
+              console.log(data);
+              map.getSource('closures_notices_src').setData(data);
+            }
+        });
+    });
+
+    map.on('load', function() {
+        // Add a new source from Django GeoJSON data for all Stations
+        map.addSource("stations_src", {
+            type: "geojson",
+            data: "{% url 'stations:ajax_load_stations_all' %}",
+            buffer: 0,
+            maxzoom: 12,
+        });
+
+        map.addLayer({
+            id: 'stations',
+            type: 'circle',
+            source: 'stations_src',
+            paint: {
+                'circle-color': '#fed976',
+                'circle-radius': 10,
+                'circle-stroke-width': 0,
+                'circle-stroke-color': '#feb24c'
+            }
+        });
+
+
+        map.on('mousemove', mouseMove);
+        map.on('click', mouseClick);
+        map.on('zoom', function() {
+            if (map.getZoom() > popupFromZoom) {
+                //stateLegendEl.style.display = 'none';
+                //countyLegendEl.style.display = 'block';
+            } else {
+                //stateLegendEl.style.display = 'block';
+                //countyLegendEl.style.display = 'none';
+            }
+        });
+
+    });
+
+    function mouseClick(e) {
+      let features = map.queryRenderedFeatures(e.point, {
+          layers: ['stations']
+      });
+
+      if (!features.length) {
+          return;
+      } else if (map.getZoom() < popupFromZoom) {
+          map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
+      } else {
+          let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '300px'})
+              .setLngLat(e.lngLat)
+              .setHTML('<div class="notice-popup-content">&nbsp;</div>')
+              .addTo(map);
+
+          // Add a custom event listener to the map to close Popups
+          map.on('closeAllPopups', () => {
+            popup.remove();
+          });
+
+      }
+    }
+
+    function mouseMove(e) {
+      let features = map.queryRenderedFeatures(e.point, {
+        layers: ['stations']
+      });
+      map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    }
+};
+</script>
+{% endblock javascript %}
