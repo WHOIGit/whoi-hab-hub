@@ -37,8 +37,8 @@ def _build_stations_geojson(stations_qs):
                             "state": station.state,
                             "station_location": station.station_location,
                             "datapoint_count": station.datapoints.count(),
-                            "station_mean": station_mean,
-                            "station_max": station_max,
+                            "station_mean": float(station_mean),
+                            "station_max": float(station_max),
                             },
                         "geometry": {
                           "type": station.geom.geom_type,

@@ -124,7 +124,17 @@ window.onload = function() {
         zoom: 6.7,
     });
 
-    const popupFromZoom = 8;
+    const popupFromZoom = 7.5;
+
+    // filters for classifying earthquakes into five categories based on magnitude
+    let mag1 = ['<', ['get', 'station_max'], 20];
+    let mag2 = ['all', ['>=', ['get', 'station_max'], 20], ['<', ['get', 'station_max'], 40]];
+    let mag3 = ['all', ['>=', ['get', 'station_max'], 40], ['<', ['get', 'station_max'], 60]];
+    let mag4 = ['all', ['>=', ['get', 'station_max'], 60], ['<', ['get', 'station_max'], 80]];
+    let mag5 = ['>=', ['get', 'station_max'], 80];
+
+    // colors to use for the categories
+    let colors = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
 
     $('#datepicker-start').datetimepicker({
         format: 'MM/DD/YYYY',
@@ -224,10 +234,20 @@ window.onload = function() {
             type: 'circle',
             source: 'stations_src',
             paint: {
-                'circle-color': '#fed976',
-                'circle-radius': 10,
-                'circle-stroke-width': 0,
-                'circle-stroke-color': '#feb24c'
+                'circle-color': [
+                    'case',
+                    mag1,
+                    colors[0],
+                    mag2,
+                    colors[1],
+                    mag3,
+                    colors[2],
+                    mag4,
+                    colors[3],
+                    colors[4]
+                ],
+                'circle-opacity': 0.6,
+                'circle-radius': 12
             }
         });
 
