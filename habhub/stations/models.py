@@ -41,6 +41,7 @@ class Datapoint(models.Model):
 
     class Meta:
         ordering = ['-measurement_date']
+        get_latest_by = 'measurement_date'
 
     def __str__(self):
         return '%s - %s' % (self.station.station_name, self.measurement_date)

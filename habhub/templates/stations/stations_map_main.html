@@ -18,17 +18,6 @@
   width: 100%;
 }
 
-h1 {
-  font-size: 20px;
-  line-height: 30px;
-}
-
-h2 {
-  font-size: 14px;
-  line-height: 20px;
-  margin-bottom: 10px;
-}
-
 a {
   text-decoration: none;
   color: #2dc4b2;
@@ -44,13 +33,16 @@ a {
 <link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.2/lodash.js"></script>
-<script src="{% static 'js/mapboxgl-spiderifier-master/index.js' %}"></script>
-<link href="{% static 'js/mapboxgl-spiderifier-master/index.css' %}" rel="stylesheet" />
+
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
 
 <h1 class="display-4">WHOI HAB Hub</h1>
+<hr>
+<h4>Shellfish Toxicity Data by Station</h4>
 
 <div class="alert alert-info" id='console'>
-    <form id="closure-map-filters">
+    <form id="station-map-filters">
       <div class="form-row align-items-center">
         <div class="col-auto">
             <label class="sr-only" for="inlineFormInputGroup">Start date</label>
@@ -97,6 +89,21 @@ a {
           <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
         </div>
 
+        <div class="col-auto">
+            <div class="form-check">
+              <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-max-label-filter" value="stations_max_label" checked>
+              <label class="form-check-label" for="stations_max_label">
+                Show Max Value
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-mean-label-filter" value="stations_mean_label">
+              <label class="form-check-label" for="stations_mean_label">
+                Show Mean Value
+              </label>
+            </div>
+        </div>
+
       </div>
     </form>
 
@@ -126,15 +133,48 @@ window.onload = function() {
 
     const popupFromZoom = 7.5;
 
-    // filters for classifying earthquakes into five categories based on magnitude
-    let mag1 = ['<', ['get', 'station_max'], 20];
-    let mag2 = ['all', ['>=', ['get', 'station_max'], 20], ['<', ['get', 'station_max'], 40]];
-    let mag3 = ['all', ['>=', ['get', 'station_max'], 40], ['<', ['get', 'station_max'], 60]];
-    let mag4 = ['all', ['>=', ['get', 'station_max'], 60], ['<', ['get', 'station_max'], 80]];
-    let mag5 = ['>=', ['get', 'station_max'], 80];
+    // filters for classifying stations by max values into five categories
+    let max1 = ['<', ['get', 'station_max'], 20];
+    let max2 = ['all', ['>=', ['get', 'station_max'], 20], ['<', ['get', 'station_max'], 40]];
+    let max3 = ['all', ['>=', ['get', 'station_max'], 40], ['<', ['get', 'station_max'], 60]];
+    let max4 = ['all', ['>=', ['get', 'station_max'], 60], ['<', ['get', 'station_max'], 80]];
+    let max5 = ['>=', ['get', 'station_max'], 80];
+
+    // filters for classifying stations by mean values into five categories
+    let mean1 = ['<', ['get', 'station_mean'], 20];
+    let mean2 = ['all', ['>=', ['get', 'station_mean'], 20], ['<', ['get', 'station_mean'], 40]];
+    let mean3 = ['all', ['>=', ['get', 'station_mean'], 40], ['<', ['get', 'station_mean'], 60]];
+    let mean4 = ['all', ['>=', ['get', 'station_mean'], 60], ['<', ['get', 'station_mean'], 80]];
+    let mean5 = ['>=', ['get', 'station_mean'], 80];
 
     // colors to use for the categories
     let colors = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
+
+    let maxPaintCase = [
+        'case',
+        max1,
+        colors[0],
+        max2,
+        colors[1],
+        max3,
+        colors[2],
+        max4,
+        colors[3],
+        colors[4]
+    ]
+
+    let meanPaintCase = [
+        'case',
+        mean1,
+        colors[0],
+        mean2,
+        colors[1],
+        mean3,
+        colors[2],
+        mean4,
+        colors[3],
+        colors[4]
+    ]
 
     $('#datepicker-start').datetimepicker({
         format: 'MM/DD/YYYY',
@@ -169,53 +209,52 @@ window.onload = function() {
         }
     });
 
-    $('#closure-map-filters').submit(function(event) {
+    $('#station-map-filters').submit(function(event) {
         event.preventDefault();
         let values = $(this).serializeArray();
         // Close any existing Popups
         map.fire('closeAllPopups');
 
         $.ajax({
-            url: "{% url 'closures:ajax_load_closures_all' %}",
+            url: "{% url 'stations:ajax_load_stations_filtered' %}",
             data: values,
             success: function (data) {
               console.log(data);
-              map.getSource('closures_areas_src').setData(data);
+              map.getSource('stations_src').setData(data);
             }
         });
+    });
 
-        $.ajax({
-            url: "{% url 'closures:ajax_load_closures_all_points' %}",
-            data: values,
-            success: function (data) {
-              console.log(data);
-              map.getSource('closures_notices_src').setData(data);
-            }
-        });
+    $('.label-filter').click(function () {
+        console.log(this.value);
+        layer = this.value;
+        if (layer == 'stations_max_label') {
+            // hide the other label layer
+            map.setLayoutProperty('stations_mean_label', 'visibility', 'none');
+            // set the Paint property
+            map.setPaintProperty('stations', 'circle-color', maxPaintCase);
+        } else {
+            // hide the other label layer
+            map.setLayoutProperty('stations_max_label', 'visibility', 'none');
+            // set the Paint property
+            map.setPaintProperty('stations', 'circle-color', meanPaintCase);
+        }
+        map.setLayoutProperty(layer, 'visibility', 'visible');
+
     });
 
     $('#filter-reset').click(function(event) {
         // Reset the form field values to defaults
         $('#datepicker-start').data("DateTimePicker").date('{{ earliest_date }}');
         $('#datepicker-end').data("DateTimePicker").date(moment());
-        $('#species').val('');
-        $('#organism').val('');
         // Close any existing Popups
         map.fire('closeAllPopups');
 
         $.ajax({
-            url: "{% url 'closures:ajax_load_closures_all' %}",
+            url: "{% url 'stations:ajax_load_stations_all' %}",
             success: function (data) {
               console.log(data);
-              map.getSource('closures_areas_src').setData(data);
-            }
-        });
-
-        $.ajax({
-            url: "{% url 'closures:ajax_load_closures_all_points' %}",
-            success: function (data) {
-              console.log(data);
-              map.getSource('closures_notices_src').setData(data);
+              map.getSource('stations_src').setData(data);
             }
         });
     });
@@ -234,23 +273,42 @@ window.onload = function() {
             type: 'circle',
             source: 'stations_src',
             paint: {
-                'circle-color': [
-                    'case',
-                    mag1,
-                    colors[0],
-                    mag2,
-                    colors[1],
-                    mag3,
-                    colors[2],
-                    mag4,
-                    colors[3],
-                    colors[4]
-                ],
+                'circle-color': maxPaintCase,
                 'circle-opacity': 0.6,
                 'circle-radius': 12
             }
         });
 
+        map.addLayer({
+            id: 'stations_max_label',
+            type: 'symbol',
+            source: 'stations_src',
+            layout: {
+                'text-field': [
+                    'number-format',
+                    ['get', 'station_max'],
+                    { 'min-fraction-digits': 1, 'max-fraction-digits': 1 }
+                ],
+                'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                'text-size': 10
+            }
+        });
+
+        map.addLayer({
+            id: 'stations_mean_label',
+            type: 'symbol',
+            source: 'stations_src',
+            layout: {
+                'visibility': 'none',
+                'text-field': [
+                    'number-format',
+                    ['get', 'station_mean'],
+                    { 'min-fraction-digits': 1, 'max-fraction-digits': 1 }
+                ],
+                'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                'text-size': 10
+            }
+        });
 
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
@@ -266,6 +324,11 @@ window.onload = function() {
 
     });
 
+    let toggleableLayerIds = ['stations_max_label', 'stations_mean_label'];
+    toggleableLayerIds.forEach(function(item, index, arr) {
+
+    });
+
     function mouseClick(e) {
       let features = map.queryRenderedFeatures(e.point, {
           layers: ['stations']
@@ -276,10 +339,27 @@ window.onload = function() {
       } else if (map.getZoom() < popupFromZoom) {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-          let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '300px'})
+          let stationID = features[0].properties.id;
+          console.log(stationID);
+          let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '800px'})
               .setLngLat(e.lngLat)
-              .setHTML('<div class="notice-popup-content">&nbsp;</div>')
+              .setHTML('<div id="station-popup-content"></div>')
               .addTo(map);
+
+          $.ajax({
+              url: '/stations/maps/ajax/load-station-chart/'  + stationID + '/',
+              dataType: 'json',
+              success: function (data) {
+                  chartData = data.series[0].data;
+                  chartData.forEach(function(point) {
+                      point[0] = Date.parse(point[0])
+                  });
+
+                  chartData.sort();
+                  console.log(chartData);
+                  Highcharts.chart("station-popup-content", data);
+              }
+          });
 
           // Add a custom event listener to the map to close Popups
           map.on('closeAllPopups', () => {

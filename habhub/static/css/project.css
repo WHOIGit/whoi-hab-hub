@@ -42,13 +42,6 @@ svg#navbar-logo {
 
 /* Pop up window styling */
 
-.station-popup {
-    width: 400px;
-    height: 350px;
-    min-height: 120px;
-    overflow-y: scroll;
-}
-
 .cruise-popup {
     width: 400px;
     max-height: 350px;
