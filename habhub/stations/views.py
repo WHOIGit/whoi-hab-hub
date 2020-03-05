@@ -168,7 +168,7 @@ class StationAjaxGetChartView(View):
             }
 
             datapoint_series = {
-                'name': 'Shellfish meat measurement',
+                'name': 'Shellfish meat toxicity',
                 'data': datapoint_series_data,
             }
 
