@@ -14,11 +14,6 @@ class ShellfishArea(models.Model):
         ('NH', 'New Hampshire'),
     )
 
-    CURRENT_STATUS = (
-        ('Open', 'Open'),
-        ('Closed', 'Closed'),
-    )
-
     name = models.CharField(max_length=100, db_index=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, db_index=True)
     geom =  models.MultiPolygonField(srid=4326)
@@ -46,6 +41,28 @@ class ShellfishArea(models.Model):
         else:
             status = 'Open'
         return status
+
+
+class ShellfishAreaImport(models.Model):
+    STATES = (
+        ('ME', 'Maine'),
+        ('MA', 'Massachusetts'),
+        ('NH', 'New Hampshire'),
+    )
+
+    name = models.CharField(max_length=100, db_index=True)
+    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, db_index=True)
+    geom =  models.MultiPolygonField(srid=4326)
+    acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
+    area_description = models.CharField(max_length=1000, null=False, blank=True)
+    area_class = models.CharField(max_length=100, null=False, blank=True)
+    atlas_key = models.CharField(max_length=100, null=False, blank=True)
+
+    class Meta:
+        ordering = ['state', 'name']
+
+    def __str__(self):
+        return self.name
 
 
 class Landmark(models.Model):
@@ -130,7 +147,10 @@ class ClosureNotice(models.Model):
 
     def get_state(self):
         area = self.shellfish_areas.first()
-        state = area.get_state_display()
+        if area:
+            state = area.get_state_display()
+        else:
+            state = None
         return state
     get_state.short_description = 'State'
 

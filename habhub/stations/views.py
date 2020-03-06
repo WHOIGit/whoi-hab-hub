@@ -167,6 +167,23 @@ class StationAjaxGetChartView(View):
                 'type': 'datetime',
             }
 
+            y_axis = {
+                'title': 'Shellfish meat toxicity',
+                'min': 0,
+                'softMax': 150,
+                'plotLines': [{
+                    'value': 80,
+                    'color': 'red',
+                    'dashStyle': 'shortdash',
+                    'width': 2,
+                    'label': {
+                        'text': 'Closure threshold'
+                    }
+                }]
+            }
+
+            plot_options = {'series': {'threshold': 100}}
+
             datapoint_series = {
                 'name': 'Shellfish meat toxicity',
                 'data': datapoint_series_data,
@@ -175,8 +192,9 @@ class StationAjaxGetChartView(View):
             chart = {
                 'chart': {'type': 'spline'},
                 'title': {'text': station_obj.station_location},
-                'yAxis': {'title': 'Shellfish meat toxicity'},
+                'yAxis': y_axis,
                 'xAxis': x_axis,
+                'plotOptions': plot_options,
                 #'plotOptions': plot_options,
                 'series': [datapoint_series],
             }
