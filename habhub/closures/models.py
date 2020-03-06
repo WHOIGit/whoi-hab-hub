@@ -25,6 +25,8 @@ class ShellfishArea(models.Model):
     acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
     area_description = models.CharField(max_length=1000, null=False, blank=True)
     area_class = models.CharField(max_length=100, null=False, blank=True)
+    atlas_key = models.CharField(max_length=100, null=False, blank=True)
+    is_atlas_combined_area = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['state', 'name']
