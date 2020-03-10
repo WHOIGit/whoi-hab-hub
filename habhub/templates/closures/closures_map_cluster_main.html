@@ -438,14 +438,19 @@ window.onload = function() {
     function buildClosureEventList(shellfishAreaID, noticeID) {
         // Send AJAX request to get the ClosureDataEvent list for each Closure
         $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfishAreaID + '/' + noticeID + '/').done(function(data) {
-            console.log(data);
+
+            let downloadLink = '';
+            if (data.document_url) {
+                downloadLink = `<a href="${data.document_url}" target="_blank">View notice</a>`
+            }
+
             let eventCard = `
             <div class="card mb-2">
                 <div class="card-header">
                     <strong>Closure Date: ${data.effective_date}</strong><br>
                     Total Duration: ${data.total_duration}<br>
                     Causative Organism: <i>${data.causative_organism}</i><br>
-                    <a href="${data.document_url}" target="_blank">View notice</a>
+                    ${ downloadLink }
                 </div>
                 <ul class="list-group list-group-flush" id="species-list-${data.closure_id}">
                 </ul>
