@@ -36,6 +36,8 @@ urlpatterns = [
     path('stations/', include('habhub.stations.urls', namespace='stations')),
     path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
     path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
+    # API urls
+    path('api/v1/', include('habhub.stations.api.urls')),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
 

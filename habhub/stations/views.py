@@ -211,7 +211,6 @@ class StationMapMainView(TemplateView):
         # Get the earliest available notice date for the filter form
         datapoint_obj = Datapoint.objects.earliest()
         earliest_date = datapoint_obj.measurement_date.strftime("%m/%d/%Y")
-        print(earliest_date)
 
         context.update({
             'earliest_date': earliest_date,

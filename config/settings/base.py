@@ -75,6 +75,7 @@ THIRD_PARTY_APPS = [
     'leaflet',
     'django_summernote', #WYSIWYG
     'multiselectfield',
+    'rest_framework_gis',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
@@ -264,6 +265,16 @@ SOCIALACCOUNT_ADAPTER = 'habhub.users.adapters.SocialAccountAdapter'
 
 # Custom HABHub stuff
 # ------------------------------------------------------------------------------
+# REST framework settings
+REST_FRAMEWORK = {
+    # When you enable API versioning, the request.version attribute will contain a string
+    # that corresponds to the version requested in the incoming client request.
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    #'DEFAULT_PERMISSION_CLASSES': [
+    #    'rest_framework.permissions.IsAuthenticated',
+    #]
+}
+
 #Django Import Export settings
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
