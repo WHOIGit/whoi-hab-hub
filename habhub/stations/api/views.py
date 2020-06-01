@@ -9,7 +9,7 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (filters.SearchFilter,)
 
     def get_queryset(self):
-        queryset = Station.objects.all().get_max_mean_values()
+        queryset = Station.objects.all()
         # Set up eager loading to avoid N+1 selects
         queryset = self.get_serializer_class().setup_eager_loading(queryset)
         return queryset
