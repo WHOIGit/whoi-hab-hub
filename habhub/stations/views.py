@@ -13,104 +13,6 @@ from habhub.esp_instrument.models import Deployment
 from habhub.ifcb_cruises.models import Cruise
 
 
-########## Functions to use within Station CBVs ###########
-"""
-Function to build custom JSON objects to return Station objects.
-Returns JSON
-Args: 'stations_qs' - Django queryset of Station model
-"""
-def _build_stations_geojson(stations_qs):
-
-    geojson_data = {
-        'type': 'FeatureCollection',
-        'features': [],
-        'crs': {
-            'href': 'https://spatialreference.org/ref/epsg/4326/',
-            'type': 'proj4'
-        }
-    }
-
-    for station in stations_qs:
-        station_aggs = station.datapoints.aggregate(Avg('measurement'), Max('measurement'))
-        station_mean = round(station.station_mean)
-        station_max = round(station.station_max)
-
-        station_data = {"type": "Feature",
-                        "properties": {
-                            "station_name":  station.station_name,
-                            "id":  station.id,
-                            "state": station.state,
-                            "station_location": station.station_location,
-                            "datapoint_count": station.datapoints.count(),
-                            "station_mean": float(station_mean),
-                            "station_max": float(station_max),
-                            },
-                        "geometry": {
-                          "type": station.geom.geom_type,
-                          "coordinates": station.geom.coords,
-                          }
-                        }
-        geojson_data['features'].append(station_data)
-
-    return geojson_data
-
-"""
-Function to build custom JSON objects to return Station objects filtered by date.
-Returns JSON
-Args: 'stations_qs' - Django queryset of Station model
-      'start_date_obj' - Python date object
-      'end_date_obj' - Python date object
-"""
-def _build_stations_filtered_geojson(stations_qs, start_date_obj, end_date_obj):
-
-    geojson_data = {
-        'type': 'FeatureCollection',
-        'features': [],
-        'crs': {
-            'href': 'https://spatialreference.org/ref/epsg/4326/',
-            'type': 'proj4'
-        }
-    }
-
-    for station in stations_qs:
-        datapoints_qs = station.datapoints.filter(measurement_date__range=[start_date_obj, end_date_obj])
-        station_aggs = datapoints_qs.aggregate(Avg('measurement'), Max('measurement'))
-        station_mean = round(station_aggs['measurement__avg'], 1)
-        station_max = round(station_aggs['measurement__max'], 1)
-
-        station_data = {"type": "Feature",
-                        "properties": {
-                            "station_name":  station.station_name,
-                            "id":  station.id,
-                            "state": station.state,
-                            "station_location": station.station_location,
-                            "datapoint_count": station.datapoints.count(),
-                            "station_mean": float(station_mean),
-                            "station_max": float(station_max),
-                            },
-                        "geometry": {
-                          "type": station.geom.geom_type,
-                          "coordinates": station.geom.coords,
-                          }
-                        }
-        geojson_data['features'].append(station_data)
-
-    return geojson_data
-
-
-######### AJAX Views to return geoJSON for maps #############
-
-# Function to load data for each Station dynamically on marker click
-def load_station_data(request):
-    station_id = request.GET.get('station_id')
-
-    if station_id:
-        station = Station.objects.get(id=station_id)
-    else:
-        station = None
-    return render(request, 'stations/station_popup.html', {'station': station})
-
-
 ######### AJAX Views to return geoJSON for maps #############
 # AJAX views to get GeoJSON responses for all Stations map layer
 class StationAjaxGetAllView(View):
@@ -144,31 +46,6 @@ class StationAjaxGetAllView(View):
         stations_list_json = stations_serializer.data
 
         return JsonResponse(stations_list_json)
-
-
-# AJAX views to get GeoJSON responses for Stations map layer filtered by date
-class StationAjaxGetFilteredView(View):
-
-    def get(self, request, *args, **kwargs):
-        stations_qs = Station.objects.all()
-        # Check if there are search query parameters in the AJAX request, assign variables
-        if request.GET:
-            start_date = request.GET.get('start-date')
-            end_date = request.GET.get('end-date')
-            start_date_obj = None
-            end_date_obj = None
-
-            if start_date:
-                start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
-            if end_date:
-                end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
-
-            # Chain extra filter queries if used.
-            if start_date_obj and end_date_obj:
-                stations_qs = stations_qs.filter(datapoints__measurement_date__range=[start_date_obj, end_date_obj])
-
-        geojson_data = _build_stations_filtered_geojson(stations_qs, start_date_obj, end_date_obj)
-        return JsonResponse(geojson_data)
 
 
 # AJAX views to get GeoJSON responses for all Stations map layer
