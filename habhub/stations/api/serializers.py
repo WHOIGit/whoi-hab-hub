@@ -16,13 +16,17 @@ class StationSerializer(GeoFeatureModelSerializer):
 
     def get_station_max(self, obj):
         dict = obj.get_max_mean_values()
-        station_max = round(dict['station_max'])
-        return station_max
+        if dict['station_max']:
+            station_max = float(round(dict['station_max'], 1))
+            return station_max
+        return 0
 
     def get_station_mean(self, obj):
         dict = obj.get_max_mean_values()
-        station_mean = round(dict['station_mean'])
-        return station_mean
+        if dict['station_mean']:
+            station_mean = float(round(dict['station_mean'], 1))
+            return station_mean
+        return 0
 
     def get_datapoints(self, obj):
         # Check if user wants to exclude datapoints

@@ -50,7 +50,7 @@ a {
             <label class="sr-only" for="inlineFormInputGroup">Start date</label>
             <div class='input-group date' id='datepicker-start'>
 
-              <input type='text' name="start-date" class="form-control form-control-sm" />
+              <input type='text' name="start_date" class="form-control form-control-sm" />
               <div class="input-group-addon input-group-append">
 
                     <span class="input-group-text">
@@ -71,7 +71,7 @@ a {
             <label class="sr-only" for="inlineFormInputGroup">End date</label>
             <div class='input-group date' id='datepicker-end'>
 
-              <input type='text' name="end-date" class="form-control form-control-sm" />
+              <input type='text' name="end_date" class="form-control form-control-sm" />
               <div class="input-group-addon input-group-append">
 
                     <span class="input-group-text">
@@ -218,7 +218,7 @@ window.onload = function() {
         map.fire('closeAllPopups');
 
         $.ajax({
-            url: "{% url 'stations:ajax_load_stations_filtered' %}",
+            url: "{% url 'stations:ajax_load_stations_all' %}",
             data: values,
             success: function (data) {
               console.log(data);
@@ -341,7 +341,7 @@ window.onload = function() {
       } else if (map.getZoom() < popupFromZoom) {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-          let stationID = features[0].properties.id;
+          let stationID = features[0].id;
           console.log(stationID);
           let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '800px'})
               .setLngLat(e.lngLat)

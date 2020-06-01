@@ -3,7 +3,7 @@ import datetime
 from django.core.cache import cache
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Avg, Max
+from django.db.models import Avg, Max, Prefetch
 from django.views.generic import View, DetailView, ListView, TemplateView
 
 from .models import Station, Datapoint
@@ -117,18 +117,31 @@ class StationAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
 
-        stations_list_json = cache.get('stations_list_json')
-        if not stations_list_json:
-            # Get the Station data from the DRF API
-            stations_qs = Station.objects.all()
-            stations_serializer = StationSerializer(
-                stations_qs,
-                many=True,
-                context={'request': request, 'exclude_dataseries': True}
-            )
-            stations_list_json = stations_serializer.data
-            #stations_list_json = StationViewSet.as_view({'get': 'list', 'exclude_dataseries':'true'})(request).data
-            cache.set('stations_list_json', stations_list_json, 60)
+        # Get the Station data from the DRF API
+        stations_qs = Station.objects.all()
+        start_date_obj = None
+        end_date_obj = None
+
+        if request.GET:
+            start_date = request.GET.get('start_date')
+            end_date = request.GET.get('end_date')
+
+            if start_date:
+                start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
+            if end_date:
+                end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
+
+        if start_date_obj and end_date_obj:
+            stations_qs = stations_qs.prefetch_related(Prefetch(
+                'datapoints',
+                queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj])))
+
+        stations_serializer = StationSerializer(
+            stations_qs,
+            many=True,
+            context={'request': request, 'exclude_dataseries': True}
+        )
+        stations_list_json = stations_serializer.data
 
         return JsonResponse(stations_list_json)
 

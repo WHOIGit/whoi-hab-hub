@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
     'django_summernote', #WYSIWYG
     'multiselectfield',
     'rest_framework_gis',
+    'django_filters',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
