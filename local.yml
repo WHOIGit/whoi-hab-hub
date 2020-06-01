@@ -61,4 +61,4 @@ services:
       - redis
 
   redis:
-    image: "redis:5.0.6"
+    image: redis:6.0

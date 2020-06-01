@@ -1,5 +1,6 @@
 from django.utils.timezone import now
 from django.contrib.gis.db import models
+from django.db.models import Avg, Max
 
 # Create your models here.
 
@@ -20,6 +21,9 @@ class Station(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.station_name, self.station_location)
+
+    def get_max_mean_values(self):
+        return self.datapoints.aggregate(station_mean=Avg('measurement'), station_max=Max('measurement'))
 
 
 class Species(models.Model):

@@ -1,11 +1,14 @@
 import datetime
 
+from django.core.cache import cache
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Avg, Max
 from django.views.generic import View, DetailView, ListView, TemplateView
 
 from .models import Station, Datapoint
+from .api.views import StationViewSet
+from .api.serializers import StationSerializer
 from habhub.esp_instrument.models import Deployment
 from habhub.ifcb_cruises.models import Cruise
 
@@ -29,8 +32,8 @@ def _build_stations_geojson(stations_qs):
 
     for station in stations_qs:
         station_aggs = station.datapoints.aggregate(Avg('measurement'), Max('measurement'))
-        station_mean = round(station_aggs['measurement__avg'], 1)
-        station_max = round(station_aggs['measurement__max'], 1)
+        station_mean = round(station.station_mean)
+        station_max = round(station.station_max)
 
         station_data = {"type": "Feature",
                         "properties": {
@@ -113,9 +116,21 @@ def load_station_data(request):
 class StationAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
-        stations_qs = Station.objects.all()
-        geojson_data = _build_stations_geojson(stations_qs)
-        return JsonResponse(geojson_data)
+
+        stations_list_json = cache.get('stations_list_json')
+        if not stations_list_json:
+            # Get the Station data from the DRF API
+            stations_qs = Station.objects.all()
+            stations_serializer = StationSerializer(
+                stations_qs,
+                many=True,
+                context={'request': request, 'exclude_dataseries': True}
+            )
+            stations_list_json = stations_serializer.data
+            #stations_list_json = StationViewSet.as_view({'get': 'list', 'exclude_dataseries':'true'})(request).data
+            cache.set('stations_list_json', stations_list_json, 60)
+
+        return JsonResponse(stations_list_json)
 
 
 # AJAX views to get GeoJSON responses for Stations map layer filtered by date
