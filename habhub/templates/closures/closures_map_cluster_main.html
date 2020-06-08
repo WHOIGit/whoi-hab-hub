@@ -238,7 +238,7 @@ window.onload = function() {
         let filterYear = ['!=', ['number', ['get', 'year']], 1900];
         let filterMonth = ['!=', ['number', ['get', 'month']], 13];
 
-        // Add a new source from Django GeoJSON data for MA shellfish_area shapes
+        // Add a new source from Django GeoJSON data for shellfish_area shapes
         map.addSource("closures_areas_src", {
             type: "geojson",
             data: "{% url 'closures:ajax_load_closures_all' %}",

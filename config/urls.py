@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
 from habhub.stations import views as stations_views
+from habhub.closures import views as closures_views
 from habhub.esp_instrument import views as esp_instrument_views
 
 admin.site.site_header = 'WHOI HABHub Administration'                    # default: "Django Administration"
@@ -37,6 +38,7 @@ urlpatterns = [
     path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
     # API urls
     path('api/v1/', include('habhub.stations.api.urls')),
+    path('api/v1/closure-notices/', closures_views.ClosureNoticeAjaxGetAllView.as_view(), name='api_closure_notices_all'),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
 

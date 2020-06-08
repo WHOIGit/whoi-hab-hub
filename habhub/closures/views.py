@@ -121,14 +121,24 @@ def _build_closure_notice_geojson(closures_qs):
             else:
                 geom = None
 
+            if closure.causative_organism:
+                causative_organism = closure.causative_organism.name
+            else:
+                causative_organism = 'Unknown'
+
             closure_data = {"type": "Feature",
                             "properties": {
                                 "title":  closure.title,
                                 "id":  closure.id,
                                 "state": shellfish_area.state,
+                                "shellfish_area_id": shellfish_area.id,
+                                "shellfish_area_name": shellfish_area.name,
+                                "shellfish_area_description": shellfish_area.area_description,
                                 "year": closure.effective_date.year,
                                 "month": closure.effective_date.month,
                                 "species": [species.name for species in closure.species.all()],
+                                "causative_organism": causative_organism,
+                                "effective_date" : closure.effective_date,
                                 },
                             "geometry": {
                               "type": shellfish_area.geom.geom_type,
@@ -245,9 +255,11 @@ def _build_closure_notice_circle_points_geojson(closures_qs):
                                 "title":  closure.title,
                                 "id":  closure.id,
                                 "state": shellfish_area.state,
+                                "shellfish_area_name": shellfish_area.name,
                                 "year": closure.effective_date.year,
                                 "month": closure.effective_date.month,
                                 "species": [species.name for species in closure.species.all()],
+                                "causative_organism": [closure.causative_organism.name],
                                 },
                             "geometry": {
                               "type": 'Point',
@@ -325,7 +337,6 @@ class ClosureNoticeAjaxGetAllView(View):
             if organism:
                 closures_qs = closures_qs.filter(causative_organism=organism)
 
-        print(closures_qs.count())
         # Create custom geojson response object with custom function
         geojson_data = _build_closure_notice_geojson(closures_qs)
         return JsonResponse(geojson_data)
