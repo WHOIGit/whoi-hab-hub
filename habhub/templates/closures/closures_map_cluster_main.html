@@ -397,14 +397,64 @@ window.onload = function() {
     });
 
     // Function to create the popup content and map overlay for Shellfish Area on clicking cluster
-    function buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc) {
-        let shellfishAreaTitle = `
+    function buildShellfishAreaOnClick(data) {
+        console.log(data);
+        if (typeof data['closure_notices'] !== 'undefined') {
+            var closure_notices = data['closure_notices'];
+            var shellfishAreaID = data['closure_notices'][0].properties.shellfish_area_id;
+            var shellfishAreaName = data['shellfish_area'];
+            var shellfishAreaDesc = data['closure_notices'][0].properties.shellfish_area_description;
+        } else {
+            var closure_notices = data
+            var shellfishAreaID = data[0].properties.shellfish_area_id;
+            var shellfishAreaName = data[0].properties.shellfish_area_name;
+            var shellfishAreaDesc = data[0].properties.shellfish_area_description;
+        }
+
+        let shellfishAreaPopup = `
             <div id="popup-shellfish-area-${shellfishAreaID}">
                 <h6>${shellfishAreaDesc}</h6>
                 <p>Shellfish Area: ${shellfishAreaName}</p>
             </div>
         `
-        $( ".notice-popup-content" ).append( shellfishAreaTitle );
+        $( ".notice-popup-content" ).append( shellfishAreaPopup );
+
+
+        closure_notices.forEach(function(item, index, arr){
+            let downloadLink = '';
+            if (item.properties.document_url) {
+                downloadLink = `<a href="${item.properties.document_url}" target="_blank">View notice</a>`
+            }
+
+            let eventCard = `
+            <div class="card mb-2">
+                <div class="card-header">
+                    <strong>Closure Date: ${item.properties.effective_date}</strong><br>
+                    Total Duration: ${item.properties.effective_date}<br>
+                    Causative Organism: <i>${item.properties.causative_organism}</i><br>
+                    ${ downloadLink }
+                </div>
+                <ul class="list-group list-group-flush" id="species-list-${item.properties.id}">
+                </ul>
+            </div>
+            `
+            $( "#popup-shellfish-area-" + shellfishAreaID ).append( eventCard );
+            console.log(typeof(item.properties.closure_events));
+            if (typeof item.properties.closure_events == 'string') {
+                item.properties.closure_events = JSON.parse(item.properties.closure_events);
+            }
+
+            item.properties.closure_events.forEach(function(itemEvent, index, arr){
+                let species = `
+                    <li class="list-group-item">
+                        ${itemEvent.event.species}<br>
+                        Duration: ${itemEvent.event.duration}
+                    </li>
+                `
+                $( '#species-list-' + item.properties.id ).append( species );
+            });
+
+        });
 
         let mapLayer = map.getLayer('shellfish-area-' + shellfishAreaID);
 
@@ -437,7 +487,7 @@ window.onload = function() {
     // Function to build the list of Closure Events for each Notice
     function buildClosureEventList(shellfishAreaID, noticeID) {
         // Send AJAX request to get the ClosureDataEvent list for each Closure
-        $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfishAreaID + '/' + noticeID + '/').done(function(data) {
+        $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfishAreaID + '/' + noticeID + '/', function(data) {
 
             let downloadLink = '';
             if (data.document_url) {
@@ -459,7 +509,6 @@ window.onload = function() {
             $( "#popup-shellfish-area-" + shellfishAreaID ).append( eventCard );
 
             data['features'].forEach(function(item, index, arr){
-                console.log(item);
                 let species = `
                     <li class="list-group-item">
                         ${item.event.species}<br>
@@ -491,7 +540,6 @@ window.onload = function() {
 
               allLayers.forEach(function(item, index, arr){
                   if (item['id'].includes('shellfish-area')) {
-                      console.log(item);
                       map.removeLayer(item['id']);
                       map.removeSource(item['source']);
                   }
@@ -518,24 +566,24 @@ window.onload = function() {
                                     // Group the elements of Array based on `shellfish_area_name` property
                                     .groupBy(feature => feature.properties.shellfish_area_name)
                                     // `key` is group's name (shellfish_area_name), `value` is the array of objects
-                                    .map((value, key) => ({ shellfish_area: key, closure_events: value }))
+                                    .map((value, key) => ({ shellfish_area: key, closure_notices: value }))
                                     .value()
 
                     grouped_shellfish_areas.forEach(function(item_group, index_group, arr_group){
                         console.log(item_group);
-                        let shellfishAreaID = item_group['closure_events'][0].properties.shellfish_area_id;
-                        let shellfishAreaName = item_group['shellfish_area'];
-                        let shellfishAreaDesc = item_group['closure_events'][0].properties.shellfish_area_description
                         // Call the function to create the popup content and map overlay
-                        buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc);
+                        buildShellfishAreaOnClick(item_group);
+                        /*
+                        let sorted_events = _.orderBy( item_group['closure_events'], 'properties.effective_date', 'desc' );
+                        sorted_events.forEach(function(item, index, arr){
 
-                        item_group['closure_events'].forEach(function(item, index, arr){
                             let leaf_props = item.properties;
                             let shellfishAreaID = leaf_props.shellfish_area_id;
                             let noticeID = leaf_props.id;
                             // Call the function to build the list of Closure Events
                             buildClosureEventList(shellfishAreaID, noticeID);
                         });
+                        */
                     });
 
                     if (err) {
@@ -545,13 +593,13 @@ window.onload = function() {
               }
             );
         } else {
-            console.log(features);
+            console.log(features)
             let noticeID = features[0].properties.id;
             let shellfishAreaID = features[0].properties.shellfish_area_id;
             let shellfishAreaName = features[0].properties.shellfish_area_name;
             let shellfishAreaDesc = features[0].properties.shellfish_area_description;
-            buildShellfishAreaOnClick(shellfishAreaID, shellfishAreaName, shellfishAreaDesc);
-            buildClosureEventList(shellfishAreaID, noticeID);
+            buildShellfishAreaOnClick(features);
+            //buildClosureEventList(shellfishAreaID, noticeID);
         }
       }
     }

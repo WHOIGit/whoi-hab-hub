@@ -1,7 +1,10 @@
 import random
 import datetime
+import itertools
+from operator import itemgetter
 
 from django.shortcuts import render
+from django.db.models import Count, Prefetch
 from django.http import JsonResponse, HttpResponse
 from django.core.serializers import serialize
 from django.views.generic import View, DetailView, ListView, TemplateView
@@ -43,8 +46,8 @@ def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
     }
 
     for event in events_qs:
-        if event.get_closure_duration():
-            duration = '%s days' % (event.get_closure_duration().days)
+        if event.get_closure_duration:
+            duration = '%s days' % (event.get_closure_duration)
         else:
             duration = 'Ongoing'
 
@@ -55,7 +58,7 @@ def _build_closure_data_event_by_notice_geojson(events_qs, notice_obj):
                             'year': event.effective_date.year,
                             'month': event.effective_date.month,
                             'species': event.species.name,
-                            'duration': duration,
+                            'duration': event.duration,
                             },
                         }
 
@@ -166,8 +169,15 @@ def _build_closure_notice_points_geojson(closures_qs):
         }
     }
 
+
     for closure in closures_qs:
-        for shellfish_area in closure.shellfish_areas.all():
+        areas_qs = closure.shellfish_areas.prefetch_related(Prefetch(
+            'closure_data_events',
+            queryset=ClosureDataEvent.objects \
+                     .filter(notice_action='Closed') \
+                     .filter(closure_notice=closure) \
+                     .select_related('species',)))
+        for shellfish_area in areas_qs:
 
             if closure.custom_geom:
                 geom = closure.custom_geom.simplify(0.001)
@@ -186,6 +196,10 @@ def _build_closure_notice_points_geojson(closures_qs):
             if geom:
                 geom = geom.centroid
 
+            document_url = None
+            if closure.document:
+                document_url = closure.document.url
+
             if closure.causative_organism:
                 causative_organism = closure.causative_organism.name
             else:
@@ -203,13 +217,32 @@ def _build_closure_notice_points_geojson(closures_qs):
                                 "month": closure.effective_date.month,
                                 "species": [species.name for species in closure.species.all()],
                                 "causative_organism": causative_organism,
-                                "effective_date" : closure.effective_date,
+                                'document_url': document_url,
+                                "effective_date": closure.effective_date,
+                                "closure_events": [],
                                 },
                             "geometry": {
                               "type": geom.geom_type,
                               "coordinates": geom.coords,
                               }
                             }
+
+            for event in shellfish_area.closure_data_events.all():
+
+                #duration = '%s days' % (event.get_closure_duration())
+
+                event_data = {'event': {
+                                    #'title':  event.__str__(),
+                                    'id':  event.id,
+                                    'year': event.effective_date.year,
+                                    'month': event.effective_date.month,
+                                    'species': event.species.name,
+                                    'duration': event.get_closure_duration,
+                                    },
+                                }
+
+                closure_data['properties']['closure_events'].append(event_data)
+
             if geom:
                 geojson_data['features'].append(closure_data)
 
@@ -302,7 +335,7 @@ class ClosureDataEventAjaxGetByNoticeView(View):
         events_qs = ClosureDataEvent.objects.filter(closure_notice__id=notice_id) \
                                         .filter(shellfish_area__id=shellfish_area_id) \
                                         .filter(notice_action='Closed') \
-                                        .order_by('effective_date')
+                                        .order_by('-effective_date')
         print(events_qs.count())
         geojson_data = _build_closure_data_event_by_notice_geojson(events_qs, notice_obj)
         return JsonResponse(geojson_data)
@@ -361,7 +394,7 @@ class ClosureNoticeAjaxGetAllPointsView(View):
         # Get Closure notice data, format for GeoJson response
         closures_qs = ClosureNotice.objects.filter(notice_action='Closed') \
                                            .exclude(shellfish_areas__state='ME') \
-                                           .prefetch_related('shellfish_areas')
+                                           .prefetch_related('shellfish_areas', 'causative_organism', 'species')
 
         # Check if there are search query parameters in the AJAX request, assign variables
         if request.GET:

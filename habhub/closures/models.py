@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 
 from django.contrib.gis.db import models
 from django.utils import timezone
@@ -135,7 +136,7 @@ class ClosureNotice(models.Model):
     comments = models.TextField(null=False, blank=True)
 
     class Meta:
-        ordering = ['effective_date', 'title']
+        ordering = ['-effective_date', 'title']
         get_latest_by = 'effective_date'
 
     def __str__(self):
@@ -188,7 +189,8 @@ class ClosureNotice(models.Model):
                                                         species=species,
                                                         effective_date=notice_obj.effective_date,
                                                         notice_action=notice_obj.notice_action,
-                                                        causative_organism=notice_obj.causative_organism)
+                                                        causative_organism=notice_obj.causative_organism,
+                                                        )
 
 
 class ClosureNoticeMaine(ClosureNotice):
@@ -207,21 +209,46 @@ class ClosureDataEvent(models.Model):
                                 on_delete=models.CASCADE, null=False)
     effective_date = models.DateField(default=timezone.now)
     notice_action = models.CharField(max_length=50, default='Open')
+    duration = models.DurationField(default=timedelta(minutes=0), null=False, blank=True)
     causative_organism = models.ForeignKey(CausativeOrganism, related_name='closure_data_events',
                                            on_delete=models.CASCADE, null=True, blank=True)
 
+    class Meta:
+        get_latest_by = 'effective_date'
+
     def __str__(self):
         return '%s - %s - %s' % (self.closure_notice, self.shellfish_area, self.species)
+
+    # Custom save method to create granular ClosureDataEvent objects
+    def save(self, *args, **kwargs):
+        print(self.notice_action)
+        if self.notice_action == 'Open':
+            duration = timedelta(minutes=0)
+            try:
+                # get the closure event that started the closure
+                close_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
+                                                          .filter(species=self.species) \
+                                                          .filter(effective_date__lte=self.effective_date) \
+                                                          .filter(notice_action='Closed') \
+                                                          .latest()
+                print(close_notice_obj.id)
+                duration = self.effective_date - close_notice_obj.effective_date
+                close_notice_obj.duration = duration
+                close_notice_obj.save()
+                self.duration = duration
+            except:
+                raise ClosureDataEvent.DoesNotExist
+        super(ClosureDataEvent, self).save(*args, **kwargs)
 
     # Get current status of this Closure Event
     def get_current_status(self):
         if self.notice_action == 'Closed':
             try:
                 open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
-                                                              .filter(species=self.species) \
-                                                              .filter(effective_date__gte=self.effective_date) \
-                                                              .filter(notice_action='Open') \
-                                                              .earliest('effective_date')
+                                                          .filter(species=self.species) \
+                                                          .filter(effective_date__gte=self.effective_date) \
+                                                          .filter(notice_action='Open') \
+                                                          .earliest('effective_date')
                 current_status = 'Open'
             except ClosureDataEvent.DoesNotExist:
                 current_status = 'Closed'
@@ -230,20 +257,10 @@ class ClosureDataEvent(models.Model):
         return current_status
 
     # Get the total duration of the Closure Event
+    @property
     def get_closure_duration(self):
-        if self.notice_action == 'Closed':
-            try:
-                open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=self.shellfish_area) \
-                                                          .filter(species=self.species) \
-                                                          .filter(effective_date__gte=self.effective_date) \
-                                                          .filter(notice_action='Open') \
-                                                          .earliest('effective_date')
-                duration = open_notice_obj.effective_date - self.effective_date
-            except:
-                duration = None
-        else:
-            duration = None
-        return duration
+        duration = self.duration
+        return duration.days
 
 
 class ExceptionArea(models.Model):

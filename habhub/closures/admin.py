@@ -81,8 +81,6 @@ class ClosureNoticeAdmin(admin.ModelAdmin):
 
         for shellfish_area in notice_obj.shellfish_areas.all():
             for species in notice_obj.species.all():
-                print(shellfish_area)
-                print(species)
                 event = ClosureDataEvent.objects.create(closure_notice=notice_obj,
                                                         shellfish_area=shellfish_area,
                                                         species=species,
