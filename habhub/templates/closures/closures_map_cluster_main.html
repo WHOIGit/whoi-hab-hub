@@ -536,17 +536,6 @@ window.onload = function() {
                         console.log(item_group);
                         // Call the function to create the popup content and map overlay
                         buildShellfishAreaOnClick(item_group);
-                        /*
-                        let sorted_events = _.orderBy( item_group['closure_events'], 'properties.effective_date', 'desc' );
-                        sorted_events.forEach(function(item, index, arr){
-
-                            let leaf_props = item.properties;
-                            let shellfishAreaID = leaf_props.shellfish_area_id;
-                            let noticeID = leaf_props.id;
-                            // Call the function to build the list of Closure Events
-                            buildClosureEventList(shellfishAreaID, noticeID);
-                        });
-                        */
                     });
 
                     if (err) {

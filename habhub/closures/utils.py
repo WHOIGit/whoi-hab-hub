@@ -12,6 +12,28 @@ from .models import *
 Utility functions for the closures app
 """
 
+# Get the total duration of the Closure Events, update DB
+def update_closure_durations():
+    events = ClosureDataEvent.objects.all()
+
+    for event in events:
+        if event.notice_action == 'Closed':
+            try:
+                open_notice_obj = ClosureDataEvent.objects.filter(shellfish_area=event.shellfish_area) \
+                                                          .filter(species=event.species) \
+                                                          .filter(effective_date__gte=event.effective_date) \
+                                                          .filter(notice_action='Open') \
+                                                          .earliest('effective_date')
+                duration = open_notice_obj.effective_date - event.effective_date
+                event.duration = duration
+                event.save()
+                open_notice_obj = duration
+                open_notice_obj.save()
+                print("Saved durations")
+            except:
+                print("No Opening")
+
+
 # Import functions for NH Shellfish Areas
 def import_shellfisharea_json_nh():
     domain = Site.objects.get_current().domain
