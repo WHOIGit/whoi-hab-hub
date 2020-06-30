@@ -11,3 +11,4 @@ class DatasetAdmin(LeafletGeoAdmin):
     list_editable = ('geom', )
 
 admin.site.register(Dataset, DatasetAdmin)
+admin.site.register(Bin)
