@@ -20,7 +20,7 @@ class Bin(models.Model):
     pid = models.CharField(max_length=100)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
-    sample_time = models.DateField(default=timezone.now)
+    sample_time = models.DateTimeField(default=timezone.now)
     ifcb = models.IntegerField(null=True, blank=True)
     ml_analyzed = models.DecimalField(max_digits=15, decimal_places=14, null=True, blank=True)
     depth = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
