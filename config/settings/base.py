@@ -85,6 +85,7 @@ LOCAL_APPS = [
     'habhub.closures',
     'habhub.esp_instrument',
     'habhub.ifcb_cruises',
+    'habhub.ifcb_datasets',
     'habhub.monitoring_systems',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
