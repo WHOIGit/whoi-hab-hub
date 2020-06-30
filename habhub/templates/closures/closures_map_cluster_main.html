@@ -430,7 +430,6 @@ window.onload = function() {
             <div class="card mb-2">
                 <div class="card-header">
                     <strong>Closure Date: ${item.properties.effective_date}</strong><br>
-                    Total Duration: ${item.properties.effective_date}<br>
                     Causative Organism: <i>${item.properties.causative_organism}</i><br>
                     ${ downloadLink }
                 </div>
@@ -482,42 +481,6 @@ window.onload = function() {
                 });
             });
         }
-    }
-
-    // Function to build the list of Closure Events for each Notice
-    function buildClosureEventList(shellfishAreaID, noticeID) {
-        // Send AJAX request to get the ClosureDataEvent list for each Closure
-        $.get('/closures/maps/ajax/load-closures-data-events-by-notice/'  + shellfishAreaID + '/' + noticeID + '/', function(data) {
-
-            let downloadLink = '';
-            if (data.document_url) {
-                downloadLink = `<a href="${data.document_url}" target="_blank">View notice</a>`
-            }
-
-            let eventCard = `
-            <div class="card mb-2">
-                <div class="card-header">
-                    <strong>Closure Date: ${data.effective_date}</strong><br>
-                    Total Duration: ${data.total_duration}<br>
-                    Causative Organism: <i>${data.causative_organism}</i><br>
-                    ${ downloadLink }
-                </div>
-                <ul class="list-group list-group-flush" id="species-list-${data.closure_id}">
-                </ul>
-            </div>
-            `
-            $( "#popup-shellfish-area-" + shellfishAreaID ).append( eventCard );
-
-            data['features'].forEach(function(item, index, arr){
-                let species = `
-                    <li class="list-group-item">
-                        ${item.event.species}<br>
-                        Duration: ${item.event.duration}
-                    </li>
-                `
-                $( '#species-list-' + data.closure_id ).append( species );
-            });
-        });
     }
 
     function mouseClick(e) {

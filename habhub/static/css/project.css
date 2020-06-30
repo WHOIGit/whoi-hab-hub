@@ -31,6 +31,7 @@ svg#navbar-logo {
     overflow-y: scroll;
     max-height: 100%;
     background-color: white;
+    pointer-events: auto !important;
 }
 
 /* Console styles */
