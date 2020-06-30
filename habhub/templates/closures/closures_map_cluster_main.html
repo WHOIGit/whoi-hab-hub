@@ -398,7 +398,6 @@ window.onload = function() {
 
     // Function to create the popup content and map overlay for Shellfish Area on clicking cluster
     function buildShellfishAreaOnClick(data) {
-        console.log(data);
         if (typeof data['closure_notices'] !== 'undefined') {
             var closure_notices = data['closure_notices'];
             var shellfishAreaID = data['closure_notices'][0].properties.shellfish_area_id;
@@ -419,7 +418,6 @@ window.onload = function() {
         `
         $( ".notice-popup-content" ).append( shellfishAreaPopup );
 
-
         closure_notices.forEach(function(item, index, arr){
             let downloadLink = '';
             if (item.properties.document_url) {
@@ -438,7 +436,6 @@ window.onload = function() {
             </div>
             `
             $( "#popup-shellfish-area-" + shellfishAreaID ).append( eventCard );
-            console.log(typeof(item.properties.closure_events));
             if (typeof item.properties.closure_events == 'string') {
                 item.properties.closure_events = JSON.parse(item.properties.closure_events);
             }
@@ -521,19 +518,16 @@ window.onload = function() {
                 0,
                 function(err, leafFeatures){
                     // Group the JSON objects by Shellfish Area
-                    let grouped = _.groupBy(leafFeatures, function(feature) {
-                        return feature.properties.shellfish_area_name;
-                    });
-
                     let grouped_shellfish_areas = _(leafFeatures)
                                     // Group the elements of Array based on `shellfish_area_name` property
                                     .groupBy(feature => feature.properties.shellfish_area_name)
                                     // `key` is group's name (shellfish_area_name), `value` is the array of objects
                                     .map((value, key) => ({ shellfish_area: key, closure_notices: value }))
                                     .value()
+                    // Resort array by the effective_date property
+                    grouped_shellfish_areas[0].closure_notices.sort((a, b) => (a.properties.effective_date < b.properties.effective_date) ? 1 : -1)
 
                     grouped_shellfish_areas.forEach(function(item_group, index_group, arr_group){
-                        console.log(item_group);
                         // Call the function to create the popup content and map overlay
                         buildShellfishAreaOnClick(item_group);
                     });
