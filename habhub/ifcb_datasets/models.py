@@ -17,7 +17,7 @@ class Dataset(models.Model):
 
 
 class Bin(models.Model):
-    pid = models.CharField(max_length=100)
+    pid = models.CharField(max_length=100, unique=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
     sample_time = models.DateTimeField(default=timezone.now)
