@@ -123,8 +123,8 @@ class ClosureNotice(models.Model):
     effective_date = models.DateField(default=timezone.now)
     data_source = models.CharField(max_length=255, null=False, blank=True)
     shellfish_areas = models.ManyToManyField(ShellfishArea, related_name='closure_notices')
-    border_east = models.ManyToManyField(Landmark, related_name='closure_notices_east', null=True, blank=True)
-    border_west = models.ManyToManyField(Landmark, related_name='closure_notices_west', null=True, blank=True)
+    border_east = models.ManyToManyField(Landmark, related_name='closure_notices_east', blank=True)
+    border_west = models.ManyToManyField(Landmark, related_name='closure_notices_west', blank=True)
     custom_borders =  models.MultiLineStringField(srid=4326, null=True, blank=True)
     custom_geom =  models.MultiPolygonField(srid=4326, null=True, blank=True)
     species = models.ManyToManyField(Species, related_name='closure_notices')
@@ -219,7 +219,7 @@ class ClosureDataEvent(models.Model):
     def __str__(self):
         return '%s - %s - %s' % (self.closure_notice, self.shellfish_area, self.species)
 
-    # Custom save method to create granular ClosureDataEvent objects
+    # Custom save method to update closure duration
     def save(self, *args, **kwargs):
         print(self.notice_action)
         if self.notice_action == 'Open':
