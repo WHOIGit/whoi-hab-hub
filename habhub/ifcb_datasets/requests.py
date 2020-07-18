@@ -14,14 +14,16 @@ from .models import *
 Function to make API request for Autoclass CSV file, calculate abundance of target species
 Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
 """
-def _get_ifcb_autoclass_file(dataset_obj=None, bin_obj=None):
-    CSV_URL = 'https://ifcb-data.whoi.edu/fiddlers/D20200630T132819_IFCB124_class_scores.csv'
+def _get_ifcb_autoclass_file(bin_obj):
+    CSV_URL = F'https://ifcb-data.whoi.edu/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
+    ML_ANALYZED = bin_obj.ml_analyzed
     TARGET_SPECIES = [
         'Alexandrium_catenella',
         'Dinophysis',
         'Dinophysis_acuminata',
         'Dinophysis_norvegica',
     ]
+    print(CSV_URL)
 
     target_species_found = False
     # set up data structure to store results
@@ -47,8 +49,19 @@ def _get_ifcb_autoclass_file(dataset_obj=None, bin_obj=None):
                 item['image_numbers'].append(image_number)
     print(data)
     if response.status_code == 200:
-        print(response.status_code)
-
+        for row in data:
+            try:
+                cell_concentration = int(round((row['image_count'] / ML_ANALYZED) * 1000))
+                data_record = SpeciesClassified.objects.create(
+                    bin = bin_obj,
+                    species = row['species'],
+                    image_count = row['image_count'],
+                    image_numbers = row['image_numbers'],
+                    cell_concentration = cell_concentration,
+                )
+                print(data_record.id)
+            except Exception as e:
+                print(e)
 
 """
 Function to make API request for all IFCB bins by dataset
