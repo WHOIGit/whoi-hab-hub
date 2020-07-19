@@ -1,14 +1,29 @@
 import requests
 import csv
 import datetime
+import concurrent.futures
 
 from django.shortcuts import render
 from django.contrib.gis.geos import Point
 
 from .models import *
 
-# Views to access IFCB Dashboard
+# Functions to access IFCB Dashboard
 # -------------------------------
+
+"""
+Function to run the batch import of autoclass file data
+Args: 'dataset_obj' - Dataset object
+"""
+def run_species_classifed_import(dataset_obj):
+    # Create a pool of processes. By default, one is created for each CPU in your machine.
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        # Get a list of files to process
+        bins = dataset_obj.bins.filter(species_classified=None)[:500]
+
+        # Process the list of files, but split the work across the process pool to use all CPUs!
+        for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
+            print(f"{bin} processed.")
 
 """
 Function to make API request for Autoclass CSV file, calculate abundance of target species
@@ -47,7 +62,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                 item = next((item for item in data if item['species'] == species), False)
                 item['image_count'] += 1
                 item['image_numbers'].append(image_number)
-    print(data)
+
     if response.status_code == 200:
         for row in data:
             try:
@@ -62,6 +77,11 @@ def _get_ifcb_autoclass_file(bin_obj):
                 print(data_record.id)
             except Exception as e:
                 print(e)
+
+        #update Bin record
+        bin_obj.target_species_found = target_species_found
+        bin_obj.save()
+    return data
 
 """
 Function to make API request for all IFCB bins by dataset

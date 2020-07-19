@@ -38,6 +38,7 @@ urlpatterns = [
     path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
     # API urls
     path('api/v1/', include('habhub.stations.api.urls')),
+    path('api/v1/', include('habhub.ifcb_datasets.api.urls')),
     path('api/v1/closure-notices/', closures_views.ClosureNoticeAjaxGetAllView.as_view(), name='api_closure_notices_all'),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
