@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
-from ..models import Dataset, SpeciesClassified
+from ..models import Dataset, Bin, SpeciesClassified
 
 
 class DatasetSerializer(GeoFeatureModelSerializer):
@@ -23,22 +23,23 @@ class DatasetSerializer(GeoFeatureModelSerializer):
         concentration_timeseries = list()
 
         # set up data structure to store results
-        for species in SpeciesClassified.TARGET_SPECIES:
-            dict = {'species': species[1], 'data': [],}
+        for species in Bin.TARGET_SPECIES:
+            dict = {'species': species[0], 'data': [],}
             concentration_timeseries.append(dict)
 
         for bin in bins_qs:
-            date_str = bin.sample_time.strftime('%Y-%m-%d')
-            for datapoint in bin.species_classified.all():
-                index = next((index for (index, dict) in enumerate(concentration_timeseries) if dict['species'] == datapoint.species), None)
-                #dict = next((series for series in concentration_timeseries if series['species'] == datapoint.species), None)
-                if index:
-                    concentration_timeseries[index]['data'].append([date_str, float(datapoint.cell_concentration)])
+            if bin.cell_concentration_data:
+                date_str = bin.sample_time.strftime('%Y-%m-%d %H:%M:%S')
+
+                for datapoint in bin.cell_concentration_data:
+                    index = int(next((index for (index, d) in enumerate(concentration_timeseries) if d['species'] == datapoint['species']), None))
+                    if index is not None:
+                        concentration_timeseries[index]['data'].append([date_str, int(datapoint['cell_concentration'])])
 
         return concentration_timeseries
 
     @staticmethod
     def setup_eager_loading(queryset):
         """ Perform necessary prefetching of data. """
-        queryset = queryset.prefetch_related('bins__species_classified')
+        queryset = queryset.prefetch_related('bins')
         return queryset

@@ -19,7 +19,7 @@ def run_species_classifed_import(dataset_obj):
     # Create a pool of processes. By default, one is created for each CPU in your machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Get a list of files to process
-        bins = dataset_obj.bins.filter(species_classified=None)[:500]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
 
         # Process the list of files, but split the work across the process pool to use all CPUs!
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
@@ -44,7 +44,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     # set up data structure to store results
     data = []
     for species in TARGET_SPECIES:
-        dict = {'species': species, 'image_count': 0, 'concentration': 0, 'image_numbers': []}
+        dict = {'species': species, 'image_count': 0, 'cell_concentration': 0, 'image_numbers': []}
         data.append(dict)
 
     with requests.get(CSV_URL, stream=True) as response:
@@ -56,7 +56,6 @@ def _get_ifcb_autoclass_file(bin_obj):
             # get the item with the highest value, return species name in key
             species = max(row, key=lambda key: float(row[key]))
             if species in TARGET_SPECIES:
-                print(species)
                 target_species_found = True
                 # increment the abundance count by 1 if species matches a TARGET_SPECIES
                 item = next((item for item in data if item['species'] == species), False)
@@ -66,7 +65,8 @@ def _get_ifcb_autoclass_file(bin_obj):
     if response.status_code == 200:
         for row in data:
             try:
-                cell_concentration = int(round((row['image_count'] / ML_ANALYZED) * 1000))
+                row['cell_concentration'] = int(round((row['image_count'] / ML_ANALYZED) * 1000))
+                """
                 data_record = SpeciesClassified.objects.create(
                     bin = bin_obj,
                     species = row['species'],
@@ -75,10 +75,12 @@ def _get_ifcb_autoclass_file(bin_obj):
                     cell_concentration = cell_concentration,
                 )
                 print(data_record.id)
+                """
             except Exception as e:
                 print(e)
 
         #update Bin record
+        bin_obj.cell_concentration_data = data
         bin_obj.target_species_found = target_species_found
         bin_obj.save()
     return data

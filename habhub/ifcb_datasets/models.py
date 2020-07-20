@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 
 # IFCB dataset models
@@ -19,6 +19,17 @@ class Dataset(models.Model):
 
 
 class Bin(models.Model):
+    ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'
+    DINOPHYSIS = 'Dinophysis'
+    DINOPHYSIS_ACUMINATA = 'Dinophysis_acuminata'
+    DINOPHYSIS_NORVEGICA = 'Dinophysis_norvegica'
+    TARGET_SPECIES = (
+        (ALEXANDRIUM_CATENELLA, 'Alexandrium catenella'),
+        (DINOPHYSIS, 'Dinophysis'),
+        (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
+        (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
+    )
+    
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
@@ -34,6 +45,7 @@ class Bin(models.Model):
     n_images = models.PositiveIntegerField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     target_species_found =  models.BooleanField(default=False)
+    cell_concentration_data = JSONField(null=True)
 
     class Meta:
         ordering = ['-sample_time']
