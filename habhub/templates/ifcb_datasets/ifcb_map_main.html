@@ -39,7 +39,7 @@ a {
 
 <h1 class="display-4">WHOI HAB Hub</h1>
 <hr>
-<h4>Shellfish Toxicity Data by Station</h4>
+<h4>IFCB Data - HAB Species Concentration</h4>
 
 <div class="alert alert-info" id='console'>
     <form id="station-map-filters">
@@ -261,7 +261,7 @@ window.onload = function() {
 
     map.on('load', function() {
         // Add a new source from Django GeoJSON data for all Stations
-        map.addSource("stations_src", {
+        map.addSource("ifcb_src", {
             type: "geojson",
             data: "{% url 'stations:ajax_load_stations_all' %}",
             buffer: 0,

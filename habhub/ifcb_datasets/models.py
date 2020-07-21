@@ -29,7 +29,7 @@ class Bin(models.Model):
         (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
         (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
     )
-    
+
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
@@ -45,13 +45,18 @@ class Bin(models.Model):
     n_images = models.PositiveIntegerField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     target_species_found =  models.BooleanField(default=False)
+    # Units are cells/L : cell_concentration = (image_numbers / bin.ml_analyzed) * 1000
     cell_concentration_data = JSONField(null=True)
 
     class Meta:
         ordering = ['-sample_time']
+        get_latest_by = 'sample_time'
 
     def __str__(self):
         return self.pid
+
+    def get_concentration_units(self):
+        return 'cells/L'
 
 
 class SpeciesClassified(models.Model):

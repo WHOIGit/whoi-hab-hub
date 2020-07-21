@@ -34,8 +34,9 @@ urlpatterns = [
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
     path('closures/', include('habhub.closures.urls', namespace='closures')),
     path('stations/', include('habhub.stations.urls', namespace='stations')),
+    path('ifcb_datasets/', include('habhub.ifcb_datasets.urls', namespace='ifcb_datasets')),
     path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
-    path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
+    #path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
     # API urls
     path('api/v1/', include('habhub.stations.api.urls')),
     path('api/v1/', include('habhub.ifcb_datasets.api.urls')),
