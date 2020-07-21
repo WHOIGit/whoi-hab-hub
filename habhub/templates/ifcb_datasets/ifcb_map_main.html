@@ -263,26 +263,26 @@ window.onload = function() {
         // Add a new source from Django GeoJSON data for all Stations
         map.addSource("ifcb_src", {
             type: "geojson",
-            data: "{% url 'stations:ajax_load_stations_all' %}",
+            data: "{% url 'ifcb_datasets:ajax_load_datasets_all' %}",
             buffer: 0,
             maxzoom: 12,
         });
 
         map.addLayer({
-            id: 'stations',
+            id: 'datasets',
             type: 'circle',
-            source: 'stations_src',
+            source: 'ifcb_src',
             paint: {
-                'circle-color': maxPaintCase,
+                'circle-color': '#fed976',
                 'circle-opacity': 0.6,
                 'circle-radius': 12
             }
         });
-
+        /*
         map.addLayer({
             id: 'stations_max_label',
             type: 'symbol',
-            source: 'stations_src',
+            source: 'ifcb_src',
             layout: {
                 'text-field': [
                     'number-format',
@@ -293,23 +293,7 @@ window.onload = function() {
                 'text-size': 10
             }
         });
-
-        map.addLayer({
-            id: 'stations_mean_label',
-            type: 'symbol',
-            source: 'stations_src',
-            layout: {
-                'visibility': 'none',
-                'text-field': [
-                    'number-format',
-                    ['get', 'station_mean'],
-                    { 'min-fraction-digits': 1, 'max-fraction-digits': 1 }
-                ],
-                'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-                'text-size': 10
-            }
-        });
-
+        */
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
         map.on('zoom', function() {
@@ -324,14 +308,9 @@ window.onload = function() {
 
     });
 
-    let toggleableLayerIds = ['stations_max_label', 'stations_mean_label'];
-    toggleableLayerIds.forEach(function(item, index, arr) {
-
-    });
-
     function mouseClick(e) {
       let features = map.queryRenderedFeatures(e.point, {
-          layers: ['stations']
+          layers: ['datasets']
       });
       console.log(features);
       if (!features.length) {
@@ -339,25 +318,61 @@ window.onload = function() {
       } else if (map.getZoom() < popupFromZoom) {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-          let stationID = features[0].id;
-          console.log(stationID);
+          let datasetID = features[0].id;
           let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '800px'})
               .setLngLat(e.lngLat)
               .setHTML('<div id="station-popup-content"></div>')
               .addTo(map);
 
           $.ajax({
-              url: '/stations/maps/ajax/load-station-chart/'  + stationID + '/',
+              url: '/api/v1/ifcb_datasets/'  + datasetID + '/',
               dataType: 'json',
               success: function (data) {
-                  chartData = data.series[0].data;
+                  console.log(data)
+
+                  // Need to parse the Date values to display correctly on plot
+                  chartData = data.properties.concentration_timeseries[0].data;
                   chartData.forEach(function(point) {
                       point[0] = Date.parse(point[0])
                   });
 
                   chartData.sort();
                   console.log(chartData);
-                  Highcharts.chart("station-popup-content", data);
+
+                  Highcharts.chart('station-popup-content', {
+                    chart: {
+                        type: 'spline',
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: data.properties.name
+                    },
+                    subtitle: {
+                        text: document.ontouchstart === undefined ?
+                            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+                    },
+                    xAxis: {
+                        type: 'datetime'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Exchange rate'
+                        },
+                        min: 0
+                    },
+                    legend: {
+                        align: 'left',
+                        verticalAlign: 'top'
+                    },
+                    plotOptions: {
+
+                    },
+
+                    series: [{
+                        name: data.properties.concentration_timeseries[0].species,
+                        data: chartData
+                    }]
+                });
               }
           });
 
@@ -371,7 +386,7 @@ window.onload = function() {
 
     function mouseMove(e) {
       let features = map.queryRenderedFeatures(e.point, {
-        layers: ['stations']
+        layers: ['datasets']
       });
       map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
     }

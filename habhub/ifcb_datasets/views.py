@@ -1,6 +1,8 @@
 import datetime
 
 from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.views.generic import View, DetailView, TemplateView
 
 from .models import *
 from .api.serializers import DatasetSerializer
@@ -35,7 +37,7 @@ class DatasetAjaxGetAllView(View):
             many=True,
             context={'request': request, 'exclude_dataseries': True}
         )
-        dataset_list_json = stations_serializer.data
+        dataset_list_json = dataset_serializer.data
 
         return JsonResponse(dataset_list_json)
 
@@ -48,7 +50,7 @@ class IFCBMapMainView(TemplateView):
         context = super(IFCBMapMainView, self).get_context_data(**kwargs)
         # Get the earliest available notice date for the filter form
         bin_obj = Bin.objects.earliest()
-        earliest_date = bin_obj.measurement_date.strftime("%m/%d/%Y")
+        earliest_date = bin_obj.sample_time.strftime("%m/%d/%Y")
 
         context.update({
             'earliest_date': earliest_date,
