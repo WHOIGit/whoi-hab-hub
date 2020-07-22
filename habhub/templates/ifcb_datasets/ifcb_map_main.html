@@ -216,7 +216,7 @@ window.onload = function() {
         map.fire('closeAllPopups');
 
         $.ajax({
-            url: "{% url 'stations:ajax_load_stations_all' %}",
+            url: "{% url 'ifcb_datasets:ajax_load_datasets_all' %}",
             data: values,
             success: function (data) {
               console.log(data);
@@ -273,9 +273,11 @@ window.onload = function() {
             type: 'circle',
             source: 'ifcb_src',
             paint: {
-                'circle-color': '#fed976',
-                'circle-opacity': 0.6,
-                'circle-radius': 12
+                'circle-color': '#fd8d3c',
+                'circle-opacity': 0.8,
+                'circle-radius': 14,
+                'circle-stroke-color': '#fff',
+                'circle-stroke-width': 2
             }
         });
         /*
@@ -319,9 +321,9 @@ window.onload = function() {
           map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
           let datasetID = features[0].id;
-          let popup = new mapboxgl.Popup({className: 'station-popup', anchor: 'right', maxWidth: '800px'})
+          let popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'right', maxWidth: '900px'})
               .setLngLat(e.lngLat)
-              .setHTML('<div id="station-popup-content"></div>')
+              .setHTML('<div id="ifcb-popup-content"></div>')
               .addTo(map);
 
           $.ajax({
@@ -330,16 +332,32 @@ window.onload = function() {
               success: function (data) {
                   console.log(data)
 
-                  // Need to parse the Date values to display correctly on plot
+
+                  /*
                   chartData = data.properties.concentration_timeseries[0].data;
                   chartData.forEach(function(point) {
                       point[0] = Date.parse(point[0])
-                  });
+                  });*/
 
-                  chartData.sort();
+                  // Create array to hold multiple time series for display
+                  chartData = []
+                 // Need to parse the Date values to display correctly on plot
+                  chartDataArr = data.properties.concentration_timeseries;
+                  chartDataArr.forEach(function(item) {
+                      item.data.forEach(function(point) {
+                          point[0] = Date.parse(point[0])
+                      });
+                      item.data.sort();
+                      let timeSeries = {
+                          name: item.species,
+                          data: item.data
+                      }
+                      chartData.push(timeSeries);
+                  });
                   console.log(chartData);
 
-                  Highcharts.chart('station-popup-content', {
+
+                  Highcharts.chart('ifcb-popup-content', {
                     chart: {
                         type: 'spline',
                         zoomType: 'x'
@@ -356,7 +374,7 @@ window.onload = function() {
                     },
                     yAxis: {
                         title: {
-                            text: 'Exchange rate'
+                            text: 'Cell concentration (cells/L)'
                         },
                         min: 0
                     },
@@ -368,10 +386,7 @@ window.onload = function() {
 
                     },
 
-                    series: [{
-                        name: data.properties.concentration_timeseries[0].species,
-                        data: chartData
-                    }]
+                    series: chartData
                 });
               }
           });
