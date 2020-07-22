@@ -349,7 +349,7 @@ window.onload = function() {
                       });
                       item.data.sort();
                       let timeSeries = {
-                          name: item.species,
+                          name: item.species.replace('_', ' '),
                           data: item.data
                       }
                       chartData.push(timeSeries);
@@ -382,10 +382,12 @@ window.onload = function() {
                         align: 'left',
                         verticalAlign: 'top'
                     },
+                    tooltip: {
+                        pointFormat: '{series.name}: {point.y:f} cells/L'
+                    },
                     plotOptions: {
 
                     },
-
                     series: chartData
                 });
               }
