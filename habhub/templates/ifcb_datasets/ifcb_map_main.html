@@ -41,79 +41,91 @@ a {
 <hr>
 <h4>IFCB Data - HAB Species Concentration</h4>
 
-<div class="alert alert-info" id='console'>
-    <form id="station-map-filters">
-      <div class="form-row align-items-center">
-        <div class="col-auto">
-            <label class="sr-only" for="inlineFormInputGroup">Start date</label>
-            <div class='input-group date' id='datepicker-start'>
 
-              <input type='text' name="start_date" class="form-control form-control-sm" />
-              <div class="input-group-addon input-group-append">
+<div class="row">
+  <div class="col-12 col-md-9" id="dashboard-main">
+      <div class="alert alert-info" id='console'>
+          <form id="station-map-filters">
+            <div class="form-row align-items-center">
+              <div class="col-auto">
+                  <label class="sr-only" for="inlineFormInputGroup">Start date</label>
+                  <div class='input-group date' id='datepicker-start'>
 
-                    <span class="input-group-text">
-                        <i class="fa fa-calendar" aria-hidden="true"></i>
-                    </span>
+                    <input type='text' name="start_date" class="form-control form-control-sm" />
+                    <div class="input-group-addon input-group-append">
+
+                          <span class="input-group-text">
+                              <i class="fa fa-calendar" aria-hidden="true"></i>
+                          </span>
+
+                    </div>
+
+                  </div>
+              </div>
+
+              <div class="col-auto">
+                  <span> - to - </span>
 
               </div>
 
-            </div>
-        </div>
+              <div class="col-auto">
+                  <label class="sr-only" for="inlineFormInputGroup">End date</label>
+                  <div class='input-group date' id='datepicker-end'>
 
-        <div class="col-auto">
-            <span> - to - </span>
+                    <input type='text' name="end_date" class="form-control form-control-sm" />
+                    <div class="input-group-addon input-group-append">
 
-        </div>
+                          <span class="input-group-text">
+                              <i class="fa fa-calendar" aria-hidden="true"></i>
+                          </span>
 
-        <div class="col-auto">
-            <label class="sr-only" for="inlineFormInputGroup">End date</label>
-            <div class='input-group date' id='datepicker-end'>
+                    </div>
 
-              <input type='text' name="end_date" class="form-control form-control-sm" />
-              <div class="input-group-addon input-group-append">
+                  </div>
+              </div>
 
-                    <span class="input-group-text">
-                        <i class="fa fa-calendar" aria-hidden="true"></i>
-                    </span>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+              </div>
 
+              <div class="col-auto">
+                <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
               </div>
 
             </div>
-        </div>
-
-        <div class="col-auto">
-          <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-        </div>
-
-        <div class="col-auto">
-          <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
-        </div>
-
-        <div class="col-auto">
-            <div class="form-check">
-              <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-max-label-filter" value="stations_max_label" checked>
-              <label class="form-check-label" for="stations_max_label">
-                Show Max Value
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-mean-label-filter" value="stations_mean_label">
-              <label class="form-check-label" for="stations_mean_label">
-                Show Mean Value
-              </label>
-            </div>
-        </div>
+          </form>
 
       </div>
-    </form>
 
+      <div id="map-container">
+
+          <div id='map'></div>
+
+      </div>
+  </div>
+  <div class="col-12 col-md-3" id="dashboard-sidebar">
+      <div class="top-pane">
+          <h5>Max concentrations in the past week</h5>
+
+          <ul class="list-group">
+              {% for item in concentrations_pastweek %}
+                  <li class="list-group-item">
+                      {{ item.dataset }}
+                      <ul>
+                          {% for value in item.max_values %}
+                              <li><i>{{ value.species }}</i>: {{ value.max }}</li>
+                          {% endfor %}
+                      </ul>
+                  </li>
+              {% endfor %}
+
+          </ul>
+      </div>
+  </div>
 </div>
 
-<div id="map-container">
 
-    <div id='map'></div>
 
-</div>
 
 {% endblock content %}
 
@@ -331,14 +343,16 @@ window.onload = function() {
               dataType: 'json',
               success: function (data) {
                   console.log(data)
-
-
-                  /*
-                  chartData = data.properties.concentration_timeseries[0].data;
-                  chartData.forEach(function(point) {
-                      point[0] = Date.parse(point[0])
-                  });*/
-
+                  // Update the sidebar pane
+                  let topPaneContent = `
+                      <h4>${data.properties.name}</h4>
+                      <p>${data.properties.location}</p>
+                      <hr>
+                      <p>Data available from</p>
+                      <p>Total IFCB bins: 
+                      <p><a href="" target="_blank">IFCB data link</a></p>
+                  `
+                  $( ".top-pane" ).html( topPaneContent );
                   // Create array to hold multiple time series for display
                   chartData = []
                  // Need to parse the Date values to display correctly on plot
@@ -354,13 +368,12 @@ window.onload = function() {
                       }
                       chartData.push(timeSeries);
                   });
-                  console.log(chartData);
-
 
                   Highcharts.chart('ifcb-popup-content', {
                     chart: {
                         type: 'spline',
-                        zoomType: 'x'
+                        zoomType: 'x',
+                        width: 800
                     },
                     title: {
                         text: data.properties.name

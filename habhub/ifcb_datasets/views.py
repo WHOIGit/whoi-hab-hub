@@ -1,8 +1,11 @@
 import datetime
 
+from django.utils import timezone
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import View, DetailView, TemplateView
+from django.db.models import Avg, Max, Prefetch
+from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
 
 from .models import *
 from .api.serializers import DatasetSerializer
@@ -51,8 +54,29 @@ class IFCBMapMainView(TemplateView):
         # Get the earliest available notice date for the filter form
         bin_obj = Bin.objects.earliest()
         earliest_date = bin_obj.sample_time.strftime("%m/%d/%Y")
+        # Get past week concentration data across Datasets
+        concentrations_pastweek = []
+        daylastweek = timezone.now().date() - datetime.timedelta(days=50)
+        dataset_qs = Dataset.objects.prefetch_related(Prefetch(
+            'bins',
+            queryset=Bin.objects.filter(sample_time__gte=daylastweek)))
 
+        for dataset in dataset_qs:
+            data = {'dataset': dataset.__str__(), 'max_values': [], }
+            for species in Bin.TARGET_SPECIES:
+                concentration_vals = []
+                for bin in dataset.bins.all():
+                    if bin.cell_concentration_data:
+                        item = next((item for item in bin.cell_concentration_data if item['species'] == species[0]), False)
+                        if item:
+                            concentration_vals.append(item['cell_concentration'])
+                max_val = max(concentration_vals)
+                data['max_values'].append({'species' : species[1], 'max' : F'{max_val} cells/L'})
+            concentrations_pastweek.append(data)
+
+        print(concentrations_pastweek)
         context.update({
             'earliest_date': earliest_date,
+            'concentrations_pastweek': concentrations_pastweek,
         })
         return context
