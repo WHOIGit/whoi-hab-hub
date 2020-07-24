@@ -44,7 +44,7 @@ class Bin(models.Model):
     sample_type = models.CharField(max_length=50, null=False, blank=True)
     n_images = models.PositiveIntegerField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    target_species_found =  models.BooleanField(default=False)
+    species_found = ArrayField(models.CharField(max_length=500), null=True, blank=True, default=None)
     # Units are cells/L : cell_concentration = (image_numbers / bin.ml_analyzed) * 1000
     cell_concentration_data = JSONField(null=True)
 
