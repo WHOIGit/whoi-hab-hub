@@ -58,6 +58,12 @@ class Bin(models.Model):
     def get_concentration_units(self):
         return 'cells/L'
 
+    def get_concentration_data_by_species(self, species):
+        if self.cell_concentration_data:
+            item = next((item for item in self.cell_concentration_data if item['species'] == species), False)
+            return item
+        return None
+
 
 class SpeciesClassified(models.Model):
     ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'

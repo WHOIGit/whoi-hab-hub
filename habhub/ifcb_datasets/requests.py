@@ -2,8 +2,12 @@ import requests
 import csv
 import datetime
 import concurrent.futures
+import os
+from io import BytesIO
 
+from django.conf import settings
 from django.shortcuts import render
+from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point
 
 from .models import *
@@ -12,19 +16,60 @@ from .models import *
 # -------------------------------
 
 """
-Function to run the batch import of autoclass file data
+Function to run import of Bins/Autoclass/Image data from IFCB dashboard
 Args: 'dataset_obj' - Dataset object
 """
 def run_species_classifed_import(dataset_obj):
-    # Create a pool of processes. By default, one is created for each CPU in your machine.
+    # Get all new bins
+    _get_ifcb_bins_dataset(dataset_obj)
+    # Process autoclass files from new IFCB Bins
+    # Create a pool of processes. By default, one is created for each CPU on machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        # Get a list of files to process
-        #bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
+        # Get a list of bins to process
+        # bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
         bins = dataset_obj.bins.filter(species_found__isnull=True)[:100]
-
-        # Process the list of files, but split the work across the process pool to use all CPUs!
+        # Process the list of bins, but split the work across the process pool
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
             print(f"{bin} processed.")
+    # Get most recent images of each target species after data processing
+    _get_most_recent_images(dataset_obj)
+
+
+"""
+Function to make API request for all IFCB bins by dataset
+Args: 'dataset_obj' - Dataset object
+"""
+def _get_ifcb_bins_dataset(dataset_obj):
+    CSV_URL = F'https://ifcb-data.whoi.edu/api/export_metadata/{dataset_obj.dashboard_id_name}'
+    # speed up the process by getting a values list of current Bin pid
+    bins = Bin.objects.filter(dataset=dataset_obj).values('pid')
+
+    with requests.get(CSV_URL, stream=True) as response:
+        lines = (line.decode('utf-8') for line in response.iter_lines())
+        for row in csv.DictReader(lines):
+            if row['pid'] not in [bin['pid'] for bin in bins]:
+                sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
+                geom = None
+                if row['longitude'] and row['latitude']:
+                    geom = Point(float(row['longitude']), float(row['latitude']))
+
+                bin = Bin.objects.create(
+                    pid = row['pid'],
+                    dataset = dataset_obj,
+                    geom = geom,
+                    sample_time = row['sample_time'],
+                    ifcb = row['ifcb'],
+                    ml_analyzed = row['ml_analyzed'],
+                    depth = row['depth'],
+                    cruise = row['cruise'],
+                    cast = row['cast'],
+                    niskin = row['niskin'],
+                    sample_type = row['sample_type'],
+                    n_images = row['n_images'],
+                    skip = row['skip'],
+                )
+                print(F"row saved - {bin.pid}")
+
 
 """
 Function to make API request for Autoclass CSV file, calculate abundance of target species
@@ -33,13 +78,7 @@ Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
 def _get_ifcb_autoclass_file(bin_obj):
     CSV_URL = F'https://ifcb-data.whoi.edu/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
     ML_ANALYZED = bin_obj.ml_analyzed
-    TARGET_SPECIES = [
-        'Alexandrium_catenella',
-        'Dinophysis',
-        'Dinophysis_acuminata',
-        'Dinophysis_norvegica',
-    ]
-    print(CSV_URL)
+    TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
 
     species_found = []
     # set up data structure to store results
@@ -89,37 +128,24 @@ def _get_ifcb_autoclass_file(bin_obj):
         bin_obj.save()
     return data
 
+
 """
-Function to make API request for all IFCB bins by dataset
+Function to make url request to get most recent image of each target species
 Args: 'dataset_obj' - Dataset object
 """
-def _get_ifcb_dataset(dataset_obj):
-    CSV_URL = F'https://ifcb-data.whoi.edu/api/export_metadata/{dataset_obj.dashboard_id_name}'
-    # speed up the process by getting a values list of current Bin pid
-    bins = Bin.objects.filter(dataset=dataset_obj).values('pid')
+def _get_most_recent_images(dataset_obj):
+    TARGET_SPECIES = Bin.TARGET_SPECIES
+    for species in TARGET_SPECIES:
+        latest_bin = Bin.objects.filter(species_found__contains=[species[0]]).latest()
+        data = latest_bin.get_concentration_data_by_species(species[0])
+        img_name = data['image_numbers'][0]
 
-    with requests.get(CSV_URL, stream=True) as response:
-        lines = (line.decode('utf-8') for line in response.iter_lines())
-        for row in csv.DictReader(lines):
-            if row['pid'] not in [bin['pid'] for bin in bins]:
-                sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
-                geom = None
-                if row['longitude'] and row['latitude']:
-                    geom = Point(float(row['longitude']), float(row['latitude']))
-
-                bin = Bin.objects.create(
-                    pid = row['pid'],
-                    dataset = dataset_obj,
-                    geom = geom,
-                    sample_time = row['sample_time'],
-                    ifcb = row['ifcb'],
-                    ml_analyzed = row['ml_analyzed'],
-                    depth = row['depth'],
-                    cruise = row['cruise'],
-                    cast = row['cast'],
-                    niskin = row['niskin'],
-                    sample_type = row['sample_type'],
-                    n_images = row['n_images'],
-                    skip = row['skip'],
-                )
-                print(F"row saved - {bin.pid}")
+        if not os.path.isfile(os.path.join(settings.MEDIA_ROOT , F'ifcb/images/{img_name}.png')):
+            img_url = F'https://ifcb-data.whoi.edu/{dataset_obj.dashboard_id_name}/{img_name}.png'
+            response = requests.get(img_url)
+            if response.status_code == 200:
+                file = BytesIO()
+                file.write(response.content)
+                filename = F'{img_name}.png'
+                image = default_storage.save('ifcb/images/' + filename, file)
+                print(image)

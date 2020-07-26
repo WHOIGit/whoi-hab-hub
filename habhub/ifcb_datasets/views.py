@@ -56,7 +56,7 @@ class IFCBMapMainView(TemplateView):
         earliest_date = bin_obj.sample_time.strftime("%m/%d/%Y")
         # Get past week concentration data across Datasets
         concentrations_pastweek = []
-        daylastweek = timezone.now().date() - datetime.timedelta(days=50)
+        daylastweek = timezone.now().date() - datetime.timedelta(days=7)
         dataset_qs = Dataset.objects.prefetch_related(Prefetch(
             'bins',
             queryset=Bin.objects.filter(sample_time__gte=daylastweek)))
@@ -66,10 +66,9 @@ class IFCBMapMainView(TemplateView):
             for species in Bin.TARGET_SPECIES:
                 concentration_vals = []
                 for bin in dataset.bins.all():
-                    if bin.cell_concentration_data:
-                        item = next((item for item in bin.cell_concentration_data if item['species'] == species[0]), False)
-                        if item:
-                            concentration_vals.append(item['cell_concentration'])
+                    item = bin.get_concentration_data_by_species(species[0])
+                    if item:
+                        concentration_vals.append(item['cell_concentration'])
                 max_val = max(concentration_vals)
                 data['max_values'].append({'species' : species[1], 'max' : F'{max_val} cells/L'})
             concentrations_pastweek.append(data)
