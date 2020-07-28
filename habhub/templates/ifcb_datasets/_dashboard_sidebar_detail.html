@@ -15,7 +15,7 @@
             <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
             <hr>
             <div class="images-pane">
-                <h5>Recent images</h5>
+                <h5>Latest IFCB images</h5>
                 {% for image in dashboard_data.images %}
                     <div class="">
                         <p><i>{{ image.0 }}</i></p>
