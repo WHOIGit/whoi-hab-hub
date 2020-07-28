@@ -36,7 +36,7 @@ class Bin(models.Model):
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
     sample_time = models.DateTimeField(default=timezone.now)
     ifcb = models.PositiveIntegerField(null=True, blank=True)
-    ml_analyzed = models.DecimalField(max_digits=15, decimal_places=14, null=True, blank=True)
+    ml_analyzed = models.DecimalField(max_digits=17, decimal_places=14, null=True, blank=True)
     depth = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     cruise = models.CharField(max_length=50, null=False, blank=True)
     cast = models.CharField(max_length=50, null=False, blank=True)

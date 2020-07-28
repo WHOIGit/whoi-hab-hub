@@ -1,4 +1,5 @@
 import datetime
+from statistics import mean
 
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
@@ -57,23 +58,24 @@ class IFCBMapMainView(TemplateView):
         # Get past week concentration data across Datasets
         concentrations_pastweek = []
         daylastweek = timezone.now().date() - datetime.timedelta(days=7)
-        dataset_qs = Dataset.objects.prefetch_related(Prefetch(
+        dataset_qs = Dataset.objects.order_by('id').prefetch_related(Prefetch(
             'bins',
             queryset=Bin.objects.filter(sample_time__gte=daylastweek)))
 
         for dataset in dataset_qs:
-            data = {'dataset': dataset.__str__(), 'max_values': [], }
+            data = {'dataset': dataset.__str__(), 'values': [], }
             for species in Bin.TARGET_SPECIES:
                 concentration_vals = []
-                for bin in dataset.bins.all():
-                    item = bin.get_concentration_data_by_species(species[0])
-                    if item:
-                        concentration_vals.append(item['cell_concentration'])
-                max_val = max(concentration_vals)
-                data['max_values'].append({'species' : species[1], 'max' : F'{max_val} cells/L'})
+                if dataset.bins.exists():
+                    for bin in dataset.bins.all():
+                        item = bin.get_concentration_data_by_species(species[0])
+                        if item:
+                            concentration_vals.append(item['cell_concentration'])
+                    max_val = max(concentration_vals)
+                    mean_val = int(mean(concentration_vals))
+                    data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
             concentrations_pastweek.append(data)
 
-        print(concentrations_pastweek)
         context.update({
             'earliest_date': earliest_date,
             'concentrations_pastweek': concentrations_pastweek,
@@ -93,19 +95,36 @@ class DatasetAjaxGetMapSidebar(View):
         # Get the earliest available notice date for the filter form
         first_bin = dataset_obj.bins.earliest()
         last_bin = dataset_obj.bins.latest()
-        # Get images
+        # Get species data
         images = []
+        concentrations_pastweek = []
         TARGET_SPECIES = Bin.TARGET_SPECIES
+
         for species in TARGET_SPECIES:
+            # Get images
             latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
+            print(latest_image_bin, latest_image_bin.id)
             data = latest_image_bin.get_concentration_data_by_species(species[0])
             img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
             images.append((species[1], img_name))
-
+            print(img_name)
+            """
+            # Get recent concentration data
+            concentration_vals = []
+            for bin in dataset_obj.bins.all():
+                item = bin.get_concentration_data_by_species(species[0])
+                if item:
+                    concentration_vals.append(item['cell_concentration'])
+            max_val = max(concentration_vals)
+            mean_val = int(mean(concentration_vals))
+            concentrations_pastweek.append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
+            """
         dashboard_data = {
             'earliest_date': first_bin.sample_time,
             'latest_date': last_bin.sample_time,
+            'depth': last_bin.depth,
             'total_bins': dataset_obj.bins.count(),
             'images': images,
+            #'concentrations_pastweek': concentrations_pastweek,
         }
         return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data,})

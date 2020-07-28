@@ -26,8 +26,8 @@ def run_species_classifed_import(dataset_obj):
     # Create a pool of processes. By default, one is created for each CPU on machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Get a list of bins to process
-        # bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
-        bins = dataset_obj.bins.filter(species_found__isnull=True)[:100]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:500]
+        #bins = dataset_obj.bins.filter(species_found__isnull=True)[:500]
         # Process the list of bins, but split the work across the process pool
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
             print(f"{bin} processed.")
@@ -52,6 +52,9 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 geom = None
                 if row['longitude'] and row['latitude']:
                     geom = Point(float(row['longitude']), float(row['latitude']))
+                depth = None
+                if row['depth']:
+                    depth = row['depth']
 
                 bin = Bin.objects.create(
                     pid = row['pid'],
@@ -60,7 +63,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
                     sample_time = row['sample_time'],
                     ifcb = row['ifcb'],
                     ml_analyzed = row['ml_analyzed'],
-                    depth = row['depth'],
+                    depth = depth,
                     cruise = row['cruise'],
                     cast = row['cast'],
                     niskin = row['niskin'],
@@ -136,12 +139,13 @@ Args: 'dataset_obj' - Dataset object
 def _get_most_recent_images(dataset_obj):
     TARGET_SPECIES = Bin.TARGET_SPECIES
     for species in TARGET_SPECIES:
-        latest_bin = Bin.objects.filter(species_found__contains=[species[0]]).latest()
+        latest_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
         data = latest_bin.get_concentration_data_by_species(species[0])
         img_name = data['image_numbers'][0]
 
         if not os.path.isfile(os.path.join(settings.MEDIA_ROOT , F'ifcb/images/{img_name}.png')):
             img_url = F'https://ifcb-data.whoi.edu/{dataset_obj.dashboard_id_name}/{img_name}.png'
+            print(img_url)
             response = requests.get(img_url)
             if response.status_code == 200:
                 file = BytesIO()
@@ -149,3 +153,5 @@ def _get_most_recent_images(dataset_obj):
                 filename = F'{img_name}.png'
                 image = default_storage.save('ifcb/images/' + filename, file)
                 print(image)
+        else:
+            print('image exists')

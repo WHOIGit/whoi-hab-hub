@@ -1,29 +1,29 @@
 <div class="top-pane">
-    <h5>{{ dataset_obj }}</h5>
 
-    <p>Total IFBC bins: {{ dashboard_data.total_bins }}</p>
-    <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
-    <ul class="list-group">
-        {% for item in concentrations_pastweek %}
-            <li class="list-group-item">
-                {{ item.dataset }}
-                <ul>
-                    {% for value in item.max_values %}
-                        <li><i>{{ value.species }}</i>: {{ value.max }}</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-
-    </ul>
-</div>
-
-<div class="images-pane">
-    <h5>Recent images</h5>
-    {% for image in dashboard_data.images %}
-        <div class="">
-            <p>{{ image.0  }}</p>
-            <img src="{{ MEDIA_URL }}{{ image.1 }}" alt="IFCB image">
+    <div class="card">
+        <div class="card-header">
+            <h5>{{ dataset_obj }}</h5>
         </div>
-    {% endfor %}
+
+        <div class="card-body">
+            <p>Latitude: {{ dataset_obj.geom.1 }}</p>
+            <p>Longitude: {{ dataset_obj.geom.0 }}</p>
+            {% if dashboard_data.depth  %}
+                <p>Depth: {{ dashboard_data.depth }} m</p>
+            {% endif %}
+            <p>Total IFBC bins: {{ dashboard_data.total_bins }}</p>
+            <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
+            <hr>
+            <div class="images-pane">
+                <h5>Recent images</h5>
+                {% for image in dashboard_data.images %}
+                    <div class="">
+                        <p><i>{{ image.0 }}</i></p>
+                        <img src="{{ MEDIA_URL }}{{ image.1 }}" alt="IFCB image">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
 </div>
