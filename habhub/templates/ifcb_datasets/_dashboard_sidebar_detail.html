@@ -13,6 +13,7 @@
             {% endif %}
             <p>Total IFBC bins: {{ dashboard_data.total_bins }}</p>
             <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
+            <p><a href="https://ifcb-data.whoi.edu/timeline?dataset={{ dataset_obj.dashboard_id_name }}" target="_blank">IFCB Dashboard source data</a>
             <hr>
             <div class="images-pane">
                 <h5>Latest IFCB images</h5>
