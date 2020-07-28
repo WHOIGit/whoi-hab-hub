@@ -2,10 +2,10 @@ from django.urls import path
 
 from . import views
 
-app_name = 'ifcb_datasets'
+app_name = 'ifcb-datasets'
 urlpatterns = [
     path('map-main/', views.IFCBMapMainView.as_view(), name='ifcb_map_main'),
     # AJAX paths
-    path('maps/ajax/load-all-stations/', views.DatasetAjaxGetAllView.as_view(), name='ajax_load_datasets_all'),
-    #path('maps/ajax/load-station-chart/<int:station_id>/', views.DatasetAjaxGetChartView.as_view(), name='ajax_load_dataset_chart'),
+    path('maps/ajax/load-all-datasets/', views.DatasetAjaxGetAllView.as_view(), name='ajax_load_datasets_all'),
+    path('maps/ajax/get-sidebar/<int:pk>/', views.DatasetAjaxGetMapSidebar.as_view(), name='ajax_get_dataset_map_idebar'),
 ]

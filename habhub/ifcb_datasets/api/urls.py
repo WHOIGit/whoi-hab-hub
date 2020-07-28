@@ -4,7 +4,7 @@ from .views import DatasetViewSet
 
 # Create a router and register our viewsets with it.
 router = SimpleRouter()
-router.register(r'ifcb_datasets', DatasetViewSet, 'ifcb_datasets' )
+router.register(r'ifcb-datasets', DatasetViewSet, 'ifcb-datasets' )
 
 urlpatterns = [
     path('', include(router.urls) ),

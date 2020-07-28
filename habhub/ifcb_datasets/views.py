@@ -1,7 +1,7 @@
 import datetime
 
 from django.utils import timezone
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import View, DetailView, TemplateView
 from django.db.models import Avg, Max, Prefetch
@@ -79,3 +79,33 @@ class IFCBMapMainView(TemplateView):
             'concentrations_pastweek': concentrations_pastweek,
         })
         return context
+
+
+######### AJAX Views for partial templates #############
+# Function to load Parts based on Part Number Search
+class DatasetAjaxGetMapSidebar(View):
+
+    def get(self, request, *args, **kwargs):
+        # Get Closure notice data, format for GeoJson response
+        pk = self.kwargs['pk']
+        dataset_obj = get_object_or_404(Dataset, pk=pk)
+        # Assemble some meta data and image data
+        # Get the earliest available notice date for the filter form
+        first_bin = dataset_obj.bins.earliest()
+        last_bin = dataset_obj.bins.latest()
+        # Get images
+        images = []
+        TARGET_SPECIES = Bin.TARGET_SPECIES
+        for species in TARGET_SPECIES:
+            latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
+            data = latest_image_bin.get_concentration_data_by_species(species[0])
+            img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
+            images.append((species[1], img_name))
+
+        dashboard_data = {
+            'earliest_date': first_bin.sample_time,
+            'latest_date': last_bin.sample_time,
+            'total_bins': dataset_obj.bins.count(),
+            'images': images,
+        }
+        return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data,})

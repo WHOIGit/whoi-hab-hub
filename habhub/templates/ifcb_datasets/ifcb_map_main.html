@@ -328,31 +328,28 @@ window.onload = function() {
       });
       console.log(features);
       if (!features.length) {
-          return;
+        return;
       } else if (map.getZoom() < popupFromZoom) {
-          map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
+         map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-          let datasetID = features[0].id;
-          let popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'right', maxWidth: '900px'})
+         let datasetID = features[0].id;
+         let popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'right', maxWidth: '900px'})
               .setLngLat(e.lngLat)
               .setHTML('<div id="ifcb-popup-content"></div>')
               .addTo(map);
-
+          //  AJAX call to build sidebar content
           $.ajax({
-              url: '/api/v1/ifcb_datasets/'  + datasetID + '/',
+              url: '/ifcb-datasets/maps/ajax/get-sidebar/'  + datasetID + '/',
+                  success: function (data) {
+                    $("#dashboard-sidebar").html(data);
+                  }
+          });
+          // Get chart data, create pop up chart
+          $.ajax({
+              url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
               dataType: 'json',
               success: function (data) {
                   console.log(data)
-                  // Update the sidebar pane
-                  let topPaneContent = `
-                      <h4>${data.properties.name}</h4>
-                      <p>${data.properties.location}</p>
-                      <hr>
-                      <p>Data available from</p>
-                      <p>Total IFCB bins:
-                      <p><a href="https://ifcb-data.whoi.edu/timeline?dataset=${data.properties.dashboard_id_name}" target="_blank">IFCB data link</a></p>
-                  `
-                  $( ".top-pane" ).html( topPaneContent );
                   // Create array to hold multiple time series for display
                   chartData = []
                  // Need to parse the Date values to display correctly on plot
