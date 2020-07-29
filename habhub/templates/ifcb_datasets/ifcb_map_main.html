@@ -104,42 +104,7 @@ a {
       </div>
   </div>
   <div class="col-12 col-md-3" id="dashboard-sidebar">
-      <div class="top-pane">
-          <h5>Species concentrations in the past week</h5>
-          <hr>
-              {% for item in concentrations_pastweek %}
-              <div class="card mb-3">
-                  <div class="card-header">
-                     <b>{{ item.dataset }}</b>
-                  </div>
-
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Species</th>
-                      <th scope="col">Max</th>
-                      <th scope="col">Mean</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for value in item.values %}
-                    <tr>
-                      <td><i>{{ value.species }}</i></td>
-                      <td>{{ value.max }} </td>
-                      <td>{{ value.mean }} </td>
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                      <td colspan="3"><span class="small float-right">* concentrations in cells/L</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-
-              </div>
-              {% endfor %}
-
-
-      </div>
+      {% include "ifcb_datasets/_dashboard_sidebar_home.html" with concentrations_pastweek=concentrations_pastweek  %}
   </div>
 </div>
 
@@ -356,6 +321,15 @@ window.onload = function() {
               .setLngLat(e.lngLat)
               .setHTML('<div id="ifcb-popup-content"></div>')
               .addTo(map);
+        popup.on('close', function(e) {
+            //  AJAX call to build sidebar content
+            $.ajax({
+                url: '/ifcb-datasets/maps/ajax/get-sidebar/',
+                    success: function (data) {
+                      $("#dashboard-sidebar").html(data);
+                    }
+            });
+        })
           //  AJAX call to build sidebar content
           $.ajax({
               url: '/ifcb-datasets/maps/ajax/get-sidebar/'  + datasetID + '/',
@@ -425,6 +399,13 @@ window.onload = function() {
           // Add a custom event listener to the map to close Popups
           map.on('closeAllPopups', () => {
             popup.remove();
+            //  AJAX call to build sidebar content
+            $.ajax({
+                url: '/ifcb-datasets/maps/ajax/get-sidebar/',
+                    success: function (data) {
+                      $("#dashboard-sidebar").html(data);
+                    }
+            });
           });
 
       }

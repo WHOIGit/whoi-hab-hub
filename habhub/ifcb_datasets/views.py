@@ -88,43 +88,57 @@ class IFCBMapMainView(TemplateView):
 class DatasetAjaxGetMapSidebar(View):
 
     def get(self, request, *args, **kwargs):
-        # Get Closure notice data, format for GeoJson response
-        pk = self.kwargs['pk']
-        dataset_obj = get_object_or_404(Dataset, pk=pk)
-        # Assemble some meta data and image data
-        # Get the earliest available notice date for the filter form
-        first_bin = dataset_obj.bins.earliest()
-        last_bin = dataset_obj.bins.latest()
-        # Get species data
-        images = []
-        concentrations_pastweek = []
-        TARGET_SPECIES = Bin.TARGET_SPECIES
+        dataset_obj = None
+        # check if there's a PK kwarg, if so return Detail template
+        pk = self.kwargs.get('pk', None)
+        if pk:
+            dataset_obj = get_object_or_404(Dataset, pk=pk)
+            # Assemble some meta data and image data
+            # Get the earliest available notice date for the filter form
+            first_bin = dataset_obj.bins.earliest()
+            last_bin = dataset_obj.bins.latest()
+            # Get species data
+            images = []
+            concentrations_pastweek = []
+            TARGET_SPECIES = Bin.TARGET_SPECIES
 
-        for species in TARGET_SPECIES:
-            # Get images
-            latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
-            print(latest_image_bin, latest_image_bin.id)
-            data = latest_image_bin.get_concentration_data_by_species(species[0])
-            img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
-            images.append((species[1], img_name))
-            print(img_name)
-            """
-            # Get recent concentration data
-            concentration_vals = []
-            for bin in dataset_obj.bins.all():
-                item = bin.get_concentration_data_by_species(species[0])
-                if item:
-                    concentration_vals.append(item['cell_concentration'])
-            max_val = max(concentration_vals)
-            mean_val = int(mean(concentration_vals))
-            concentrations_pastweek.append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
-            """
-        dashboard_data = {
-            'earliest_date': first_bin.sample_time,
-            'latest_date': last_bin.sample_time,
-            'depth': last_bin.depth,
-            'total_bins': dataset_obj.bins.count(),
-            'images': images,
-            #'concentrations_pastweek': concentrations_pastweek,
-        }
-        return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data,})
+            for species in TARGET_SPECIES:
+                # Get images
+                latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
+                print(latest_image_bin, latest_image_bin.id)
+                data = latest_image_bin.get_concentration_data_by_species(species[0])
+                img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
+                images.append((species[1], img_name))
+                print(img_name)
+
+            dashboard_data = {
+                'earliest_date': first_bin.sample_time,
+                'latest_date': last_bin.sample_time,
+                'depth': last_bin.depth,
+                'total_bins': dataset_obj.bins.count(),
+                'images': images,
+                #'concentrations_pastweek': concentrations_pastweek,
+            }
+            return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data,})
+        # If no pk, return the main "home" sidebar template
+        # Get past week concentration data across Datasets
+        concentrations_pastweek = []
+        daylastweek = timezone.now().date() - datetime.timedelta(days=7)
+        dataset_qs = Dataset.objects.order_by('id').prefetch_related(Prefetch(
+            'bins',
+            queryset=Bin.objects.filter(sample_time__gte=daylastweek)))
+
+        for dataset in dataset_qs:
+            data = {'dataset': dataset.__str__(), 'values': [], }
+            for species in Bin.TARGET_SPECIES:
+                concentration_vals = []
+                if dataset.bins.exists():
+                    for bin in dataset.bins.all():
+                        item = bin.get_concentration_data_by_species(species[0])
+                        if item:
+                            concentration_vals.append(item['cell_concentration'])
+                    max_val = max(concentration_vals)
+                    mean_val = int(mean(concentration_vals))
+                    data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
+            concentrations_pastweek.append(data)
+        return render(request, 'ifcb_datasets/_dashboard_sidebar_home.html', {'concentrations_pastweek': concentrations_pastweek,})

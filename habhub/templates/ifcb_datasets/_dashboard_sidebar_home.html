@@ -1,0 +1,36 @@
+<div class="top-pane">
+    <h5>Species concentrations in the past week</h5>
+    <hr>
+        {% for item in concentrations_pastweek %}
+        <div class="card mb-3">
+            <div class="card-header">
+               <b>{{ item.dataset }}</b>
+            </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Species</th>
+                <th scope="col">Max</th>
+                <th scope="col">Mean</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for value in item.values %}
+              <tr>
+                <td><i>{{ value.species }}</i></td>
+                <td>{{ value.max }} </td>
+                <td>{{ value.mean }} </td>
+              </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="3"><span class="small float-right">* concentrations in cells/L</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+        {% endfor %}
+
+
+</div>
