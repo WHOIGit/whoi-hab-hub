@@ -52,7 +52,7 @@ services:
       dockerfile: ./compose/local/django/Dockerfile
     volumes:
       - .:/app
-    command: celery -A config.celery_app beat -l INFO
+    command: celery --pidfile= -A config.celery_app beat -l INFO
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
