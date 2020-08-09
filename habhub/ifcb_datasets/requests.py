@@ -28,9 +28,10 @@ def run_species_classifed_import(dataset_obj):
         # Get a list of bins to process
         bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:500]
         #bins = dataset_obj.bins.filter(species_found__isnull=True)[:500]
+        print(bins)
         # Process the list of bins, but split the work across the process pool
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
-            print(f"{bin} processed.")
+             print(f"{bin} processed.")
     # Get most recent images of each target species after data processing
     _get_most_recent_images(dataset_obj)
 
@@ -112,16 +113,6 @@ def _get_ifcb_autoclass_file(bin_obj):
                 row['cell_concentration'] = int(round((row['image_count'] / ML_ANALYZED) * 1000))
                 # remove duplications from species_found list
                 species_found = list(set(species_found))
-                """
-                data_record = SpeciesClassified.objects.create(
-                    bin = bin_obj,
-                    species = row['species'],
-                    image_count = row['image_count'],
-                    image_numbers = row['image_numbers'],
-                    cell_concentration = cell_concentration,
-                )
-                print(data_record.id)
-                """
             except Exception as e:
                 print(e)
 

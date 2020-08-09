@@ -104,12 +104,17 @@ class DatasetAjaxGetMapSidebar(View):
 
             for species in TARGET_SPECIES:
                 # Get images
-                latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
-                print(latest_image_bin, latest_image_bin.id)
-                data = latest_image_bin.get_concentration_data_by_species(species[0])
-                img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
-                images.append((species[1], img_name))
-                print(img_name)
+                try:
+                    latest_image_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
+                except Bin.DoesNotExist as e:
+                    print(e)
+                    latest_image_bin = None
+                if latest_image_bin:
+                    data = latest_image_bin.get_concentration_data_by_species(species[0])
+                    img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
+                    images.append((species[1], img_name))
+                    print(img_name)
+
 
             dashboard_data = {
                 'earliest_date': first_bin.sample_time,
