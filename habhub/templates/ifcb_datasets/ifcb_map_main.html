@@ -45,10 +45,10 @@ a {
 <div class="row">
   <div class="col-12 col-md-9" id="dashboard-main">
       <div class="alert alert-info" id='console'>
-          <form id="station-map-filters">
+          <form id="ifcb-map-filters" data-dataset-id="">
             <div class="form-row align-items-center">
               <div class="col-auto">
-                  <label class="sr-only" for="inlineFormInputGroup">Start date</label>
+                  <label class="sr-only" for="datepicker-start">Start date</label>
                   <div class='input-group date' id='datepicker-start'>
 
                     <input type='text' name="start_date" class="form-control form-control-sm" />
@@ -69,10 +69,10 @@ a {
               </div>
 
               <div class="col-auto">
-                  <label class="sr-only" for="inlineFormInputGroup">End date</label>
-                  <div class='input-group date' id='datepicker-end'>
+                  <label class="sr-only" for="datepicker-end">End date</label>
+                  <div class="input-group date" id="datepicker-end">
 
-                    <input type='text' name="end_date" class="form-control form-control-sm" />
+                    <input type="text" name="end_date" class="form-control form-control-sm" />
                     <div class="input-group-addon input-group-append">
 
                           <span class="input-group-text">
@@ -207,52 +207,40 @@ window.onload = function() {
         }
     });
 
-    $('#station-map-filters').submit(function(event) {
+    $('#ifcb-map-filters').submit(function(event) {
         event.preventDefault();
         let values = $(this).serializeArray();
+        let datasetID = $(this).attr('data-dataset-id')
         // Close any existing Popups
-        map.fire('closeAllPopups');
-
+        //map.fire('closeAllPopups');
+        // Get chart data, create pop up chart
         $.ajax({
-            url: "{% url 'ifcb_datasets:ajax_load_datasets_all' %}",
+            url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
             data: values,
+            dataType: 'json',
             success: function (data) {
-              console.log(data);
-              map.getSource('stations_src').setData(data);
+                createChartPopup(data);
             }
         });
-    });
-
-    $('.label-filter').click(function () {
-        console.log(this.value);
-        layer = this.value;
-        if (layer == 'stations_max_label') {
-            // hide the other label layer
-            map.setLayoutProperty('stations_mean_label', 'visibility', 'none');
-            // set the Paint property
-            map.setPaintProperty('stations', 'circle-color', maxPaintCase);
-        } else {
-            // hide the other label layer
-            map.setLayoutProperty('stations_max_label', 'visibility', 'none');
-            // set the Paint property
-            map.setPaintProperty('stations', 'circle-color', meanPaintCase);
-        }
-        map.setLayoutProperty(layer, 'visibility', 'visible');
 
     });
 
     $('#filter-reset').click(function(event) {
         // Reset the form field values to defaults
-        $('#datepicker-start').data("DateTimePicker").date('{{ earliest_date }}');
-        $('#datepicker-end').data("DateTimePicker").date(moment());
+        $('#datepicker-start').data('DateTimePicker').date(defaultStartDate);
+        $('#datepicker-end').data('DateTimePicker').date(moment());
+        let datasetID = $('#ifcb-map-filters').attr('data-dataset-id')
         // Close any existing Popups
-        map.fire('closeAllPopups');
+        //map.fire('closeAllPopups');
 
         $.ajax({
-            url: "{% url 'stations:ajax_load_stations_all' %}",
+            url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
+            data: {
+                start_date: defaultStartDate.calendar(),
+            },
+            dataType: 'json',
             success: function (data) {
-              console.log(data);
-              map.getSource('stations_src').setData(data);
+                createChartPopup(data);
             }
         });
     });
@@ -278,22 +266,7 @@ window.onload = function() {
                 'circle-stroke-width': 2
             }
         });
-        /*
-        map.addLayer({
-            id: 'stations_max_label',
-            type: 'symbol',
-            source: 'ifcb_src',
-            layout: {
-                'text-field': [
-                    'number-format',
-                    ['get', 'station_max'],
-                    { 'min-fraction-digits': 1, 'max-fraction-digits': 1 }
-                ],
-                'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-                'text-size': 10
-            }
-        });
-        */
+
         map.on('mousemove', mouseMove);
         map.on('click', mouseClick);
         map.on('zoom', function() {
@@ -319,11 +292,12 @@ window.onload = function() {
          map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
          let datasetID = features[0].id;
+         $('#ifcb-map-filters').attr('data-dataset-id', datasetID)
          let popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'top', maxWidth: '1000px'})
               .setLngLat(e.lngLat)
               .setHTML('<div id="ifcb-popup-content"></div>')
               .addTo(map);
-        popup.on('close', function(e) {
+          popup.on('close', function(e) {
             //  AJAX call to build sidebar content
             $.ajax({
                 url: '/ifcb-datasets/maps/ajax/get-sidebar/',
@@ -331,7 +305,7 @@ window.onload = function() {
                   $("#dashboard-sidebar").html(data);
                 }
             });
-        })
+          })
           //  AJAX call to build sidebar content
           $.ajax({
               url: '/ifcb-datasets/maps/ajax/get-sidebar/'  + datasetID + '/',
@@ -347,81 +321,7 @@ window.onload = function() {
               },
               dataType: 'json',
               success: function (data) {
-                  console.log(data)
-                  // Create array to hold multiple time series for display
-                  chartData = []
-                 // Need to parse the Date values to display correctly on plot
-                  chartDataArr = data.properties.concentration_timeseries;
-                  chartDataArr.forEach(function(item) {
-                      item.data.forEach(function(point) {
-                          point[0] = Date.parse(point[0])
-                          // Add 1 to each 0 concentration point so we can use logarithmic chart
-                          // Remove this in display value
-                          if (point[1] == 0) {
-                              point[1] = point[1] + 1;
-                          }
-                      });
-                      item.data.sort();
-                      let name = item.species.replace('_', ' ').replace('-', ' ')
-                      let timeSeries = {
-                          name: name,
-                          data: item.data
-                      }
-                      chartData.push(timeSeries);
-                  });
-
-                  Highcharts.chart('ifcb-popup-content', {
-                    chart: {
-                        type: 'spline',
-                        zoomType: 'x',
-                        width: 900
-                    },
-                    title: {
-                        text: data.properties.name
-                    },
-                    subtitle: {
-                        text: document.ontouchstart === undefined ?
-                            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-                    },
-                    xAxis: {
-                        type: 'datetime'
-                    },
-                    yAxis: {
-                        type: 'logarithmic',
-                        minorTickInterval: 1,
-                        title: {
-                            text: 'Cell concentration (cells/L)'
-                        },
-                        min: 1,
-                        labels: {
-                            formatter: function() {
-                                if(this.value === 1){
-                                    return 0;
-                                } else {
-                                    return Highcharts.Axis.prototype.defaultLabelFormatter.call(this);
-                                }
-                            }
-                        }
-                    },
-                    legend: {
-                        align: 'left',
-                        verticalAlign: 'top'
-                    },
-                    tooltip: {
-                        formatter: function () {
-                            var y_value = this.y;
-                            if (this.y == 1) {
-                                var y_value = 0;
-                            }
-                            var tooltip = this.series.name + ': ' + y_value + ' cells/L';
-                            return tooltip;
-                        }
-                    },
-                    plotOptions: {
-
-                    },
-                    series: chartData
-                });
+                  createChartPopup(data);
               }
           });
 
@@ -445,6 +345,84 @@ window.onload = function() {
         layers: ['datasets']
       });
       map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    }
+
+    function createChartPopup(data) {
+        console.log(data)
+        // Create array to hold multiple time series for display
+        chartData = []
+       // Need to parse the Date values to display correctly on plot
+        chartDataArr = data.properties.concentration_timeseries;
+        chartDataArr.forEach(function(item) {
+            item.data.forEach(function(point) {
+                point[0] = Date.parse(point[0])
+                // Add 1 to each 0 concentration point so we can use logarithmic chart
+                // Remove this in display value
+                if (point[1] == 0) {
+                    point[1] = point[1] + 1;
+                }
+            });
+            item.data.sort();
+            let name = item.species.replace('_', ' ').replace('-', ' ')
+            let timeSeries = {
+                name: name,
+                data: item.data
+            }
+            chartData.push(timeSeries);
+        });
+
+        Highcharts.chart('ifcb-popup-content', {
+          chart: {
+              type: 'spline',
+              zoomType: 'x',
+              width: 900
+          },
+          title: {
+              text: data.properties.name
+          },
+          subtitle: {
+              text: document.ontouchstart === undefined ?
+                  'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+          },
+          xAxis: {
+              type: 'datetime'
+          },
+          yAxis: {
+              type: 'logarithmic',
+              minorTickInterval: 1,
+              title: {
+                  text: 'Cell concentration (cells/L)'
+              },
+              min: 1,
+              labels: {
+                  formatter: function() {
+                      if(this.value === 1){
+                          return 0;
+                      } else {
+                          return Highcharts.Axis.prototype.defaultLabelFormatter.call(this);
+                      }
+                  }
+              }
+          },
+          legend: {
+              align: 'left',
+              verticalAlign: 'top'
+          },
+          tooltip: {
+              formatter: function () {
+                  var y_value = this.y;
+                  if (this.y == 1) {
+                      var y_value = 0;
+                  }
+                  var tooltip = this.series.name + ': ' + y_value + ' cells/L';
+                  return tooltip;
+              }
+          },
+          plotOptions: {
+
+          },
+          series: chartData
+      });
     }
 };
 </script>
