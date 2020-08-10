@@ -349,9 +349,12 @@ window.onload = function() {
                   chartDataArr = data.properties.concentration_timeseries;
                   chartDataArr.forEach(function(item) {
                       item.data.forEach(function(point) {
-                          console.log(point[0])
                           point[0] = Date.parse(point[0])
-                          console.log(point[0])
+                          // Add 1 to each 0 concentration point so we can use logarithmic chart
+                          // Remove this in display value
+                          if (point[1] == 0) {
+                              point[1] = point[1] + 1;
+                          }
                       });
                       item.data.sort();
                       let name = item.species.replace('_', ' ').replace('-', ' ')
@@ -379,17 +382,35 @@ window.onload = function() {
                         type: 'datetime'
                     },
                     yAxis: {
+                        type: 'logarithmic',
+                        minorTickInterval: 1,
                         title: {
                             text: 'Cell concentration (cells/L)'
                         },
-                        min: 0
+                        min: 1,
+                        labels: {
+                            formatter: function() {
+                                if(this.value === 1){
+                                    return 0;
+                                } else {
+                                    return Highcharts.Axis.prototype.defaultLabelFormatter.call(this);
+                                }
+                            }
+                        }
                     },
                     legend: {
                         align: 'left',
                         verticalAlign: 'top'
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: {point.y:f} cells/L'
+                        formatter: function () {
+                            var y_value = this.y;
+                            if (this.y == 1) {
+                                var y_value = 0;
+                            }
+                            var tooltip = this.series.name + ': ' + y_value + ' cells/L';
+                            return tooltip;
+                        }
                     },
                     plotOptions: {
 
