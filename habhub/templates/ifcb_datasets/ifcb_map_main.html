@@ -128,6 +128,8 @@ window.onload = function() {
     });
 
     const popupFromZoom = 6;
+    const defaultStartDate = moment().subtract('months', 1);
+    console.log(defaultStartDate);
 
     // filters for classifying stations by max values into five categories
     let max1 = ['<', ['get', 'station_max'], 20];
@@ -174,7 +176,7 @@ window.onload = function() {
 
     $('#datepicker-start').datetimepicker({
         format: 'MM/DD/YYYY',
-        defaultDate: '{{ earliest_date }}',
+        defaultDate: defaultStartDate,
         icons: {
             time: 'fa fa-clock-o',
             date: 'fa fa-calendar',
@@ -325,21 +327,24 @@ window.onload = function() {
             //  AJAX call to build sidebar content
             $.ajax({
                 url: '/ifcb-datasets/maps/ajax/get-sidebar/',
-                    success: function (data) {
-                      $("#dashboard-sidebar").html(data);
-                    }
+                success: function (data) {
+                  $("#dashboard-sidebar").html(data);
+                }
             });
         })
           //  AJAX call to build sidebar content
           $.ajax({
               url: '/ifcb-datasets/maps/ajax/get-sidebar/'  + datasetID + '/',
-                  success: function (data) {
-                    $("#dashboard-sidebar").html(data);
-                  }
+              success: function (data) {
+                $("#dashboard-sidebar").html(data);
+              }
           });
           // Get chart data, create pop up chart
           $.ajax({
               url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
+              data: {
+                  start_date: defaultStartDate.calendar(),
+              },
               dataType: 'json',
               success: function (data) {
                   console.log(data)
