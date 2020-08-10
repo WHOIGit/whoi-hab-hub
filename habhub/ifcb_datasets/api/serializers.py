@@ -29,7 +29,7 @@ class DatasetSerializer(GeoFeatureModelSerializer):
 
         for bin in bins_qs:
             if bin.cell_concentration_data:
-                date_str = bin.sample_time.strftime('%Y-%m-%d %H:%M:%S')
+                date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
                 for datapoint in bin.cell_concentration_data:
                     index = next((index for (index, d) in enumerate(concentration_timeseries) if d['species'] == datapoint['species']), None)

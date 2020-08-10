@@ -349,11 +349,14 @@ window.onload = function() {
                   chartDataArr = data.properties.concentration_timeseries;
                   chartDataArr.forEach(function(item) {
                       item.data.forEach(function(point) {
+                          console.log(point[0])
                           point[0] = Date.parse(point[0])
+                          console.log(point[0])
                       });
                       item.data.sort();
+                      let name = item.species.replace('_', ' ').replace('-', ' ')
                       let timeSeries = {
-                          name: item.species.replace('_', ' '),
+                          name: name,
                           data: item.data
                       }
                       chartData.push(timeSeries);
