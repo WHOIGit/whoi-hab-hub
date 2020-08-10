@@ -67,29 +67,3 @@ class Bin(models.Model):
             item = next((item for item in self.cell_concentration_data if item['species'] == species), False)
             return item
         return None
-
-
-class SpeciesClassified(models.Model):
-    ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'
-    DINOPHYSIS = 'Dinophysis'
-    DINOPHYSIS_ACUMINATA = 'Dinophysis_acuminata'
-    DINOPHYSIS_NORVEGICA = 'Dinophysis_norvegica'
-    TARGET_SPECIES = (
-        (ALEXANDRIUM_CATENELLA, 'Alexandrium catenella'),
-        (DINOPHYSIS, 'Dinophysis'),
-        (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
-        (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
-    )
-
-    bin = models.ForeignKey(Bin, related_name='species_classified', on_delete=models.CASCADE)
-    species = models.CharField(max_length=100, choices=TARGET_SPECIES)
-    image_count = models.PositiveIntegerField(default=0)
-    # Units are cells/L : cell_concentration = (image_numbers / bin.ml_analyzed) * 1000
-    cell_concentration = models.PositiveIntegerField(default=0)
-    image_numbers = ArrayField(models.CharField(max_length=100), blank=True)
-
-    class Meta:
-        ordering = ['species']
-
-    def __str__(self):
-        return self.species

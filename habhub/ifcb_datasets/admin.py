@@ -12,4 +12,3 @@ class DatasetAdmin(LeafletGeoAdmin):
 
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(Bin)
-admin.site.register(SpeciesClassified)
