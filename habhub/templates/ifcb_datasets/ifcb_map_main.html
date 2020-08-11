@@ -355,11 +355,11 @@ window.onload = function() {
         chartDataArr = data.properties.concentration_timeseries;
         chartDataArr.forEach(function(item) {
             item.data.forEach(function(point) {
-                point[0] = Date.parse(point[0])
+                point['sample_time'] = Date.parse(point['sample_time'])
                 // Add 1 to each 0 concentration point so we can use logarithmic chart
                 // Remove this in display value
-                if (point[1] == 0) {
-                    point[1] = point[1] + 1;
+                if (point['cell_concentration'] == 0) {
+                    point['cell_concentration'] = point['cell_concentration'] + 1;
                 }
             });
             item.data.sort();
@@ -421,7 +421,15 @@ window.onload = function() {
           plotOptions: {
 
           },
-          series: chartData
+          series: chartData.map(item => {
+                      let container = {};
+                      container.name = item.name;
+                      container.data = item.data.map(row => {
+                          return [row.sample_time, row.cell_concentration];
+                      })
+                      container.data.sort();
+                  return container;
+                  })
       });
     }
 };

@@ -34,7 +34,13 @@ class DatasetSerializer(GeoFeatureModelSerializer):
                 for datapoint in bin.cell_concentration_data:
                     index = next((index for (index, d) in enumerate(concentration_timeseries) if d['species'] == datapoint['species']), None)
                     if index is not None:
-                        concentration_timeseries[index]['data'].append([date_str, int(datapoint['cell_concentration'])])
+                        data_dict = {
+                            'sample_time': date_str,
+                            'cell_concentration': int(datapoint['cell_concentration']),
+                            'bin_pid': bin.pid,
+                        }
+                        concentration_timeseries[index]['data'].append(data_dict)
+                        #concentration_timeseries[index]['data'].append([date_str, int(datapoint['cell_concentration'])])
 
         return concentration_timeseries
 
