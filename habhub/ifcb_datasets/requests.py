@@ -32,8 +32,6 @@ def run_species_classifed_import(dataset_obj):
         # Process the list of bins, but split the work across the process pool
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
              print(f"{bin} processed.")
-    # Get most recent images of each target species after data processing
-    _get_most_recent_images(dataset_obj)
 
 
 """
@@ -121,28 +119,3 @@ def _get_ifcb_autoclass_file(bin_obj):
         bin_obj.species_found = species_found
         bin_obj.save()
     return data
-
-
-"""
-Function to make url request to get most recent image of each target species
-Args: 'dataset_obj' - Dataset object
-"""
-def _get_most_recent_images(dataset_obj):
-    TARGET_SPECIES = Bin.TARGET_SPECIES
-    for species in TARGET_SPECIES:
-        latest_bin = dataset_obj.bins.filter(species_found__contains=[species[0]]).latest()
-        data = latest_bin.get_concentration_data_by_species(species[0])
-        img_name = data['image_numbers'][0]
-
-        if not os.path.isfile(os.path.join(settings.MEDIA_ROOT , F'ifcb/images/{img_name}.png')):
-            img_url = F'https://ifcb-data.whoi.edu/{dataset_obj.dashboard_id_name}/{img_name}.png'
-            print(img_url)
-            response = requests.get(img_url)
-            if response.status_code == 200:
-                file = BytesIO()
-                file.write(response.content)
-                filename = F'{img_name}.png'
-                image = default_storage.save('ifcb/images/' + filename, file)
-                print(image)
-        else:
-            print('image exists')

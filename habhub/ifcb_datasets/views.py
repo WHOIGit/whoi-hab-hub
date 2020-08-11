@@ -9,6 +9,7 @@ from django.db.models import Avg, Max, Prefetch
 from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
 
 from .models import *
+from .utils import _get_image_ifcb_dashboard
 from .api.serializers import DatasetSerializer
 
 ######### AJAX Views to return geoJSON for maps #############
@@ -111,9 +112,12 @@ class DatasetAjaxGetMapSidebar(View):
                     latest_image_bin = None
                 if latest_image_bin:
                     data = latest_image_bin.get_concentration_data_by_species(species[0])
-                    img_name = F"ifcb/images/{data['image_numbers'][0]}.png"
-                    images.append((species[1], img_name))
-                    print(img_name)
+                    img_name = data['image_numbers'][0]
+                    # need to check is this image exists locally. If not, go get it and cache locally
+                    _get_image_ifcb_dashboard(dataset_obj, img_name)
+                    img_path= F"ifcb/images/{img_name}.png"
+                    images.append((species[1], img_path))
+                    print(img_path)
 
 
             dashboard_data = {
