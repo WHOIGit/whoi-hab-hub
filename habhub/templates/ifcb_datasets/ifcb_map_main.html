@@ -291,9 +291,9 @@ window.onload = function() {
       } else if (map.getZoom() < popupFromZoom) {
          map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
       } else {
-         let datasetID = features[0].id;
+         const datasetID = features[0].id;
          $('#ifcb-map-filters').attr('data-dataset-id', datasetID)
-         let popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'top', maxWidth: '1000px'})
+         const popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'top', maxWidth: '1000px'})
               .setLngLat(e.lngLat)
               .setHTML('<div id="ifcb-popup-content"></div>')
               .addTo(map);
@@ -382,6 +382,18 @@ window.onload = function() {
                 })
         console.log(highChartData);
 
+        function highChartsGetMetaData(data) {
+            // Get the original data structure for this point by matching timestamps
+            const timeSeries = chartData.find(series => series.name === data.series.name)
+            const pointData = timeSeries.data.find(row => row.sample_time === data.x)
+
+            let y_value = data.y;
+            if (data.y == 1) {
+                y_value = 0;
+            }
+            return([y_value, pointData])
+        }
+
         Highcharts.chart('ifcb-popup-content', {
           chart: {
               type: 'spline',
@@ -421,22 +433,26 @@ window.onload = function() {
           },
           tooltip: {
               formatter: function () {
-                  // Get the original data structure for this point by matching timestamps
-                  const timeSeries = chartData.find(series => series.name === this.series.name)
-                  const pointData = timeSeries.data.find(row => row.sample_time === this.point.x)
-                  console.log(pointData)
-                  let y_value = this.y;
-                  if (this.y == 1) {
-                      y_value = 0;
-                  }
+                  const [y_value, pointData] = highChartsGetMetaData(this);
                   const tooltip = '<i>' + this.series.name + '</i>' + ': ' + y_value + ' cells/L';
                   return tooltip;
               }
           },
           plotOptions: {
-
+              series: {
+                  cursor: 'pointer',
+                  point: {
+                      events: {
+                          click: function () {
+                              const [y_value, pointData] = highChartsGetMetaData(this);
+                              console.log(pointData.bin_pid);
+                              alert('Species: ' + this.series.name + ', value: ' + y_value + pointData.bin_pid);
+                          }
+                      }
+                  }
+              }
           },
-          series: highChartData
+              series: highChartData
       });
     }
 };
