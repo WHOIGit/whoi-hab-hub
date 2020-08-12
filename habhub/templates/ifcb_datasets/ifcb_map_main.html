@@ -348,7 +348,6 @@ window.onload = function() {
     }
 
     function createChartPopup(data) {
-        console.log(data)
         // Create array to hold multiple time series for display
         chartData = []
        // Need to parse the Date values to display correctly on plot
@@ -370,6 +369,18 @@ window.onload = function() {
             }
             chartData.push(timeSeries);
         });
+        console.log(chartData);
+        const highChartData = chartData.map(item => {
+                    const container = {}
+                    container.name = item.name
+                    container.data = item.data.map(row => {
+                        return [row.sample_time, row.cell_concentration];
+                    })
+                    container.data.sort();
+                console.log(container)
+                return container;
+                })
+        console.log(highChartData);
 
         Highcharts.chart('ifcb-popup-content', {
           chart: {
@@ -410,26 +421,24 @@ window.onload = function() {
           },
           tooltip: {
               formatter: function () {
+                  // Get the original data structure for this point by matching timestamps
+                  console.log(chartData)
+                  const timeSeries = chartData.find(series => series.name === this.series.name)
+                  console.log(timeSeries.data)
+                  const pointData = timeSeries.data.find(row => row.sample_time === this.point.x)
+                  console.log(pointData)
                   var y_value = this.y;
                   if (this.y == 1) {
                       var y_value = 0;
                   }
-                  var tooltip = '<i>' + this.series.name + '</i>' + ': ' + y_value + ' cells/L';
+                  const tooltip = '<i>' + this.series.name + '</i>' + ': ' + y_value + ' cells/L';
                   return tooltip;
               }
           },
           plotOptions: {
 
           },
-          series: chartData.map(item => {
-                      let container = {};
-                      container.name = item.name;
-                      container.data = item.data.map(row => {
-                          return [row.sample_time, row.cell_concentration];
-                      })
-                      container.data.sort();
-                  return container;
-                  })
+          series: highChartData
       });
     }
 };
