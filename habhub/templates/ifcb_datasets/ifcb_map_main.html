@@ -362,8 +362,8 @@ window.onload = function() {
                 }
             });
             item.data.sort();
-            let name = item.species.replace('_', ' ').replace('-', ' ')
-            let timeSeries = {
+            const name = item.species.replace('_', ' ').replace('-', ' ')
+            const timeSeries = {
                 name: name,
                 data: item.data
             }
@@ -422,14 +422,12 @@ window.onload = function() {
           tooltip: {
               formatter: function () {
                   // Get the original data structure for this point by matching timestamps
-                  console.log(chartData)
                   const timeSeries = chartData.find(series => series.name === this.series.name)
-                  console.log(timeSeries.data)
                   const pointData = timeSeries.data.find(row => row.sample_time === this.point.x)
                   console.log(pointData)
-                  var y_value = this.y;
+                  let y_value = this.y;
                   if (this.y == 1) {
-                      var y_value = 0;
+                      y_value = 0;
                   }
                   const tooltip = '<i>' + this.series.name + '</i>' + ': ' + y_value + ' cells/L';
                   return tooltip;
