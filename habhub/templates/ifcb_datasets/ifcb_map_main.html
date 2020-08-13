@@ -362,14 +362,14 @@ window.onload = function() {
                 }
             });
             item.data.sort();
-            const name = item.species.replace('_', ' ').replace('-', ' ')
+
             const timeSeries = {
-                name: name,
+                name: item.species_display,
                 data: item.data
             }
             chartData.push(timeSeries);
         });
-        console.log(chartData);
+        // Create new array to format time series points as required by HighCharts
         const highChartData = chartData.map(item => {
                     const container = {}
                     container.name = item.name
@@ -377,13 +377,11 @@ window.onload = function() {
                         return [row.sample_time, row.cell_concentration];
                     })
                     container.data.sort();
-                console.log(container)
                 return container;
                 })
-        console.log(highChartData);
 
         function highChartsGetMetaData(data) {
-            // Get the original data structure for this point by matching timestamps
+            // Get the original data structure with metadata for this point by matching timestamps
             const timeSeries = chartData.find(series => series.name === data.series.name)
             const pointData = timeSeries.data.find(row => row.sample_time === data.x)
 
@@ -445,8 +443,17 @@ window.onload = function() {
                       events: {
                           click: function () {
                               const [y_value, pointData] = highChartsGetMetaData(this);
-                              console.log(pointData.bin_pid);
-                              alert('Species: ' + this.series.name + ', value: ' + y_value + pointData.bin_pid);
+                              console.log(this.series.name);
+                              $.ajax({
+                                  url: '/ifcb-datasets/maps/ajax/get-bin-images-species/',
+                                  data: {
+                                      species: this.series.name,
+                                      bin_pid: pointData.bin_pid
+                                  },
+                                  success: function (data) {
+                                    $(".images-pane").html(data);
+                                  }
+                              });
                           }
                       }
                   }

@@ -85,7 +85,7 @@ class IFCBMapMainView(TemplateView):
 
 
 ######### AJAX Views for partial templates #############
-# Function to load Parts based on Part Number Search
+# Function to load IFBC map sidebar
 class DatasetAjaxGetMapSidebar(View):
 
     def get(self, request, *args, **kwargs):
@@ -117,8 +117,6 @@ class DatasetAjaxGetMapSidebar(View):
                     _get_image_ifcb_dashboard(dataset_obj, img_name)
                     img_path= F"ifcb/images/{img_name}.png"
                     images.append((species[1], img_path))
-                    print(img_path)
-
 
             dashboard_data = {
                 'earliest_date': first_bin.sample_time,
@@ -151,3 +149,35 @@ class DatasetAjaxGetMapSidebar(View):
                     data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
             concentrations_pastweek.append(data)
         return render(request, 'ifcb_datasets/_dashboard_sidebar_home.html', {'concentrations_pastweek': concentrations_pastweek,})
+
+
+# Function to load IFBC map sidebar
+class BinAjaxGetImagesBySpecies(View):
+
+    def get(self, request, *args, **kwargs):
+        species = request.GET.get('species')
+        bin_pid = request.GET.get('bin_pid')
+        images = []
+        # AJAX is sending display name, convert it to the database key
+        TARGET_SPECIES = Bin.TARGET_SPECIES
+        species = next((item for item in TARGET_SPECIES if item[1] == species), False)
+        print(species)
+        try:
+            bin_obj = Bin.objects.get(pid=bin_pid)
+        except Bin.DoesNotExist as e:
+            print(e)
+            bin_obj = None
+
+        if bin_obj and species:
+            data = bin_obj.get_concentration_data_by_species(species[0])
+            print(data)
+            image_numbers = data['image_numbers']
+            print(image_numbers)
+            for img_name in image_numbers:
+                # need to check is this image exists locally. If not, go get it and cache locally
+                _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
+                img_path= F"ifcb/images/{img_name}.png"
+                images.append(img_path)
+
+        print(images)
+        return render(request, 'ifcb_datasets/_dashboard_sidebar_images_pane.html', {'bin_obj': bin_obj, 'images': images, 'species': species[1]})

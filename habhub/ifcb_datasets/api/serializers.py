@@ -24,7 +24,7 @@ class DatasetSerializer(GeoFeatureModelSerializer):
 
         # set up data structure to store results
         for species in Bin.TARGET_SPECIES:
-            dict = {'species': species[0], 'data': [],}
+            dict = {'species': species[0], 'species_display': species[1], 'data': [],}
             concentration_timeseries.append(dict)
 
         for bin in bins_qs:
