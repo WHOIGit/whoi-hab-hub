@@ -1,9 +1,10 @@
 
                 <h5><i>{{ species }}</i></h5>
                 <p><i>{{ bin_obj.pid }}</i></p>
-                {% for image in images %}
-                    <div class="">
-
-                        <img src="{{ MEDIA_URL }}{{ image }}" alt="IFCB image">
-                    </div>
-                {% endfor %}
+                <ul class="list-group">
+                    {% for image in images %}
+                        <li class="list-group-item">
+                            <img src="{{ MEDIA_URL }}{{ image }}" alt="IFCB image">
+                        </li>
+                    {% endfor %}
+                </ul>

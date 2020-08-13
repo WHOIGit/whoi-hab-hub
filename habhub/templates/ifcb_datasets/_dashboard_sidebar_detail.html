@@ -15,14 +15,17 @@
             <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
             <p><a href="https://ifcb-data.whoi.edu/timeline?dataset={{ dataset_obj.dashboard_id_name }}" target="_blank">IFCB Dashboard source data</a>
             <hr>
+
+            <!-- Spinner icon loader -->
+            <div id="spinner-loader" style="display: none;">
+                <p class="text-center">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i><br>
+                    Loading images...
+                </p>
+            </div>
+
             <div class="images-pane">
-                <h5>Latest IFCB images</h5>
-                {% for image in dashboard_data.images %}
-                    <div class="">
-                        <p><i>{{ image.0 }}</i></p>
-                        <img src="{{ MEDIA_URL }}{{ image.1 }}" alt="IFCB image">
-                    </div>
-                {% endfor %}
+
             </div>
         </div>
 

@@ -432,7 +432,12 @@ window.onload = function() {
           tooltip: {
               formatter: function () {
                   const [y_value, pointData] = highChartsGetMetaData(this);
-                  const tooltip = '<i>' + this.series.name + '</i>' + ': ' + y_value + ' cells/L';
+                  const sampleTime = moment(this.x).calendar()
+                  const tooltip = `
+                      ${sampleTime}<br>
+                      <i>${this.series.name}</i>: ${y_value} cells/L<br>
+                      Click to see IFCB images<br>
+                  `
                   return tooltip;
               }
           },
@@ -450,9 +455,17 @@ window.onload = function() {
                                       species: this.series.name,
                                       bin_pid: pointData.bin_pid
                                   },
+                                  beforeSend: function () {
+                                      // Hide spinner container
+                                      $("#spinner-loader").show();
+                                  },
                                   success: function (data) {
-                                    $(".images-pane").html(data);
-                                  }
+                                      $(".images-pane").html(data);
+                                  },
+                                  complete: function () {
+                                      // Hide spinner container
+                                      $("#spinner-loader").hide();
+                                  },
                               });
                           }
                       }
