@@ -53,23 +53,25 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 depth = None
                 if row['depth']:
                     depth = row['depth']
-
-                bin = Bin.objects.create(
-                    pid = row['pid'],
-                    dataset = dataset_obj,
-                    geom = geom,
-                    sample_time = row['sample_time'],
-                    ifcb = row['ifcb'],
-                    ml_analyzed = row['ml_analyzed'],
-                    depth = depth,
-                    cruise = row['cruise'],
-                    cast = row['cast'],
-                    niskin = row['niskin'],
-                    sample_type = row['sample_type'],
-                    n_images = row['n_images'],
-                    skip = row['skip'],
-                )
-                print(F"row saved - {bin.pid}")
+                try:
+                    bin = Bin.objects.create(
+                        pid = row['pid'],
+                        dataset = dataset_obj,
+                        geom = geom,
+                        sample_time = row['sample_time'],
+                        ifcb = row['ifcb'],
+                        ml_analyzed = row['ml_analyzed'],
+                        depth = depth,
+                        cruise = row['cruise'],
+                        cast = row['cast'],
+                        niskin = row['niskin'],
+                        sample_type = row['sample_type'],
+                        n_images = row['n_images'],
+                        skip = row['skip'],
+                    )
+                    print(F"row saved - {bin.pid}")
+                except Exception as e:
+                    print(e)
 
 
 """
