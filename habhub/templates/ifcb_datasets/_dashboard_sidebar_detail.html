@@ -12,7 +12,7 @@
                 <p>Depth: {{ dashboard_data.depth }} m</p>
             {% endif %}
             <p>Total IFBC bins: {{ dashboard_data.total_bins }}</p>
-            <p>Data available from: {{ dashboard_data.earliest_date|date:"Y-m-d" }} to {{ dashboard_data.latest_date|date:"Y-m-d" }}</p>
+            <p>Data available from: {{ dashboard_data.earliest_date|date:"m/d/Y" }} to {{ dashboard_data.latest_date|date:"m/d/Y" }}</p>
             <p><a href="https://ifcb-data.whoi.edu/timeline?dataset={{ dataset_obj.dashboard_id_name }}" target="_blank">IFCB Dashboard source data</a>
             <hr>
 

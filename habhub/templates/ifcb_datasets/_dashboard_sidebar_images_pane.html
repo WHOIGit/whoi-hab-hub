@@ -1,6 +1,8 @@
 
                 <h5><i>{{ species }}</i></h5>
-                <p><i>{{ bin_obj.pid }}</i></p>
+                <p>IFCB Bin: {{ bin_obj.pid }}</p>
+                <p>Sample Time: {{ bin_obj.sample_time|date:"m/d/Y"}}</p>
+                <p><a href="https://ifcb-data.whoi.edu/bin?dataset={{ bin_obj.dataset.dashboard_id_name }}&bin={{ bin_obj.pid }}" target="_blank">IFCB Dashboard source link</a></p>
                 <ul class="list-group">
                     {% for image in images %}
                         <li class="list-group-item">
