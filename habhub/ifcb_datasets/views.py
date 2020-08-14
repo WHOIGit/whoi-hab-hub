@@ -67,13 +67,16 @@ class IFCBMapMainView(TemplateView):
             data = {'dataset': dataset.__str__(), 'values': [], }
             for species in Bin.TARGET_SPECIES:
                 concentration_vals = []
+                max_val = None
+                mean_val = None
                 if dataset.bins.exists():
                     for bin in dataset.bins.all():
                         item = bin.get_concentration_data_by_species(species[0])
                         if item:
                             concentration_vals.append(item['cell_concentration'])
-                    max_val = max(concentration_vals)
-                    mean_val = int(mean(concentration_vals))
+                    if concentration_vals:
+                        max_val = max(concentration_vals)
+                        mean_val = int(mean(concentration_vals))
                     data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
             concentrations_pastweek.append(data)
 
