@@ -44,34 +44,36 @@ def _get_ifcb_bins_dataset(dataset_obj):
     print('Bins:', bins.count())
     with requests.get(CSV_URL, stream=True) as response:
         lines = (line.decode('utf-8') for line in response.iter_lines())
-        row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
-        if row:
-            sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
-            geom = None
-            if row['longitude'] and row['latitude']:
-                geom = Point(float(row['longitude']), float(row['latitude']))
-            depth = None
-            if row['depth']:
-                depth = row['depth']
-            try:
-                bin = Bin.objects.create(
-                    pid = row['pid'],
-                    dataset = dataset_obj,
-                    geom = geom,
-                    sample_time = row['sample_time'],
-                    ifcb = row['ifcb'],
-                    ml_analyzed = row['ml_analyzed'],
-                    depth = depth,
-                    cruise = row['cruise'],
-                    cast = row['cast'],
-                    niskin = row['niskin'],
-                    sample_type = row['sample_type'],
-                    n_images = row['n_images'],
-                    skip = row['skip'],
-                )
-                print(F"row saved - {bin.pid}")
-            except Exception as e:
-                print(e)
+        #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
+        for row in csv.DictReader(lines):
+            if row['pid'] not in bins:
+                print(row['pid'])
+                sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
+                geom = None
+                if row['longitude'] and row['latitude']:
+                    geom = Point(float(row['longitude']), float(row['latitude']))
+                depth = None
+                if row['depth']:
+                    depth = row['depth']
+                try:
+                    bin = Bin.objects.create(
+                        pid = row['pid'],
+                        dataset = dataset_obj,
+                        geom = geom,
+                        sample_time = row['sample_time'],
+                        ifcb = row['ifcb'],
+                        ml_analyzed = row['ml_analyzed'],
+                        depth = depth,
+                        cruise = row['cruise'],
+                        cast = row['cast'],
+                        niskin = row['niskin'],
+                        sample_type = row['sample_type'],
+                        n_images = row['n_images'],
+                        skip = row['skip'],
+                    )
+                    print(F"row saved - {bin.pid}")
+                except Exception as e:
+                    print(e)
 
 
 """
