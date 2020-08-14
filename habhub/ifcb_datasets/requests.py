@@ -49,12 +49,19 @@ def _get_ifcb_bins_dataset(dataset_obj):
             if row['pid'] not in bins:
                 print(row['pid'])
                 sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
+
                 geom = None
                 if row['longitude'] and row['latitude']:
                     geom = Point(float(row['longitude']), float(row['latitude']))
+
                 depth = None
                 if row['depth']:
                     depth = row['depth']
+
+                ml_analyzed = None
+                if row['ml_analyzed'] > 0:
+                    ml_analyzed = row['ml_analyzed']
+
                 try:
                     bin = Bin.objects.create(
                         pid = row['pid'],
@@ -62,7 +69,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
                         geom = geom,
                         sample_time = row['sample_time'],
                         ifcb = row['ifcb'],
-                        ml_analyzed = row['ml_analyzed'],
+                        ml_analyzed = ml_analyzed,
                         depth = depth,
                         cruise = row['cruise'],
                         cast = row['cast'],
