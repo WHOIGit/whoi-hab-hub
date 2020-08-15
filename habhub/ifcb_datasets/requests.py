@@ -42,11 +42,24 @@ def _get_ifcb_bins_dataset(dataset_obj):
     # speed up the process by getting a values list of current Bin pid
     bins = Bin.objects.filter(dataset=dataset_obj).values_list('pid', flat=True)
     print('Bins:', bins.count())
+    mvco_check = True
+    if dataset_obj.dashboard_id_name == 'mvco':
+        mvco_check = False
+
     with requests.get(CSV_URL, stream=True) as response:
         lines = (line.decode('utf-8') for line in response.iter_lines())
         #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
         for row in csv.DictReader(lines):
-            if row['pid'] not in bins:
+            if mvco_check == False:
+                try:
+                    bin_year = int(row['pid'][1:5])
+                except:
+                    bin_year = 1900
+
+                if bin_year > 2018:
+                    mvco_check = True
+
+            if row['pid'] not in bins and mvco_check == True:
                 print(row['pid'])
                 sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
 
