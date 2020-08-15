@@ -59,7 +59,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
                     depth = row['depth']
 
                 ml_analyzed = None
-                if row['ml_analyzed'] > 0:
+                if row['ml_analyzed'] and float(row['ml_analyzed'])  > 0:
                     ml_analyzed = row['ml_analyzed']
 
                 try:
