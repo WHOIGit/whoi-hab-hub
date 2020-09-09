@@ -113,19 +113,20 @@ def _get_ifcb_autoclass_file(bin_obj):
         data.append(dict)
 
     with requests.get(CSV_URL, stream=True) as response:
-        lines = (line.decode('utf-8') for line in response.iter_lines())
-        for row in csv.DictReader(lines):
-            # remove the pid column
-            image_number = row['pid']
-            row.pop('pid', None)
-            # get the item with the highest value, return species name in key
-            species = max(row, key=lambda key: float(row[key]))
-            if species in TARGET_SPECIES:
-                species_found.append(species)
-                # increment the abundance count by 1 if species matches a TARGET_SPECIES
-                item = next((item for item in data if item['species'] == species), False)
-                item['image_count'] += 1
-                item['image_numbers'].append(image_number)
+        if response.status_code == 200:
+            lines = (line.decode('utf-8') for line in response.iter_lines())
+            for row in csv.DictReader(lines):
+                # remove the pid column
+                image_number = row['pid']
+                row.pop('pid', None)
+                # get the item with the highest value, return species name in key
+                species = max(row, key=lambda key: float(row[key]))
+                if species in TARGET_SPECIES:
+                    species_found.append(species)
+                    # increment the abundance count by 1 if species matches a TARGET_SPECIES
+                    item = next((item for item in data if item['species'] == species), False)
+                    item['image_count'] += 1
+                    item['image_numbers'].append(image_number)
 
     if response.status_code == 200:
         for row in data:
