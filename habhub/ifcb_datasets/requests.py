@@ -26,7 +26,7 @@ def run_species_classifed_import(dataset_obj):
     # Create a pool of processes. By default, one is created for each CPU on machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Get a list of bins to process
-        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:500]
         #bins = dataset_obj.bins.filter(species_found__isnull=True)[:500]
         # Process the list of bins, but split the work across the process pool
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
