@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+<style>
+
+#map-container {
+    position: relative;
+    height: 1000px;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: #2dc4b2;
+}
+
+#console {
+    font-size: 14px;
+}
+
+</style>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+<h1 class="display-4">WHOI HAB Hub</h1>
+<hr>
+<h4>IFCB Data - HAB Species Concentration</h4>
+
+
+<div class="row">
+  <div class="col-12 col-md-9" id="dashboard-main">
+      <div class="alert alert-info" id='console'>
+          <form id="ifcb-map-filters" data-dataset-id="">
+            <div class="form-row align-items-center">
+              <div class="col-auto">
+                  <label class="sr-only" for="datepicker-start">Start date</label>
+                  <div class='input-group date' id='datepicker-start'>
+
+                    <input type='text' name="start_date" class="form-control form-control-sm" />
+                    <div class="input-group-addon input-group-append">
+
+                          <span class="input-group-text">
+                              <i class="fa fa-calendar" aria-hidden="true"></i>
+                          </span>
+
+                    </div>
+
+                  </div>
+              </div>
+
+              <div class="col-auto">
+                  <span> - to - </span>
+
+              </div>
+
+              <div class="col-auto">
+                  <label class="sr-only" for="datepicker-end">End date</label>
+                  <div class="input-group date" id="datepicker-end">
+
+                    <input type="text" name="end_date" class="form-control form-control-sm" />
+                    <div class="input-group-addon input-group-append">
+
+                          <span class="input-group-text">
+                              <i class="fa fa-calendar" aria-hidden="true"></i>
+                          </span>
+
+                    </div>
+
+                  </div>
+              </div>
+
+              <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+              </div>
+
+              <div class="col-auto">
+                <button type="button" class="btn btn-sm btn-secondary" id="filter-reset">Reset</button>
+              </div>
+
+            </div>
+          </form>
+
+      </div>
+
+      <div id="map-container">
+
+          <div id='map'></div>
+
+      </div>
+  </div>
+  <div class="col-12 col-md-3" id="dashboard-sidebar">
+      {% include "ifcb_datasets/_dashboard_sidebar_home.html" with concentrations_pastweek=concentrations_pastweek  %}
+  </div>
+</div>
+
+
+
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+window.onload = function() {
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [-69.75, 42.89],
+        zoom: 6.7,
+    });
+
+    const popupFromZoom = 6;
+    const defaultStartDate = moment().subtract('months', 1);
+    console.log(defaultStartDate);
+
+    // filters for classifying stations by max values into five categories
+    let max1 = ['<', ['get', 'station_max'], 20];
+    let max2 = ['all', ['>=', ['get', 'station_max'], 20], ['<', ['get', 'station_max'], 40]];
+    let max3 = ['all', ['>=', ['get', 'station_max'], 40], ['<', ['get', 'station_max'], 60]];
+    let max4 = ['all', ['>=', ['get', 'station_max'], 60], ['<', ['get', 'station_max'], 80]];
+    let max5 = ['>=', ['get', 'station_max'], 80];
+
+    // filters for classifying stations by mean values into five categories
+    let mean1 = ['<', ['get', 'station_mean'], 20];
+    let mean2 = ['all', ['>=', ['get', 'station_mean'], 20], ['<', ['get', 'station_mean'], 40]];
+    let mean3 = ['all', ['>=', ['get', 'station_mean'], 40], ['<', ['get', 'station_mean'], 60]];
+    let mean4 = ['all', ['>=', ['get', 'station_mean'], 60], ['<', ['get', 'station_mean'], 80]];
+    let mean5 = ['>=', ['get', 'station_mean'], 80];
+
+    // colors to use for the categories
+    let colors = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
+
+    let maxPaintCase = [
+        'case',
+        max1,
+        colors[0],
+        max2,
+        colors[1],
+        max3,
+        colors[2],
+        max4,
+        colors[3],
+        colors[4]
+    ]
+
+    let meanPaintCase = [
+        'case',
+        mean1,
+        colors[0],
+        mean2,
+        colors[1],
+        mean3,
+        colors[2],
+        mean4,
+        colors[3],
+        colors[4]
+    ]
+
+    $('#datepicker-start').datetimepicker({
+        format: 'MM/DD/YYYY',
+        defaultDate: defaultStartDate,
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+
+    $('#datepicker-end').datetimepicker({
+        format: 'MM/DD/YYYY',
+        defaultDate: moment(),
+        useCurrent: true,
+        icons: {
+            time: 'fa fa-clock-o',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+
+    $('#ifcb-map-filters').submit(function(event) {
+        event.preventDefault();
+        let values = $(this).serializeArray();
+        let datasetID = $(this).attr('data-dataset-id')
+        // Close any existing Popups
+        //map.fire('closeAllPopups');
+        // Get chart data, create pop up chart
+        $.ajax({
+            url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
+            data: values,
+            dataType: 'json',
+            success: function (data) {
+                createChartPopup(data);
+            }
+        });
+
+    });
+
+    $('#filter-reset').click(function(event) {
+        // Reset the form field values to defaults
+        $('#datepicker-start').data('DateTimePicker').date(defaultStartDate);
+        $('#datepicker-end').data('DateTimePicker').date(moment());
+        let datasetID = $('#ifcb-map-filters').attr('data-dataset-id')
+        // Close any existing Popups
+        //map.fire('closeAllPopups');
+
+        $.ajax({
+            url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
+            data: {
+                start_date: defaultStartDate.calendar(),
+            },
+            dataType: 'json',
+            success: function (data) {
+                createChartPopup(data);
+            }
+        });
+    });
+
+    map.on('load', function() {
+        // Add a new source from Django GeoJSON data for all Stations
+        map.addSource("ifcb_src", {
+            type: "geojson",
+            data: "{% url 'ifcb_datasets:ajax_load_datasets_all' %}",
+            buffer: 0,
+            maxzoom: 12,
+        });
+
+        map.addLayer({
+            id: 'datasets',
+            type: 'circle',
+            source: 'ifcb_src',
+            paint: {
+                'circle-color': '#fd8d3c',
+                'circle-opacity': 0.8,
+                'circle-radius': 14,
+                'circle-stroke-color': '#fff',
+                'circle-stroke-width': 2
+            }
+        });
+
+        map.on('mousemove', mouseMove);
+        map.on('click', mouseClick);
+        map.on('zoom', function() {
+            if (map.getZoom() > popupFromZoom) {
+                //stateLegendEl.style.display = 'none';
+                //countyLegendEl.style.display = 'block';
+            } else {
+                //stateLegendEl.style.display = 'block';
+                //countyLegendEl.style.display = 'none';
+            }
+        });
+
+    });
+
+    function mouseClick(e) {
+      let features = map.queryRenderedFeatures(e.point, {
+          layers: ['datasets']
+      });
+      console.log(features);
+      if (!features.length) {
+        return;
+      } else if (map.getZoom() < popupFromZoom) {
+         map.easeTo({center: e.lngLat, zoom: map.getZoom() + 2});
+      } else {
+         const datasetID = features[0].id;
+         $('#ifcb-map-filters').attr('data-dataset-id', datasetID)
+         const popup = new mapboxgl.Popup({className: 'ifcb-popup', anchor: 'top', maxWidth: '1000px'})
+              .setLngLat(e.lngLat)
+              .setHTML('<div id="ifcb-popup-content"></div>')
+              .addTo(map);
+          popup.on('close', function(e) {
+            //  AJAX call to build sidebar content
+            $.ajax({
+                url: '/ifcb-datasets/maps/ajax/get-sidebar/',
+                success: function (data) {
+                  $("#dashboard-sidebar").html(data);
+                }
+            });
+          })
+          //  AJAX call to build sidebar content
+          $.ajax({
+              url: '/ifcb-datasets/maps/ajax/get-sidebar/'  + datasetID + '/',
+              success: function (data) {
+                $("#dashboard-sidebar").html(data);
+              }
+          });
+          // Get chart data, create pop up chart
+          $.ajax({
+              url: '/api/v1/ifcb-datasets/'  + datasetID + '/',
+              data: {
+                  start_date: defaultStartDate.calendar(),
+              },
+              dataType: 'json',
+              success: function (data) {
+                  createChartPopup(data);
+              }
+          });
+
+          // Add a custom event listener to the map to close Popups
+          map.on('closeAllPopups', () => {
+            popup.remove();
+            //  AJAX call to build sidebar content
+            $.ajax({
+                url: '/ifcb-datasets/maps/ajax/get-sidebar/',
+                    success: function (data) {
+                      $("#dashboard-sidebar").html(data);
+                    }
+            });
+          });
+
+      }
+    }
+
+    function mouseMove(e) {
+      let features = map.queryRenderedFeatures(e.point, {
+        layers: ['datasets']
+      });
+      map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    }
+
+    function createChartPopup(data) {
+        // Create array to hold multiple time series for display
+        chartData = []
+       // Need to parse the Date values to display correctly on plot
+        chartDataArr = data.properties.concentration_timeseries;
+        chartDataArr.forEach(function(item) {
+            item.data.forEach(function(point) {
+                point['sample_time'] = Date.parse(point['sample_time'])
+                // Add 1 to each 0 concentration point so we can use logarithmic chart
+                // Remove this in display value
+                if (point['cell_concentration'] == 0) {
+                    point['cell_concentration'] = point['cell_concentration'] + 1;
+                }
+            });
+            item.data.sort();
+
+            const timeSeries = {
+                name: item.species_display,
+                data: item.data
+            }
+            chartData.push(timeSeries);
+        });
+        // Create new array to format time series points as required by HighCharts
+        const highChartData = chartData.map(item => {
+                    const container = {}
+                    container.name = item.name
+                    container.data = item.data.map(row => {
+                        return [row.sample_time, row.cell_concentration];
+                    })
+                    container.data.sort();
+                return container;
+                })
+        console.log(highChartData)
+        
+        function highChartsGetMetaData(data) {
+            // Get the original data structure with metadata for this point by matching timestamps
+            const timeSeries = chartData.find(series => series.name === data.series.name)
+            const pointData = timeSeries.data.find(row => row.sample_time === data.x)
+
+            let y_value = data.y;
+            if (data.y == 1) {
+                y_value = 0;
+            }
+            return([y_value, pointData])
+        }
+
+        Highcharts.chart('ifcb-popup-content', {
+          chart: {
+              type: 'spline',
+              zoomType: 'x',
+              width: 900
+          },
+          title: {
+              text: data.properties.name
+          },
+          subtitle: {
+              text: document.ontouchstart === undefined ?
+                  'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+          },
+          xAxis: {
+              type: 'datetime'
+          },
+          yAxis: {
+              title: {
+                  text: 'Cell concentration (cells/L)'
+              },
+              min: 1,
+              labels: {
+                  formatter: function() {
+                      if(this.value === 1){
+                          return 0;
+                      } else {
+                          return Highcharts.Axis.prototype.defaultLabelFormatter.call(this);
+                      }
+                  }
+              }
+          },
+          legend: {
+              align: 'left',
+              verticalAlign: 'top'
+          },
+          tooltip: {
+              formatter: function () {
+                  const [y_value, pointData] = highChartsGetMetaData(this);
+                  const sampleTime = moment(this.x).calendar()
+                  const tooltip = `
+                      ${sampleTime}<br>
+                      <i>${this.series.name}</i>: ${y_value} cells/L<br>
+                      Click to see IFCB images<br>
+                  `
+                  return tooltip;
+              }
+          },
+          plotOptions: {
+              series: {
+                  cursor: 'pointer',
+                  point: {
+                      events: {
+                          click: function () {
+                              const [y_value, pointData] = highChartsGetMetaData(this);
+                              console.log(this.series.name);
+                              $.ajax({
+                                  url: '/ifcb-datasets/maps/ajax/get-bin-images-species/',
+                                  data: {
+                                      species: this.series.name,
+                                      bin_pid: pointData.bin_pid
+                                  },
+                                  beforeSend: function () {
+                                      // Hide spinner container
+                                      $("#spinner-loader").show();
+                                  },
+                                  success: function (data) {
+                                      $(".images-pane").html(data);
+                                  },
+                                  complete: function () {
+                                      // Hide spinner container
+                                      $("#spinner-loader").hide();
+                                  },
+                              });
+                          }
+                      }
+                  }
+              }
+          },
+          series: highChartData
+      });
+    }
+};
+</script>
+{% endblock javascript %}
