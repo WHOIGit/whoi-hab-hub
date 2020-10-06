@@ -17,7 +17,7 @@ if READ_DOT_ENV_FILE:
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool('DJANGO_DEBUG', True)
+DEBUG = env.bool('DJANGO_DEBUG', False)
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
@@ -58,7 +58,6 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # enable Whitenoise in development
     'django.contrib.staticfiles',
     'django.contrib.humanize', # Handy template tags
     'django.contrib.admin',
