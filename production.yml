@@ -8,11 +8,11 @@ volumes:
   media_volume_habhub: {}
 
 services:
-  django:
+  django: &django
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-    image: habmap_production_django
+    image: habhub_production_django
     container_name: django
     depends_on:
       - postgres
@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: habmap_production_postgres
+    image: habhub_production_postgres
     container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
@@ -43,7 +43,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
-    image: habmap_production_nginx
+    image: habhub_production_nginx
     container_name: nginx
     depends_on:
       - django
@@ -57,3 +57,30 @@ services:
 
   redis:
     image: redis:6.0
+
+  celeryworker:
+    <<: *django
+    image: habhub_production_celeryworker
+    depends_on:
+      - redis
+      - postgres
+
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: habhub_production_celerybeat
+    depends_on:
+      - redis
+      - postgres
+
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    image: habhub_production_flower
+    ports:
+      - "5555:5555"
+    command: /start-flower

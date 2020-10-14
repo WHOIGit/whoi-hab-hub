@@ -5,11 +5,11 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-  django:
+  django: &django
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
-    image: habmap_local_django
+    image: habhub_local_django
     depends_on:
       - postgres
     volumes:
@@ -25,40 +25,40 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: habmap_production_postgres
+    image: habhub_production_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
 
-  celery:
-    build:
-      context: .
-      dockerfile: ./compose/local/django/Dockerfile
-    volumes:
-      - .:/app
-    command: celery -A config.celery_app worker -l INFO
-    env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+  celeryworker:
+    <<: *django
+    image: habhub_local_celeryworker
     depends_on:
-      - postgres
       - redis
+      - postgres
 
-  celery-beat:
-    build:
-      context: .
-      dockerfile: ./compose/local/django/Dockerfile
-    volumes:
-      - .:/app
-    command: celery --pidfile= -A config.celery_app beat -l INFO
-    env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: habhub_local_celerybeat
     depends_on:
-      - postgres
       - redis
+      - postgres
+
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    image: habhub_local_flower
+    ports:
+      - "5555:5555"
+    command: /start-flower
 
   redis:
     image: redis:6.0
+    restart: unless-stopped
