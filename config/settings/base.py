@@ -3,6 +3,7 @@ Base settings to build other settings files upon.
 """
 
 import environ
+from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (starterkit/config/settings/base.py - 3 = starterkit/)
 APPS_DIR = ROOT_DIR.path('habhub')
@@ -307,6 +308,14 @@ CELERY_TASK_TIME_LIMIT = 5 * 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
 # TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_SOFT_TIME_LIMIT = 60
+
+# Celery Beat Periodic Tasks
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "habhub.ifcb_datasets.tasks.hello",
+        "schedule": crontab(minute="*/1"),
+    },
+}
 
 # Summernote config
 SUMMERNOTE_THEME = 'bs4'
