@@ -50,6 +50,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
         lines = (line.decode('utf-8') for line in response.iter_lines())
         #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
         for row in csv.DictReader(lines):
+            print(row['pid'])
             if mvco_check == False:
                 try:
                     bin_year = int(row['pid'][1:5])
