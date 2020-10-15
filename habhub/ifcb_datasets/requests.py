@@ -104,7 +104,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     CSV_URL = F'https://ifcb-data.whoi.edu/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
     ML_ANALYZED = bin_obj.ml_analyzed
     TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
-
+    print(CSV_URL, bin_obj)
     species_found = []
     # set up data structure to store results
     data = []
