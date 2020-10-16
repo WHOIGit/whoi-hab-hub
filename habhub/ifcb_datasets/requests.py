@@ -19,6 +19,7 @@ from .models import *
 Function to run import of Bins/Autoclass/Image data from IFCB dashboard
 Args: 'dataset_obj' - Dataset object
 """
+"""
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
@@ -26,12 +27,20 @@ def run_species_classifed_import(dataset_obj):
     # Create a pool of processes. By default, one is created for each CPU on machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Get a list of bins to process
-        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:500]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:200]
         #bins = dataset_obj.bins.filter(species_found__isnull=True)[:500]
         # Process the list of bins, but split the work across the process pool
+        print("Getting Autoclass files")
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
              print(f"{bin} processed.")
-
+"""
+def run_species_classifed_import(dataset_obj):
+    # Get all new bins
+    _get_ifcb_bins_dataset(dataset_obj)
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:200]
+    for bin in bins:
+        _get_ifcb_autoclass_file(bin)
+        print(f"{bin} processed.")
 
 """
 Function to make API request for all IFCB bins by dataset
@@ -109,9 +118,11 @@ def _get_ifcb_autoclass_file(bin_obj):
         data.append(dict)
 
     response = requests.get(CSV_URL)
+    print(response.status_code)
     if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
         for row in csv.DictReader(lines):
+            print("reading autoclass data")
             # remove the pid column
             image_number = row['pid']
             row.pop('pid', None)
@@ -126,6 +137,7 @@ def _get_ifcb_autoclass_file(bin_obj):
 
     if response.status_code == 200:
         for row in data:
+            print("calculate concentration")
             try:
                 # calculate cell concentrations
                 row['cell_concentration'] = int(round((row['image_count'] / ML_ANALYZED) * 1000))
@@ -135,6 +147,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                 print(e)
 
         #update Bin record
+        print("save to DB")
         bin_obj.cell_concentration_data = data
         bin_obj.species_found = species_found
         bin_obj.save()

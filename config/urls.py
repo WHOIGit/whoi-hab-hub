@@ -31,6 +31,7 @@ urlpatterns = [
 
     # Custom HAB urls
     path('', stations_views.StationListView.as_view(), name='home'),
+    path('', include('habhub.dashboard.urls', namespace='dashboard')),
     path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
     path('closures/', include('habhub.closures.urls', namespace='closures')),
     path('stations/', include('habhub.stations.urls', namespace='stations')),
