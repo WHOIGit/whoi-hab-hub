@@ -13,9 +13,13 @@
 }
 
 /* Base Template styling */
+i,
+span {
+    display: inline-block;
+}
 
-.navbar-brand {
-    width: 80px;
+.navbar.bg-blue {
+    background-color: #041E42;
 }
 
 svg#navbar-logo {
@@ -69,34 +73,6 @@ svg#navbar-logo {
     max-height: 350px;
 }
 
-/* Sidebar collapsing */
-.navbar {
-    padding: 15px 10px;
-    background: #fff;
-    border: none;
-    border-radius: 0;
-    margin-bottom: 40px;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.navbar-btn {
-    box-shadow: none;
-    outline: none !important;
-    border: none;
-}
-
-.line {
-    width: 100%;
-    height: 1px;
-    border-bottom: 1px dashed #ddd;
-    margin: 40px 0;
-}
-
-i,
-span {
-    display: inline-block;
-}
-
 /* ---------------------------------------------------
     SIDEBAR STYLE
 ----------------------------------------------------- */
@@ -104,13 +80,13 @@ span {
 #sidebar {
     min-width: 350px;
     max-width: 350px;
-    background: #7386D5;
+    background: #00a9e0;
     color: #fff;
     transition: all 0.3s;
     position: absolute;
     left: 0;
     z-index: 999;
-    height: 100vh;
+    height: 1000px;
 }
 
 #sidebar.minimize {
@@ -133,7 +109,9 @@ span {
     height: 35px;
     line-height: 35px;
     text-align: center;
-    background: #7386D5;
+    float: right;
+    background: #0069b1;
+    color: white;
     cursor: pointer;
     -webkit-transition: all 0.3s;
     -o-transition: all 0.3s;
@@ -176,8 +154,8 @@ span {
 }
 
 #sidebar .sidebar-header {
-    padding: 20px;
-    background: #6d7fcc;
+    height: 35px;
+    background: #0069b1;
 }
 
 #sidebar .sidebar-header strong {
@@ -194,6 +172,7 @@ span {
     padding: 10px;
     font-size: 1.1em;
     display: block;
+    color: white;
 }
 
 #sidebar ul li a:hover {
@@ -250,17 +229,6 @@ a.article,
 a.article:hover {
     background: #6d7fcc !important;
     color: #fff !important;
-}
-
-/* ---------------------------------------------------
-    CONTENT STYLE
------------------------------------------------------ */
-
-#content {
-    width: 100%;
-    padding: 20px;
-    min-height: 100vh;
-    transition: all 0.3s;
 }
 
 /* ---------------------------------------------------

@@ -5,8 +5,7 @@
 {% block content %}
 
 <!-- Font Awesome JS -->
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/c462d105ac.js" crossorigin="anonymous"></script>
 
 <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
 <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
@@ -23,30 +22,25 @@
 
     <!-- Sidebar  -->
     <nav id="sidebar">
-        <div id="dismiss" class="arrow-btn">
-            <i class="fas fa-arrow-left"></i>
-        </div>
-
-        <div id="expand" class="arrow-btn">
-            <i class="fas fa-arrow-right"></i>
-        </div>
-
         <div class="sidebar-header">
-            <h3>Bootstrap Sidebar</h3>
+            <a id="sidebar-collapse" class="arrow-btn" href="#">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+
+        <!--
+        <div class="sidebar-header">
+            <h4>Bootstrap Sidebar</h4>
             <strong>BS</strong>
         </div>
-        <button type="button" id="sidebarCollapse" class="btn btn-info">
-            <i class="fas fa-align-left"></i>
-            <span>Toggle Sidebar</span>
-        </button>
-
-        <ul class="list-unstyled components">
-            <li class="active">
-                <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                    <i class="fas fa-home"></i>
-                    Home
+        -->
+        <ul class="list-unstyled components" id="filters">
+            <li>
+                <a href="#data-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-database"></i>
+                    Data Layers
                 </a>
-                <ul class="collapse list-unstyled" id="homeSubmenu">
+                <ul class="collapse list-unstyled" id="data-filters">
                     <li>
                         <a href="#">Home 1</a>
                     </li>
@@ -59,26 +53,40 @@
                 </ul>
             </li>
             <li>
-                <a href="#">
-                    <i class="fas fa-briefcase"></i>
-                    About
+                <a href="#syndrome-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-bacteria"></i>
+                    Syndromes
                 </a>
-                <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                    <i class="fas fa-copy"></i>
-                    Pages
-                </a>
-                <ul class="collapse list-unstyled" id="pageSubmenu">
+                <ul class="collapse list-unstyled" id="syndrome-filters">
                     <li>
-                        <a href="#">Page 1</a>
+                        <a href="#">Home 1</a>
                     </li>
                     <li>
-                        <a href="#">Page 2</a>
+                        <a href="#">Home 2</a>
                     </li>
                     <li>
-                        <a href="#">Page 3</a>
+                        <a href="#">Home 3</a>
                     </li>
                 </ul>
             </li>
+            <li>
+                <a href="#date-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-bacteria"></i>
+                    Date Range
+                </a>
+                <ul class="collapse list-unstyled" id="date-filters">
+                    <li>
+                        <a href="#">Home 1</a>
+                    </li>
+                    <li>
+                        <a href="#">Home 2</a>
+                    </li>
+                    <li>
+                        <a href="#">Home 3</a>
+                    </li>
+                </ul>
+            </li>
+
             <li>
                 <a href="#">
                     <i class="fas fa-image"></i>
@@ -101,10 +109,10 @@
 
         <ul class="list-unstyled CTAs">
             <li>
-                <a href="https://bootstrapious.com/tutorial/files/sidebar.zip" class="download">Download source</a>
+                <a href="#" class="download">Download data</a>
             </li>
             <li>
-                <a href="https://bootstrapious.com/p/bootstrap-sidebar" class="article">Back to article</a>
+                <a href="#" class="article">Info Link</a>
             </li>
         </ul>
     </nav>
@@ -131,6 +139,15 @@
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('minimize');
+    });
+
+
+    $('#sidebar-collapse').on('click', function () {
+      $('#sidebar').toggleClass('minimize');
+      $(this)
+        .find('.fas')
+        .toggleClass('fa-arrow-left')
+        .toggleClass('fa-arrow-right');
     });
 });
 
