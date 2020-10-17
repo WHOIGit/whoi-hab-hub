@@ -7,126 +7,182 @@
 <!-- Font Awesome JS -->
 <script src="https://kit.fontawesome.com/c462d105ac.js" crossorigin="anonymous"></script>
 
-<script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
-
-<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
-<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
 <h1 class="display-4">WHOI HAB Hub</h1>
-<hr>
+<!-- Sidebar  -->
+<nav id="sidebar">
+    <div class="sidebar-header">
+        <a id="sidebar-collapse" class="arrow-btn" href="#">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+    </div>
 
-
-
-    <!-- Sidebar  -->
-    <nav id="sidebar">
-        <div class="sidebar-header">
-            <a id="sidebar-collapse" class="arrow-btn" href="#">
-                <i class="fas fa-arrow-left"></i>
+    <!--
+    <div class="sidebar-header">
+        <h4>Bootstrap Sidebar</h4>
+        <strong>BS</strong>
+    </div>
+    -->
+    <ul class="list-unstyled components" id="filters">
+        <li>
+            <a href="#data-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-database"></i>
+                Data Layers
             </a>
-        </div>
+            <div class="collapse filter-box" id="data-filters">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Default checkbox
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
+                    <label class="form-check-label" for="defaultCheck2">
+                        Disabled checkbox
+                    </label>
+                </div>
+            </div>
+        </li>
 
-        <!--
-        <div class="sidebar-header">
-            <h4>Bootstrap Sidebar</h4>
-            <strong>BS</strong>
-        </div>
-        -->
-        <ul class="list-unstyled components" id="filters">
-            <li>
-                <a href="#data-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                    <i class="fas fa-database"></i>
-                    Data Layers
-                </a>
-                <ul class="collapse list-unstyled" id="data-filters">
-                    <li>
-                        <a href="#">Home 1</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 2</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 3</a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a href="#syndrome-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                    <i class="fas fa-bacteria"></i>
-                    Syndromes
-                </a>
-                <ul class="collapse list-unstyled" id="syndrome-filters">
-                    <li>
-                        <a href="#">Home 1</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 2</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 3</a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a href="#date-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                    <i class="fas fa-bacteria"></i>
-                    Date Range
-                </a>
-                <ul class="collapse list-unstyled" id="date-filters">
-                    <li>
-                        <a href="#">Home 1</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 2</a>
-                    </li>
-                    <li>
-                        <a href="#">Home 3</a>
-                    </li>
-                </ul>
-            </li>
+        <li>
+            <a href="#syndrome-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-bacteria"></i>
+                Syndromes
+            </a>
+            <div class="collapse filter-box" id="syndrome-filters">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Default checkbox
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
+                    <label class="form-check-label" for="defaultCheck2">
+                        Disabled checkbox
+                    </label>
+                </div>
+            </div>
+        </li>
 
-            <li>
-                <a href="#">
-                    <i class="fas fa-image"></i>
-                    Portfolio
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="fas fa-question"></i>
-                    FAQ
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="fas fa-paper-plane"></i>
-                    Contact
-                </a>
-            </li>
-        </ul>
+        <li>
+            <a href="#date-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-calendar-alt"></i>
+                Date Range
+            </a>
+            <div class="collapse filter-box" id="date-filters">
 
-        <ul class="list-unstyled CTAs">
-            <li>
-                <a href="#" class="download">Download data</a>
-            </li>
-            <li>
-                <a href="#" class="article">Info Link</a>
-            </li>
-        </ul>
-    </nav>
+                <div class="col-auto">
+                    <label class="sr-only" for="inlineFormInputGroup">Start date</label>
+                    <div class='input-group date' id='datepicker-start'>
 
-    <!-- Page Content  -->
-    <div class="row">
+                      <input type='text' name="start_date" class="form-control form-control-sm" />
+                      <div class="input-group-addon input-group-append">
+
+                            <span class="input-group-text">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                            </span>
+
+                      </div>
+
+                    </div>
+                </div>
+
+                <div class="col-auto text-center">
+                    <span> - to - </span>
+
+                </div>
+
+                <div class="col-auto">
+                    <label class="sr-only" for="inlineFormInputGroup">End date</label>
+                    <div class='input-group date' id='datepicker-end'>
+
+                      <input type='text' name="end_date" class="form-control form-control-sm" />
+                      <div class="input-group-addon input-group-append">
+
+                            <span class="input-group-text">
+                                <i class="fa fa-calendar" aria-hidden="true"></i>
+                            </span>
+
+                      </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </li>
+
+        <li>
+            <a href="#value-filters" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-chart-line"></i>
+                Value Options
+            </a>
+            <div class="collapse filter-box" id="value-filters">
+
+                    <div class="form-check">
+                        <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-max-label-filter" value="stations_max_label" checked>
+                            <label class="form-check-label" for="stations_max_label">
+                            Show Max Value
+                            </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-mean-label-filter" value="stations_mean_label">
+                            <label class="form-check-label" for="stations_mean_label">
+                            Show Mean Value
+                            </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input label-filter" type="radio" name="label_display" id="stations-mean-label-filter" value="stations_mean_label">
+                            <label class="form-check-label" for="stations_mean_label">
+                            Show Mode Value
+                            </label>
+                    </div>
+
+            </div>
+        </li>
+
+        <li>
+            <div class="graphic-box">
+                <figure class="highcharts-figure">
+                    <div id="chart-container"></div>
+                </figure>
+            </div>
+        </li>
+        <li>
+            <a href="#">
+                <i class="fas fa-paper-plane"></i>
+                Contact
+            </a>
+        </li>
+    </ul>
+    <!--
+    <ul class="list-unstyled CTAs">
+        <li>
+            <a href="#" class="download">Download data</a>
+        </li>
+        <li>
+            <a href="#" class="article">Info Link</a>
+        </li>
+    </ul>
+    -->
+</nav>
+
+<!-- Page Content  -->
+<div class="row">
     <div class="col-12" id="dashboard-main">
-    <div id="map-container">
+        <div id="map-container">
 
-        <div id="map"></div>
+            <div id="map"></div>
 
+        </div>
     </div>
-    </div>
-    </div>
+</div>
 
 
 
@@ -137,17 +193,88 @@
 <script>
 
 $(document).ready(function () {
-    $('#sidebarCollapse').on('click', function () {
-        $('#sidebar').toggleClass('minimize');
+    $('.dropdown-toggle').on('click', function () {
+        $('#sidebar').removeClass('minimize');
     });
 
-
     $('#sidebar-collapse').on('click', function () {
-      $('#sidebar').toggleClass('minimize');
-      $(this)
-        .find('.fas')
-        .toggleClass('fa-arrow-left')
-        .toggleClass('fa-arrow-right');
+        $('#sidebar').toggleClass('minimize');
+        // Switch arrow icons
+        $(this).find('.fas')
+               .toggleClass('fa-arrow-left')
+               .toggleClass('fa-arrow-right');
+        // Close open filters if minimizing
+        if ($("#sidebar").hasClass("minimize")) {
+            $('#filters div.collapse').removeClass('show');
+        }
+    });
+
+    Highcharts.chart('chart-container', {
+
+        title: {
+            text: 'Solar Employment Growth by Sector, 2010-2016'
+        },
+
+        subtitle: {
+            text: 'Source: thesolarfoundation.com'
+        },
+
+        yAxis: {
+            title: {
+                text: 'Number of Employees'
+            }
+        },
+
+        xAxis: {
+            accessibility: {
+                rangeDescription: 'Range: 2010 to 2017'
+            }
+        },
+
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle'
+        },
+
+        plotOptions: {
+            series: {
+                label: {
+                    connectorAllowed: false
+                },
+                pointStart: 2010
+            }
+        },
+
+        series: [{
+            name: 'Manufacturing',
+            data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
+        }, {
+            name: 'Sales & Distribution',
+            data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
+        }, {
+            name: 'Project Development',
+            data: [null, null, 7988, 12169, 15112, 22452, 34400, 34227]
+        }, {
+            name: 'Other',
+            data: [12908, 5948, 8105, 11248, 8989, 11816, 18274, 18111]
+        }],
+
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    legend: {
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom'
+                    }
+                }
+            }]
+        }
+
     });
 });
 

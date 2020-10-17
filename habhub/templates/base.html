@@ -20,13 +20,17 @@
     <!-- Latest compiled and minified Bootstrap 4.1.1 CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
 
-    <!-- Your stuff: Third-party CSS libraries go here -->
+    <!-- Third-party CSS libraries go here -->
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <link href="{% static 'css/vendor/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
 
     <!-- Load jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
+    <!-- Load Mapbox GL -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+    
     <!-- Bootstrap datepicker -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js" type="text/javascript" ></script>
@@ -42,7 +46,7 @@
   <body>
 
     <div class="mb-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-blue">
+      <nav class="navbar navbar-expand-md navbar-dark bg-blue">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
