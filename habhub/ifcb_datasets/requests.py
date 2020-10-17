@@ -56,7 +56,9 @@ def _get_ifcb_bins_dataset(dataset_obj):
     if dataset_obj.dashboard_id_name == 'mvco':
         mvco_check = False
 
-    with requests.get(CSV_URL, stream=True) as response:
+    response = requests.get(CSV_URL)
+    print(response.status_code)
+    if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
         #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
         for row in csv.DictReader(lines):
