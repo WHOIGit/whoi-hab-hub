@@ -37,7 +37,7 @@ def run_species_classifed_import(dataset_obj):
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:200]
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
     for bin in bins:
         _get_ifcb_autoclass_file(bin)
         print(f"{bin} processed.")
