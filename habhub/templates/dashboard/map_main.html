@@ -38,13 +38,19 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
                     <label class="form-check-label" for="defaultCheck1">
-                        Default checkbox
+                        State Closure Data
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
-                    <label class="form-check-label" for="defaultCheck2">
-                        Disabled checkbox
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        IFCB Cell Concentration
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Shellfish Toxicity by Station
                     </label>
                 </div>
             </div>
@@ -59,13 +65,37 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
                     <label class="form-check-label" for="defaultCheck1">
-                        Default checkbox
+                        <em>Alexandrium catenella</em>
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
-                    <label class="form-check-label" for="defaultCheck2">
-                        Disabled checkbox
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        <em>Dinophysis acuminata</em>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        <em>Dinophysis norvegica</em>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        <em>Karenia</em>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        <em>Margalefidinium polykrikoides</em>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        <em>Pseudo nitzschia</em>
                     </label>
                 </div>
             </div>
@@ -149,11 +179,57 @@
 
         <li>
             <div class="graphic-box">
-                <figure class="highcharts-figure">
-                    <div id="chart-container"></div>
-                </figure>
+                <a href="#" class="expand-link"><i class="fas fa-expand-alt"></i></a>
+                <div class="chart-pane">
+                    <figure class="highcharts-figure">
+                        <div id="chart-container"></div>
+                    </figure>
+                </div>
+
             </div>
         </li>
+
+        <li>
+            <div class="graphic-box">
+                <a href="#" class="expand-link"><i class="fas fa-expand-alt"></i></a>
+
+                <div class="images-pane">
+                    <h5><i>Pseudo nitzschia</i></h5>
+                    <p>IFCB Bin: D20201010T102829_IFCB149</p>
+                    <p>Sample Time: 10/10/2020</p>
+                    <p><a href="https://ifcb-data.whoi.edu/bin?dataset=fiddlers&amp;bin=D20201010T102829_IFCB149" target="_blank">IFCB Dashboard source link</a></p>
+                    <ul class="list-group">
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_00920.png" alt="IFCB image">
+                            </li>
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_01006.png" alt="IFCB image">
+                            </li>
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_01571.png" alt="IFCB image">
+                            </li>
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_01635.png" alt="IFCB image">
+                            </li>
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_02453.png" alt="IFCB image">
+                            </li>
+
+                            <li class="list-group-item">
+                                <img src="/media/ifcb/images/D20201010T102829_IFCB149_02542.png" alt="IFCB image">
+                            </li>
+
+                    </ul>
+                </div>
+            </div>
+
+        </li>
+
         <li>
             <a href="#">
                 <i class="fas fa-paper-plane"></i>
@@ -212,16 +288,12 @@ $(document).ready(function () {
     Highcharts.chart('chart-container', {
 
         title: {
-            text: 'Solar Employment Growth by Sector, 2010-2016'
-        },
-
-        subtitle: {
-            text: 'Source: thesolarfoundation.com'
+            text: 'Some Exciting HAB Data, 2010-2016'
         },
 
         yAxis: {
             title: {
-                text: 'Number of Employees'
+                text: 'Cell Concentration'
             }
         },
 
@@ -247,16 +319,16 @@ $(document).ready(function () {
         },
 
         series: [{
-            name: 'Manufacturing',
+            name: 'Series 1',
             data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
         }, {
-            name: 'Sales & Distribution',
+            name: 'Series 2',
             data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
         }, {
-            name: 'Project Development',
+            name: 'Series 3',
             data: [null, null, 7988, 12169, 15112, 22452, 34400, 34227]
         }, {
-            name: 'Other',
+            name: 'Series 4',
             data: [12908, 5948, 8105, 11248, 8989, 11816, 18274, 18111]
         }],
 

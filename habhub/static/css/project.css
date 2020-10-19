@@ -81,6 +81,8 @@ span {
     left: 0;
     z-index: 999;
     height: 1000px;
+    max-height: 1000px;
+    overflow-y: scroll;
 }
 
 #sidebar.minimize {
@@ -165,7 +167,7 @@ span {
     margin-bottom: 15px;
 }
 
-#sidebar ul li a {
+#sidebar ul li > a {
     padding: 10px;
     font-size: 1.1em;
     display: block;
@@ -173,7 +175,7 @@ span {
     background: #fff;
 }
 
-#sidebar ul li a:hover {
+#sidebar ul li > a:hover {
     color: #00a9e0;
     background: #fff;
     text-decoration: none;
@@ -220,6 +222,17 @@ span {
 
 #sidebar.minimize .graphic-box {
     display: none;
+}
+
+.expand-link {
+    display: inline-block;
+    float: right;
+    color: #999;
+}
+
+#sidebar .images-pane {
+    padding: 10px 20px;
+    font-size: .8em;
 }
 
 ul.CTAs {
