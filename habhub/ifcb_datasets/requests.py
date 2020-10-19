@@ -120,7 +120,12 @@ def _get_ifcb_autoclass_file(bin_obj):
         dict = {'species': species, 'image_count': 0, 'cell_concentration': 0, 'image_numbers': []}
         data.append(dict)
 
-    response = requests.get(CSV_URL)
+    try:
+        response = requests.get(CSV_URL, timeout=2)
+    except Exception as e:
+        print(e)
+        return data
+
     print(response.status_code)
     if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
