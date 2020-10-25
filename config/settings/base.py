@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
+    'corsheaders',
     'import_export',
     'djgeojson',
     'leaflet',
@@ -144,6 +145,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -276,6 +278,9 @@ REST_FRAMEWORK = {
     #    'rest_framework.permissions.IsAuthenticated',
     #]
 }
+
+# django-cors-headers settings
+CORS_ALLOW_ALL_ORIGINS = True
 
 #Django Import Export settings
 IMPORT_EXPORT_USE_TRANSACTIONS = True

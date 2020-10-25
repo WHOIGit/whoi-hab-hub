@@ -37,7 +37,7 @@ def run_species_classifed_import(dataset_obj):
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
     for bin in bins:
         _get_ifcb_autoclass_file(bin)
         print(f"{bin} processed.")
@@ -109,10 +109,11 @@ Function to make API request for Autoclass CSV file, calculate abundance of targ
 Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
 """
 def _get_ifcb_autoclass_file(bin_obj):
+    BIN_URL = F'https://ifcb-data.whoi.edu/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}'
     CSV_URL = F'https://ifcb-data.whoi.edu/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
     ML_ANALYZED = bin_obj.ml_analyzed
     TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
-    print(CSV_URL, bin_obj)
+    print(BIN_URL, bin_obj)
     species_found = []
     # set up data structure to store results
     data = []
@@ -130,7 +131,6 @@ def _get_ifcb_autoclass_file(bin_obj):
     if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
         for row in csv.DictReader(lines):
-            print("reading autoclass data")
             # remove the pid column
             image_number = row['pid']
             row.pop('pid', None)
