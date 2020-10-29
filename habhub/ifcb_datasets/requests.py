@@ -36,7 +36,8 @@ def run_species_classifed_import(dataset_obj):
 """
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
-    _get_ifcb_bins_dataset(dataset_obj)
+    if dataset_obj.dashboard_id_name != 'mvco':
+        _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
     bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
     for bin in bins:
