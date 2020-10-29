@@ -37,8 +37,10 @@ def run_species_classifed_import(dataset_obj):
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
+    print('Complete Bin import.')
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
     for bin in bins:
+        print('Start autoclass processing...')
         _get_ifcb_autoclass_file(bin)
         print(f"{bin} processed.")
 
@@ -145,7 +147,6 @@ def _get_ifcb_autoclass_file(bin_obj):
 
     if response.status_code == 200:
         for row in data:
-            print("calculate concentration")
             try:
                 # calculate cell concentrations
                 row['cell_concentration'] = int(round((row['image_count'] / ML_ANALYZED) * 1000))
