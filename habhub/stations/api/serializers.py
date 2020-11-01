@@ -39,8 +39,9 @@ class StationSerializer(GeoFeatureModelSerializer):
         toxicity_timeseries_data = list()
 
         for datapoint in datapoints_qs:
-            date_str = datapoint.measurement_date.strftime('%Y-%m-%d')
-            toxicity_timeseries_data.append([date_str, float(datapoint.measurement)])
+            date_str = datapoint.measurement_date.isoformat()
+            data_obj = {'date': date_str, 'measurement': float(datapoint.measurement)}
+            toxicity_timeseries_data.append(data_obj)
 
         return toxicity_timeseries_data
 
