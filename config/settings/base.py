@@ -316,9 +316,9 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 
 # Celery Beat Periodic Tasks
 CELERY_BEAT_SCHEDULE = {
-    "sample_task": {
-        "task": "habhub.ifcb_datasets.tasks.hello",
-        "schedule": crontab(minute="*/1"),
+    "get_ifcb_dashboard_data": {
+        "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
+        "schedule": crontab(hour="*/1"),
     },
 }
 

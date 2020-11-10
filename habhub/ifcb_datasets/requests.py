@@ -39,7 +39,7 @@ def run_species_classifed_import(dataset_obj):
     if dataset_obj.dashboard_id_name != 'mvco':
         _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
     for bin in bins:
         print('Start autoclass processing...')
         _get_ifcb_autoclass_file(bin)
