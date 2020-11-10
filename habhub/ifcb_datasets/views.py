@@ -160,6 +160,8 @@ class BinAjaxGetImagesBySpecies(View):
     def get(self, request, *args, **kwargs):
         species = request.GET.get('species')
         bin_pid = request.GET.get('bin_pid')
+        format = request.GET.get('format')
+
         images = []
         # AJAX is sending display name, convert it to the database key
         TARGET_SPECIES = Bin.TARGET_SPECIES
@@ -183,4 +185,14 @@ class BinAjaxGetImagesBySpecies(View):
                 images.append(img_path)
 
         print(images)
+        if format == 'json':
+            bin_images_json = {
+                'bin' : {
+                    'pid': bin_obj.pid,
+                    'dataset_id': bin_obj.dataset.dashboard_id_name
+                },
+                'species': species[1],
+                'images': images,
+            }
+            return JsonResponse(bin_images_json)
         return render(request, 'ifcb_datasets/_dashboard_sidebar_images_pane.html', {'bin_obj': bin_obj, 'images': images, 'species': species[1]})
