@@ -7,7 +7,7 @@ from .models import Dataset
 def hello():
     print('Howdy')
 
-@shared_task(time_limit=700, soft_time_limit=600)
+@shared_task(time_limit=300, soft_time_limit=300)
 def get_ifcb_dashboard_data():
     sets = Dataset.objects.exclude(dashboard_id_name='mvco')
     print(sets)
