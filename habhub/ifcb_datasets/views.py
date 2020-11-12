@@ -176,7 +176,7 @@ class BinAjaxGetImagesBySpecies(View):
         if bin_obj and species:
             data = bin_obj.get_concentration_data_by_species(species[0])
             print(data)
-            image_numbers = data['image_numbers']
+            image_numbers = data['image_numbers'][:30]
             print(image_numbers)
             for img_name in image_numbers:
                 # need to check is this image exists locally. If not, go get it and cache locally
