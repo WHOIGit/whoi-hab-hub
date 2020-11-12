@@ -16,7 +16,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ('name', 'location')
 
     def get_queryset(self):
-        queryset = Dataset.objects.all()
+        queryset = Dataset.objects.exclude(dashboard_id_name='mvco')
         earliest_bin = Bin.objects.earliest()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
