@@ -19,7 +19,7 @@ class DatasetAjaxGetAllView(View):
     def get(self, request, *args, **kwargs):
 
         # Get the Station data from the DRF API
-        dataset_qs = Dataset.objects.all()
+        dataset_qs = Dataset.objects.exclude(dashboard_id_name='mvco')
         start_date_obj = None
         end_date_obj = None
 
