@@ -20,8 +20,7 @@ class StationForm(forms.ModelForm):
     class Meta(object):
         model = Station
         exclude = []
-        fields = ['station_name', 'station_location', 'state', 'latitude', 'longitude', 'geom' ]
-        widgets = {'geom': forms.HiddenInput()}
+        fields = ['station_name', 'station_location', 'state', 'hab_species', 'latitude', 'longitude', 'geom' ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

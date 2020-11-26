@@ -1,8 +1,15 @@
 from django.utils.timezone import now
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.db.models import Avg, Max
 
-# Create your models here.
+from habhub.core import constants, fields
+
+# function to return a list for setting hab_species default
+def get_hab_species_default():
+    all_species_list = list(dict(constants.TARGET_SPECIES).keys())
+    station_default = [species for species in all_species_list if species == 'Alexandrium_catenella']
+    return station_default
 
 class Station(models.Model):
     STATES = (
@@ -15,6 +22,10 @@ class Station(models.Model):
     station_location = models.CharField(max_length=100)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
+    hab_species = fields.ChoiceArrayField(models.CharField(
+        choices = constants.TARGET_SPECIES,
+        max_length = 50,
+    ), default = get_hab_species_default)
 
     class Meta:
         ordering = ['state', 'station_name']

@@ -12,7 +12,9 @@ class StationSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = Station
         geo_field = 'geom'
-        fields = ['id', 'station_name', 'state', 'station_location', 'geom', 'station_max', 'station_mean', 'toxicity_timeseries_data' ]
+        fields = [
+            'id', 'station_name', 'state', 'station_location', 'geom', 'station_max', 'station_mean', 'hab_species', 'toxicity_timeseries_data'
+        ]
 
     def get_station_max(self, obj):
         dict = obj.get_max_mean_values()

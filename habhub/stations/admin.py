@@ -1,7 +1,6 @@
 from django.contrib.gis import admin
 
 from leaflet.admin import LeafletGeoAdmin, LeafletGeoAdminMixin
-from leaflet.forms.widgets import LeafletWidget
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 

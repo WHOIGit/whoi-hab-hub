@@ -81,7 +81,7 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
-    # Your stuff: custom apps go here
+    'habhub.core',
     'habhub.stations',
     'habhub.closures',
     'habhub.esp_instrument',
