@@ -6,18 +6,27 @@ from ..models import Dataset, Bin
 
 class DatasetSerializer(GeoFeatureModelSerializer):
     concentration_timeseries = serializers.SerializerMethodField('get_datapoints')
+    max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
 
     class Meta:
         model = Dataset
         geo_field = 'geom'
-        fields = ['id', 'name', 'location', 'dashboard_id_name', 'geom', 'concentration_timeseries' ]
+        fields = ['id', 'name', 'location', 'dashboard_id_name', 'geom', 'max_mean_values', 'concentration_timeseries', ]
+
+    def __init__(self, *args, **kwargs):
+        super(DatasetSerializer, self).__init__(*args, **kwargs)
+
+        if 'context' in kwargs:
+            if 'request' in kwargs['context']:
+                exclude_dataseries = kwargs['context']['request'].query_params.get('exclude_dataseries', None)
+                if exclude_dataseries:
+                    self.fields.pop('concentration_timeseries')
+
+    def get_max_mean_values(self, obj):
+        return obj.get_max_mean_values()
 
     def get_datapoints(self, obj):
         # Check if user wants to exclude datapoints
-        exclude_dataseries = self.context.get('exclude_dataseries')
-        if exclude_dataseries:
-            return None
-
         # Otherwise create the datapoint series
         bins_qs = obj.bins.all()
         concentration_timeseries = list()

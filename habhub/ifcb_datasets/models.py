@@ -1,3 +1,4 @@
+from statistics import mean
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
@@ -16,6 +17,26 @@ class Dataset(models.Model):
 
     def __str__(self):
         return F'{self.name} - {self.location}'
+
+    def get_max_mean_values(self):
+        TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
+        # set up data structure to store results
+        max_mean_values = []
+
+        bins_qs = self.bins.filter(cell_concentration_data__isnull=False)
+        for species in TARGET_SPECIES:
+            dict = {'species': species}
+            cell_concentration_value_list = []
+            #max_list = [item.get_concentration_data_by_species(species)['cell_concentration'] for item in bins_qs]
+            print(species)
+            for bin in bins_qs:
+                if bin.get_concentration_data_by_species(species):
+                    value = bin.get_concentration_data_by_species(species)['cell_concentration']
+                    cell_concentration_value_list.append(value)
+            dict.update({'max_value': max(cell_concentration_value_list)})
+            dict.update({'mean_value': mean(cell_concentration_value_list)})
+            max_mean_values.append(dict)
+        return max_mean_values
 
 
 class Bin(models.Model):
