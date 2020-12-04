@@ -1,6 +1,7 @@
 from statistics import mean
 from django.contrib.gis.db import models
 from django.db.models import F
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 

@@ -13,7 +13,6 @@ from .serializers import DatasetSerializer
 class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DatasetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ('name', 'location')
 
     def get_queryset(self):
         queryset = Dataset.objects.exclude(dashboard_id_name='mvco')
@@ -37,5 +36,5 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
                 queryset=Bin.objects.filter(sample_time__range=[start_date_obj, end_date_obj])))
             return queryset
         # Set up eager loading to avoid N+1 selects
-        queryset = self.get_serializer_class().setup_eager_loading(queryset)
+        #queryset = self.get_serializer_class().setup_eager_loading(queryset)
         return queryset
