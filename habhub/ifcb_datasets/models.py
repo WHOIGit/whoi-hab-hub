@@ -21,8 +21,31 @@ class Dataset(models.Model):
     def get_max_mean_values(self):
         TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
         # set up data structure to store results
+        concentration_values = []
         max_mean_values = []
 
+        for species in TARGET_SPECIES:
+            concentration_dict = {'species': species, 'values': []}
+            concentration_values.append(concentration_dict)
+
+        for bin in self.bins.all():
+            if bin.cell_concentration_data:
+                for datapoint in bin.cell_concentration_data:
+                    species_values = next((species_values for species_values in concentration_values if species_values['species'] == datapoint['species']), None)
+
+                    if species_values is not None:
+                        species_values['values'].append(int(datapoint['cell_concentration']))
+
+
+        for species_values in concentration_values:
+            print(species_values)
+            data_dict = {'species': species_values['species']}
+            max_mean_values.append(data_dict)
+
+        print(max_mean_values)
+
+
+        """
         bins_qs = self.bins.filter(cell_concentration_data__isnull=False)
         for species in TARGET_SPECIES:
             dict = {'species': species}
@@ -36,6 +59,7 @@ class Dataset(models.Model):
             dict.update({'max_value': max(cell_concentration_value_list)})
             dict.update({'mean_value': mean(cell_concentration_value_list)})
             max_mean_values.append(dict)
+        """
         return max_mean_values
 
 

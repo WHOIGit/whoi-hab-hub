@@ -26,8 +26,6 @@ class DatasetSerializer(GeoFeatureModelSerializer):
         return obj.get_max_mean_values()
 
     def get_datapoints(self, obj):
-        # Check if user wants to exclude datapoints
-        # Otherwise create the datapoint series
         bins_qs = obj.bins.all()
         concentration_timeseries = list()
 
