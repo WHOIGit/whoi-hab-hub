@@ -1,5 +1,6 @@
 from statistics import mean
 from django.contrib.gis.db import models
+from django.db.models import F
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 
@@ -28,22 +29,26 @@ class Dataset(models.Model):
             concentration_dict = {'species': species, 'values': []}
             concentration_values.append(concentration_dict)
 
-        for bin in self.bins.all():
-            if bin.cell_concentration_data:
-                for datapoint in bin.cell_concentration_data:
-                    species_values = next((species_values for species_values in concentration_values if species_values['species'] == datapoint['species']), None)
+        # limit data sample to only every NTH (4) bin to increase performance
+        bins_qs = self.bins.annotate(idmod4=F('id') % 4).filter(idmod4=0).filter(cell_concentration_data__isnull=False)
 
-                    if species_values is not None:
-                        species_values['values'].append(int(datapoint['cell_concentration']))
+        for bin in bins_qs:
+            for datapoint in bin.cell_concentration_data:
+                species_values = next((species_values for species_values in concentration_values if species_values['species'] == datapoint['species']), None)
 
+                if species_values is not None:
+                    species_values['values'].append(int(datapoint['cell_concentration']))
 
         for species_values in concentration_values:
             print(species_values)
-            data_dict = {'species': species_values['species']}
+            data_dict = {
+                'species': species_values['species'],
+                'max_value': max(species_values['values']),
+                'mean_value': mean(species_values['values']),
+            }
             max_mean_values.append(data_dict)
 
         print(max_mean_values)
-
 
         """
         bins_qs = self.bins.filter(cell_concentration_data__isnull=False)
