@@ -10,7 +10,7 @@ from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
 
 from .models import *
 from .utils import _get_image_ifcb_dashboard
-from .api.serializers import DatasetSerializer
+from .api.serializers import DatasetListSerializer
 
 ######### AJAX Views to return geoJSON for maps #############
 # AJAX views to get GeoJSON responses for all IFCB Dataset map layer
@@ -37,7 +37,7 @@ class DatasetAjaxGetAllView(View):
                 'bins',
                 queryset=Bin.objects.filter(sample_time__range=[start_date_obj, end_date_obj])))
 
-        dataset_serializer = DatasetSerializer(
+        dataset_serializer = DatasetListSerializer(
             dataset_qs,
             many=True,
             context={'request': request, 'exclude_dataseries': True}

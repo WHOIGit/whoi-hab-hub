@@ -4,26 +4,38 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from ..models import Dataset, Bin
 
 
-class DatasetSerializer(GeoFeatureModelSerializer):
-    concentration_timeseries = serializers.SerializerMethodField('get_datapoints')
+class DatasetListSerializer(GeoFeatureModelSerializer):
     max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
 
     class Meta:
         model = Dataset
         geo_field = 'geom'
-        fields = ['id', 'name', 'location', 'dashboard_id_name', 'geom', 'max_mean_values', 'concentration_timeseries' ]
+        fields = ['id', 'name', 'location', 'dashboard_id_name', 'geom', 'max_mean_values', ]
+
+    def get_max_mean_values(self, obj):
+        return obj.get_max_mean_values()
+
+    @staticmethod
+    def setup_eager_loading(queryset):
+        """ Perform necessary prefetching of data. """
+        queryset = queryset.prefetch_related('bins')
+        return queryset
+
+
+class DatasetDetailSerializer(DatasetListSerializer):
+    concentration_timeseries = serializers.SerializerMethodField('get_datapoints')
+
+    class Meta(DatasetListSerializer.Meta):
+        fields = DatasetListSerializer.Meta.fields + ['concentration_timeseries',]
 
     def __init__(self, *args, **kwargs):
-        super(DatasetSerializer, self).__init__(*args, **kwargs)
+        super(DatasetDetailSerializer, self).__init__(*args, **kwargs)
 
         if 'context' in kwargs:
             if 'request' in kwargs['context']:
                 exclude_dataseries = kwargs['context']['request'].query_params.get('exclude_dataseries', None)
                 if exclude_dataseries:
                     self.fields.pop('concentration_timeseries')
-
-    def get_max_mean_values(self, obj):
-        return obj.get_max_mean_values()
 
     def get_datapoints(self, obj):
         bins_qs = obj.bins.filter(cell_concentration_data__isnull=False)

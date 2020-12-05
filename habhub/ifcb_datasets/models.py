@@ -35,17 +35,16 @@ class Dataset(models.Model):
 
         for bin in bins_qs:
             for datapoint in bin.cell_concentration_data:
-                species_values = next((species_values for species_values in concentration_values if species_values['species'] == datapoint['species']), None)
+                item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
 
-                if species_values is not None:
-                    species_values['values'].append(int(datapoint['cell_concentration']))
+                if item is not None:
+                    item['values'].append(int(datapoint['cell_concentration']))
 
-        for species_values in concentration_values:
-            print(species_values)
+        for item in concentration_values:
             data_dict = {
-                'species': species_values['species'],
-                'max_value': max(species_values['values']),
-                'mean_value': mean(species_values['values']),
+                'species': item['species'],
+                'max_value': max(item['values']),
+                'mean_value': mean(item['values']),
             }
             max_mean_values.append(data_dict)
 
