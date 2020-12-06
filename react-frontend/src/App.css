@@ -1,0 +1,20 @@
+.icon-button:hover {
+    cursor: pointer;
+}
+
+.side-panes-container {
+    background: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    max-height: 100vh;
+    overflow-y: scroll;
+}
+
+.data-panel {
+    transform: none !important;
+    background-color: white;
+    pointer-events: auto !important;
+    min-width: 400px;
+}

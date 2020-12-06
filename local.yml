@@ -5,6 +5,17 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
+  react_frontend:
+    build:
+      context: .
+      dockerfile: ./compose/local/react-frontend/Dockerfile
+    image: habhub_local_react_frontend
+    volumes:
+      - ./react-frontend:/usr/src/app
+    ports:
+      - "3000:3000"
+    command: yarn start
+
   django: &django
     build:
       context: .
@@ -38,7 +49,6 @@ services:
     depends_on:
       - redis
       - postgres
-
     ports: []
     command: /start-celeryworker
 
@@ -48,7 +58,6 @@ services:
     depends_on:
       - redis
       - postgres
-
     ports: []
     command: /start-celerybeat
 
