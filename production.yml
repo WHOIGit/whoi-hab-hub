@@ -15,7 +15,7 @@ services:
     image: habhub_production_react_frontend
     ports:
       - "3000:80"
-    command: nginx -g daemon off;
+    #command: nginx -g daemon off
 
   django: &django
     build:
