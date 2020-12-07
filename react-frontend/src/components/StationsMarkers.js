@@ -22,7 +22,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick}) => {
 
   useEffect(() => {
     const fetchResults = () => {
-      const url = 'https://habhub.whoi.edu/api/v1/stations/';
+      const url = 'https://habhub.whoi.edu/services/api/v1/stations/';
       fetch(url)
         .then(res => res.json())
         .then(

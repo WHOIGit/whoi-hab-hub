@@ -29,10 +29,10 @@ const DataPanel = ({featureID, dataLayer, dateFilter, yAxisScale, onPaneClose}) 
     const getFetchUrl = (featureID, dataLayer) => {
       let baseURL = ''
       if (dataLayer == 'stations-layer') {
-        baseURL = `https://habhub.whoi.edu/api/v1/stations/${featureID}/`;
+        baseURL = `https://habhub.whoi.edu/services/api/v1/stations/${featureID}/`;
       }
       else if (dataLayer == 'ifcb-layer') {
-        baseURL = `https://habhub.whoi.edu/api/v1/ifcb-datasets/${featureID}/`;
+        baseURL = `https://habhub.whoi.edu/services/api/v1/ifcb-datasets/${featureID}/`;
       }
       // build API URL to get set Date Filter
       if (dateFilter.length) {

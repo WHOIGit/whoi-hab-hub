@@ -22,7 +22,7 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
 
   useEffect(() => {
     const getFetchUrl = () => {
-      let baseURL = 'https://habhub.whoi.edu/api/v1/ifcb-datasets/?exclude_dataseries=true'
+      let baseURL = 'https://habhub.whoi.edu/services/api/v1/ifcb-datasets/'
       // build API URL to get set Date Filter
       if (dateFilter.length) {
         const filterURL = baseURL + '&' + new URLSearchParams({
