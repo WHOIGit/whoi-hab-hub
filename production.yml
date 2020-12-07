@@ -13,9 +13,6 @@ services:
       context: .
       dockerfile: ./compose/production/react-frontend/Dockerfile
     image: habhub_production_react_frontend
-    ports:
-      - "3000:80"
-    #command: nginx -g daemon off
 
   django: &django
     build:
@@ -56,6 +53,7 @@ services:
     container_name: nginx
     depends_on:
       - django
+      - react_frontend
     volumes:
       - production_nginx:/var/log/nginx
       - ./.ssl/whoi_certs:/etc/ssl/whoi_certs/ # bind a local directory with the WHOI SSL certs
