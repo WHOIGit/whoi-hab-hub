@@ -25,7 +25,7 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
       let baseURL = 'https://habhub.whoi.edu/services/api/v1/ifcb-datasets/'
       // build API URL to get set Date Filter
       if (dateFilter.length) {
-        const filterURL = baseURL + '&' + new URLSearchParams({
+        const filterURL = baseURL + '?' + new URLSearchParams({
             start_date: format(dateFilter[0], 'MM/dd/yyyy'),
             end_date: format(dateFilter[1], 'MM/dd/yyyy'),
         })
