@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 COPY ./react-frontend/package.json /usr/src/app
 
 # Install all node packages
-RUN yarn install
+RUN yarn
