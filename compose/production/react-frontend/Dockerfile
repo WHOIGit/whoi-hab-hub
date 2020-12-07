@@ -24,5 +24,4 @@ COPY --from=builder /app/build .
 COPY ./compose/production/react-frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Containers run nginx with global directives and daemon off
-# ENTRYPOINT ["nginx", "-g", "daemon off;"]
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
