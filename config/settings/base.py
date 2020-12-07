@@ -34,6 +34,8 @@ USE_I18N = True
 USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
+# use a subdirectory for all Django pages
+FORCE_SCRIPT_NAME = '/services'
 
 # DATABASES
 # ------------------------------------------------------------------------------
