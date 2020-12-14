@@ -54,7 +54,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
         )
     }
     fetchResults();
-  }, [])
+  }, [dateFilter])
 
   const renderMarker = (feature) => {
 
@@ -62,7 +62,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
       .filter(species => species.visibility && feature.properties.hab_species.includes(species.id));
 
     console.log(visibleSpecies);
-    if (visibleSpecies.length) {
+    if (visibleSpecies.length && feature.properties.toxicity_timeseries_data.length) {
       return (
         <Marker
           key={feature.id}

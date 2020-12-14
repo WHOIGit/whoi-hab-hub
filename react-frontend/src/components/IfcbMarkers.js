@@ -58,10 +58,9 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
   }, [dateFilter])
 
   const renderMarker = (feature) => {
-
     const visibleSpecies = habSpecies.filter(species => species.visibility);
-
-    if (visibleSpecies.length) {
+    console.log(feature.properties.max_mean_values);
+    if (visibleSpecies.length && feature.properties.max_mean_values.length) {
       return (
         <Marker
           key={feature.id}
