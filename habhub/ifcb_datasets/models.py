@@ -3,6 +3,7 @@ from django.contrib.gis.db import models
 from django.db.models import F
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
 # IFCB dataset models
@@ -32,7 +33,7 @@ class Dataset(models.Model):
 
         # limit data sample to only every NTH (4) bin to increase performance
         bins_qs = self.bins.annotate(idmod4=F('id') % 4).filter(idmod4=0).filter(cell_concentration_data__isnull=False)
-
+        #bins_qs = self.bins.all()
         for bin in bins_qs:
             for datapoint in bin.cell_concentration_data:
                 item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
@@ -49,22 +50,6 @@ class Dataset(models.Model):
             max_mean_values.append(data_dict)
 
         print(max_mean_values)
-
-        """
-        bins_qs = self.bins.filter(cell_concentration_data__isnull=False)
-        for species in TARGET_SPECIES:
-            dict = {'species': species}
-            cell_concentration_value_list = []
-            #max_list = [item.get_concentration_data_by_species(species)['cell_concentration'] for item in bins_qs]
-            print(species)
-            for bin in bins_qs:
-                if bin.get_concentration_data_by_species(species):
-                    value = bin.get_concentration_data_by_species(species)['cell_concentration']
-                    cell_concentration_value_list.append(value)
-            dict.update({'max_value': max(cell_concentration_value_list)})
-            dict.update({'mean_value': mean(cell_concentration_value_list)})
-            max_mean_values.append(dict)
-        """
         return max_mean_values
 
 
@@ -88,7 +73,7 @@ class Bin(models.Model):
     pid = models.CharField(max_length=100, unique=True, db_index=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
-    sample_time = models.DateTimeField(default=timezone.now)
+    sample_time = models.DateTimeField(default=timezone.now, db_index=True)
     ifcb = models.PositiveIntegerField(null=True, blank=True)
     ml_analyzed = models.DecimalField(max_digits=17, decimal_places=14, null=True, blank=True)
     depth = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)

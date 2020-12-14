@@ -16,10 +16,9 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
 
     def get_queryset(self):
-        queryset = Dataset.objects.exclude(dashboard_id_name='mvco')
+        queryset = Dataset.objects.exclude(dashboard_id_name='mvco').defer('bins')
         earliest_bin = Bin.objects.earliest()
         start_date = self.request.query_params.get('start_date', None)
-        end_date = self.request.query_params.get('end_date', None)
         end_date = self.request.query_params.get('end_date', None)
 
         if start_date:
@@ -35,8 +34,12 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         if start_date or end_date:
             queryset = queryset.prefetch_related(Prefetch(
                 'bins',
-                queryset=Bin.objects.filter(sample_time__range=[start_date_obj, end_date_obj])))
-
+                queryset=Bin.objects.filter(cell_concentration_data__isnull=False) \
+                                    .filter(sample_time__range=[start_date_obj, end_date_obj])))
+        elif self.action == 'retrieve':
+            queryset = queryset.prefetch_related(Prefetch(
+                'bins',
+                queryset=Bin.objects.filter(cell_concentration_data__isnull=False)))
         return queryset
 
     # return different sets of fields if the request is list all or retrieve one,
