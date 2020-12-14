@@ -85,7 +85,7 @@ class Bin(models.Model):
     )
 
     # the primary ID from the IFCB dashboard
-    pid = models.CharField(max_length=100, unique=True)
+    pid = models.CharField(max_length=100, unique=True, db_index=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
     sample_time = models.DateTimeField(default=timezone.now)

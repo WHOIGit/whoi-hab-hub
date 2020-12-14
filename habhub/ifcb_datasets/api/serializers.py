@@ -48,6 +48,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
 
         for bin in bins_qs:
             date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+            #concentration_timeseries[0]['data'].append(bin.cell_concentration_data)
 
             for datapoint in bin.cell_concentration_data:
                 index = next((index for (index, d) in enumerate(concentration_timeseries) if d['species'] == datapoint['species']), None)
@@ -58,8 +59,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
                         'bin_pid': bin.pid,
                     }
                     concentration_timeseries[index]['data'].append(data_dict)
-                    #concentration_timeseries[index]['data'].append([date_str, int(datapoint['cell_concentration'])])
-
+            
         return concentration_timeseries
 
     @staticmethod
