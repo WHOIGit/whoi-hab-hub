@@ -31,6 +31,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             end_date_obj = timezone.now()
 
+        # Only want to get all Bin data is this is a detail view or filtered by date
         if start_date or end_date:
             queryset = queryset.prefetch_related(Prefetch(
                 'bins',
@@ -40,6 +41,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.prefetch_related(Prefetch(
                 'bins',
                 queryset=Bin.objects.filter(cell_concentration_data__isnull=False)))
+
         return queryset
 
     # return different sets of fields if the request is list all or retrieve one,

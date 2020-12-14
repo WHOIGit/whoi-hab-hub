@@ -15,12 +15,6 @@ class DatasetListSerializer(GeoFeatureModelSerializer):
     def get_max_mean_values(self, obj):
         return obj.get_max_mean_values()
 
-    @staticmethod
-    def setup_eager_loading(queryset):
-        """ Perform necessary prefetching of data. """
-        queryset = queryset.prefetch_related('bins')
-        return queryset
-
 
 class DatasetDetailSerializer(DatasetListSerializer):
     concentration_timeseries = serializers.SerializerMethodField('get_datapoints')
@@ -60,9 +54,3 @@ class DatasetDetailSerializer(DatasetListSerializer):
                     concentration_timeseries[index]['data'].append(data_dict)
 
         return concentration_timeseries
-
-    @staticmethod
-    def setup_eager_loading(queryset):
-        """ Perform necessary prefetching of data. """
-        queryset = queryset.prefetch_related('bins')
-        return queryset
