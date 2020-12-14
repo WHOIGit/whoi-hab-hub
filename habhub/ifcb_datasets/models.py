@@ -33,23 +33,22 @@ class Dataset(models.Model):
 
         # limit data sample to only every NTH (4) bin to increase performance
         bins_qs = self.bins.annotate(idmod4=F('id') % 4).filter(idmod4=0).filter(cell_concentration_data__isnull=False)
+        if bins_qs:
+            for bin in bins_qs:
+                for datapoint in bin.cell_concentration_data:
+                    item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
 
-        for bin in bins_qs:
-            for datapoint in bin.cell_concentration_data:
-                item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
+                    if item is not None:
+                        item['values'].append(int(datapoint['cell_concentration']))
 
-                if item is not None:
-                    item['values'].append(int(datapoint['cell_concentration']))
+            for item in concentration_values:
+                data_dict = {
+                    'species': item['species'],
+                    'max_value': max(item['values']),
+                    'mean_value': mean(item['values']),
+                }
+                max_mean_values.append(data_dict)
 
-        for item in concentration_values:
-            data_dict = {
-                'species': item['species'],
-                'max_value': max(item['values']),
-                'mean_value': mean(item['values']),
-            }
-            max_mean_values.append(data_dict)
-
-        print(max_mean_values)
         return max_mean_values
 
 

@@ -67,7 +67,7 @@ export default function App() {
     console.log(layer);
     if (layer.visibility && layer.id === 'stations-layer') {
       return (
-        <StationsMarkers habSpecies={habSpecies} onMarkerClick={onMarkerClick} key={layer.id} />
+        <StationsMarkers habSpecies={habSpecies} onMarkerClick={onMarkerClick} dateFilter={dateFilter} key={layer.id} />
       );
     } else if (layer.visibility && layer.id === 'ifcb-layer') {
       return (

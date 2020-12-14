@@ -46,10 +46,3 @@ class StationSerializer(GeoFeatureModelSerializer):
             toxicity_timeseries_data.append(data_obj)
 
         return toxicity_timeseries_data
-
-    @staticmethod
-    def setup_eager_loading(queryset):
-        """ Perform necessary prefetching of data. """
-        #queryset = queryset.select_related('location').select_related('part')
-        queryset = queryset.prefetch_related('datapoints')
-        return queryset

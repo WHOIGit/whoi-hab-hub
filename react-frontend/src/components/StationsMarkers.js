@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {Source, Marker} from 'react-map-gl';
+import { format } from 'date-fns';
 import StationsMarkerIcon from './StationsMarkerIcon'
-import diamondIcon from '../map-icons/diamond.svg'
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StationsMarkers = ({habSpecies, onMarkerClick}) => {
+const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
   const classes = useStyles();
   console.log(habSpecies);
   const layerID = 'stations-layer';
@@ -21,8 +21,21 @@ const StationsMarkers = ({habSpecies, onMarkerClick}) => {
   const [results, setResults] = useState();
 
   useEffect(() => {
+    const getFetchUrl = () => {
+      let baseURL = 'https://habhub.whoi.edu/services/api/v1/stations/'
+      // build API URL to get set Date Filter
+      if (dateFilter.length) {
+        const filterURL = baseURL + '?' + new URLSearchParams({
+            start_date: format(dateFilter[0], 'MM/dd/yyyy'),
+            end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+        })
+        return filterURL;
+      }
+      return baseURL;
+    }
+
     const fetchResults = () => {
-      const url = 'https://habhub.whoi.edu/services/api/v1/stations/';
+      const url = getFetchUrl();
       fetch(url)
         .then(res => res.json())
         .then(

@@ -28,6 +28,6 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.prefetch_related(Prefetch(
                 'datapoints',
                 queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj])))
-        # Set up eager loading to avoid N+1 selects
-        queryset = self.get_serializer_class().setup_eager_loading(queryset)
+        else:
+            queryset = queryset.prefetch_related('datapoints')
         return queryset
