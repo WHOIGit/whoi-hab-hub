@@ -6,29 +6,17 @@ from ..models import Station
 
 class StationSerializer(GeoFeatureModelSerializer):
     toxicity_timeseries_data = serializers.SerializerMethodField('get_datapoints')
-    station_max = serializers.SerializerMethodField('get_station_max')
-    station_mean = serializers.SerializerMethodField('get_station_mean')
+    max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
 
     class Meta:
         model = Station
         geo_field = 'geom'
         fields = [
-            'id', 'station_name', 'state', 'station_location', 'geom', 'station_max', 'station_mean', 'hab_species', 'toxicity_timeseries_data'
+            'id', 'station_name', 'state', 'station_location', 'geom', 'max_mean_values', 'hab_species', 'toxicity_timeseries_data'
         ]
 
-    def get_station_max(self, obj):
-        dict = obj.get_max_mean_values()
-        if dict['station_max']:
-            station_max = float(round(dict['station_max'], 1))
-            return station_max
-        return 0
-
-    def get_station_mean(self, obj):
-        dict = obj.get_max_mean_values()
-        if dict['station_mean']:
-            station_mean = float(round(dict['station_mean'], 1))
-            return station_mean
-        return 0
+    def get_max_mean_values(self, obj):
+        return obj.get_max_mean_values()
 
     def get_datapoints(self, obj):
         # Check if user wants to exclude datapoints

@@ -22,20 +22,21 @@ const activeSpecies = species.filter(item => item.id === 'Alexandrium_catenella'
 const colors = activeSpecies[0].colorGradient;
 //const colors = species[0].colorGradient;
 
-const StationsMarkerIcon = ({maxValue, meanValue}) => {
+const StationsMarkerIcon = ({maxMeanData}) => {
   const classes = useStyles();
   const [valueType, setValueType] = useState('max');
+  const value = maxMeanData[0].max_value;
 
-  const setGradientColor = (maxValue) => {
+  const setGradientColor = (value) => {
     let gradient = colors[4];
 
-    if (maxValue < 42) {
+    if (value < 42) {
       gradient = colors[0];
-    } else if (maxValue < 60) {
+    } else if (value < 60) {
       gradient = colors[1];
-    } else if (maxValue < 80) {
+    } else if (value < 80) {
       gradient = colors[2];
-    } else if (maxValue < 100) {
+    } else if (value < 100) {
       gradient = colors[3];
     }
 
@@ -45,8 +46,8 @@ const StationsMarkerIcon = ({maxValue, meanValue}) => {
   return (
     <div>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className={classes.root} >
-          <polygon points="50 0, 100 50, 50 100, 0 50" fill={setGradientColor(maxValue)} className={classes.triangle}/>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{maxValue}</text>
+          <polygon points="50 0, 100 50, 50 100, 0 50" fill={setGradientColor(value)} className={classes.triangle}/>
+          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>
       </svg>
     </div>
   );

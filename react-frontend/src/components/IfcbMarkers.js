@@ -4,6 +4,8 @@ import { Source, Marker } from 'react-map-gl';
 import { format } from 'date-fns'
 import IfcbMarkerIcon from './IfcbMarkerIcon'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const useStyles = makeStyles((theme) => ({
   button: {
     background: 'none',
@@ -22,7 +24,7 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
 
   useEffect(() => {
     const getFetchUrl = () => {
-      let baseURL = 'https://habhub.whoi.edu/services/api/v1/ifcb-datasets/'
+      let baseURL = API_URL + 'api/v1/ifcb-datasets/'
       // build API URL to get set Date Filter
       if (dateFilter.length) {
         const filterURL = baseURL + '?' + new URLSearchParams({

@@ -4,6 +4,8 @@ import { CircularProgress } from '@material-ui/core'
 import { format } from 'date-fns'
 import SidePane from './SidePane';
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -29,10 +31,10 @@ const DataPanel = ({featureID, dataLayer, dateFilter, yAxisScale, onPaneClose}) 
     const getFetchUrl = (featureID, dataLayer) => {
       let baseURL = ''
       if (dataLayer == 'stations-layer') {
-        baseURL = `https://habhub.whoi.edu/services/api/v1/stations/${featureID}/`;
+        baseURL = `${API_URL}api/v1/stations/${featureID}/`;
       }
       else if (dataLayer == 'ifcb-layer') {
-        baseURL = `https://habhub.whoi.edu/services/api/v1/ifcb-datasets/${featureID}/`;
+        baseURL = `${API_URL}api/v1/ifcb-datasets/${featureID}/`;
       }
       // build API URL to get set Date Filter
       if (dateFilter.length) {
@@ -80,7 +82,7 @@ const DataPanel = ({featureID, dataLayer, dateFilter, yAxisScale, onPaneClose}) 
         </div>
       )}
 
-      {results && (
+      {results && results.properties.max_mean_values.length && (
         <SidePane
           results={results}
           featureID={featureID}

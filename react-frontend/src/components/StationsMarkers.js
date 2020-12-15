@@ -4,6 +4,8 @@ import {Source, Marker} from 'react-map-gl';
 import { format } from 'date-fns';
 import StationsMarkerIcon from './StationsMarkerIcon'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const useStyles = makeStyles((theme) => ({
   button: {
     background: 'none',
@@ -22,7 +24,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
 
   useEffect(() => {
     const getFetchUrl = () => {
-      let baseURL = 'https://habhub.whoi.edu/services/api/v1/stations/'
+      let baseURL = API_URL + 'api/v1/stations/'
       // build API URL to get set Date Filter
       if (dateFilter.length) {
         const filterURL = baseURL + '?' + new URLSearchParams({
@@ -62,7 +64,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
       .filter(species => species.visibility && feature.properties.hab_species.includes(species.id));
 
     console.log(visibleSpecies);
-    if (visibleSpecies.length && feature.properties.toxicity_timeseries_data.length) {
+    if (visibleSpecies.length && feature.properties.max_mean_values.length) {
       return (
         <Marker
           key={feature.id}
@@ -74,10 +76,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
             className={classes.button}
             onClick={(event) => onMarkerClick(event, feature, layerID)}
           >
-            <StationsMarkerIcon
-              maxValue={feature.properties.station_max}
-              meanValue={feature.properties.station_mean}
-            />
+            <StationsMarkerIcon maxMeanData={feature.properties.max_mean_values} />
           </div>
         </Marker>
       );

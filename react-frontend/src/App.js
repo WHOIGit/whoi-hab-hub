@@ -27,7 +27,6 @@ import theme from './theme'
 import './App.css'
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
-
 const popupFromZoom = 6;
 
 const navStyle = {
