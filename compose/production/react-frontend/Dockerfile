@@ -5,6 +5,9 @@ WORKDIR /app
 
 COPY ./react-frontend /app
 
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=https://habhub.whoi.edu/services/
+
 # Install all node packages
 RUN yarn && yarn build
 
