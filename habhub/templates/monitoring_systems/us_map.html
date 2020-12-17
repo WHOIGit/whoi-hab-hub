@@ -92,7 +92,7 @@
 
     map.on('load', function() {
 
-        map.loadImage("/static/images/Monitoring-icon.png", function(error, image) {
+        map.loadImage("/services/static/images/Monitoring-icon.png", function(error, image) {
             if (error) throw error;
             map.addImage("monitoring-marker", image);
             // Add a data source from GeoDjango
@@ -115,7 +115,7 @@
             })
         });
 
-        map.loadImage("/static/images/Forecasting-icon.png", function(error, image) {
+        map.loadImage("/services/static/images/Forecasting-icon.png", function(error, image) {
             if (error) throw error;
             map.addImage("forecasting-marker", image);
             // Add a data source from GeoDjango
