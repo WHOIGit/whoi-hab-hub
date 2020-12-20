@@ -62,7 +62,7 @@
 
     #menu a#monitoring_systems,
     #menu a#monitoring_systems:hover {
-        background-image: url('/services/static/images/Monitoring-icon.png');
+        background-image: url('{{ STATIC_URL }}images/Monitoring-icon.png');
         background-size: 30px 30px;
         background-position: 2px center;
         background-repeat: no-repeat;
@@ -70,7 +70,7 @@
 
     #menu a#forecasting_systems,
     #menu a#forecasting_systems:hover {
-        background-image: url('/services/static/images/Forecasting-icon.png');
+        background-image: url('{{ STATIC_URL }}images/Forecasting-icon.png');
         background-size: 30px 30px;
         background-position: 2px center;
         background-repeat: no-repeat;
@@ -92,7 +92,7 @@
 
     map.on('load', function() {
 
-        map.loadImage("/services/static/images/Monitoring-icon.png", function(error, image) {
+        map.loadImage("{{ STATIC_URL }}images/Monitoring-icon.png", function(error, image) {
             if (error) throw error;
             map.addImage("monitoring-marker", image);
             // Add a data source from GeoDjango
@@ -115,7 +115,7 @@
             })
         });
 
-        map.loadImage("/services/static/images/Forecasting-icon.png", function(error, image) {
+        map.loadImage("{{ STATIC_URL }}images/Forecasting-icon.png", function(error, image) {
             if (error) throw error;
             map.addImage("forecasting-marker", image);
             // Add a data source from GeoDjango
