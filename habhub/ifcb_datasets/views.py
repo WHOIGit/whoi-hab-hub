@@ -181,7 +181,7 @@ class BinAjaxGetImagesBySpecies(View):
             for img_name in image_numbers:
                 # need to check is this image exists locally. If not, go get it and cache locally
                 _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
-                img_path= F"ifcb/images/{img_name}.png"
+                img_path= F"media/ifcb/images/{img_name}.png"
                 images.append(img_path)
 
         print(images)

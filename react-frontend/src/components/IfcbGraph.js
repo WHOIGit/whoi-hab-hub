@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles';
 import {
   Typography,
   Button,
@@ -8,20 +8,23 @@ import {
   GridListTile,
   CircularProgress,
   IconButton,
-} from '@material-ui/core'
-import { Close } from '@material-ui/icons'
-import Highcharts from 'highcharts'
+} from '@material-ui/core';
+import { Close } from '@material-ui/icons';
+import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official';
 // Local imports
 import IfcbMetaData from './IfcbMetaData';
-import { species } from '../hab-species'
+import { species } from '../hab-species';
 
 Exporting(Highcharts);
 Serieslabel(Highcharts);
 
-const API_URL = process.env.REACT_APP_API_URL
+const API_URL = process.env.REACT_APP_API_URL;
+const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
+console.log(AWS_BUCKET_URL);
+
 const expandWidth = window.outerWidth - 316;
 
 const useStyles = makeStyles(theme => ({

@@ -9,7 +9,7 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 
-const API_URL = process.env.REACT_APP_API_URL
+const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL
 
 const useStyles = makeStyles((theme) => ({
   placeholder: {
@@ -97,7 +97,7 @@ const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
             {pointImgData.images.map((image) => (
               <Grid item xs={gridSize}>
                 <img
-                  src={`${API_URL}/media/${image}`}
+                  src={`${AWS_BUCKET_URL}${image}`}
                   alt={pointImgData.species}
                   className={classes.imageGrid}
                 />
