@@ -150,6 +150,7 @@ const IfcbGraph = ({results, chartExpanded}, yAxisScale) => {
                             bin_pid: pointData.bin_pid,
                             format: 'json',
                         })
+                        console.log(url)
                         setMetaDataUrl(url);
                         setOpenMetaData(true);
                     }
