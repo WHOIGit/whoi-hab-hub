@@ -21,7 +21,9 @@ import { species } from '../hab-species'
 Exporting(Highcharts);
 Serieslabel(Highcharts);
 
+const API_URL = process.env.REACT_APP_API_URL
 const expandWidth = window.outerWidth - 316;
+
 const useStyles = makeStyles(theme => ({
   chartContainer: {
   },
@@ -143,7 +145,7 @@ const IfcbGraph = ({results, chartExpanded}, yAxisScale) => {
                         const [y_value, pointData] = highChartsGetMetaData(this);
                         console.log(this.series.name, pointData);
                         // build API URL to get BIN images
-                        const url = 'https://habhub.whoi.edu/ifcb-datasets/maps/ajax/get-bin-images-species/?' + new URLSearchParams({
+                        const url = `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` + new URLSearchParams({
                             species: this.series.name,
                             bin_pid: pointData.bin_pid,
                             format: 'json',

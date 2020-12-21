@@ -9,6 +9,8 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const useStyles = makeStyles((theme) => ({
   placeholder: {
     textAlign: 'center',
@@ -95,7 +97,7 @@ const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
             {pointImgData.images.map((image) => (
               <Grid item xs={gridSize}>
                 <img
-                  src={`https://habhub.whoi.edu/media/${image}`}
+                  src={`${API_URL}/media/${image}`}
                   alt={pointImgData.species}
                   className={classes.imageGrid}
                 />
