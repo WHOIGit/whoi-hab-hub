@@ -19,11 +19,25 @@ import {
 } from '@material-ui/core';
 import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
 import { ArrowForward, ArrowBack, Restore } from '@material-ui/icons';
-import './ControlPanel.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    margin: theme.spacing(1),
+    //margin: theme.spacing(1),
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: '260px',
+    background: '#fff',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+    color: '#6b6b76',
+    outline: 'none',
+    transition: 'all 0.3s',
+    zIndex: 90,
+    height: '100vh',
+    overflowY: 'scroll',
+  },
+  collapse: {
+    right: '-284px',
   },
   divider: {
     marginBottom: theme.spacing(1),
@@ -35,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.primary.main,
     position: 'fixed',
     right: theme.spacing(1),
-    zIndex: 90,
+    zIndex: 100,
   },
   resetBtn: {
     position: 'absolute',
@@ -45,15 +59,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const ControlPanel = ({
-  mapLayers,
-  habSpecies,
-  yAxisScale,
-  onLayerVisibilityChange,
-  onSpeciesVisibilityChange,
-  onDateRangeChange,
-  onYAxisChange,
-}) =>  {
+export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayerVisibilityChange, onSpeciesVisibilityChange, onDateRangeChange, onYAxisChange,}) {
   // Set const variables
   const classes = useStyles();
   const defaultStartDate = new Date('2017-01-01T21:11:54');
@@ -140,7 +146,7 @@ const ControlPanel = ({
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <div className={`control-panel ${showControls ? "active" : "collapse"} ${classes.root}`}>
+      <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
         <IconButton
           className={classes.toggleArrow}
           onClick={() => setShowControls(!showControls)}
@@ -224,5 +230,3 @@ const ControlPanel = ({
     </MuiPickersUtilsProvider>
   );
 }
-
-export default ControlPanel;
