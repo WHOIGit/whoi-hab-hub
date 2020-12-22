@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { makeStyles } from '@material-ui/styles'
-import { CircularProgress } from '@material-ui/core'
-import { format } from 'date-fns'
+import { makeStyles } from '@material-ui/styles';
+import { CircularProgress } from '@material-ui/core';
+import { format } from 'date-fns';
 import SidePane from './SidePane';
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -21,11 +21,11 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const DataPanel = ({featureID, dataLayer, dateFilter, yAxisScale, onPaneClose}) => {
+const DataPanel = ({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScale, onPaneClose}) => {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const classes = useStyles()
+  const classes = useStyles();
 
   useEffect(() => {
     const getFetchUrl = (featureID, dataLayer) => {
@@ -41,6 +41,7 @@ const DataPanel = ({featureID, dataLayer, dateFilter, yAxisScale, onPaneClose}) 
         const filterURL = baseURL + '?' + new URLSearchParams({
             start_date: format(dateFilter[0], 'MM/dd/yyyy'),
             end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+            smoothing_factor: smoothingFactor,
         })
         return filterURL;
       }

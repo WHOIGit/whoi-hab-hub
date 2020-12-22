@@ -9,6 +9,7 @@ import MapGL, {
   ScaleControl,
   GeolocateControl
 } from 'react-map-gl'
+import { differenceInDays } from 'date-fns'
 // Material UI imports
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
@@ -28,6 +29,7 @@ import './App.css'
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
 const popupFromZoom = 6;
+const defaultStartDate = new Date('2017-01-01T21:11:54');
 
 const navStyle = {
   position: 'absolute',
@@ -55,7 +57,8 @@ export default function App() {
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
   const [habSpecies, setHabSpecies] = useState(species);
-  const [dateFilter, setDateFilter] = useState([]);
+  const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date()]);
+  const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
 
   const mapRef = useRef();
@@ -66,11 +69,21 @@ export default function App() {
     console.log(layer);
     if (layer.visibility && layer.id === 'stations-layer') {
       return (
-        <StationsMarkers habSpecies={habSpecies} onMarkerClick={onMarkerClick} dateFilter={dateFilter} key={layer.id} />
+        <StationsMarkers
+          habSpecies={habSpecies}
+          onMarkerClick={onMarkerClick}
+          dateFilter={dateFilter}
+          smoothingFactor={smoothingFactor}
+          key={layer.id} />
       );
     } else if (layer.visibility && layer.id === 'ifcb-layer') {
       return (
-        <IfcbMarkers habSpecies={habSpecies} onMarkerClick={onMarkerClick} dateFilter={dateFilter} key={layer.id} />
+        <IfcbMarkers
+          habSpecies={habSpecies}
+          onMarkerClick={onMarkerClick}
+          dateFilter={dateFilter}
+          smoothingFactor={smoothingFactor}
+          key={layer.id} />
       );
     } else {
       return;
@@ -127,6 +140,20 @@ export default function App() {
 
   const onDateRangeChange = (startDate, endDate) => {
     setDateFilter([startDate, endDate]);
+    // calculate the date range length to determine a smoothing factor to pass API
+    const dateRange = differenceInDays(endDate, startDate);
+    let newFactor = 4;
+
+    if (dateRange < 90) {
+      newFactor = 1;
+    }
+    else if (dateRange < 180) {
+      newFactor = 2;
+    }
+    else if (dateRange < 240) {
+      newFactor = 3;
+    }
+    setSmoothingFactor(newFactor);
   }
 
   const onYAxisChange = (event) => {
@@ -145,6 +172,7 @@ export default function App() {
               featureID={feature.id}
               dataLayer={feature.layer}
               dateFilter={dateFilter}
+              smoothingFactor={smoothingFactor}
               yAxisScale={yAxisScale}
               onPaneClose={onPaneClose}
             />

@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
+const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) => {
   const classes = useStyles();
   console.log(habSpecies);
   const layerID = 'stations-layer';
@@ -30,6 +30,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
         const filterURL = baseURL + '?' + new URLSearchParams({
             start_date: format(dateFilter[0], 'MM/dd/yyyy'),
             end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+            smoothing_factor: smoothingFactor,
         })
         return filterURL;
       }
@@ -38,6 +39,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
 
     const fetchResults = () => {
       const url = getFetchUrl();
+      console.log(url);
       fetch(url)
         .then(res => res.json())
         .then(
@@ -56,7 +58,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
         )
     }
     fetchResults();
-  }, [dateFilter])
+  }, [dateFilter, smoothingFactor])
 
   const renderMarker = (feature) => {
 

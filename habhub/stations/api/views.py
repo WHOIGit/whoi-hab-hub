@@ -3,7 +3,7 @@ import datetime
 from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Prefetch, F
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -18,6 +18,8 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = Station.objects.all()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
+        smoothing_factor = self.request.query_params.get('smoothing_factor', 1)
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
@@ -27,7 +29,9 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         if start_date and end_date:
             queryset = queryset.prefetch_related(Prefetch(
                 'datapoints',
-                queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj])))
+                queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj]) \
+                .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+                ))
         else:
             queryset = queryset.prefetch_related('datapoints')
         return queryset

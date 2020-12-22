@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
+const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) => {
   const classes = useStyles();
   console.log(habSpecies);
   const layerID = 'ifcb-layer';
@@ -30,6 +30,7 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter}) => {
         const filterURL = baseURL + '?' + new URLSearchParams({
             start_date: format(dateFilter[0], 'MM/dd/yyyy'),
             end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+            smoothing_factor: smoothingFactor,
         })
         return filterURL;
       }
