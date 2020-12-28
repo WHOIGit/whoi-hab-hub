@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     left: 10,
     width: expandWidth,
     height: '95vh',
-    zIndex: 200,
+    zIndex: 3000,
     overflowY: 'scroll',
   },
   expandContent: {

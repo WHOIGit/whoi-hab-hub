@@ -16,7 +16,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="false" disableGutters="true">
+      <Container maxWidth={false} disableGutters={true}>
         <Header />
         <main>
           <HabMap />

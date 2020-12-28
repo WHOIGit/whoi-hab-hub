@@ -3,21 +3,20 @@ import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 
+import HeaderDropdownMenu from './HeaderDropdownMenu.js';
 import logo from '../images/logo-habhub.png';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
-  menuButton: {
-    marginRight: theme.spacing(2),
+  toolBar: {
+    boxShadow: 'none',
   },
-  title: {
-    flexGrow: 1,
+  menuButton: {
+    color: theme.palette.secondary.dark,
+    marginRight: theme.spacing(2),
   },
 }));
 
@@ -26,11 +25,9 @@ export default function Header() {
 
   return (
     <div className={classes.root}>
-      <AppBar position="sticky" color="transparent">
+      <AppBar className={classes.toolBar} position="fixed" color="transparent">
         <Toolbar>
-          <IconButton edge="start" className={classes.menuButton} color="primary" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
+          <HeaderDropdownMenu />
           <div>
             <img src={logo} alt="HABHub Logo" />
           </div>
