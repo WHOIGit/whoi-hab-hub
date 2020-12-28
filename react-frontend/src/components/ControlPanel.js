@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
     color: '#6b6b76',
     outline: 'none',
     transition: 'all 0.3s',
-    zIndex: 90,
+    zIndex: 2000,
     height: '100vh',
     overflowY: 'scroll',
   },
@@ -49,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.primary.main,
     position: 'fixed',
     right: theme.spacing(1),
-    zIndex: 100,
+    zIndex: 3000,
   },
   resetBtn: {
     position: 'absolute',
@@ -69,32 +69,32 @@ export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayer
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
   const [yAxisValue, setYAxisValue] = useState(yAxisScale);
 
-  const onStartDateChange = (date) => {
+  function onStartDateChange(date) {
     setSelectedStartDate(date);
     if (date instanceof Date && !isNaN(date)) {
       onDateRangeChange(date, selectedEndDate);
     }
   };
 
-  const onEndDateChange = (date) => {
+  function onEndDateChange(date) {
     setSelectedEndDate(date);
     if (date instanceof Date && !isNaN(date)) {
       onDateRangeChange(selectedStartDate, date);
     }
   };
 
-  const onDateRangeReset = () => {
+  function onDateRangeReset() {
     setSelectedStartDate(defaultStartDate);
     setSelectedEndDate(new Date());
     onDateRangeChange(defaultStartDate, new Date());
   };
 
-  const handleYAxisChange = (event) => {
+  function handleYAxisChange(event) {
     setYAxisValue(event.target.value);
     onYAxisChange(event);
   };
 
-  const renderLayerControl = (mapLayer) => {
+  function renderLayerControl(mapLayer) {
     return (
       <FormControlLabel
         className={classes.checkBoxes}
@@ -111,14 +111,14 @@ export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayer
     );
   }
 
-  const renderColorChips = (color, index) => {
+  function renderColorChips(color, index) {
     const xValue = index * 20;
     return (
       <rect width="20" height="20" fill={color} x={xValue} key={index}></rect>
     )
   }
 
-  const renderSpeciesControl = (species) => {
+  function renderSpeciesControl(species) {
     return (
       <React.Fragment>
         <FormControlLabel
