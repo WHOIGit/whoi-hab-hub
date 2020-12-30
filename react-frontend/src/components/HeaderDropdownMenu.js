@@ -73,7 +73,7 @@ export default function HeaderDropdownMenu() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem>The NEHAB Network</MenuItem>
+        <MenuItem>Network Sites</MenuItem>
         <MenuItem onClick={handleClose}>
           <a href="https://whoi.edu" target="_blank">
             <img src={logoNehab} alt="NeHAB Logo" className={classes.menuImg2} />

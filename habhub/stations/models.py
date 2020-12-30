@@ -18,7 +18,7 @@ class Station(models.Model):
         ('NH', 'New Hampshire'),
     )
 
-    station_name = models.CharField(max_length=100)
+    station_name = models.CharField(max_length=100, null=True, blank=True)
     station_location = models.CharField(max_length=100)
     geom =  models.PointField(srid=4326, null=True, blank=True)
     state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
@@ -46,21 +46,13 @@ class Station(models.Model):
             max_mean_values.append(data_dict)
         return max_mean_values
 
-class Species(models.Model):
-    species_name = models.CharField(max_length=100)
-    italicize = models.BooleanField(blank=False, default=False)
-
-    def __str__(self):
-        return self.species_name
-
 
 class Datapoint(models.Model):
     station = models.ForeignKey(Station, related_name='datapoints',
                                 on_delete=models.CASCADE, null=False)
     measurement = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     measurement_date = models.DateTimeField(default=now, null=False)
-    species = models.ForeignKey(Species, related_name='datapoints',
-                                on_delete=models.CASCADE, null=True)
+    species_tested = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         ordering = ['-measurement_date']
