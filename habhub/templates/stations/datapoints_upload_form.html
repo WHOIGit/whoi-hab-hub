@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Station Toxicity Datapoint CSV{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Upload Station Toxicity Datapoint CSV</h2>
+
+  <p>Use this tool to upload Station Toxicity Datapoint CSV. Matching Stations must be imported first.</p>
+
+  <hr>
+
+  <form class="form-horizontal" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <div class="row">
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">Run Import</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

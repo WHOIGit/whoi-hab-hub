@@ -5,7 +5,6 @@ from .models import Station
 
 
 class StationForm(forms.ModelForm):
-
     latitude = forms.FloatField(
         min_value=-90,
         max_value=90,
@@ -36,3 +35,7 @@ class StationForm(forms.ModelForm):
         if latitude and longitude:
             data['geom'] = Point(longitude, latitude)
         return data
+
+
+class DatapointCsvUploadForm(forms.Form):
+    datapoints_csv = forms.FileField()

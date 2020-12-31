@@ -1,12 +1,18 @@
 import datetime
+import csv
+import io
+from dateutil import parser
 
 from django.core.cache import cache
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg, Max, Prefetch
-from django.views.generic import View, DetailView, ListView, TemplateView
+from django.views.generic import View, DetailView, ListView, TemplateView, FormView
+from django.urls import reverse
 
 from .models import Station, Datapoint
+from .forms import DatapointCsvUploadForm
 from .api.views import StationViewSet
 from .api.serializers import StationSerializer
 from habhub.esp_instrument.models import Deployment
@@ -136,3 +142,41 @@ class StationListView(ListView):
         # Add in a QuerySet of all the IFCB Cruises
         context['ifcb_cruises'] = Cruise.objects.all()
         return context
+
+
+# Github CSV file importer for Cruises
+# If no matching Vessel in RDB based on vessel_name, one will be created
+class DatapointCsvUploadView(LoginRequiredMixin, FormView):
+    form_class = DatapointCsvUploadForm
+    template_name = 'stations/datapoints_upload_form.html'
+
+    def form_valid(self, form):
+        csv_file = self.request.FILES['datapoints_csv']
+        # Set up the Django file object for CSV DictReader
+        csv_file.seek(0)
+        reader = csv.DictReader(io.StringIO(csv_file.read().decode('utf-8')))
+
+        for row in reader:
+            print(row)
+            # get matching Station object from station_location
+            try:
+                station = Station.objects.get(station_location=row['station_location'].strip())
+            except Station.DoesNotExist:
+                raise ValueError(f"{row['station_location']} - No Matching Station.")
+
+            date_obj = parser.parse(row['measurement_date'])
+            datapoint = Datapoint.objects.create(
+                station=station,
+                measurement_date=date_obj,
+                measurement=row['measurement'],
+                species_tested=row['species_tested']
+            )
+
+        return super(DatapointCsvUploadView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('stations:datapoints_import_upload_success', )
+
+
+class DatapointCsvUploadSuccessView(TemplateView):
+    template_name = "stations/import_upload_success.html"

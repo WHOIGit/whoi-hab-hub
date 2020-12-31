@@ -1,3 +1,5 @@
+from dateutil import parser
+
 from django.contrib.gis import admin
 from django.contrib.gis.geos import Point
 
@@ -45,8 +47,26 @@ class StationAdmin(LeafletGeoAdminMixin, ImportExportModelAdmin):
 
 # Resource class for import_export module
 class DatapointResource(resources.ModelResource):
+    station_location = Field(attribute='station_location', column_name='station_location')
+
     class Meta:
         model = Datapoint
+        fields = ('id', 'station_location', 'measurement', 'measurement_date', 'species_tested')
+        exclude = ('station')
+        export_order = ('id', 'station_location', 'measurement', 'measurement_date', 'species_tested')
+        use_bulk = True
+        batch_size = 1000
+        skip_diff = True
+
+    def before_save_instance(self, instance, using_transactions, dry_run):
+        # get matching Station object from station_location
+        try:
+            station = Station.objects.get(station_location=instance.station_location.strip())
+        except Station.DoesNotExist:
+            raise ValueError(f"{instance.station_location} - No Matching Station.")
+
+        instance.station = station
+        return instance
 
 
 @admin.register(Datapoint)
