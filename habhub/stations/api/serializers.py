@@ -16,8 +16,7 @@ class StationSerializer(GeoFeatureModelSerializer):
         ]
 
     def get_max_mean_values(self, obj):
-        #return obj.get_max_mean_values()
-        max_mean_values = list()
+        max_mean_values = []
 
         if obj.station_max:
             data_dict = {

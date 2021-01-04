@@ -31,8 +31,7 @@ class Dataset(models.Model):
             concentration_dict = {'species': species, 'values': []}
             concentration_values.append(concentration_dict)
 
-        # limit data sample to only every NTH (4) bin to increase performance
-        bins_qs = self.bins.annotate(idmod4=F('id') % 4).filter(idmod4=0).filter(cell_concentration_data__isnull=False)
+        bins_qs = self.bins.all()
         if bins_qs:
             for bin in bins_qs:
                 for datapoint in bin.cell_concentration_data:

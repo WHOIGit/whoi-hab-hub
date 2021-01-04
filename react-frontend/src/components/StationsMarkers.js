@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) => {
+function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) {
   const classes = useStyles();
   console.log(habSpecies);
   const layerID = 'stations-layer';
@@ -23,7 +23,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor
   const [results, setResults] = useState();
 
   useEffect(() => {
-    const getFetchUrl = () => {
+    function getFetchUrl() {
       let baseURL = API_URL + 'api/v1/stations/'
       // build API URL to get set Date Filter
       if (dateFilter.length) {
@@ -37,7 +37,7 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor
       return baseURL;
     }
 
-    const fetchResults = () => {
+    function fetchResults() {
       const url = getFetchUrl();
       console.log(url);
       fetch(url)
@@ -60,12 +60,11 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor
     fetchResults();
   }, [dateFilter, smoothingFactor])
 
-  const renderMarker = (feature) => {
+  function renderMarker(feature) {
 
     const visibleSpecies = habSpecies
       .filter(species => species.visibility && feature.properties.hab_species.includes(species.id));
 
-    console.log(visibleSpecies);
     if (visibleSpecies.length && feature.properties.max_mean_values.length) {
       return (
         <Marker
@@ -87,7 +86,6 @@ const StationsMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor
     }
   }
 
-  console.log(results);
   return (
     <div>
       {results && results.features.map(feature => renderMarker(feature))}

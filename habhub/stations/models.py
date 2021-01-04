@@ -36,19 +36,6 @@ class Station(models.Model):
     def __str__(self):
         return '%s - %s' % (self.station_name, self.station_location)
 
-    def get_max_mean_values(self):
-        max_mean_values = []
-        agg_dict = self.datapoints.aggregate(station_mean=Avg('measurement'), station_max=Max('measurement'))
-
-        if agg_dict['station_max'] and agg_dict['station_mean']:
-            data_dict = {
-                'species': 'Alexandrium_catenella',
-                'max_value': float(round(agg_dict['station_max'], 1)),
-                'mean_value': float(round(agg_dict['station_mean'], 1)),
-            }
-            max_mean_values.append(data_dict)
-        return max_mean_values
-
 
 class Datapoint(models.Model):
     station = models.ForeignKey(Station, related_name='datapoints',

@@ -21,17 +21,19 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const DataPanel = ({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScale, onPaneClose}) => {
+function DataPanel({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScale, onPaneClose}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const classes = useStyles();
 
   useEffect(() => {
-    const getFetchUrl = (featureID, dataLayer) => {
+    function getFetchUrl(featureID, dataLayer) {
       let baseURL = ''
       if (dataLayer == 'stations-layer') {
         baseURL = `${API_URL}api/v1/stations/${featureID}/`;
+        // Force smoothing_factor to be ignored for Station graphs
+        smoothingFactor = 1;
       }
       else if (dataLayer == 'ifcb-layer') {
         baseURL = `${API_URL}api/v1/ifcb-datasets/${featureID}/`;
@@ -48,7 +50,7 @@ const DataPanel = ({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScal
       return baseURL;
     }
 
-    const fetchResults = () => {
+    function fetchResults() {
       const url = getFetchUrl(featureID, dataLayer);
       console.log(url);
       fetch(url)
@@ -69,7 +71,7 @@ const DataPanel = ({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScal
         )
     }
     fetchResults();
-  }, [featureID, dataLayer, dateFilter])
+  }, [featureID, dataLayer, dateFilter, smoothingFactor])
 
   console.log(results);
 

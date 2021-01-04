@@ -19,7 +19,7 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get('smoothing_factor', 1)
+        smoothing_factor = int(self.request.query_params.get('smoothing_factor', 1))
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, '%m/%d/%Y').date()
@@ -27,10 +27,14 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
             end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
 
         if start_date and end_date:
+            datapoint_query = Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj])
+
+            if smoothing_factor > 1:
+                datapoint_query = datapoint_query.annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+
             queryset = queryset.prefetch_related(Prefetch(
                     'datapoints',
-                    queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj]) \
-                    .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+                    queryset=datapoint_query
                 )) \
                 .add_station_max(start_date_obj, end_date_obj) \
                 .add_station_mean(start_date_obj, end_date_obj)
