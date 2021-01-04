@@ -3,7 +3,7 @@ import datetime
 from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.db import models
-from django.db.models import Prefetch, F
+from django.db.models import Prefetch, F, Avg, Max
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -28,10 +28,16 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
 
         if start_date and end_date:
             queryset = queryset.prefetch_related(Prefetch(
-                'datapoints',
-                queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj]) \
-                .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
-                ))
+                    'datapoints',
+                    queryset=Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj]) \
+                    .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+                )) \
+                .add_station_max(start_date_obj, end_date_obj) \
+                .add_station_mean(start_date_obj, end_date_obj)
         else:
-            queryset = queryset.prefetch_related('datapoints')
+            queryset = (
+                queryset.prefetch_related('datapoints')
+                        .add_station_max()
+                        .add_station_mean()
+            )
         return queryset

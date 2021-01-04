@@ -2,6 +2,8 @@ import datetime
 import csv
 import io
 from dateutil import parser
+from decimal import Decimal
+from itertools import islice
 
 from django.core.cache import cache
 from django.shortcuts import render
@@ -156,23 +158,44 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
         csv_file.seek(0)
         reader = csv.DictReader(io.StringIO(csv_file.read().decode('utf-8')))
 
+        errors = list()
         for row in reader:
-            print(row)
             # get matching Station object from station_location
             try:
                 station = Station.objects.get(station_location=row['station_location'].strip())
             except Station.DoesNotExist:
-                raise ValueError(f"{row['station_location']} - No Matching Station.")
+                error = f"{row['station_location']} - No Matching Station."
+                errors.append(error)
+                continue
 
-            date_obj = parser.parse(row['measurement_date'])
+            try:
+                measurement_date = parser.parse(row['measurement_date'])
+            except Exception as e:
+                error = f"{row['station_location']} - {row['measurement_date']} - date error."
+                errors.append(error)
+                continue
+
+            print(measurement_date)
+
+            try:
+                measurement = Decimal(row['measurement'])
+            except Exception as e:
+                error = f"{row['station_location']} - {row['measurement_date']} - decimal error."
+                errors.append(error)
+                continue
+
+            if measurement < 0:
+                measurement = 40.0
+
             datapoint = Datapoint.objects.create(
                 station=station,
-                measurement_date=date_obj,
-                measurement=row['measurement'],
+                measurement_date=measurement_date,
+                measurement=measurement,
                 species_tested=row['species_tested']
             )
-
-        return super(DatapointCsvUploadView, self).form_valid(form)
+        #return reverse('stations:datapoints_import_upload_success', errors)
+        return HttpResponse('<h1>Import complete - %s</h1> ' % (errors))
+        #return super(DatapointCsvUploadView, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('stations:datapoints_import_upload_success', )

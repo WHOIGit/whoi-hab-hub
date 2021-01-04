@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db.models import Avg, Max
 
 from habhub.core import constants, fields
+from .managers import StationQuerySet
 
 # function to return a list for setting hab_species default
 def get_hab_species_default():
@@ -19,13 +20,15 @@ class Station(models.Model):
     )
 
     station_name = models.CharField(max_length=100, null=True, blank=True)
-    station_location = models.CharField(max_length=100)
+    station_location = models.CharField(max_length=100, db_index=True)
     geom =  models.PointField(srid=4326, null=True, blank=True)
-    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True)
+    state = models.CharField(max_length=50, choices=STATES, null=False, blank=True, db_index=True)
     hab_species = fields.ChoiceArrayField(models.CharField(
         choices = constants.TARGET_SPECIES,
         max_length = 50,
     ), default = get_hab_species_default)
+
+    objects = StationQuerySet.as_manager()
 
     class Meta:
         ordering = ['state', 'station_name']
@@ -51,7 +54,7 @@ class Datapoint(models.Model):
     station = models.ForeignKey(Station, related_name='datapoints',
                                 on_delete=models.CASCADE, null=False)
     measurement = models.DecimalField(max_digits=7, decimal_places=2, null=True)
-    measurement_date = models.DateTimeField(default=now, null=False)
+    measurement_date = models.DateTimeField(default=now, null=False, db_index=True)
     species_tested = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
@@ -59,4 +62,4 @@ class Datapoint(models.Model):
         get_latest_by = 'measurement_date'
 
     def __str__(self):
-        return '%s - %s' % (self.station.station_name, self.measurement_date)
+        return self.measurement_date

@@ -16,7 +16,17 @@ class StationSerializer(GeoFeatureModelSerializer):
         ]
 
     def get_max_mean_values(self, obj):
-        return obj.get_max_mean_values()
+        #return obj.get_max_mean_values()
+        max_mean_values = list()
+
+        if obj.station_max:
+            data_dict = {
+                'species': 'Alexandrium_catenella',
+                'max_value': float(round(obj.station_max, 1)),
+                'mean_value': float(round(obj.station_mean, 1)),
+            }
+            max_mean_values.append(data_dict)
+        return max_mean_values
 
     def get_datapoints(self, obj):
         # Check if user wants to exclude datapoints
