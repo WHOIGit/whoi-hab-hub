@@ -178,8 +178,17 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
             print(measurement_date)
 
             try:
-                measurement = Decimal(row['measurement'])
+                measurement = row['measurement']
+                if not measurement:
+                    continue
+                    
+                if '<' in measurement:
+                    measurement = measurement.replace('<', '-')
+
+                measurement = Decimal(measurement)
+
             except Exception as e:
+                print(e)
                 error = f"{row['station_location']} - {row['measurement_date']} - decimal error."
                 errors.append(error)
                 continue
@@ -193,9 +202,9 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
                 measurement=measurement,
                 species_tested=row['species_tested']
             )
-        #return reverse('stations:datapoints_import_upload_success', errors)
-        return HttpResponse('<h1>Import complete - %s</h1> ' % (errors))
-        #return super(DatapointCsvUploadView, self).form_valid(form)
+
+        print(f'ERRORS: {errors}')
+        return super(DatapointCsvUploadView, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('stations:datapoints_import_upload_success', )
