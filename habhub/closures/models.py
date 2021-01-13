@@ -221,7 +221,6 @@ class ClosureDataEvent(models.Model):
 
     # Custom save method to update closure duration
     def save(self, *args, **kwargs):
-        print(self.notice_action)
         if self.notice_action == 'Open':
             duration = timedelta(minutes=0)
             try:
