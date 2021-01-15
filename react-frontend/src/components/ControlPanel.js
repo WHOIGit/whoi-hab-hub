@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DateFnsUtils from '@date-io/date-fns';
 import { makeStyles } from '@material-ui/styles';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   FormLabel,
   FormControl,
