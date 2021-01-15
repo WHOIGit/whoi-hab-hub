@@ -4,8 +4,8 @@ import { species } from '../hab-species'
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: 32,
-    height: 32,
+    width: 20,
+    height: 20,
     fontFamily: 'Verdana',
     fontSize: '1.8rem',
     fontWeight: 'bold',
@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
   },
   triangle: {
     stroke: '#de2d26',
-    strokeWidth: 4,
+    strokeWidth: 2,
   }
 }));
 
@@ -47,7 +47,8 @@ const StationsMarkerIcon = ({maxMeanData}) => {
     <div>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className={classes.root} >
           <polygon points="50 0, 100 50, 50 100, 0 50" fill={setGradientColor(value)} className={classes.triangle}/>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>
+          {/*<text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>*/}
+
       </svg>
     </div>
   );

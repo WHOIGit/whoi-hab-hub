@@ -16,7 +16,6 @@ const useStyles = makeStyles((theme) => ({
 
 function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) {
   const classes = useStyles();
-  console.log(habSpecies);
   const layerID = 'stations-layer';
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);

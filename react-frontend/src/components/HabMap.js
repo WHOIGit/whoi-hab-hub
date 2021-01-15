@@ -20,6 +20,7 @@ import DataPanel from './DataPanel'
 import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
+import ClosuresLayer from './ClosuresLayer'
 import { layers } from '../map-layers'
 import { species } from '../hab-species'
 import './HabMap.css'
@@ -185,6 +186,7 @@ export default function HabMap() {
 
           <React.Fragment>
             {mapLayers.map(layer => renderMarkerLayer(layer))}
+            <ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
           </React.Fragment>
 
           <div style={navStyle}>

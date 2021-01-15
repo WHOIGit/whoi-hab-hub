@@ -4,8 +4,8 @@ from .views import ClosureDataEventViewSet, ShellfishAreaViewSet
 
 # Create a router and register our viewsets with it.
 router = SimpleRouter()
-router.register(r'closures', ClosureDataEventViewSet, 'closures' )
-router.register(r'shellfish-areas', ShellfishAreaViewSet, 'shellfish-areas' )
+#router.register(r'closures', ClosureDataEventViewSet, 'closures' )
+router.register(r'closures', ShellfishAreaViewSet, 'closures' )
 
 urlpatterns = [
     path('', include(router.urls) ),

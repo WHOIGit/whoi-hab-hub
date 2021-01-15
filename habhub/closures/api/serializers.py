@@ -20,7 +20,7 @@ class ShellfishAreaSerializer(GeoFeatureModelSerializer):
         # using the Douglas-Peucker algorithm. A higher tolerance value implies
         # fewer points in the output. If no tolerance is provided, it
         # defaults to 0.
-        return obj.geom.simplify(tolerance=0.0001, preserve_topology=True)
+        return obj.geom.simplify(tolerance=0.001, preserve_topology=True)
 
     def get_closures(self, obj):
         if obj.closure_notices.exists():
