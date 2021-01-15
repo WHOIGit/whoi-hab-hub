@@ -1,4 +1,4 @@
-HAB Map
+HABHub 
 ==========
 
 HAB Map project using Django Cookiecutter base
