@@ -61,7 +61,7 @@ export default function HabMap() {
 
   const mapRef = useRef();
 
-  const interactiveLayerIds = layers.map(item => item.id);
+  const interactiveLayerIds = ['closures-layer'];
 
   function renderMarkerLayer(layer) {
     if (layer.visibility && layer.id === 'stations-layer') {
@@ -89,16 +89,14 @@ export default function HabMap() {
 
   function onMapClick(event) {
     const mapObj = mapRef.current.getMap();
-    return
+    console.log(mapObj);
+    const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {layers: interactiveLayerIds});
+    console.log(mapFeatures[0]);
   }
 
   function onMarkerClick(event, feature, layerID) {
-    const mapObj = mapRef.current.getMap();
-    console.log(event);
-    console.log(feature);
     feature.layer = layerID;
     setFeatures([feature, ...features]);
-    console.log(features);
   }
 
   function onPaneClose(featureID) {
@@ -181,6 +179,7 @@ export default function HabMap() {
             setViewport(viewport)
           }}
           onClick={event => onMapClick(event)}
+          interactiveLayerIds={interactiveLayerIds}
           ref={mapRef}
         >
 

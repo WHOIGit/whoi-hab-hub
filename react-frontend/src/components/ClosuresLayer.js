@@ -10,8 +10,9 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const [apiURL, setApiURL] = useState();
+  const [labels, setLabels] = useState();
 
+  // Get Closure data from API
   useEffect(() => {
     function getFetchUrl() {
       let baseURL = API_URL + 'api/v1/closures/'
@@ -47,28 +48,32 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
     fetchResults();
   }, [dateFilter])
 
-  console.log(results);
-  if (results) {
-    const centerPoints = results.features.map(item => {
-      const point = {
-        "type": "Feature",
-        "properties": {
-          "name": item.properties.name
-        },
-        "geometry": item.properties.geom_center_point
-      }
-      return point;
-    })
+  // update the Labels text layer when API results change
+  useEffect(() => {
+    if (results) {
+      const centerPoints = results.features.map(item => {
+        const point = {
+          "type": "Feature",
+          "properties": {
+            "name": item.properties.name,
+            "count": item.properties.closures.length
+          },
+          "geometry": item.properties.geom_center_point
+        }
+        return point;
+      })
 
-    const labelsGeojson = {
-      "type": "FeatureCollection",
-      "features": centerPoints
-    };
+      const labelsGeojson = {
+        "type": "FeatureCollection",
+        "features": centerPoints
+      };
+      setLabels(labelsGeojson);
+      console.log(labelsGeojson);
+    }
+  }, [results])
 
-    console.log(labelsGeojson);
-  }
-
-  const layer = {
+  // Set default layer styles
+  const layerClosures = {
     id: 'closures-layer',
     type: 'fill',
     source: 'closures-src',
@@ -82,19 +87,56 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
     }
   }
 
-  if (!results) {
+  const layerLabels = {
+    id: 'closures-labels-layer',
+    type: 'symbol',
+    source: 'closures-labels-src',
+    layout: {
+      'visibility': 'visible',
+      'text-field': ['get', 'count'],
+      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+      'text-size': 12
+    }
+  }
+
+  const layerLabelCircles = {
+    id: 'closures-labels-circles-layer',
+    type: 'circle',
+    source: 'closures-labels-src',
+    paint: {
+      'circle-color': '#fed976',
+      'circle-radius': 8,
+      'circle-stroke-width': 0,
+      'circle-stroke-color': '#feb24c'
+    }
+  }
+
+  if (!results || !labels) {
     return null;
   } else {
     return (
-      <Source
-        id="closures-src"
-        type="geojson"
-        data={results}
-        buffer={10}
-        maxzoom={12}
-      >
-        <Layer {...layer}/>
-      </Source>
+      <React.Fragment>
+        <Source
+          id="closures-src"
+          type="geojson"
+          data={results}
+          buffer={10}
+          maxzoom={12}
+        >
+          <Layer {...layerClosures}/>
+        </Source>
+
+        <Source
+          id="closures-labels-src"
+          type="geojson"
+          data={labels}
+        >
+          <Layer {...layerLabelCircles}/>
+          <Layer {...layerLabels}/>
+        </Source>
+
+
+      </React.Fragment>
     )
   }
 
