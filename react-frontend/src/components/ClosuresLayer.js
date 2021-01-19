@@ -26,7 +26,6 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
         return filterURL;
       }
       return baseURL;
-      //setApiURL(filterURL)
     }
 
     function fetchResults() {
@@ -44,11 +43,30 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
         setError(error);
       })
     }
+    // Get the API data
     fetchResults();
-    //getFetchUrl()
   }, [dateFilter])
 
   console.log(results);
+  if (results) {
+    const centerPoints = results.features.map(item => {
+      const point = {
+        "type": "Feature",
+        "properties": {
+          "name": item.properties.name
+        },
+        "geometry": item.properties.geom_center_point
+      }
+      return point;
+    })
+
+    const labelsGeojson = {
+      "type": "FeatureCollection",
+      "features": centerPoints
+    };
+
+    console.log(labelsGeojson);
+  }
 
   const layer = {
     id: 'closures-layer',
