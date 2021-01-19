@@ -21,6 +21,7 @@ class ShellfishArea(models.Model):
         max_length=50, choices=STATES, null=False, blank=True, db_index=True
     )
     geom = models.MultiPolygonField(srid=4326)
+    geom_center_point = models.PointField(srid=4326, null=True, blank=True)
     acres = models.DecimalField(max_digits=19, decimal_places=10, null=True)
     area_description = models.CharField(max_length=1000, null=False, blank=True)
     area_class = models.CharField(max_length=100, null=False, blank=True)
@@ -32,6 +33,11 @@ class ShellfishArea(models.Model):
 
     def __str__(self):
         return self.name
+
+    # Custom save method to add Geometric center point for each polygon
+    def save(self, *args, **kwargs):
+        self.geom_center_point = self.geom.centroid
+        super(ShellfishArea, self).save(*args, **kwargs)
 
     def get_current_status(self):
         events_qs = self.closure_data_points.all()

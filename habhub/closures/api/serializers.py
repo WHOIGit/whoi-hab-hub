@@ -21,6 +21,7 @@ class ShellfishAreaSerializer(GeoFeatureModelSerializer):
             "acres",
             "area_description",
             "closures",
+            "geom_center_point",
             "simplified_geom",
         )
 
