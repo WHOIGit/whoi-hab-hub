@@ -56,6 +56,7 @@ export default function HabMap() {
   const [mapLayers, setMapLayers] = useState(layers);
   const [habSpecies, setHabSpecies] = useState(species);
   const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date()]);
+  const [stateFilter, setStateFilter] = useState(null);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
 
@@ -82,6 +83,15 @@ export default function HabMap() {
           smoothingFactor={smoothingFactor}
           key={layer.id} />
       );
+    } else if (layer.id === 'closures-layer') {
+      return (
+        <ClosuresLayer
+          mapRef={mapRef}
+          habSpecies={habSpecies}
+          dateFilter={dateFilter}
+          stateFilter={stateFilter}
+          visibility={layer.visibility} />
+      );
     } else {
       return;
     }
@@ -106,6 +116,7 @@ export default function HabMap() {
 
   function onLayerVisibilityChange(event, layerID) {
     const mapObj = mapRef.current.getMap();
+    console.log(mapObj);
     // set the mapLayers state
     const newVisibility = mapLayers.map(item => {
       if (item.id === layerID) {
@@ -114,6 +125,7 @@ export default function HabMap() {
       return item;
     })
     setMapLayers(newVisibility);
+
     // set the features state
     const newFeatures = features.filter(feature => feature.layer.id !== layerID)
     setFeatures(newFeatures);
@@ -185,7 +197,7 @@ export default function HabMap() {
 
           <React.Fragment>
             {mapLayers.map(layer => renderMarkerLayer(layer))}
-            <ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
+            //<ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
           </React.Fragment>
 
           <div style={navStyle}>

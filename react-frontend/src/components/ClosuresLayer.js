@@ -4,9 +4,9 @@ import {format} from 'date-fns';
 
 const API_URL = process.env.REACT_APP_API_URL
 
-export default function ClosuresLayer({mapRef, dateFilter}) {
+export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilter, visibility}) {
   const mapObj = mapRef.current.getMap();
-  console.log(mapObj);
+  console.log(visibility);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -21,9 +21,13 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
       if (dateFilter.length) {
         filterURL = baseURL + '?' + new URLSearchParams({
           start_date: format(dateFilter[0], 'MM/dd/yyyy'),
-          end_date: format(dateFilter[1], 'MM/dd/yyyy'),
-          state: 'MA'
+          end_date: format(dateFilter[1], 'MM/dd/yyyy')
         })
+        if (stateFilter) {
+          filterURL = filterURL + new URLSearchParams({
+            state: stateFilter
+          })
+        }
         return filterURL;
       }
       return baseURL;
@@ -48,6 +52,7 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
     fetchResults();
   }, [dateFilter])
 
+  // Need to create a new data source/layer to put label on polygon centroid
   // update the Labels text layer when API results change
   useEffect(() => {
     if (results) {
@@ -108,6 +113,9 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
       'circle-radius': 8,
       'circle-stroke-width': 0,
       'circle-stroke-color': '#feb24c'
+    },
+    layout: {
+      'visibility': 'visible'
     }
   }
 
@@ -123,7 +131,10 @@ export default function ClosuresLayer({mapRef, dateFilter}) {
           buffer={10}
           maxzoom={12}
         >
+        {visibility && (
           <Layer {...layerClosures}/>
+        )}
+
         </Source>
 
         <Source
