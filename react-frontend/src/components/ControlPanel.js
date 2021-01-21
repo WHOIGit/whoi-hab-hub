@@ -15,6 +15,9 @@ import {
   IconButton,
   Typography,
   Box,
+  AppBar,
+  Tabs,
+  Tab
 } from '@material-ui/core';
 import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
 import { ArrowForward, ArrowBack, Restore } from '@material-ui/icons';
@@ -58,6 +61,15 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div {...other}>
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
+
 export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayerVisibilityChange, onSpeciesVisibilityChange, onDateRangeChange, onYAxisChange,}) {
   // Set const variables
   const classes = useStyles();
@@ -67,6 +79,11 @@ export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayer
   const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
   const [yAxisValue, setYAxisValue] = useState(yAxisScale);
+  const [tabValue, setTabValue] = useState(0);
+
+  function handleTabChange(event, newTabValue) {
+    setTabValue(newTabValue);
+  };
 
   function onStartDateChange(date) {
     setSelectedStartDate(date);
@@ -211,19 +228,6 @@ export default function ControlPanel({mapLayers, habSpecies, yAxisScale, onLayer
             </FormControl>
 
           </ListItem>
-          {/*
-          <Divider variant="middle" component="li" className={classes.divider} />
-          <ListItem>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Y-Axis Scale</FormLabel>
-              <RadioGroup aria-label="y-axis scale" name="gender1" value={yAxisValue} onChange={handleYAxisChange}>
-                <FormControlLabel value="linear" control={<Radio color="primary" />} label="Linear" />
-                <FormControlLabel value="logarithmic" control={<Radio color="primary" />} label="Logarithmic" />
-              </RadioGroup>
-            </FormControl>
-          </ListItem>
-          */}
-
         </List>
       </div>
     </MuiPickersUtilsProvider>

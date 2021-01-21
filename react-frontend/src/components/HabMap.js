@@ -15,7 +15,7 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 // Import our stuff
 import SidePane from './SidePane'
-import ControlPanel from './ControlPanel'
+import DashBoard from './dashboard/DashBoard'
 import DataPanel from './DataPanel'
 import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
@@ -209,7 +209,7 @@ export default function HabMap() {
         </MapGL>
       </div>
       <div>
-        <ControlPanel
+        <DashBoard
           mapLayers={mapLayers}
           habSpecies={habSpecies}
           yAxisScale={yAxisScale}

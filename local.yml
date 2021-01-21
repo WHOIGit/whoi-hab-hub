@@ -65,13 +65,6 @@ services:
     ports: []
     command: /start-celerybeat
 
-  flower:
-    <<: *django
-    image: habhub_local_flower
-    ports:
-      - "5555:5555"
-    command: /start-flower
-
   redis:
     image: redis:6.0
     restart: unless-stopped
