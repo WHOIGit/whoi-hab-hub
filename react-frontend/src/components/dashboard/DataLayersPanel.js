@@ -11,7 +11,6 @@ import {
   Divider,
   List,
   ListItem,
-  IconButton,
   Typography,
   Box,
 } from '@material-ui/core';

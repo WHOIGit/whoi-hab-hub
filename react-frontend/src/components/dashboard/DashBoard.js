@@ -9,7 +9,8 @@ import {
   Tab
 } from '@material-ui/core';
 import { ArrowForward, ArrowBack, Restore, Phone } from '@material-ui/icons';
-import DataLayersPanel from './DataLayersPanel'
+import DataLayersPanel from './DataLayersPanel';
+import DateRangePanel from './DateRangePanel';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -145,10 +146,20 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
             onSpeciesVisibilityChange={onSpeciesVisibilityChange}
           />
         </TabPanel>
-        <TabPanel value={tabValue} index={1}>
-          Item Two
+        <TabPanel
+          value={tabValue}
+          index={1}
+          className={classes.tabPanelRoot}
+        >
+          <DateRangePanel
+            onDateRangeChange={onDateRangeChange}
+          />
         </TabPanel>
-        <TabPanel value={tabValue} index={2}>
+        <TabPanel
+          value={tabValue}
+          index={2}
+          className={classes.tabPanelRoot}
+        >
           Item Three
         </TabPanel>
         </React.Fragment>
