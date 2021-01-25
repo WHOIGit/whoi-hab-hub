@@ -47,7 +47,7 @@ const useStyles = makeStyles(theme => ({
   tabs: {
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor: theme.palette.primary.main,
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     right: 0,
   },
