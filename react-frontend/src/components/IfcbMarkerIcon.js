@@ -45,7 +45,7 @@ function IfcbMarkerIcon({visibleSpecies, maxMeanData}) {
     if (index === 1) {
       xValue = maxSquareSize;
     } else if (index === 2) {
-      // get the middle square width to calculate the last X value for the SVG Glyphs
+      // get the last middle square width to calculate the last X value for the SVG Glyphs
       const lastItem = visibleSpecies[1]
       const middleMaxMeanItem = maxMeanData.filter(data => lastItem.id === data.species)
       const middleValue = middleMaxMeanItem[0].max_value;
@@ -57,7 +57,7 @@ function IfcbMarkerIcon({visibleSpecies, maxMeanData}) {
       xValue = maxSquareSize;
       yValue = maxSquareSize;
     } else if (index === 5) {
-      // get the middle square width to calculate the last X value for the SVG Glyphs
+      // get the last middle square width to calculate the last X value for the SVG Glyphs
       const lastItem = visibleSpecies[4]
       const middleMaxMeanItem = maxMeanData.filter(data => lastItem.id === data.species)
       const middleValue = middleMaxMeanItem[0].max_value;
