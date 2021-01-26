@@ -8,7 +8,7 @@ import {
   Tabs,
   Tab
 } from '@material-ui/core';
-import { ArrowForward, ArrowBack, Restore, Phone } from '@material-ui/icons';
+import { ArrowForward, ArrowBack, Restore, Tune, Layers, List } from '@material-ui/icons';
 import DataLayersPanel from './DataLayersPanel';
 import DateRangePanel from './DateRangePanel';
 
@@ -18,25 +18,42 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: 0,
     right: 0,
+    width: '428px',
+    background: 'none',
+    zIndex: 2000,
+    height: '100vh',
+    overflowY: 'scroll',
+    transition: 'all 0.3s',
+  },
+  dashboardContainer: {
+    //margin: theme.spacing(1),
+    position: 'absolute',
+    top: 0,
+    right: 0,
     width: '380px',
     background: '#fff',
     boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
     color: '#6b6b76',
     outline: 'none',
-    transition: 'all 0.3s',
-    zIndex: 2000,
     height: '100vh',
     overflowY: 'scroll',
+    overflowX: 'visible'
 
   },
   collapse: {
-    right: '-284px',
+    right: '-260px',
   },
   toggleArrow: {
-    color: theme.palette.primary.main,
-    position: 'fixed',
-    right: theme.spacing(1),
+    position: 'absolute',
+    top: 0,
+    left: 0,
     zIndex: 3000,
+    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.primary.light,
+    borderRadius: 0,
+    '&:hover': {
+       backgroundColor: theme.palette.primary.dark,
+    },
   },
   resetBtn: {
     position: 'absolute',
@@ -50,6 +67,8 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
     top: 0,
     right: 0,
+    zIndex: 4000,
+    height: '100vh',
   },
   indicator: {
     left: '0px'
@@ -94,13 +113,13 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
   };
   return (
       <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
-        <IconButton
-          className={classes.toggleArrow}
-          onClick={() => setShowControls(!showControls)}
-          aria-label="Open/Close Filter Pane" >
-          {showControls ? <ArrowForward /> :  <ArrowBack />}
-        </IconButton>
-
+      <IconButton
+        className={classes.toggleArrow}
+        onClick={() => setShowControls(!showControls)}
+        aria-label="Open/Close Filter Pane" >
+        {showControls ? <ArrowForward /> :  <ArrowBack />}
+      </IconButton>
+      <div className={classes.dashboardContainer}>
         <React.Fragment>
         <Tabs
           value={tabValue}
@@ -112,21 +131,21 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
           }}
         >
           <Tab
-            icon={<Phone />}
+            icon={<Layers />}
             label="Data Layers"
             classes={{
               root: classes.tabRoot
             }}
           />
           <Tab
-            icon={<Phone />}
+            icon={<Tune />}
             label="Date Ranges"
             classes={{
               root: classes.tabRoot
             }}
           />
           <Tab
-            icon={<Phone />}
+            icon={<List />}
             label="Legend"
             classes={{
               root: classes.tabRoot
@@ -163,6 +182,7 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
           Item Three
         </TabPanel>
         </React.Fragment>
+      </div>
       </div>
   );
 }

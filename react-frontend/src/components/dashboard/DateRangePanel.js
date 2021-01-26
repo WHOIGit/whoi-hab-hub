@@ -5,18 +5,11 @@ import {
   FormLabel,
   FormControl,
   FormGroup,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
-  Checkbox,
-  Divider,
   List,
   ListItem,
   IconButton,
-  Typography,
-  Box,
 } from '@material-ui/core';
-import { ArrowForward, ArrowBack, Restore } from '@material-ui/icons';
+import { Restore } from '@material-ui/icons';
 import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
 
 const useStyles = makeStyles(theme => ({

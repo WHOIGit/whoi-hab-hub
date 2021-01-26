@@ -69,6 +69,8 @@ const IfcbMarkers = ({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) =
           key={feature.id}
           latitude={feature.geometry.coordinates[1]}
           longitude={feature.geometry.coordinates[0]}
+          offsetLeft={-32}
+          offsetTop={-25}
           captureClick={true}
         >
           <div
