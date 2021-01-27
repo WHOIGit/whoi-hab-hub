@@ -64,37 +64,14 @@ export default function HabMap() {
 
   const interactiveLayerIds = ['closures-layer'];
 
-  function renderMarkerLayer(layer) {
-    if (layer.visibility && layer.id === 'stations-layer') {
-      return (
-        <StationsMarkers
-          habSpecies={habSpecies}
-          onMarkerClick={onMarkerClick}
-          dateFilter={dateFilter}
-          smoothingFactor={smoothingFactor}
-          key={layer.id} />
-      );
-    } else if (layer.visibility && layer.id === 'ifcb-layer') {
-      return (
-        <IfcbMarkers
-          habSpecies={habSpecies}
-          onMarkerClick={onMarkerClick}
-          dateFilter={dateFilter}
-          smoothingFactor={smoothingFactor}
-          key={layer.id} />
-      );
-    } else if (layer.id === 'closures-layer') {
-      return (
-        <ClosuresLayer
-          mapRef={mapRef}
-          habSpecies={habSpecies}
-          dateFilter={dateFilter}
-          stateFilter={stateFilter}
-          visibility={layer.visibility} />
-      );
-    } else {
-      return;
-    }
+  function onMapLoad() {
+    const mapObj = mapRef.current.getMap();
+    console.log(mapObj);
+    // Load the custom icon image from the 'public' directory for the Closures Layer
+    mapObj.loadImage("images/icon-shellfish-closure.png", function(error, image) {
+      if (error) throw error;
+      mapObj.addImage("icon-shellfish-closure", image);
+    });
   }
 
   function onMapClick(event) {
@@ -165,6 +142,39 @@ export default function HabMap() {
     setYAxisScale(event.target.value);
   };
 
+  function renderMarkerLayer(layer) {
+    if (layer.visibility && layer.id === 'stations-layer') {
+      return (
+        <StationsMarkers
+          habSpecies={habSpecies}
+          onMarkerClick={onMarkerClick}
+          dateFilter={dateFilter}
+          smoothingFactor={smoothingFactor}
+          key={layer.id} />
+      );
+    } else if (layer.visibility && layer.id === 'ifcb-layer') {
+      return (
+        <IfcbMarkers
+          habSpecies={habSpecies}
+          onMarkerClick={onMarkerClick}
+          dateFilter={dateFilter}
+          smoothingFactor={smoothingFactor}
+          key={layer.id} />
+      );
+    } else if (layer.id === 'closures-layer') {
+      return (
+        <ClosuresLayer
+          mapRef={mapRef}
+          habSpecies={habSpecies}
+          dateFilter={dateFilter}
+          stateFilter={stateFilter}
+          visibility={layer.visibility} />
+      );
+    } else {
+      return;
+    }
+  }
+
   return (
     <div>
       {features && (
@@ -191,6 +201,7 @@ export default function HabMap() {
             setViewport(viewport)
           }}
           onClick={event => onMapClick(event)}
+          onLoad={() => onMapLoad()}
           interactiveLayerIds={interactiveLayerIds}
           ref={mapRef}
         >

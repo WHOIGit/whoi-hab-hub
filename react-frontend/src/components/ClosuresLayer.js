@@ -6,7 +6,7 @@ const API_URL = process.env.REACT_APP_API_URL
 
 export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilter, visibility}) {
   const mapObj = mapRef.current.getMap();
-  console.log(visibility);
+  console.log(mapObj);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -91,7 +91,7 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       'visibility': 'visible'
     }
   }
-
+  /*
   const layerLabels = {
     id: 'closures-labels-layer',
     type: 'symbol',
@@ -102,7 +102,6 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
       'text-size': 12
     }
-  }
 
   const layerLabelCircles = {
     id: 'closures-labels-circles-layer',
@@ -115,6 +114,17 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       'circle-stroke-color': '#feb24c'
     },
     layout: {
+      'visibility': 'visible'
+    }
+  }
+  */
+  const layerClosuresIcons = {
+    id: 'closures-icons-layer',
+    type: 'symbol',
+    source: 'closures-labels-src',
+    layout: {
+      'icon-image': 'icon-shellfish-closure',
+      'icon-allow-overlap': false,
       'visibility': 'visible'
     }
   }
@@ -142,8 +152,7 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
           type="geojson"
           data={labels}
         >
-          <Layer {...layerLabelCircles}/>
-          <Layer {...layerLabels}/>
+          <Layer {...layerClosuresIcons}/>
         </Source>
 
 
