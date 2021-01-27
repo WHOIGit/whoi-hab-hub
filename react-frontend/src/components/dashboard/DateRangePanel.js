@@ -23,33 +23,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function DateRangePanel({onDateRangeChange,}) {
+export default function DateRangePanel({selectedStartDate, selectedEndDate, onDateRangeChange, onStartDateChange, onEndDateChange, onDateRangeReset}) {
   // Set const variables
   const classes = useStyles();
-  const defaultStartDate = new Date('2017-01-01T21:11:54');
-  // Set local state
-  const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
-  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
-
-  function onStartDateChange(date) {
-    setSelectedStartDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(date, selectedEndDate);
-    }
-  };
-
-  function onEndDateChange(date) {
-    setSelectedEndDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(selectedStartDate, date);
-    }
-  };
-
-  function onDateRangeReset() {
-    setSelectedStartDate(defaultStartDate);
-    setSelectedEndDate(new Date());
-    onDateRangeChange(defaultStartDate, new Date());
-  };
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>

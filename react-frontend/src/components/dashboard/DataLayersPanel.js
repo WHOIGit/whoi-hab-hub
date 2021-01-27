@@ -24,7 +24,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function DataLayersPanel({mapLayers, habSpecies, onLayerVisibilityChange, onSpeciesVisibilityChange}) {
+export default const DataLayersPanel = ({
+  mapLayers,
+  habSpecies,
+  onLayerVisibilityChange,
+  onSpeciesVisibilityChange}) => {
   // Set const variables
   const classes = useStyles();
 
