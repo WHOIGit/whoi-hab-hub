@@ -144,7 +144,6 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
         {visibility && (
           <Layer {...layerClosures}/>
         )}
-
         </Source>
 
         <Source
@@ -152,7 +151,9 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
           type="geojson"
           data={labels}
         >
+        {visibility && (
           <Layer {...layerClosuresIcons}/>
+        )}
         </Source>
 
 

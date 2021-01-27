@@ -150,15 +150,7 @@ export default function HabMap() {
           onMarkerClick={onMarkerClick}
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
-          key={layer.id} />
-      );
-    } else if (layer.visibility && layer.id === 'ifcb-layer') {
-      return (
-        <IfcbMarkers
-          habSpecies={habSpecies}
-          onMarkerClick={onMarkerClick}
-          dateFilter={dateFilter}
-          smoothingFactor={smoothingFactor}
+          visibility={layer.visibility}
           key={layer.id} />
       );
     } else if (layer.id === 'closures-layer') {
@@ -169,6 +161,16 @@ export default function HabMap() {
           dateFilter={dateFilter}
           stateFilter={stateFilter}
           visibility={layer.visibility} />
+      );
+    } else if (layer.id === 'ifcb-layer') {
+      return (
+        <IfcbMarkers
+          habSpecies={habSpecies}
+          onMarkerClick={onMarkerClick}
+          dateFilter={dateFilter}
+          smoothingFactor={smoothingFactor}
+          visibility={layer.visibility}
+          key={layer.id} />
       );
     } else {
       return;
