@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default const DataLayersPanel = ({
+const DataLayersPanel = ({
   mapLayers,
   habSpecies,
   onLayerVisibilityChange,
@@ -105,3 +105,5 @@ export default const DataLayersPanel = ({
         </List>
   );
 }
+
+export default DataLayersPanel;
