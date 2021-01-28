@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import React, {
+  useState,
+  useEffect
+} from 'react';
+import {
+  makeStyles
+} from '@material-ui/styles';
 import {
   FormLabel,
   FormControl,
@@ -24,11 +29,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const DataLayersPanel = ({
+export default function DataLayersPanel({
   mapLayers,
   habSpecies,
   onLayerVisibilityChange,
-  onSpeciesVisibilityChange}) => {
+  onSpeciesVisibilityChange
+}) {
   // Set const variables
   const classes = useStyles();
 
@@ -43,67 +49,67 @@ const DataLayersPanel = ({
             checked={mapLayer.visibility}
             onChange={(event) => onLayerVisibilityChange(event, mapLayer.id)}
             name={mapLayer.name} />
-        }
-        label={<Typography variant="body2" color="textSecondary">{mapLayer.name}</Typography>}
-      />
-    );
-  }
-
-  function renderColorChips(color, index) {
-    const xValue = index * 20;
-    return (
-      <rect width="20" height="20" fill={color} x={xValue} key={index}></rect>
-    )
-  }
-
-  function renderSpeciesControl(species) {
-    return (
-      <React.Fragment>
-        <FormControlLabel
-          key={species.id}
-          control={
-            <Checkbox
-              color="primary"
-              checked={species.visibility}
-              onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
-              name={species.speciesName} />
-          }
-          label={
-            <Typography variant="body2" color="textSecondary">{`${species.speciesName} / ${species.syndrome}`}</Typography>
-          }
-        />
-        <Box>
-          <svg width="100" height="20">
-            {species.colorGradient.map((item, index) => renderColorChips(item, index))}
-          </svg>
-        </Box>
-      </React.Fragment>
-
-    );
-  }
-
-  return (
-        <List>
-          <ListItem>
-            <FormControl component="fieldset" >
-              <FormLabel component="legend">Data Layers</FormLabel>
-              <FormGroup>
-                  {mapLayers.map(layer => renderLayerControl(layer))}
-              </FormGroup>
-            </FormControl>
-          </ListItem>
-          <Divider variant="middle" component="li" className={classes.divider} />
-          <ListItem>
-            <FormControl component="fieldset" >
-              <FormLabel component="legend">HAB Species/Syndromes</FormLabel>
-              <FormGroup>
-                {habSpecies.map(species => renderSpeciesControl(species))}
-              </FormGroup>
-            </FormControl>
-          </ListItem>
-
-        </List>
+    }
+    label = {
+      <Typography variant="body2" color="textSecondary">{mapLayer.name}</Typography>
+    }
+    />
   );
 }
 
-export default DataLayersPanel;
+function renderColorChips(color, index) {
+  const xValue = index * 20;
+  return (
+    <rect width="20" height="20" fill={color} x={xValue} key={index}></rect>
+  )
+}
+
+function renderSpeciesControl(species) {
+  return (
+    <React.Fragment>
+      <FormControlLabel
+        key={species.id}
+        control={
+          <Checkbox
+            color="primary"
+            checked={species.visibility}
+            onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
+            name={species.speciesName} />
+        }
+        label={
+          <Typography variant="body2" color="textSecondary">{`${species.speciesName} / ${species.syndrome}`}</Typography>
+        }
+      />
+      <Box>
+        <svg width="100" height="20">
+          {species.colorGradient.map((item, index) => renderColorChips(item, index))}
+        </svg>
+      </Box>
+    </React.Fragment>
+
+  );
+}
+
+return (
+  <List>
+    <ListItem>
+      <FormControl component="fieldset" >
+        <FormLabel component="legend">Data Layers</FormLabel>
+        <FormGroup>
+          {mapLayers.map(layer => renderLayerControl(layer))}
+        </FormGroup>
+      </FormControl>
+    </ListItem>
+    <Divider variant="middle" component="li" className={classes.divider} />
+    <ListItem>
+      <FormControl component="fieldset" >
+        <FormLabel component="legend">HAB Species/Syndromes</FormLabel>
+        <FormGroup>
+          {habSpecies.map(species => renderSpeciesControl(species))}
+        </FormGroup>
+      </FormControl>
+    </ListItem>
+
+  </List>
+);
+}

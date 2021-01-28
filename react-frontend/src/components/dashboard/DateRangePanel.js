@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect
+} from 'react';
 import DateFnsUtils from '@date-io/date-fns';
-import { makeStyles } from '@material-ui/styles';
+import {
+  makeStyles
+} from '@material-ui/styles';
 import {
   FormLabel,
   FormControl,
@@ -9,12 +14,16 @@ import {
   ListItem,
   IconButton,
 } from '@material-ui/core';
-import { Restore } from '@material-ui/icons';
-import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
+import {
+  Restore
+} from '@material-ui/icons';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker
+} from '@material-ui/pickers';
 
 const useStyles = makeStyles(theme => ({
-  root: {
-  },
+  root: {},
   resetBtn: {
     position: 'absolute',
     top: '-3px',
@@ -23,7 +32,14 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function DateRangePanel({selectedStartDate, selectedEndDate, onDateRangeChange, onStartDateChange, onEndDateChange, onDateRangeReset}) {
+export default function DateRangePanel({
+  selectedStartDate,
+  selectedEndDate,
+  onDateRangeChange,
+  onStartDateChange,
+  onEndDateChange,
+  onDateRangeReset
+}) {
   // Set const variables
   const classes = useStyles();
 

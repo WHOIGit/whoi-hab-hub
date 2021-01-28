@@ -78,7 +78,7 @@ function IfcbMarkerIcon({visibleSpecies, maxMeanData}) {
         y={yValue}
         key={index}
         strokeWidth={1}
-        stroke="black">
+        stroke="white">
       </rect>
     );
   }
