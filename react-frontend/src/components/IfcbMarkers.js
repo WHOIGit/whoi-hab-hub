@@ -21,6 +21,8 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const [offsetLeft, setOffsetLeft] = useState(-32)
+  const [offsetTop, setOffsetTop] = useState(-25)
 
   useEffect(() => {
     function getFetchUrl() {
@@ -66,7 +68,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
     source: "ifcb-circles-src",
     paint: {
       "circle-opacity": 0,
-      "circle-radius": 24,
+      "circle-radius": 12,
       "circle-stroke-width": 4,
       "circle-stroke-color": "#467fcf"
     },
@@ -78,21 +80,37 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   function renderMarker(feature) {
     const visibleSpecies = habSpecies.filter(species => species.visibility);
     console.log(feature.properties.max_mean_values);
+    // create new Array with Visible Species/Values
+    const speciesValues = habSpecies.filter(species => species.visibility)
+      .map((item) => {
+        const maxMeanItem = feature.properties.max_mean_values.filter(data => item.id === data.species);
+        const value = maxMeanItem[0].max_value;
+        return {
+          "species": item.id,
+          "value": value,
+          "color": item.colorGradient[4]
+        }
+      })
+
     if (visibleSpecies.length && feature.properties.max_mean_values.length) {
       return (
         <Marker
           key={feature.id}
           latitude={feature.geometry.coordinates[1]}
           longitude={feature.geometry.coordinates[0]}
-          offsetLeft={-32}
-          offsetTop={-25}
+          offsetLeft={offsetLeft}
+          offsetTop={offsetTop}
           captureClick={true}
         >
           <div
             className={classes.button}
             onClick={(event) => onMarkerClick(event, feature, layerID)}
           >
-            <IfcbMarkerIcon visibleSpecies={visibleSpecies} maxMeanData={feature.properties.max_mean_values} />
+            <IfcbMarkerIcon
+              speciesValues={speciesValues}
+              setOffsetLeft={setOffsetLeft}
+              setOffsetTop={setOffsetTop}
+            />
           </div>
         </Marker>
       );
@@ -101,7 +119,6 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
     }
   }
 
-  console.log(results);
   if (!visibility || !results) {
     return null;
   } else {
