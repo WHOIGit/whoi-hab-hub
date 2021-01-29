@@ -6,23 +6,12 @@ import IfcbMarkerIcon from "./IfcbMarkerIcon"
 
 const API_URL = process.env.REACT_APP_API_URL
 
-const useStyles = makeStyles((theme) => ({
-  button: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-  },
-}));
-
 export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor, visibility}) {
-  const classes = useStyles();
   console.log(habSpecies);
   const layerID = "ifcb-layer";
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const [offsetLeft, setOffsetLeft] = useState(-32)
-  const [offsetTop, setOffsetTop] = useState(-25)
 
   useEffect(() => {
     function getFetchUrl() {
@@ -94,25 +83,12 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
 
     if (visibleSpecies.length && feature.properties.max_mean_values.length) {
       return (
-        <Marker
-          key={feature.id}
-          latitude={feature.geometry.coordinates[1]}
-          longitude={feature.geometry.coordinates[0]}
-          offsetLeft={offsetLeft}
-          offsetTop={offsetTop}
-          captureClick={true}
-        >
-          <div
-            className={classes.button}
-            onClick={(event) => onMarkerClick(event, feature, layerID)}
-          >
-            <IfcbMarkerIcon
-              speciesValues={speciesValues}
-              setOffsetLeft={setOffsetLeft}
-              setOffsetTop={setOffsetTop}
-            />
-          </div>
-        </Marker>
+        <IfcbMarkerIcon
+          feature={feature}
+          layerID={layerID}
+          speciesValues={speciesValues}
+          onMarkerClick={onMarkerClick}
+        />
       );
     } else {
       return;

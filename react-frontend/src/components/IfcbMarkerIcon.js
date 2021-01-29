@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { Marker } from "react-map-gl";
 import { species } from '../hab-species'
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  button: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
   },
 }));
 
-function IfcbMarkerIcon({speciesValues, setOffsetLeft, setOffsetTop}) {
+function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
+  const [offsetLeft, setOffsetLeft] = useState(-32)
+  const [offsetTop, setOffsetTop] = useState(-25)
   const classes = useStyles();
   const maxSquareSize = 25;
 
   useEffect(() => {
     // Dynamically adjust the Marker offsets and Circle width depending on # of species
+    // Set a base offset based on the first items X/Y position in the SVG
+    const defaultOffsetCorrection = maxSquareSize - getSquareSize(speciesValues[0], maxSquareSize);
     // Sort array by max/mean value
     const sortedValues = speciesValues.sort((a, b) => Number(a.value) - Number(b.value));
-    const defaultOffsetCorrection = 5;
-    let maxHeight = 0
+    let maxHeight = 0;
     // Set the Y offset
     if (sortedValues.length > 3) {
       // if two rows of values, get the highest two values
@@ -28,7 +35,9 @@ function IfcbMarkerIcon({speciesValues, setOffsetLeft, setOffsetTop}) {
     const offsetTop = (maxHeight / 2 * -1) - defaultOffsetCorrection;
 
     // Set the X offset
+    // Max 3 items across, so get the 3 highest values
     const maxWidthArr = sortedValues.slice(-3);
+    // Sum values
     const maxWidth = maxWidthArr.reduce(function(a, b){
       return a + getSquareSize(b, maxSquareSize);
     }, 0);
@@ -95,11 +104,25 @@ function IfcbMarkerIcon({speciesValues, setOffsetLeft, setOffsetTop}) {
   }
 
   return (
-    <div>
-      <svg width={maxSquareSize * 3} height={maxSquareSize * 2}>
-        {speciesValues.map((item, index) => renderSquare(item, index))}
-      </svg>
-    </div>
+    <Marker
+      key={feature.id}
+      latitude={feature.geometry.coordinates[1]}
+      longitude={feature.geometry.coordinates[0]}
+      offsetLeft={offsetLeft}
+      offsetTop={offsetTop}
+      captureClick={true}
+    >
+      <div
+        className={classes.button}
+        onClick={(event) => onMarkerClick(event, feature, layerID)}
+      >
+        <div>
+          <svg width={maxSquareSize * 3} height={maxSquareSize * 2}>
+            {speciesValues.map((item, index) => renderSquare(item, index))}
+          </svg>
+        </div>
+      </div>
+    </Marker>
   );
 }
 
