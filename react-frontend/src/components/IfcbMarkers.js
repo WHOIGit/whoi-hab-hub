@@ -12,6 +12,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const [circleRadius, setCircleRadius] = useState(10);
 
   useEffect(() => {
     function getFetchUrl() {
@@ -51,13 +52,20 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
     fetchResults();
   }, [dateFilter])
 
+  useEffect(() => {
+    const visibleSpecies = habSpecies.filter(species => species.visibility);
+    const radiusFactor = visibleSpecies.length > 3 ? 3 : visibleSpecies.length;
+    let newRadius = 10 * radiusFactor;
+    setCircleRadius(newRadius);
+  }, [habSpecies])
+
   const layerIfcbCircles = {
     id: "ifcb-circles-layer",
     type: "circle",
     source: "ifcb-circles-src",
     paint: {
       "circle-opacity": 0,
-      "circle-radius": 12,
+      "circle-radius": circleRadius,
       "circle-stroke-width": 4,
       "circle-stroke-color": "#467fcf"
     },
@@ -67,8 +75,6 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   }
 
   function renderMarker(feature) {
-    const visibleSpecies = habSpecies.filter(species => species.visibility);
-    console.log(feature.properties.max_mean_values);
     // create new Array with Visible Species/Values
     const speciesValues = habSpecies.filter(species => species.visibility)
       .map((item) => {
@@ -81,7 +87,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
         }
       })
 
-    if (visibleSpecies.length && feature.properties.max_mean_values.length) {
+    if (speciesValues.length && feature.properties.max_mean_values.length) {
       return (
         <IfcbMarkerIcon
           feature={feature}
