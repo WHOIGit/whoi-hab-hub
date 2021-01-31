@@ -44,7 +44,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
             date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
             for datapoint in bin.cell_concentration_data:
-                index = next((index for (index, d) in enumerate(concentration_timeseries) if d['species'] == datapoint['species']), None)
+                index = next((index for (index, data) in enumerate(concentration_timeseries) if data['species'] == datapoint['species']), None)
                 if index is not None:
                     data_dict = {
                         'sample_time': date_str,

@@ -79,6 +79,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_gis',
     'django_filters',
     'storages',
+    'drf_multiple_model',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',

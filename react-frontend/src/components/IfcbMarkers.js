@@ -12,7 +12,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const [circleRadius, setCircleRadius] = useState(10);
+  const [circleRadius, setCircleRadius] = useState(12);
 
   useEffect(() => {
     function getFetchUrl() {
@@ -55,7 +55,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   useEffect(() => {
     const visibleSpecies = habSpecies.filter(species => species.visibility);
     const radiusFactor = visibleSpecies.length > 3 ? 3 : visibleSpecies.length;
-    let newRadius = 10 * radiusFactor;
+    let newRadius = 12 * radiusFactor;
     setCircleRadius(newRadius);
   }, [habSpecies])
 
