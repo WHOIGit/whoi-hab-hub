@@ -15,7 +15,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
   const [offsetLeft, setOffsetLeft] = useState(-32)
   const [offsetTop, setOffsetTop] = useState(-25)
   const classes = useStyles();
-  const maxSquareSize = 25;
+  const maxSquareSize = 40;
 
   useEffect(() => {
     // Dynamically adjust the Marker offsets and Circle width depending on # of species
@@ -51,13 +51,13 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
     const value = speciesItem.value
     let squareSize = maxSquareSize;
 
-    if (value < 100) {
+    if (value < 10e3) {
       squareSize = maxSquareSize / 5;
-    } else if (value < 1000) {
+    } else if (value < 10e4) {
       squareSize = maxSquareSize / 5 * 2;
-    } else if (value < 10000) {
+    } else if (value < 10e5) {
       squareSize = maxSquareSize / 5 * 3;
-    } else if (value < 100000) {
+    } else if (value < 10e6) {
       squareSize = maxSquareSize / 5 * 4;
     }
     return squareSize;
@@ -89,16 +89,25 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
       yValue = maxSquareSize;
     }
 
+    // Set fill opacity/stroke color based on Value scale
+    let fillOpacity = 1
+    let stroke = "white";
+    if (item.value < 100) {
+      fillOpacity = 0;
+      stroke = item.color;
+    }
+
     return (
       <rect
         width={squareSize}
         height={squareSize}
         fill={item.color}
+        fillOpacity={fillOpacity}
         x={xValue}
         y={yValue}
         key={index}
         strokeWidth={1}
-        stroke="white">
+        stroke={stroke}>
       </rect>
     );
   }
