@@ -15,7 +15,8 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
   const [offsetLeft, setOffsetLeft] = useState(-32)
   const [offsetTop, setOffsetTop] = useState(-25)
   const classes = useStyles();
-  const maxSquareSize = 40;
+  const maxSquareSize = 32;
+  const minSquareSize = 8;
 
   useEffect(() => {
     // Dynamically adjust the Marker offsets and Circle width depending on # of species
@@ -52,7 +53,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
     let squareSize = maxSquareSize;
 
     if (value < 10e3) {
-      squareSize = maxSquareSize / 5;
+      squareSize = minSquareSize;
     } else if (value < 10e4) {
       squareSize = maxSquareSize / 5 * 2;
     } else if (value < 10e5) {
