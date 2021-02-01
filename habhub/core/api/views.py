@@ -41,7 +41,19 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
     )
 
     querylist = [
-        {'queryset': closure_query, 'serializer_class': ClosureNoticeSerializer},
-        {'queryset': bin_query, 'serializer_class': BinSerializer},
-        {'queryset': datapoint_query, 'serializer_class': DatapointSerializer},
+        {
+            'queryset': closure_query,
+            'serializer_class': ClosureNoticeSerializer,
+            'label': 'Shellfish Closures',
+        },
+        {
+            'queryset': bin_query,
+            'serializer_class': BinSerializer,
+            'label': 'IFCB Cell Concentrations',
+        },
+        {
+            'queryset': datapoint_query,
+            'serializer_class': DatapointSerializer,
+            'label': 'Shellfish Station Toxicity',
+        },
     ]

@@ -21,6 +21,7 @@ import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
+import DataTimeline from './DataTimeline'
 import { layers } from '../map-layers'
 import { species } from '../hab-species'
 import './HabMap.css'
@@ -231,6 +232,9 @@ export default function HabMap() {
           onDateRangeChange={onDateRangeChange}
           onYAxisChange={onYAxisChange}
         />
+      </div>
+      <div>
+        <DataTimeline mapLayers={mapLayers} />
       </div>
     </div>
   );

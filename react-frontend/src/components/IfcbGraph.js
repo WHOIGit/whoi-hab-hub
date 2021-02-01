@@ -38,7 +38,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const IfcbGraph = ({results, chartExpanded}, yAxisScale) => {
+const IfcbGraph = ({results, chartExpanded, yAxisScale}) => {
   const data = results.properties.concentration_timeseries;
   const classes = useStyles()
   const chartRef = useRef();
@@ -121,7 +121,7 @@ const IfcbGraph = ({results, chartExpanded}, yAxisScale) => {
     },
     yAxis: {
       title: {
-          text: 'Cell concentration (cells/L)'
+        text: 'Cell concentration (cells/L)'
       },
       type: 'linear',
       min: 0
