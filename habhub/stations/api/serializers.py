@@ -5,14 +5,14 @@ from ..models import Station
 
 
 class StationSerializer(GeoFeatureModelSerializer):
-    toxicity_timeseries_data = serializers.SerializerMethodField('get_datapoints')
+    timeseries_data = serializers.SerializerMethodField('get_datapoints')
     max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
 
     class Meta:
         model = Station
         geo_field = 'geom'
         fields = [
-            'id', 'station_name', 'state', 'station_location', 'geom', 'max_mean_values', 'hab_species', 'toxicity_timeseries_data'
+            'id', 'station_name', 'state', 'station_location', 'geom', 'max_mean_values', 'hab_species', 'timeseries_data'
         ]
 
     def get_max_mean_values(self, obj):
@@ -35,11 +35,11 @@ class StationSerializer(GeoFeatureModelSerializer):
 
         # Otherwise create the datapoint series
         datapoints_qs = obj.datapoints.all()
-        toxicity_timeseries_data = list()
+        timeseries_data = list()
 
         for datapoint in datapoints_qs:
             date_str = datapoint.measurement_date.isoformat()
             data_obj = {'date': date_str, 'measurement': float(datapoint.measurement)}
-            toxicity_timeseries_data.append(data_obj)
+            timeseries_data.append(data_obj)
 
-        return toxicity_timeseries_data
+        return timeseries_data

@@ -84,7 +84,7 @@ function DataPanel({mapLayers}) {
       type: 'column',
       zoomType: 'x',
       width: fullWidth,
-      height: 300,
+      height: 280,
     },
     title: {
       text: null

@@ -191,6 +191,7 @@ export default function HabMap() {
               smoothingFactor={smoothingFactor}
               yAxisScale={yAxisScale}
               onPaneClose={onPaneClose}
+              habSpecies={habSpecies}
             />
           ))}
         </div>

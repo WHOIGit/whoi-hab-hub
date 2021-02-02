@@ -17,10 +17,10 @@ class DatasetListSerializer(GeoFeatureModelSerializer):
 
 
 class DatasetDetailSerializer(DatasetListSerializer):
-    concentration_timeseries = serializers.SerializerMethodField('get_datapoints')
+    timeseries_data = serializers.SerializerMethodField('get_datapoints')
 
     class Meta(DatasetListSerializer.Meta):
-        fields = DatasetListSerializer.Meta.fields + ['concentration_timeseries',]
+        fields = DatasetListSerializer.Meta.fields + ['timeseries_data',]
 
     def __init__(self, *args, **kwargs):
         super(DatasetDetailSerializer, self).__init__(*args, **kwargs)
@@ -29,7 +29,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
             if 'request' in kwargs['context']:
                 exclude_dataseries = kwargs['context']['request'].query_params.get('exclude_dataseries', None)
                 if exclude_dataseries:
-                    self.fields.pop('concentration_timeseries')
+                    self.fields.pop('timeseries_data')
 
     def get_datapoints(self, obj):
         bins_qs = obj.bins.all()

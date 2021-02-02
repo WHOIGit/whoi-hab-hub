@@ -55,7 +55,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
   useEffect(() => {
     const visibleSpecies = habSpecies.filter(species => species.visibility);
     const radiusFactor = visibleSpecies.length > 3 ? 3 : visibleSpecies.length;
-    let newRadius = 8 * radiusFactor;
+    const newRadius = 8 * radiusFactor;
     setCircleRadius(newRadius);
   }, [habSpecies])
 
@@ -83,7 +83,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
         return {
           "species": item.id,
           "value": value,
-          "color": item.colorGradient[4]
+          "color": item.colorPrimary,
         }
       })
 

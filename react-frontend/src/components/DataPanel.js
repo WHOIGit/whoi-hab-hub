@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
-import { format } from 'date-fns';
+import React, {
+  useState,
+  useEffect
+} from "react";
+import {
+  makeStyles
+} from '@material-ui/styles';
+import {
+  CircularProgress
+} from '@material-ui/core';
+import {
+  format
+} from 'date-fns';
 import SidePane from './SidePane';
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -21,7 +30,15 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function DataPanel({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScale, onPaneClose}) {
+function DataPanel({
+  featureID,
+  dataLayer,
+  dateFilter,
+  smoothingFactor,
+  yAxisScale,
+  onPaneClose,
+  habSpecies
+}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -34,16 +51,15 @@ function DataPanel({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScal
         baseURL = `${API_URL}api/v1/stations/${featureID}/`;
         // Force smoothing_factor to be ignored for Station graphs
         smoothingFactor = 1;
-      }
-      else if (dataLayer == 'ifcb-layer') {
+      } else if (dataLayer == 'ifcb-layer') {
         baseURL = `${API_URL}api/v1/ifcb-datasets/${featureID}/`;
       }
       // build API URL to get set Date Filter
       if (dateFilter.length) {
         const filterURL = baseURL + '?' + new URLSearchParams({
-            start_date: format(dateFilter[0], 'MM/dd/yyyy'),
-            end_date: format(dateFilter[1], 'MM/dd/yyyy'),
-            smoothing_factor: smoothingFactor,
+          start_date: format(dateFilter[0], 'MM/dd/yyyy'),
+          end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+          smoothing_factor: smoothingFactor,
         })
         return filterURL;
       }
@@ -92,6 +108,7 @@ function DataPanel({featureID, dataLayer, dateFilter, smoothingFactor, yAxisScal
           dataLayer={dataLayer}
           yAxisScale={yAxisScale}
           onPaneClose={onPaneClose}
+          habSpecies={habSpecies}
         />
       )}
     </div>

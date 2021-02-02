@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const StationsGraph = ({results, chartExpanded, yAxisScale}) => {
+function StationsGraph({results, chartExpanded, yAxisScale}) {
   const chartRef = useRef();
   const classes = useStyles()
   console.log(results);
@@ -60,7 +60,7 @@ const StationsGraph = ({results, chartExpanded, yAxisScale}) => {
     }
   }, [yAxisScale]);
 */
-  const data = results.properties.toxicity_timeseries_data;
+  const data = results.properties.timeseries_data;
   const chartData = data.map(item => [Date.parse(item.date), item.measurement] ).sort();
   console.log(chartData);
 
@@ -101,13 +101,13 @@ const StationsGraph = ({results, chartExpanded, yAxisScale}) => {
 
   return (
 
-        <HighchartsReact
-          highcharts={Highcharts}
-          allowChartUpdate={true}
-          options={chartOptions}
-          containerProps={chartExpanded ? { className: classes.chartContainerExpand } : { className: classes.chartContainer }}
-          ref={chartRef}
-        />
+    <HighchartsReact
+      highcharts={Highcharts}
+      allowChartUpdate={true}
+      options={chartOptions}
+      containerProps={chartExpanded ? { className: classes.chartContainerExpand } : { className: classes.chartContainer }}
+      ref={chartRef}
+    />
 
 
   )

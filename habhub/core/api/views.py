@@ -4,7 +4,7 @@ from drf_multiple_model.viewsets import ObjectMultipleModelAPIViewSet
 from django_filters import rest_framework as filters
 from django.db import models
 from django.db.models import Count
-from django.db.models.functions import TruncDay
+from django.db.models.functions import TruncDay, TruncMonth
 
 from habhub.stations.models import Datapoint
 from habhub.ifcb_datasets.models import Bin

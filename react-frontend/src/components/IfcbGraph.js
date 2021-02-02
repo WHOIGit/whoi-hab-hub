@@ -38,21 +38,84 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const IfcbGraph = ({results, chartExpanded, yAxisScale}) => {
-  const data = results.properties.concentration_timeseries;
+function IfcbGraph({visibleResults, chartExpanded, yAxisScale}) {
   const classes = useStyles()
   const chartRef = useRef();
   // Local state
+  const [chartOptions, setChartOptions] = useState({})
   const [metaDataUrl, setMetaDataUrl] = useState(null);
   const [openMetaData, setOpenMetaData] = useState(false);
+  console.log(visibleResults);
 
   useEffect(() => {
-    if (chartExpanded) {
-      console.log(window.outerWidth, window.outerHeight);
-      chartRef.current.chart.setSize(expandWidth, null);
-    } else {
-      chartRef.current.chart.setSize(550, 300);
-    }
+    const chartData = visibleResults.map(item => handleChartDataFormat(item));
+
+    const newChartOptions = {
+      chart: {
+        type: 'spline',
+        zoomType: 'x',
+      },
+      title: {
+        text: null
+      },
+      subtitle: {
+        text: document.ontouchstart === undefined ?
+              'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+      },
+      xAxis: {
+        type: 'datetime'
+      },
+      yAxis: {
+        title: {
+          text: 'Cell concentration (cells/L)'
+        },
+        type: 'linear',
+        min: 0
+      },
+      tooltip: {
+        formatter: function () {
+            const [y_value, pointData] = highChartsGetMetaData(this);
+            const sampleTime = new Date(this.x).toISOString().split('T')[0];
+            const tooltip = `
+                ${sampleTime}<br>
+                <i>${this.series.name}</i>: ${y_value} cells/L<br>
+                Click to see IFCB images<br>
+            `
+            return tooltip;
+        }
+      },
+      plotOptions: {
+          series: {
+              cursor: 'pointer',
+              point: {
+                  events: {
+                      click: function () {
+                          const [y_value, pointData] = highChartsGetMetaData(this);
+                          console.log(this.series.name, pointData);
+                          // build API URL to get BIN images
+                          const url = `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` + new URLSearchParams({
+                              species: this.series.name,
+                              bin_pid: pointData.bin_pid,
+                              format: 'json',
+                          })
+                          setMetaDataUrl(url);
+                          setOpenMetaData(true);
+                      }
+                  }
+              }
+          }
+      },
+      series: chartData
+    };
+    setChartOptions(newChartOptions);
+  }, [visibleResults]);
+
+  useEffect(() => {
+      if (chartExpanded) {
+        chartRef.current.chart.setSize(expandWidth, null);
+      } else {
+        chartRef.current.chart.setSize(550, 300);
+      }
   }, [chartExpanded]);
 /*
   useEffect(() => {
@@ -72,7 +135,7 @@ const IfcbGraph = ({results, chartExpanded, yAxisScale}) => {
     }
   }, [yAxisScale]);
 */
-  const handleChartDataFormat = dataObj => {
+  function handleChartDataFormat(dataObj) {
     const dataArray = dataObj.data.map(item => [Date.parse(item.sample_time), item.cell_concentration]).sort();
     console.log(dataObj);
     const seriesColor = species
@@ -88,9 +151,9 @@ const IfcbGraph = ({results, chartExpanded, yAxisScale}) => {
     return timeSeries;
   }
 
-  const highChartsGetMetaData = point => {
+  function highChartsGetMetaData(point) {
     // Get the original data structure with metadata for this point by matching timestamps
-    const timeSeries = data.find(series => series.species_display === point.series.name)
+    const timeSeries = visibleResults.find(series => series.species_display === point.series.name)
     console.log(timeSeries);
     const pointData = timeSeries.data.find(row => Date.parse(row.sample_time) === point.x)
     console.log(pointData);
@@ -102,91 +165,32 @@ const IfcbGraph = ({results, chartExpanded, yAxisScale}) => {
     return([y_value, pointData])
   }
 
-  const chartData = data.map(item => handleChartDataFormat(item) );
-
-  const chartOptions = {
-    chart: {
-      type: 'spline',
-      zoomType: 'x',
-    },
-    title: {
-      text: null
-    },
-    subtitle: {
-      text: document.ontouchstart === undefined ?
-            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-    },
-    xAxis: {
-      type: 'datetime'
-    },
-    yAxis: {
-      title: {
-        text: 'Cell concentration (cells/L)'
-      },
-      type: 'linear',
-      min: 0
-    },
-    tooltip: {
-      formatter: function () {
-          const [y_value, pointData] = highChartsGetMetaData(this);
-          const sampleTime = new Date(this.x).toISOString().split('T')[0];
-          const tooltip = `
-              ${sampleTime}<br>
-              <i>${this.series.name}</i>: ${y_value} cells/L<br>
-              Click to see IFCB images<br>
-          `
-          return tooltip;
-      }
-    },
-    plotOptions: {
-        series: {
-            cursor: 'pointer',
-            point: {
-                events: {
-                    click: function () {
-                        const [y_value, pointData] = highChartsGetMetaData(this);
-                        console.log(this.series.name, pointData);
-                        // build API URL to get BIN images
-                        const url = `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` + new URLSearchParams({
-                            species: this.series.name,
-                            bin_pid: pointData.bin_pid,
-                            format: 'json',
-                        })
-                        console.log(url)
-                        setMetaDataUrl(url);
-                        setOpenMetaData(true);
-                    }
-                }
-            }
-        }
-    },
-    series: chartData
-  };
-
   return (
     <React.Fragment>
+
       <HighchartsReact
         highcharts={Highcharts}
         options={chartOptions}
         containerProps={chartExpanded ? { className: classes.chartContainerExpand } : { className: classes.chartContainer }}
         ref={chartRef}
       />
-    {openMetaData && (
-      <div>
-      <div className={classes.metaDataCloseBtn}>
-        <IconButton
-          onClick={() => setOpenMetaData(!openMetaData)}
-          aria-label="close image panel"
-        >
-          <Close fontSize="small" />
-        </IconButton>
-      </div>
-      <div>
-        <IfcbMetaData metaDataUrl={metaDataUrl} chartExpanded={chartExpanded} />
-      </div>
-      </div>
 
-    )}
+      {openMetaData && (
+        <div>
+        <div className={classes.metaDataCloseBtn}>
+          <IconButton
+            onClick={() => setOpenMetaData(!openMetaData)}
+            aria-label="close image panel"
+          >
+            <Close fontSize="small" />
+          </IconButton>
+        </div>
+        <div>
+          <IfcbMetaData metaDataUrl={metaDataUrl} chartExpanded={chartExpanded} />
+        </div>
+        </div>
+
+      )}
     </React.Fragment>
 
   );
