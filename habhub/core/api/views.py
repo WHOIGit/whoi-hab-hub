@@ -34,7 +34,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
     closure_query =  (
         ClosureNotice.objects
             .filter(notice_action="Closed")
-            .annotate(timestamp=TruncDay('effective_date')) # Truncate to Day and add to select list
+            .annotate(timestamp=TruncMonth('effective_date')) # Truncate to Day and add to select list
             .values('timestamp') # Group By Day
             .annotate(count=Count('id')) # Select the count of the grouping
             .order_by('timestamp')

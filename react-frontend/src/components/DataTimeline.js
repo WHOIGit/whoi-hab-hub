@@ -3,13 +3,16 @@ import Highcharts from 'highcharts';
 import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official';
 import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Button } from '@material-ui/core';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { format } from 'date-fns';
 
 Serieslabel(Highcharts);
 
 const API_URL = process.env.REACT_APP_API_URL
-const fullWidth = window.outerWidth - 380;
+const fullWidth = window.outerWidth - 400;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,17 +26,28 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
     alignItems: 'center',
     padding: theme.spacing(2),
+    transition: 'all 0.3s',
   },
   placeholder: {
     margin: '0 auto',
-  }
+  },
+  button: {
+    margin: theme.spacing(0),
+    position: "absolute",
+    top: "-50px",
+    left: 0,
+  },
+  collapse: {
+    bottom: "-320px",
+  },
 }));
 
-function DataPanel({mapLayers}) {
+function DataTimeline({mapLayers}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const [chartData, setChartData] = useState([]);
+  const [showControls, setShowControls] = useState(false);
   const classes = useStyles();
 
   useEffect(() => {
@@ -106,7 +120,18 @@ function DataPanel({mapLayers}) {
   };
 
   return (
-    <div className={classes.root}>
+    <div className={`${classes.root} ${showControls ? "active" : classes.collapse}`}>
+      <Button
+        variant="contained"
+        color="primary"
+        className={classes.button}
+        startIcon={<BarChartIcon />}
+        onClick={() => setShowControls(!showControls)}
+        aria-label="Open/Close Data Timeline Graph"
+      >
+        Data Timeline
+        {showControls ? <ExpandMoreIcon /> :  <ExpandLessIcon />}
+      </Button>
       {!isLoaded && (
         <div>
           <div className={classes.placeholder}>
@@ -125,4 +150,4 @@ function DataPanel({mapLayers}) {
   );
 }
 
-export default DataPanel;
+export default DataTimeline;

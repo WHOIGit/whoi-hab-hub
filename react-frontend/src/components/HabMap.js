@@ -32,8 +32,8 @@ const defaultStartDate = new Date('2017-01-01T21:11:54');
 
 const navStyle = {
   position: 'absolute',
-  bottom: 36,
-  right: 0,
+  bottom: 72,
+  left: 0,
   padding: '10px'
 };
 
@@ -52,6 +52,9 @@ export default function HabMap() {
     height: "100vh",
     zoom: 6.7
   });
+  const mapOptions = {
+    "logoPosition": "top-left",
+  }
 
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
@@ -67,9 +70,8 @@ export default function HabMap() {
 
   function onMapLoad() {
     const mapObj = mapRef.current.getMap();
-    console.log(mapObj);
     // Load the custom icon image from the 'public' directory for the Closures Layer
-    mapObj.loadImage("images/icon-shellfish-closure.png", function(error, image) {
+    mapObj.loadImage("images/icon-shellfish-closure4.png", function(error, image) {
       if (error) throw error;
       mapObj.addImage("icon-shellfish-closure", image);
     });
@@ -201,6 +203,7 @@ export default function HabMap() {
           {...viewport}
           mapboxApiAccessToken={MAPBOX_TOKEN}
           mapStyle="mapbox://styles/mapbox/light-v10"
+          mapOptions={mapOptions}
           onViewportChange={viewport => {
             setViewport(viewport)
           }}

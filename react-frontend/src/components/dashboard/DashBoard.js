@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import React, {
+  useState,
+  useEffect
+} from 'react';
+import {
+  makeStyles
+} from '@material-ui/styles';
 import {
   IconButton,
   Typography,
@@ -8,7 +13,14 @@ import {
   Tabs,
   Tab
 } from '@material-ui/core';
-import { ArrowForward, ArrowBack, Restore, Tune, Layers, List } from '@material-ui/icons';
+import {
+  ArrowForward,
+  ArrowBack,
+  Restore,
+  Tune,
+  Layers,
+  List
+} from '@material-ui/icons';
 import DataLayersPanel from './DataLayersPanel';
 import DateRangePanel from './DateRangePanel';
 
@@ -52,7 +64,7 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.primary.light,
     borderRadius: 0,
     '&:hover': {
-       backgroundColor: theme.palette.primary.dark,
+      backgroundColor: theme.palette.primary.dark,
     },
   },
   resetBtn: {
@@ -83,7 +95,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const {children, value, index, ...other} = props;
   return (
     <div
       role="tabpanel"
@@ -101,7 +113,15 @@ function TabPanel(props) {
   );
 }
 
-export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVisibilityChange, onSpeciesVisibilityChange, onDateRangeChange, onYAxisChange,}) {
+function Dashboard({
+  mapLayers,
+  habSpecies,
+  yAxisScale,
+  onLayerVisibilityChange,
+  onSpeciesVisibilityChange,
+  onDateRangeChange,
+  onYAxisChange,
+}) {
   // Set const variables
   const classes = useStyles();
   // Set local state
@@ -136,7 +156,7 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
   };
 
   return (
-      <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
+    <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
       <IconButton
         className={classes.toggleArrow}
         onClick={() => setShowControls(!showControls)}
@@ -215,3 +235,5 @@ export default function Dashboard({mapLayers, habSpecies, yAxisScale, onLayerVis
       </div>
   );
 }
+
+export default Dashboard;
