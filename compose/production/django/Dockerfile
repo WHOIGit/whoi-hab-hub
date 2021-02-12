@@ -49,8 +49,6 @@ RUN chown django /start-flower
 COPY . /app
 WORKDIR /app
 
-RUN mkdir /app/staticfiles && mkdir /app/media
-
 RUN chown -R django /app
 
 USER django

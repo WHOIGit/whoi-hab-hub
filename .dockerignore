@@ -1,4 +1,6 @@
 .*
+staticfiles/
+media/
 !.coveragerc
 !.env
 !.pylintrc

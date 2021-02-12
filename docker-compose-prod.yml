@@ -9,18 +9,12 @@ volumes:
 
 services:
   react_frontend:
-    build:
-      context: .
-      dockerfile: ./compose/production/react-frontend/Dockerfile
-    image: habhub_production_react_frontend
+    image: eandrewswhoi/hab-hub-frontend-client
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
-    build:
-      context: .
-      dockerfile: ./compose/production/django/Dockerfile
-    image: habhub_production_django
+    image: eandrewswhoi/hab-hub-django-dataserver
     #container_name: django
     depends_on:
       - postgres
@@ -35,10 +29,7 @@ services:
     command: /start
 
   postgres:
-    build:
-      context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
-    image: habhub_production_postgres
+    image: eandrewswhoi/postgres-postgis-django:12
     container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
@@ -48,17 +39,15 @@ services:
     restart: unless-stopped
 
   nginx:
-    build:
-      context: .
-      dockerfile: ./compose/production/nginx/Dockerfile
-    image: habhub_production_nginx
+    image: nginx:1.15
     container_name: nginx
     depends_on:
       - django
       - react_frontend
     volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
       - production_nginx:/var/log/nginx
-      - ./.ssl/whoi_certs:/etc/ssl/whoi_certs/ # bind a local directory with the WHOI SSL certs
+      - ./.ssl/whoi_certs:/etc/ssl/whoi_certs:ro # bind a local directory with the WHOI SSL certs
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
@@ -69,7 +58,6 @@ services:
 
   celeryworker:
     <<: *django
-    image: habhub_production_celeryworker
     depends_on:
       - redis
       - postgres
@@ -79,7 +67,6 @@ services:
 
   celerybeat:
     <<: *django
-    image: habhub_production_celerybeat
     depends_on:
       - redis
       - postgres
@@ -89,7 +76,6 @@ services:
 
   flower:
     <<: *django
-    image: habhub_production_flower
     ports:
       - "5555:5555"
     command: /start-flower
