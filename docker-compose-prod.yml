@@ -9,12 +9,12 @@ volumes:
 
 services:
   react_frontend:
-    image: eandrewswhoi/hab-hub-frontend-client
+    image: eandrewswhoi/hab-hub-frontend-client:latest
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
-    image: eandrewswhoi/hab-hub-django-dataserver
+    image: eandrewswhoi/hab-hub-django-dataserver:latest
     #container_name: django
     depends_on:
       - postgres
