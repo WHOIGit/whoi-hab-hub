@@ -1,6 +1,30 @@
 .*
 staticfiles/
 media/
+node_modules/
+nginx/
+react-frontend/
+
+### Node template
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+### macOS template
+# General
+*.DS_Store
+.AppleDouble
+.LSOverride
+
 !.coveragerc
 !.env
 !.pylintrc
