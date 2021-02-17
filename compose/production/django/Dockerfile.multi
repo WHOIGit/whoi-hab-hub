@@ -10,19 +10,10 @@ RUN apt-get update -qq && apt-get install -y -qq \
     libpq-dev postgresql-client && \
     apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
-# use virtualenv to isolate Python packages to a single dir we can copy to next stage
-#RUN python -m venv /opt/venv
-# Set the ENV PATH to activate the virtualenv
-#ENV PATH="/opt/venv/bin:$PATH"
-
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
-#RUN pip install --no-cache-dir -r /requirements/production.txt \
-#    && rm -rf /requirements
-
 RUN pip install --prefix=/install -r /requirements/production.txt \
     && rm -rf /requirements
-
 
 # Build optimized image
 FROM python:3.8-slim-buster AS build-image
@@ -39,9 +30,6 @@ RUN apt-get update -qq && apt-get install -y -qq \
     apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
 COPY --from=base /install /usr/local
-
-# Make sure we use the virtualenv:
-#ENV PATH="/opt/venv/bin:$PATH"
 
 RUN groupadd -r django \
     && useradd --no-log-init -r -g django django

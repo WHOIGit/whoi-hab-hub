@@ -78,7 +78,7 @@ function DataTimeline({mapLayers}) {
     const newChartData = []
     if (results) {
       for (let [key, value] of Object.entries(results)) {
-        const dataArray = value.map(item => [Date.parse(item.timestamp), item.count]).sort();
+        const dataArray = value.map(item => [Date.parse(item.timestamp), item.count]);
 
         const timeSeries = {
           name: key,
@@ -95,7 +95,7 @@ function DataTimeline({mapLayers}) {
 
   const chartOptions = {
     chart: {
-      type: 'column',
+      type: 'spline',
       zoomType: 'x',
       width: fullWidth,
       height: 280,

@@ -17,7 +17,7 @@ from .serializers import (
 class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
     datapoint_query =  (
         Datapoint.objects
-            .annotate(timestamp=TruncDay('measurement_date')) # Truncate to Day and add to select list
+            .annotate(timestamp=TruncMonth('measurement_date')) # Truncate to Day and add to select list
             .values('timestamp') # Group By Day
             .annotate(count=Count('id')) # Select the count of the grouping
             .order_by('timestamp')
@@ -25,7 +25,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
     bin_query =  (
         Bin.objects
-            .annotate(timestamp=TruncDay('sample_time')) # Truncate to Day and add to select list
+            .annotate(timestamp=TruncMonth('sample_time')) # Truncate to Day and add to select list
             .values('timestamp') # Group By Day
             .annotate(count=Count('id')) # Select the count of the grouping
             .order_by('timestamp')

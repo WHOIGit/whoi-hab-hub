@@ -71,7 +71,7 @@ export default function HabMap() {
   function onMapLoad() {
     const mapObj = mapRef.current.getMap();
     // Load the custom icon image from the 'public' directory for the Closures Layer
-    mapObj.loadImage("images/icon-shellfish-closure4.png", function(error, image) {
+    mapObj.loadImage("images/icon-shellfish-closure3.png", function(error, image) {
       if (error) throw error;
       mapObj.addImage("icon-shellfish-closure", image);
     });

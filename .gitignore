@@ -281,6 +281,6 @@ celerybeat-schedule
 .ipython/
 # all env files except for frontend React app
 .env
-.envs/*
+.envs/
 !.envs.example/
 !react-frontend/.env
