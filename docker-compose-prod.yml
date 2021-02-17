@@ -14,7 +14,7 @@ services:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
-    image: eandrewswhoi/hab-hub-django-dataserver:latest
+    image: eandrewswhoi/hab-hub-django-dataserver:0.1
     #container_name: django
     depends_on:
       - postgres
