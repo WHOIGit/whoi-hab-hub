@@ -1,5 +1,7 @@
 FROM --platform=linux/amd64 postgis/postgis:12-3.1-alpine
 
+LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
+
 COPY ./compose/production/postgres/maintenance /usr/local/bin/maintenance
 RUN chmod +x /usr/local/bin/maintenance/*
 RUN mv /usr/local/bin/maintenance/* /usr/local/bin \
