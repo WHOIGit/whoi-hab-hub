@@ -14,7 +14,7 @@ RUN apt-get update -qq && apt-get install -y -qq \
     apt-get clean all && rm -rf /var/apt/lists/* && rm -rf /var/cache/apt/*
 
 # Requirements are installed here to ensure they will be cached.
-COPY ./requirements /requirements
+COPY ./habhub-dataserver/requirements /requirements
 RUN pip install -r /requirements/local.txt
 
 COPY ./compose/production/django/entrypoint /entrypoint

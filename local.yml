@@ -12,7 +12,7 @@ services:
       dockerfile: ./compose/local/react-frontend/Dockerfile
     image: habhub_local_react_frontend
     volumes:
-      - ./react-frontend:/usr/src/app
+      - ./habhub-react-frontend:/usr/src/app
       - node_modules:/usr/src/app/node_modules
     ports:
       - "3000:3000"
@@ -26,10 +26,10 @@ services:
     depends_on:
       - postgres
     volumes:
-      - .:/app
+      - ./habhub-dataserver:/app
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - ./habhub-dataserver/.envs/.local/.django
+      - ./habhub-dataserver/.envs/.local/.postgres
     ports:
       - "8000:8000"
     command: /start
@@ -45,7 +45,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - ./.envs/.local/.postgres
+      - ./habhub-dataserver/.envs/.local/.postgres
 
   celeryworker:
     <<: *django

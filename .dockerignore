@@ -3,7 +3,6 @@ staticfiles/
 media/
 node_modules/
 nginx/
-react-frontend/
 
 ### Node template
 # Logs
@@ -18,6 +17,7 @@ pids
 *.pid
 *.seed
 *.pid.lock
+celerybeat-schedule
 
 ### macOS template
 # General

@@ -9,12 +9,12 @@ volumes:
 
 services:
   react_frontend:
-    image: eandrewswhoi/hab-hub-frontend-client:latest
+    image: eandrewswhoi/habhub-react-frontend:stable
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
-    image: eandrewswhoi/hab-hub-django-dataserver:0.1
+    image: eandrewswhoi/habhub-dataserver:stable
     #container_name: django
     depends_on:
       - postgres
@@ -46,8 +46,8 @@ services:
       - react_frontend
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
-      - production_nginx:/var/log/nginx
       - ./.ssl/whoi_certs:/etc/ssl/whoi_certs:ro # bind a local directory with the WHOI SSL certs
+      - production_nginx:/var/log/nginx
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
