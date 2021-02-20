@@ -9,12 +9,12 @@ volumes:
 
 services:
   react_frontend:
-    image: eandrewswhoi/habhub-react-frontend:stable
+    image: ghcr.io/whoigit/habhub-react-frontend:stable
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
-    image: eandrewswhoi/habhub-dataserver:stable
+    image: ghcr.io/whoigit/habhub-dataserver:stable
     #container_name: django
     depends_on:
       - postgres
@@ -29,7 +29,7 @@ services:
     command: /start
 
   postgres:
-    image: eandrewswhoi/postgres-postgis-django:12
+    image: ghcr.io/whoigit/postgres-postgis-docker:12
     container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
