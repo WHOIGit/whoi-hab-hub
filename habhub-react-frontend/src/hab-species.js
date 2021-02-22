@@ -26,7 +26,7 @@ export const species = [
   {
     'id': 'Karenia',
     'speciesName': 'Karenia',
-    'syndrome': 'Fish Killing',
+    'syndrome': 'Fish Kills',
     'visibility': true,
     'colorPrimary': '#33a02c',
     'colorGradient': ['#edf8e9', '#bae4b3', '#74c476', '#33a02c', '#006d2c'],
@@ -34,7 +34,7 @@ export const species = [
   {
     'id': 'Margalefidinium',
     'speciesName': 'Margalefidinium polykrikoides',
-    'syndrome': 'Fish Killing',
+    'syndrome': 'Fish Kills',
     'visibility': true,
     'colorPrimary': '#b2df8a',
     'colorGradient': ['#edf8e9', '#bae4b3', '#74c476', '#b2df8a', '#006d2c'],

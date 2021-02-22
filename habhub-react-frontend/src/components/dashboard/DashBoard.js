@@ -2,9 +2,7 @@ import React, {
   useState,
   useEffect
 } from 'react';
-import {
-  makeStyles
-} from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import {
   IconButton,
   Typography,
@@ -30,7 +28,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '428px',
+    width: '448px',
     background: 'none',
     zIndex: 2000,
     height: '100vh',
@@ -42,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '380px',
+    width: '400px',
     background: '#fff',
     boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
     color: '#6b6b76',
@@ -53,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 
   },
   collapse: {
-    right: '-260px',
+    right: '-280px',
   },
   toggleArrow: {
     position: 'absolute',
@@ -90,7 +88,7 @@ const useStyles = makeStyles(theme => ({
     color: 'white',
   },
   tabPanelRoot: {
-    maxWidth: "270px"
+    maxWidth: "300px"
   }
 }))
 
@@ -155,6 +153,25 @@ function Dashboard({
     onDateRangeChange(defaultStartDate, new Date());
   };
 
+  function renderColorChips(species, chipType="gradient", squareWidth=20) {
+    // default to show all colors in gradient list
+    // if chipType is "primary", only show single chip for primary color
+    let colors = species.colorGradient;
+    if (chipType === "primary") {
+      colors = [species.colorPrimary];
+    }
+
+    let svgWidth = squareWidth * colors.length;
+
+    return (
+      <svg width={svgWidth} height={squareWidth}>
+        {colors.map((color, index) => (
+          <rect width={squareWidth} height={squareWidth} fill={color} x={index * 20} key={index}></rect>
+        ))}
+      </svg>
+    )
+  }
+
   return (
     <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
       <IconButton
@@ -207,6 +224,7 @@ function Dashboard({
             habSpecies={habSpecies}
             onLayerVisibilityChange={onLayerVisibilityChange}
             onSpeciesVisibilityChange={onSpeciesVisibilityChange}
+            renderColorChips={renderColorChips}
           />
         </TabPanel>
         <TabPanel

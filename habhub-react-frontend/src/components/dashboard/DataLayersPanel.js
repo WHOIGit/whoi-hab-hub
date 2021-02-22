@@ -27,15 +27,20 @@ const useStyles = makeStyles(theme => ({
   checkBoxes: {
     ...theme.typography.body2,
   },
+  body2: {
+    ...theme.typography.body2,
+  },
 }))
 
 export default function DataLayersPanel({
   mapLayers,
   habSpecies,
   onLayerVisibilityChange,
-  onSpeciesVisibilityChange
+  onSpeciesVisibilityChange,
+  renderColorChips,
 }) {
   // Set const variables
+
   const classes = useStyles();
 
   function renderLayerControl(mapLayer) {
@@ -49,58 +54,46 @@ export default function DataLayersPanel({
             checked={mapLayer.visibility}
             onChange={(event) => onLayerVisibilityChange(event, mapLayer.id)}
             name={mapLayer.name} />
-    }
-    label = {
-      <Typography variant="body2" color="textSecondary">{mapLayer.name}</Typography>
-    }
-    />
-  );
-}
-
-function renderColorChips(color, index) {
-  const xValue = index * 20;
-  return (
-    <rect width="20" height="20" fill={color} x={xValue} key={index}></rect>
-  )
-}
-
-function renderSpeciesControl(species) {
-  return (
-    <React.Fragment>
-      <FormControlLabel
-        key={species.id}
-        control={
-          <Checkbox
-            color="primary"
-            checked={species.visibility}
-            onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
-            name={species.speciesName} />
         }
-        label={
-          <Typography variant="body2" color="textSecondary">{`${species.speciesName} / ${species.syndrome}`}</Typography>
+        label = {
+          <Typography variant="body2" color="textSecondary">{mapLayer.name}</Typography>
         }
       />
-      <Box>
-        <svg width="100" height="20">
-          {species.colorGradient.map((item, index) => renderColorChips(item, index))}
-        </svg>
-      </Box>
-    </React.Fragment>
+    );
+  }
 
-  );
-}
+  function renderSpeciesControl(species) {
+    return (
+      <React.Fragment>
+        <FormControlLabel
+          key={species.id}
+          control={
+            <Checkbox
+              color="primary"
+              checked={species.visibility}
+              onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
+              name={species.speciesName} />
+          }
+          label={
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              style={{color: species.colorPrimary}}>
+                {`${species.speciesName} / ${species.syndrome}`}
+                <Box component="span" m={1}>
+                  {renderColorChips(species, "primary", 12)}
+                </Box>
+              </Typography>
+          }
+        />
+
+      </React.Fragment>
+
+    );
+  }
 
 return (
   <List>
-    <ListItem>
-      <FormControl component="fieldset" >
-        <FormLabel component="legend">Data Layers</FormLabel>
-        <FormGroup>
-          {mapLayers.map(layer => renderLayerControl(layer))}
-        </FormGroup>
-      </FormControl>
-    </ListItem>
-    <Divider variant="middle" component="li" className={classes.divider} />
     <ListItem>
       <FormControl component="fieldset" >
         <FormLabel component="legend">HAB Species/Syndromes</FormLabel>
@@ -109,7 +102,15 @@ return (
         </FormGroup>
       </FormControl>
     </ListItem>
-
+    <Divider variant="middle" component="li" className={classes.divider} />
+    <ListItem>
+      <FormControl component="fieldset" >
+        <FormLabel component="legend">Data Layers</FormLabel>
+        <FormGroup>
+          {mapLayers.map(layer => renderLayerControl(layer))}
+        </FormGroup>
+      </FormControl>
+    </ListItem>
   </List>
 );
 }

@@ -3,10 +3,7 @@ import React, {
   useEffect,
   useRef
 } from 'react'
-import Highcharts from 'highcharts'
-import {
-  makeStyles
-} from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles'
 import {
   Card,
   CardHeader,
@@ -23,9 +20,6 @@ import {
   OpenWith,
   Minimize
 } from '@material-ui/icons'
-
-import StationsGraph from './StationsGraph';
-import IfcbGraph from './IfcbGraph';
 
 const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
