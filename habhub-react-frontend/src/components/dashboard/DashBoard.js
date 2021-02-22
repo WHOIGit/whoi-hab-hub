@@ -119,6 +119,7 @@ function Dashboard({
   onSpeciesVisibilityChange,
   onDateRangeChange,
   onYAxisChange,
+  renderColorChips,
 }) {
   // Set const variables
   const classes = useStyles();
@@ -152,25 +153,6 @@ function Dashboard({
     setSelectedEndDate(new Date());
     onDateRangeChange(defaultStartDate, new Date());
   };
-
-  function renderColorChips(species, chipType="gradient", squareWidth=20) {
-    // default to show all colors in gradient list
-    // if chipType is "primary", only show single chip for primary color
-    let colors = species.colorGradient;
-    if (chipType === "primary") {
-      colors = [species.colorPrimary];
-    }
-
-    let svgWidth = squareWidth * colors.length;
-
-    return (
-      <svg width={svgWidth} height={squareWidth}>
-        {colors.map((color, index) => (
-          <rect width={squareWidth} height={squareWidth} fill={color} x={index * 20} key={index}></rect>
-        ))}
-      </svg>
-    )
-  }
 
   return (
     <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
@@ -250,7 +232,7 @@ function Dashboard({
         </TabPanel>
         </React.Fragment>
       </div>
-      </div>
+    </div>
   );
 }
 

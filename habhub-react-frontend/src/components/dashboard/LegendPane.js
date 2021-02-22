@@ -25,8 +25,12 @@ const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
-    width: 600,
-    transition: 'all 0.3s'
+    width: 400,
+    transition: 'all 0.3s',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    zIndex: 2000,
   },
   media: {
     height: 140,
@@ -53,84 +57,37 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function SidePane({
-  results,
-  featureID,
-  dataLayer,
-  yAxisScale,
-  onPaneClose,
-  habSpecies,
+function LegendPane({
+  mapLayers,
+  setShowLegendPane,
+  renderColorChips,
 }) {
   const classes = useStyles()
-  const [expandPane, setExpandPane] = useState(false)
   const [visibleResults, setVisibleResults] = useState([])
 
-  useEffect(() => {
-    // Filter the results to only visible species to pass to the Graph
-    const data = results.properties.timeseries_data;
-    const visibleSpecies = habSpecies
-      .filter(species => species.visibility)
-      .map(species => species.id);
-
-    const filteredData = data.filter(item => visibleSpecies.includes(item.species));
-    console.log(data);
-    console.log(visibleSpecies);
-    console.log(filteredData);
-    setVisibleResults(filteredData);
-  }, [results, habSpecies]);
-
-  function onExpandPanel() {
-    setExpandPane(!expandPane);
-  }
-
-  let title = null;
-  let subTitle = null;
-
-  if (dataLayer === 'stations-layer') {
-    title = `Station Toxicity Data: ${results.properties.station_location}`;
-    subTitle = `
-      Station Name: ${results.properties.station_name} |
-      Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
-    `;
-  } else if (dataLayer === 'ifcb-layer') {
-    title = `IFCB Data: ${results.properties.name}`;
-    subTitle = `
-      ${results.properties.location} |
-      Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
-    `;
-  }
-
   return (
-    <Card className={`${expandPane ? classes.expand : ""} ${classes.root}`}>
+    <Card className={classes.root}>
         <CardHeader
           classes={{
             title: classes.title, // class name, e.g. `classes-nesting-label-x`
           }}
           action={
             <React.Fragment>
-              <IconButton onClick={() => onExpandPanel()} aria-label="expand">
-                {expandPane ? <Minimize /> :  <OpenWith />}
-              </IconButton>
-              <IconButton onClick={() => onPaneClose(featureID)} aria-label="close">
+              <IconButton onClick={() => setShowLegendPane(false)} aria-label="close">
                 <Close />
               </IconButton>
             </React.Fragment>
           }
-          title={title}
-          subheader={subTitle}
+          title="Legend"
+          subheader="Sub Title"
         />
 
-        <CardContent className={expandPane ? classes.expandContent : ""} >
-          {dataLayer==='stations-layer' && (
-            <StationsGraph results={results} chartExpanded={expandPane} yAxisScale={yAxisScale} />
-          )}
-          {dataLayer==='ifcb-layer' && visibleResults && (
-            <IfcbGraph visibleResults={visibleResults} chartExpanded={expandPane} yAxisScale={yAxisScale} />
-          )}
+        <CardContent>
+          <h3>Cell Abundance</h3>
         </CardContent>
 
     </Card>
   )
 }
 
-export default SidePane;
+export default LegendPane;

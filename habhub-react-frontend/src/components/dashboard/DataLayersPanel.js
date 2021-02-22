@@ -92,25 +92,25 @@ export default function DataLayersPanel({
     );
   }
 
-return (
-  <List>
-    <ListItem>
-      <FormControl component="fieldset" >
-        <FormLabel component="legend">HAB Species/Syndromes</FormLabel>
-        <FormGroup>
-          {habSpecies.map(species => renderSpeciesControl(species))}
-        </FormGroup>
-      </FormControl>
-    </ListItem>
-    <Divider variant="middle" component="li" className={classes.divider} />
-    <ListItem>
-      <FormControl component="fieldset" >
-        <FormLabel component="legend">Data Layers</FormLabel>
-        <FormGroup>
-          {mapLayers.map(layer => renderLayerControl(layer))}
-        </FormGroup>
-      </FormControl>
-    </ListItem>
-  </List>
-);
+  return (
+    <List>
+      <ListItem>
+        <FormControl component="fieldset" >
+          <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
+          <FormGroup>
+            {habSpecies.map(species => renderSpeciesControl(species))}
+          </FormGroup>
+        </FormControl>
+      </ListItem>
+      <Divider variant="middle" component="li" className={classes.divider} />
+      <ListItem>
+        <FormControl component="fieldset" >
+          <FormLabel component="legend">Data Layers</FormLabel>
+          <FormGroup>
+            {mapLayers.map(layer => renderLayerControl(layer))}
+          </FormGroup>
+        </FormControl>
+      </ListItem>
+    </List>
+  );
 }

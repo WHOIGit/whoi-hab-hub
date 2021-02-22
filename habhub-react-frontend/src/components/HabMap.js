@@ -22,6 +22,7 @@ import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
 import DataTimeline from './DataTimeline'
+import LegendPane from "./dashboard/LegendPane";
 import { layers } from '../map-layers'
 import { species } from '../hab-species'
 import './HabMap.css'
@@ -63,6 +64,7 @@ export default function HabMap() {
   const [stateFilter, setStateFilter] = useState(null);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
+  const [showLegendPane, setShowLegendPane] = useState(true);
 
   const mapRef = useRef();
 
@@ -95,8 +97,6 @@ export default function HabMap() {
   }
 
   function onLayerVisibilityChange(event, layerID) {
-    const mapObj = mapRef.current.getMap();
-    console.log(mapObj);
     // set the mapLayers state
     const newVisibility = mapLayers.map(item => {
       if (item.id === layerID) {
@@ -109,6 +109,14 @@ export default function HabMap() {
     // set the features state
     const newFeatures = features.filter(feature => feature.layer.id !== layerID)
     setFeatures(newFeatures);
+    // Fire toggle legend pane function
+    const visibleLayers = newVisibility.filter(layer => layer.visibility)
+    console.log(visibleLayers);
+    if (!event.target.checked && !showLegendPane) {
+      setShowLegendPane(false);
+    } else {
+      setShowLegendPane(visibleLayers.length);
+    }
   }
 
   function onSpeciesVisibilityChange(event, speciesID) {
@@ -144,6 +152,30 @@ export default function HabMap() {
     console.log(event.target.value);
     setYAxisScale(event.target.value);
   };
+
+  function toggleLegendPane(speciesID) {
+    console.log(speciesID);
+
+  }
+
+  function renderColorChips(species, chipType="gradient", squareWidth=20) {
+    // default to show all colors in gradient list
+    // if chipType is "primary", only show single chip for primary color
+    let colors = species.colorGradient;
+    if (chipType === "primary") {
+      colors = [species.colorPrimary];
+    }
+
+    let svgWidth = squareWidth * colors.length;
+
+    return (
+      <svg width={svgWidth} height={squareWidth}>
+        {colors.map((color, index) => (
+          <rect width={squareWidth} height={squareWidth} fill={color} x={index * 20} key={index}></rect>
+        ))}
+      </svg>
+    )
+  }
 
   function renderMarkerLayer(layer) {
     if (layer.visibility && layer.id === 'stations-layer') {
@@ -235,11 +267,21 @@ export default function HabMap() {
           onSpeciesVisibilityChange={onSpeciesVisibilityChange}
           onDateRangeChange={onDateRangeChange}
           onYAxisChange={onYAxisChange}
+          renderColorChips={renderColorChips}
         />
       </div>
       <div>
         <DataTimeline mapLayers={mapLayers} />
       </div>
+      {showLegendPane && (
+        <div>
+          <LegendPane
+            mapLayers={mapLayers}
+            setShowLegendPane={setShowLegendPane}
+            renderColorChips={renderColorChips}
+          />
+        </div>
+      )}
     </div>
   );
 }
