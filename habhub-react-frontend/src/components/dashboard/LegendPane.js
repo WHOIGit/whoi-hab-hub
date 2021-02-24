@@ -13,7 +13,8 @@ import {
   Typography,
   CardActions,
   IconButton,
-  Button
+  Button,
+  Grid,
 } from '@material-ui/core'
 import {
   Close,
@@ -25,7 +26,7 @@ const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
-    width: 400,
+    width: 300,
     transition: 'all 0.3s',
     position: 'absolute',
     bottom: 0,
@@ -57,13 +58,19 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function LegendPane({
+export default function LegendPane({
   mapLayers,
   setShowLegendPane,
   renderColorChips,
 }) {
   const classes = useStyles()
   const [visibleResults, setVisibleResults] = useState([])
+
+  const maxSquareSize = 32;
+  const minSquareSize = 8;
+  const strokeColor = "black";
+  const strokeWidth = 4;
+  const fillColor = "white";
 
   return (
     <Card className={classes.root}>
@@ -79,15 +86,98 @@ function LegendPane({
             </React.Fragment>
           }
           title="Legend"
-          subheader="Sub Title"
         />
 
         <CardContent>
-          <h3>Cell Abundance</h3>
+          <Grid
+            container
+            spacing={0}
+            justify="center"
+            alignItems="center"
+            >
+            <Grid item xs={2}>
+              <svg width={minSquareSize} height={minSquareSize}>
+                <line x1={0} y1={0} x2={minSquareSize} y2={minSquareSize} stroke={strokeColor} strokeWidth={2}></line>
+                <line x1={0} y1={minSquareSize} x2={minSquareSize} y2={0} stroke={strokeColor} strokeWidth={2}></line>
+              </svg>
+            </Grid>
+            <Grid item xs={2}>
+              <svg width={minSquareSize} height={minSquareSize}>
+                <rect
+                  width={minSquareSize}
+                  height={minSquareSize}
+                  fill={fillColor}
+                  strokeWidth={strokeWidth}
+                  stroke={strokeColor}>
+                </rect>
+              </svg>
+            </Grid>
+            <Grid item xs={2}>
+              <svg width={maxSquareSize / 5 * 2} height={maxSquareSize / 5 * 2}>
+                <rect
+                  width={maxSquareSize / 5 * 2}
+                  height={maxSquareSize / 5 * 2}
+                  fill={fillColor}
+                  strokeWidth={strokeWidth}
+                  stroke={strokeColor}>
+                </rect>
+              </svg>
+            </Grid>
+            <Grid item xs={2}>
+              <svg width={maxSquareSize / 5 * 3} height={maxSquareSize / 5 * 3}>
+                <rect
+                  width={maxSquareSize / 5 * 3}
+                  height={maxSquareSize / 5 * 3}
+                  fill={fillColor}
+                  strokeWidth={strokeWidth}
+                  stroke={strokeColor}>
+                </rect>
+              </svg>
+            </Grid>
+            <Grid item xs={2}>
+              <svg width={maxSquareSize / 5 * 4} height={maxSquareSize / 5 * 4}>
+                <rect
+                  width={maxSquareSize / 5 * 4}
+                  height={maxSquareSize / 5 * 4}
+                  fill={fillColor}
+                  strokeWidth={strokeWidth}
+                  stroke={strokeColor}>
+                </rect>
+              </svg>
+            </Grid>
+            <Grid item xs={2}>
+              <svg width={maxSquareSize} height={maxSquareSize}>
+                <rect
+                  width={maxSquareSize}
+                  height={maxSquareSize}
+                  fill={fillColor}
+                  strokeWidth={strokeWidth}
+                  stroke={strokeColor}>
+                </rect>
+              </svg>
+            </Grid>
+
+            <Grid item xs={2}>
+              box
+            </Grid>
+            <Grid item xs={2}>
+              box
+            </Grid>
+            <Grid item xs={2}>
+              box
+            </Grid>
+            <Grid item xs={2}>
+              box
+            </Grid>
+            <Grid item xs={2}>
+              box
+            </Grid>
+            <Grid item xs={2}>
+              box
+            </Grid>
+          </Grid>
         </CardContent>
 
     </Card>
   )
 }
-
-export default LegendPane;

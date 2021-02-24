@@ -111,7 +111,7 @@ function TabPanel(props) {
   );
 }
 
-function Dashboard({
+export default function Dashboard({
   mapLayers,
   habSpecies,
   yAxisScale,
@@ -235,5 +235,3 @@ function Dashboard({
     </div>
   );
 }
-
-export default Dashboard;

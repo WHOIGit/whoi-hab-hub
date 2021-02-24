@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function SidePane({
+export default function SidePane({
   results,
   featureID,
   dataLayer,
@@ -138,5 +138,3 @@ function SidePane({
     </Card>
   )
 }
-
-export default SidePane;

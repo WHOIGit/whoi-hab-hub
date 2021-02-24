@@ -9,6 +9,8 @@ import MapGL, {
   ScaleControl,
   GeolocateControl
 } from 'react-map-gl'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { differenceInDays } from 'date-fns'
 // Material UI imports
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -23,8 +25,7 @@ import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
 import DataTimeline from './DataTimeline'
 import LegendPane from "./dashboard/LegendPane";
-import { layers } from '../map-layers'
-import { species } from '../hab-species'
+import { layers, species } from '../Constants'
 import './HabMap.css'
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
@@ -213,6 +214,7 @@ export default function HabMap() {
   }
 
   return (
+    <DndProvider backend={HTML5Backend}>
     <div>
       {features && (
         <div className="side-panes-container">
@@ -283,5 +285,6 @@ export default function HabMap() {
         </div>
       )}
     </div>
+    </DndProvider>
   );
 }
