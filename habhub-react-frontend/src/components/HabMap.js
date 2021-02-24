@@ -13,6 +13,7 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { differenceInDays } from 'date-fns'
 // Material UI imports
+import { makeStyles } from '@material-ui/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 // Import our stuff
@@ -24,9 +25,8 @@ import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
 import DataTimeline from './DataTimeline'
-import LegendPane from "./dashboard/LegendPane";
+import LowerLeftPanel from "./LowerLeftPanel";
 import { layers, species } from '../Constants'
-import './HabMap.css'
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug';
 const popupFromZoom = 6;
@@ -46,7 +46,20 @@ const scaleControlStyle = {
   padding: '10px'
 };
 
+const useStyles = makeStyles(theme => ({
+  dataPanelContainer: {
+    background: "none",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 3000,
+    maxHeight: "100vh",
+    overflowY: "scroll",
+  },
+}))
+
 export default function HabMap() {
+  const classes = useStyles()
   const [viewport, setViewport] = useState({
     latitude: 42.89,
     longitude: -69.75,
@@ -65,7 +78,6 @@ export default function HabMap() {
   const [stateFilter, setStateFilter] = useState(null);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
-  const [showLegendPane, setShowLegendPane] = useState(true);
 
   const mapRef = useRef();
 
@@ -110,14 +122,6 @@ export default function HabMap() {
     // set the features state
     const newFeatures = features.filter(feature => feature.layer.id !== layerID)
     setFeatures(newFeatures);
-    // Fire toggle legend pane function
-    const visibleLayers = newVisibility.filter(layer => layer.visibility)
-    console.log(visibleLayers);
-    if (!event.target.checked && !showLegendPane) {
-      setShowLegendPane(false);
-    } else {
-      setShowLegendPane(visibleLayers.length);
-    }
   }
 
   function onSpeciesVisibilityChange(event, speciesID) {
@@ -215,76 +219,75 @@ export default function HabMap() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-    <div>
-      {features && (
-        <div className="side-panes-container">
-          {features.map(feature => (
-            <DataPanel
-              key={feature.id}
-              featureID={feature.id}
-              dataLayer={feature.layer}
-              dateFilter={dateFilter}
-              smoothingFactor={smoothingFactor}
-              yAxisScale={yAxisScale}
-              onPaneClose={onPaneClose}
-              habSpecies={habSpecies}
-            />
-          ))}
-        </div>
-      )}
       <div>
-        <MapGL
-          {...viewport}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v10"
-          mapOptions={mapOptions}
-          onViewportChange={viewport => {
-            setViewport(viewport)
-          }}
-          onClick={event => onMapClick(event)}
-          onLoad={() => onMapLoad()}
-          interactiveLayerIds={interactiveLayerIds}
-          ref={mapRef}
-        >
-
-          <React.Fragment>
-            {mapLayers.map(layer => renderMarkerLayer(layer))}
-            //<ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
-          </React.Fragment>
-
-          <div style={navStyle}>
-            <NavigationControl />
+        {features && (
+          <div className={classes.dataPanelContainer}>
+            {features.map(feature => (
+              <DataPanel
+                key={feature.id}
+                featureID={feature.id}
+                dataLayer={feature.layer}
+                dateFilter={dateFilter}
+                smoothingFactor={smoothingFactor}
+                yAxisScale={yAxisScale}
+                onPaneClose={onPaneClose}
+                habSpecies={habSpecies}
+              />
+            ))}
           </div>
-          <div style={scaleControlStyle}>
-            <ScaleControl />
-          </div>
-        </MapGL>
-      </div>
-      <div>
-        <DashBoard
-          mapLayers={mapLayers}
-          habSpecies={habSpecies}
-          yAxisScale={yAxisScale}
-          onLayerVisibilityChange={onLayerVisibilityChange}
-          onSpeciesVisibilityChange={onSpeciesVisibilityChange}
-          onDateRangeChange={onDateRangeChange}
-          onYAxisChange={onYAxisChange}
-          renderColorChips={renderColorChips}
-        />
-      </div>
-      <div>
-        <DataTimeline mapLayers={mapLayers} />
-      </div>
-      {showLegendPane && (
+        )}
         <div>
-          <LegendPane
+          <MapGL
+            {...viewport}
+            mapboxApiAccessToken={MAPBOX_TOKEN}
+            mapStyle="mapbox://styles/mapbox/light-v10"
+            mapOptions={mapOptions}
+            onViewportChange={viewport => {
+              setViewport(viewport)
+            }}
+            onClick={event => onMapClick(event)}
+            onLoad={() => onMapLoad()}
+            interactiveLayerIds={interactiveLayerIds}
+            ref={mapRef}
+          >
+
+            <React.Fragment>
+              {mapLayers.map(layer => renderMarkerLayer(layer))}
+              //<ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
+            </React.Fragment>
+
+            <div style={navStyle}>
+              <NavigationControl />
+            </div>
+            <div style={scaleControlStyle}>
+              <ScaleControl />
+            </div>
+          </MapGL>
+        </div>
+        <div>
+          <DashBoard
             mapLayers={mapLayers}
-            setShowLegendPane={setShowLegendPane}
+            habSpecies={habSpecies}
+            yAxisScale={yAxisScale}
+            onLayerVisibilityChange={onLayerVisibilityChange}
+            onSpeciesVisibilityChange={onSpeciesVisibilityChange}
+            onDateRangeChange={onDateRangeChange}
+            onYAxisChange={onYAxisChange}
             renderColorChips={renderColorChips}
           />
         </div>
-      )}
-    </div>
+        <div>
+          <DataTimeline mapLayers={mapLayers} />
+        </div>
+
+        <div>
+          <LowerLeftPanel
+            mapLayers={mapLayers}
+            habSpecies={habSpecies}
+            renderColorChips={renderColorChips}
+          />
+        </div>
+      </div>
     </DndProvider>
   );
 }
