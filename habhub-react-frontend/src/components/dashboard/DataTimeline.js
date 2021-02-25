@@ -16,9 +16,7 @@ const fullWidth = window.outerWidth - 400;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
+    position: 'relative',
     display: 'flex',
     margin: theme.spacing(0),
     alignItems: 'center',

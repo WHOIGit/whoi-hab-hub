@@ -59,6 +59,7 @@ function DataPanel({
         const filterURL = baseURL + '?' + new URLSearchParams({
           start_date: format(dateFilter[0], 'MM/dd/yyyy'),
           end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+          seasonal: dateFilter[2],
           smoothing_factor: smoothingFactor,
         })
         return filterURL;

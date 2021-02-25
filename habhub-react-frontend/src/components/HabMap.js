@@ -24,7 +24,7 @@ import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
-import BottomFullPanel from './BottomFullPanel'
+import DateControls from './DateControls'
 import LowerLeftPanel from "./LowerLeftPanel";
 import { layers, species } from '../Constants'
 
@@ -74,7 +74,8 @@ export default function HabMap() {
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
   const [habSpecies, setHabSpecies] = useState(species);
-  const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date()]);
+  // dateFilter value for API: array [startDate:date, endDate:date, seasonal:boolean]
+  const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date(), false]);
   const [stateFilter, setStateFilter] = useState(null);
   const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
@@ -136,8 +137,8 @@ export default function HabMap() {
     setHabSpecies(newVisibility);
   }
 
-  function onDateRangeChange(startDate, endDate) {
-    setDateFilter([startDate, endDate]);
+  function onDateRangeChange(startDate, endDate, seasonal=false) {
+    setDateFilter([startDate, endDate, seasonal]);
     // calculate the date range length to determine a smoothing factor to pass API
     const dateRange = differenceInDays(endDate, startDate);
     let newFactor = 4;
@@ -277,10 +278,11 @@ export default function HabMap() {
         </div>
 
         <div>
-          <BottomFullPanel
+          <DateControls
             showDateControls={showDateControls}
             setShowDateControls={setShowDateControls}
             mapLayers={mapLayers}
+            onDateRangeChange={onDateRangeChange}
           />
         </div>
 

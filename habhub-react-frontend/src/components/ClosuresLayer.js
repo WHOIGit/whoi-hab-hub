@@ -21,7 +21,8 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       if (dateFilter.length) {
         filterURL = baseURL + '?' + new URLSearchParams({
           start_date: format(dateFilter[0], 'MM/dd/yyyy'),
-          end_date: format(dateFilter[1], 'MM/dd/yyyy')
+          end_date: format(dateFilter[1], 'MM/dd/yyyy'),
+          seasonal: dateFilter[2],
         })
         if (stateFilter) {
           filterURL = filterURL + new URLSearchParams({

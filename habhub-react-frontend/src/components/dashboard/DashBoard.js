@@ -144,33 +144,10 @@ export default function Dashboard({
   // Set local state
   const [showControls, setShowControls] = useState(true);
   const [tabValue, setTabValue] = useState(0);
-  const defaultStartDate = new Date('2017-01-01T21:11:54');
-  const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
-  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
 
   function handleTabChange(event, newTabValue) {
     console.log(newTabValue);
     setTabValue(newTabValue);
-  };
-
-  function onStartDateChange(date) {
-    setSelectedStartDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(date, selectedEndDate);
-    }
-  };
-
-  function onEndDateChange(date) {
-    setSelectedEndDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(selectedStartDate, date);
-    }
-  };
-
-  function onDateRangeReset() {
-    setSelectedStartDate(defaultStartDate);
-    setSelectedEndDate(new Date());
-    onDateRangeChange(defaultStartDate, new Date());
   };
 
   return (
@@ -247,14 +224,7 @@ export default function Dashboard({
             index={1}
             className={classes.tabPanelRoot}
           >
-            <DateRangePanel
-              selectedStartDate={selectedStartDate}
-              selectedEndDate={selectedEndDate}
-              onDateRangeChange={onDateRangeChange}
-              onStartDateChange={onStartDateChange}
-              onEndDateChange={onEndDateChange}
-              onDateRangeReset={onDateRangeReset}
-            />
+            Legend
           </TabPanel>
           <TabPanel
             value={tabValue}

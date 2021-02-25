@@ -22,6 +22,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
         const filterURL = baseURL + "?" + new URLSearchParams({
             start_date: format(dateFilter[0], "MM/dd/yyyy"),
             end_date: format(dateFilter[1], "MM/dd/yyyy"),
+            seasonal: dateFilter[2],
             smoothing_factor: smoothingFactor,
         })
         return filterURL;
@@ -76,29 +77,34 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
 
   function renderMarker(feature) {
     // create new Array with Visible Species/Values
-    const speciesValues = habSpecies.filter(species => species.visibility)
-      .map((item) => {
-        const maxMeanItem = feature.properties.max_mean_values.filter(data => item.id === data.species);
-        const value = maxMeanItem[0].max_value;
-        return {
-          "species": item.id,
-          "value": value,
-          "color": item.colorPrimary,
-        }
-      })
+    if (feature.properties.max_mean_values.length) {
+      const speciesValues = habSpecies.filter(species => species.visibility)
+        .map((item) => {
+          const maxMeanItem = feature.properties.max_mean_values.filter(data => item.id === data.species);
+          const value = maxMeanItem[0].max_value;
+          return {
+            "species": item.id,
+            "value": value,
+            "color": item.colorPrimary,
+          }
+        })
 
-    if (speciesValues.length && feature.properties.max_mean_values.length) {
-      return (
-        <IfcbMarkerIcon
-          feature={feature}
-          layerID={layerID}
-          speciesValues={speciesValues}
-          onMarkerClick={onMarkerClick}
-        />
-      );
+      if (speciesValues.length) {
+        return (
+          <IfcbMarkerIcon
+            feature={feature}
+            layerID={layerID}
+            speciesValues={speciesValues}
+            onMarkerClick={onMarkerClick}
+          />
+        );
+      } else {
+        return;
+      }
     } else {
       return;
     }
+
   }
 
   if (!visibility || !results) {

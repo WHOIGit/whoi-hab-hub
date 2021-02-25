@@ -20,6 +20,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         earliest_bin = Bin.objects.earliest()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        seasonal = self.request.query_params.get('seasonal', None)
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = self.request.query_params.get('smoothing_factor', 1)
 
@@ -35,12 +36,23 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Only want to get all Bin data is this is a detail view or filtered by date
         if start_date or end_date:
-            queryset = queryset.prefetch_related(Prefetch(
-                'bins',
-                queryset=Bin.objects.filter(cell_concentration_data__isnull=False) \
-                                    .filter(sample_time__range=[start_date_obj, end_date_obj]) \
-                                    .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
-                                    ))
+            # if "seaonsal" filter is True, need to get multiple date ranges across the time series
+            year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
+            print(f'YEARS: {year_range}')
+            if seasonal:
+                queryset = queryset.prefetch_related(Prefetch(
+                    'bins',
+                    queryset=Bin.objects.filter(cell_concentration_data__isnull=False) \
+                                        .filter(sample_time__range=[start_date_obj, end_date_obj]) \
+                                        .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+                                        ))
+            else:
+                queryset = queryset.prefetch_related(Prefetch(
+                    'bins',
+                    queryset=Bin.objects.filter(cell_concentration_data__isnull=False) \
+                                        .filter(sample_time__range=[start_date_obj, end_date_obj]) \
+                                        .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
+                                        ))
         elif self.action == 'retrieve':
             queryset = queryset.prefetch_related(Prefetch(
                 'bins',
