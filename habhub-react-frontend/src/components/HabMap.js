@@ -24,7 +24,7 @@ import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
-import DataTimeline from './DataTimeline'
+import BottomFullPanel from './BottomFullPanel'
 import LowerLeftPanel from "./LowerLeftPanel";
 import { layers, species } from '../Constants'
 
@@ -76,6 +76,7 @@ export default function HabMap() {
   const [habSpecies, setHabSpecies] = useState(species);
   const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date()]);
   const [stateFilter, setStateFilter] = useState(null);
+  const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
 
@@ -157,11 +158,6 @@ export default function HabMap() {
     console.log(event.target.value);
     setYAxisScale(event.target.value);
   };
-
-  function toggleLegendPane(speciesID) {
-    console.log(speciesID);
-
-  }
 
   function renderColorChips(species, chipType="gradient", squareWidth=20) {
     // default to show all colors in gradient list
@@ -264,6 +260,7 @@ export default function HabMap() {
             </div>
           </MapGL>
         </div>
+
         <div>
           <DashBoard
             mapLayers={mapLayers}
@@ -274,10 +271,17 @@ export default function HabMap() {
             onDateRangeChange={onDateRangeChange}
             onYAxisChange={onYAxisChange}
             renderColorChips={renderColorChips}
+            showDateControls={showDateControls}
+            setShowDateControls={setShowDateControls}
           />
         </div>
+
         <div>
-          <DataTimeline mapLayers={mapLayers} />
+          <BottomFullPanel
+            showDateControls={showDateControls}
+            setShowDateControls={setShowDateControls}
+            mapLayers={mapLayers}
+          />
         </div>
 
         <div>

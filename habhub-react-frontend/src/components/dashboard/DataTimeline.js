@@ -16,16 +16,13 @@ const fullWidth = window.outerWidth - 400;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: 'fixed',
+    position: 'absolute',
     bottom: 0,
     left: 0,
     display: 'flex',
-    margin: theme.spacing(1),
-    width: fullWidth,
-    height: 300,
-    backgroundColor: 'white',
+    margin: theme.spacing(0),
     alignItems: 'center',
-    padding: theme.spacing(2),
+    padding: theme.spacing(0),
     transition: 'all 0.3s',
   },
   placeholder: {
@@ -34,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(0),
     position: "absolute",
-    top: "-50px",
+    top: 0,
     left: 0,
   },
   collapse: {
@@ -47,7 +44,7 @@ function DataTimeline({mapLayers}) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const [chartData, setChartData] = useState([]);
-  const [showControls, setShowControls] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const classes = useStyles();
 
   useEffect(() => {
@@ -98,7 +95,7 @@ function DataTimeline({mapLayers}) {
       type: 'spline',
       zoomType: 'x',
       width: fullWidth,
-      height: 280,
+      height: 220,
     },
     title: {
       text: null
@@ -120,18 +117,7 @@ function DataTimeline({mapLayers}) {
   };
 
   return (
-    <div className={`${classes.root} ${showControls ? "active" : classes.collapse}`}>
-      <Button
-        variant="contained"
-        color="primary"
-        className={classes.button}
-        startIcon={<BarChartIcon />}
-        onClick={() => setShowControls(!showControls)}
-        aria-label="Open/Close Data Timeline Graph"
-      >
-        Data Timeline
-        {showControls ? <ExpandMoreIcon /> :  <ExpandLessIcon />}
-      </Button>
+    <div className={classes.root}>
       {!isLoaded && (
         <div>
           <div className={classes.placeholder}>

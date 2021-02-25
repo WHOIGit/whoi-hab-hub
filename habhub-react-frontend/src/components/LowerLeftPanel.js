@@ -51,14 +51,13 @@ export default function LowerLeftPane({
     return (
       <div className={classes.root}>
         {visibleLayers.map(layer => (
-            <LegendPane
-              dataLayer={layer.id}
-              habSpecies={habSpecies}
-              onLegendPaneClose={onLegendPaneClose}
-              renderColorChips={renderColorChips}
-              index={layer.id}
-            />
-
+          <LegendPane
+            dataLayer={layer.id}
+            habSpecies={habSpecies}
+            onLegendPaneClose={onLegendPaneClose}
+            renderColorChips={renderColorChips}
+            key={layer.id}
+          />
         ))}
       </div>
     )

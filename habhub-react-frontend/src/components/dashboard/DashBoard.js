@@ -5,6 +5,7 @@ import React, {
 import { makeStyles } from '@material-ui/styles';
 import {
   IconButton,
+  Button,
   Typography,
   Box,
   AppBar,
@@ -17,7 +18,9 @@ import {
   Restore,
   Tune,
   Layers,
-  List
+  List,
+  BarChart,
+  Explore,
 } from '@material-ui/icons';
 import DataLayersPanel from './DataLayersPanel';
 import DateRangePanel from './DateRangePanel';
@@ -71,7 +74,7 @@ const useStyles = makeStyles(theme => ({
     right: '15px',
     zIndex: 100,
   },
-  tabs: {
+  iconsContainer: {
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor: theme.palette.primary.main,
     position: 'fixed',
@@ -89,7 +92,20 @@ const useStyles = makeStyles(theme => ({
   },
   tabPanelRoot: {
     maxWidth: "300px"
-  }
+  },
+  dashboardButtonBox: {
+    position: "absolute",
+    bottom: 0,
+  },
+  dashboardButton: {
+    color: "white",
+    width: "100%",
+    marginBottom: theme.spacing(1),
+  },
+  dashboardButtonLabel: {
+    // Aligns the content of the button vertically.
+    flexDirection: 'column'
+  },
 }))
 
 function TabPanel(props) {
@@ -120,6 +136,8 @@ export default function Dashboard({
   onDateRangeChange,
   onYAxisChange,
   renderColorChips,
+  showDateControls,
+  setShowDateControls,
 }) {
   // Set const variables
   const classes = useStyles();
@@ -131,6 +149,7 @@ export default function Dashboard({
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
 
   function handleTabChange(event, newTabValue) {
+    console.log(newTabValue);
     setTabValue(newTabValue);
   };
 
@@ -163,74 +182,88 @@ export default function Dashboard({
         {showControls ? <ArrowForward /> :  <ArrowBack />}
       </IconButton>
       <div className={classes.dashboardContainer}>
-        <React.Fragment>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          orientation="vertical"
-          className={classes.tabs}
-          classes={{
-            indicator: classes.indicator
-          }}
-        >
-          <Tab
-            icon={<Layers />}
-            label="Data Layers"
-            classes={{
-              root: classes.tabRoot
-            }}
-          />
-          <Tab
-            icon={<Tune />}
-            label="Date Ranges"
-            classes={{
-              root: classes.tabRoot
-            }}
-          />
-          <Tab
-            icon={<List />}
-            label="Legend"
-            classes={{
-              root: classes.tabRoot
-            }}
-          />
-        </Tabs>
+        <>
+          <div className={classes.iconsContainer}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              orientation="vertical"
+              classes={{
+                indicator: classes.indicator
+              }}
+            >
+              <Tab
+                icon={<Layers />}
+                label="Data Layers"
+                classes={{
+                  root: classes.tabRoot
+                }}
+              />
+              <Tab
+                icon={<List />}
+                label="Legend"
+                classes={{
+                  root: classes.tabRoot
+                }}
+              />
+              <Tab
+                icon={<Explore />}
+                label="Links"
+                classes={{
+                  root: classes.tabRoot
+                }}
+              />
+            </Tabs>
 
-        <TabPanel
-          value={tabValue}
-          index={0}
-          className={classes.tabPanelRoot}
-        >
-          <DataLayersPanel
-            mapLayers={mapLayers}
-            habSpecies={habSpecies}
-            onLayerVisibilityChange={onLayerVisibilityChange}
-            onSpeciesVisibilityChange={onSpeciesVisibilityChange}
-            renderColorChips={renderColorChips}
-          />
-        </TabPanel>
-        <TabPanel
-          value={tabValue}
-          index={1}
-          className={classes.tabPanelRoot}
-        >
-          <DateRangePanel
-            selectedStartDate={selectedStartDate}
-            selectedEndDate={selectedEndDate}
-            onDateRangeChange={onDateRangeChange}
-            onStartDateChange={onStartDateChange}
-            onEndDateChange={onEndDateChange}
-            onDateRangeReset={onDateRangeReset}
-          />
-        </TabPanel>
-        <TabPanel
-          value={tabValue}
-          index={2}
-          className={classes.tabPanelRoot}
-        >
-          Item Three
-        </TabPanel>
-        </React.Fragment>
+            <div className={classes.dashboardButtonBox}>
+              <Button
+                classes={{
+                  root: classes.dashboardButton,
+                  label: classes.dashboardButtonLabel,
+                }}
+                onClick={() => setShowDateControls(!showDateControls)}
+              >
+                <Tune />
+                Date Controls
+              </Button>
+            </div>
+          </div>
+
+          <TabPanel
+            value={tabValue}
+            index={0}
+            className={classes.tabPanelRoot}
+          >
+            <DataLayersPanel
+              mapLayers={mapLayers}
+              habSpecies={habSpecies}
+              onLayerVisibilityChange={onLayerVisibilityChange}
+              onSpeciesVisibilityChange={onSpeciesVisibilityChange}
+              renderColorChips={renderColorChips}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={1}
+            className={classes.tabPanelRoot}
+          >
+            <DateRangePanel
+              selectedStartDate={selectedStartDate}
+              selectedEndDate={selectedEndDate}
+              onDateRangeChange={onDateRangeChange}
+              onStartDateChange={onStartDateChange}
+              onEndDateChange={onEndDateChange}
+              onDateRangeReset={onDateRangeReset}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={2}
+            className={classes.tabPanelRoot}
+          >
+            Links
+          </TabPanel>
+        </>
       </div>
     </div>
   );

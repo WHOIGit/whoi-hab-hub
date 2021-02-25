@@ -78,7 +78,7 @@ export default function DataLayersPanel({
             <Typography
               variant="body2"
               color="textSecondary"
-              style={{color: species.colorPrimary}}>
+              >
                 {`${species.speciesName} / ${species.syndrome}`}
                 <Box component="span" m={1}>
                   {renderColorChips(species, "primary", 12)}
