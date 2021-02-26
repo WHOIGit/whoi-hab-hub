@@ -147,10 +147,10 @@ export default function DateRangePanel({
 
   const onSliderRangeChange = (valueYearSlider, valueMonthSlider) => {
     // Calculate new dates based on slider input
-    const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];  // 1 Jan 1970
+    const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);
 
-    const endDateFields = [valueYearSlider[1], valueMonthSlider[1], 1];  // 1 Jan 1970
+    const endDateFields = [valueYearSlider[1], valueMonthSlider[1]+1, 0];
     const newEndDate = new Date(...endDateFields);
     console.log(newStartDate, newEndDate);
     // set "seasonal" filter to TRUE

@@ -38,6 +38,11 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
             year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
+            for year in year_range:
+                range_start_date = datetime.datetime(year, start_date_obj.month, start_date_obj.day)
+                range_end_date = datetime.datetime(year, end_date_obj.month, end_date_obj.day)
+                print(range_start_date, range_end_date)
+
             print(f'YEARS: {year_range}')
             if seasonal:
                 queryset = queryset.prefetch_related(Prefetch(
