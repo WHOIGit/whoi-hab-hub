@@ -4,13 +4,13 @@ from django.apps import apps
 
 class StationQuerySet(models.QuerySet):
 
-    def add_station_max(self, start_date=None, end_date=None):
+    def add_station_max(self, date_q_filters):
         Datapoint = apps.get_model(app_label='stations', model_name='Datapoint')
         # set up the Subquery query with conditional date filter
         datapoint_query = Datapoint.objects.filter(station=OuterRef('id'))
 
-        if start_date and end_date:
-            datapoint_query = datapoint_query.filter(measurement_date__range=[start_date, end_date])
+        if date_q_filters:
+            datapoint_query = datapoint_query.filter(date_q_filters)
 
         # now get the Max value
         datapoint_query = (
@@ -25,13 +25,13 @@ class StationQuerySet(models.QuerySet):
             )
         )
 
-    def add_station_mean(self, start_date=None, end_date=None):
+    def add_station_mean(self, date_q_filters):
         Datapoint = apps.get_model(app_label='stations', model_name='Datapoint')
         # set up the base Subquery query with conditional date filter
         datapoint_query = Datapoint.objects.filter(station=OuterRef('id'))
 
-        if start_date and end_date:
-            datapoint_query = datapoint_query.filter(measurement_date__range=[start_date, end_date])
+        if date_q_filters:
+            datapoint_query = datapoint_query.filter(date_q_filters)
 
         # now get the Avg value for this set of Datapoints
         datapoint_query = (

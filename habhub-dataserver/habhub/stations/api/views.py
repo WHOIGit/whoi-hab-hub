@@ -3,7 +3,8 @@ import datetime
 from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.db import models
-from django.db.models import Prefetch, F, Avg, Max
+from django.utils.timezone import make_aware
+from django.db.models import Prefetch, F, Avg, Max, Q
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -18,6 +19,7 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = Station.objects.all()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        seasonal = self.request.query_params.get('seasonal', None) == 'true'
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = int(self.request.query_params.get('smoothing_factor', 1))
 
@@ -27,7 +29,29 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
             end_date_obj = datetime.datetime.strptime(end_date, '%m/%d/%Y').date()
 
         if start_date and end_date:
-            datapoint_query = Datapoint.objects.filter(measurement_date__range=[start_date_obj, end_date_obj])
+            # if "seaonsal" filter is True, need to get multiple date ranges across the time series
+            date_q_filters = Q()
+            if seasonal:
+                date_ranges = []
+                year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
+
+                for year in year_range:
+                    range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
+                    range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
+
+                    range_dict = {
+                        'year': year,
+                        'start_date': range_start_date,
+                        'end_date': range_end_date
+                    }
+                    date_ranges.append(range_dict)
+
+                for dr in date_ranges:
+                    date_q_filters |= Q(measurement_date__range=(dr['start_date'], dr['end_date'])) # 'or' the Q objects together
+            else:
+                date_q_filters |= Q(measurement_date__range=([start_date_obj, end_date_obj]))
+
+            datapoint_query = Datapoint.objects.filter(date_q_filters)
 
             if smoothing_factor > 1:
                 datapoint_query = datapoint_query.annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
@@ -36,8 +60,8 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
                     'datapoints',
                     queryset=datapoint_query
                 )) \
-                .add_station_max(start_date_obj, end_date_obj) \
-                .add_station_mean(start_date_obj, end_date_obj)
+                .add_station_max(date_q_filters) \
+                .add_station_mean(date_q_filters)
         else:
             queryset = (
                 queryset.prefetch_related('datapoints')

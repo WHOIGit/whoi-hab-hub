@@ -21,7 +21,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         earliest_bin = Bin.objects.earliest()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
-        seasonal = self.request.query_params.get('seasonal', None)
+        seasonal = self.request.query_params.get('seasonal', None) == 'true'
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = self.request.query_params.get('smoothing_factor', 1)
 
@@ -52,8 +52,6 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
                         'end_date': range_end_date
                     }
                     date_ranges.append(range_dict)
-
-                print(date_ranges)
 
                 date_q_filters = Q()
                 for dr in date_ranges:
