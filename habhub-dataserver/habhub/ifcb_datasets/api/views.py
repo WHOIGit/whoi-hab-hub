@@ -3,8 +3,9 @@ import datetime
 from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.utils import timezone
+from django.utils.timezone import make_aware
 from django.db import models
-from django.db.models import Prefetch, F
+from django.db.models import Prefetch, F, Q
 
 from ..models import Dataset, Bin
 from .serializers import DatasetListSerializer, DatasetDetailSerializer
@@ -37,18 +38,31 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         # Only want to get all Bin data is this is a detail view or filtered by date
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
-            year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
-            for year in year_range:
-                range_start_date = datetime.datetime(year, start_date_obj.month, start_date_obj.day)
-                range_end_date = datetime.datetime(year, end_date_obj.month, end_date_obj.day)
-                print(range_start_date, range_end_date)
-
-            print(f'YEARS: {year_range}')
             if seasonal:
+                date_ranges = []
+                year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
+
+                for year in year_range:
+                    range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
+                    range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
+
+                    range_dict = {
+                        'year': year,
+                        'start_date': range_start_date,
+                        'end_date': range_end_date
+                    }
+                    date_ranges.append(range_dict)
+
+                print(date_ranges)
+
+                date_q_filters = Q()
+                for dr in date_ranges:
+                    date_q_filters |= Q(sample_time__range=(dr['start_date'], dr['end_date'])) # 'or' the Q objects together
+
                 queryset = queryset.prefetch_related(Prefetch(
                     'bins',
                     queryset=Bin.objects.filter(cell_concentration_data__isnull=False) \
-                                        .filter(sample_time__range=[start_date_obj, end_date_obj]) \
+                                        .filter(date_q_filters) \
                                         .annotate(smoothing=F('id') % smoothing_factor).filter(smoothing=0)
                                         ))
             else:
