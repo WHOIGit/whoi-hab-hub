@@ -129,10 +129,6 @@ export default function DateRangePanel({
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([1, 12]);
 
-  useEffect(() => {
-
-  }, [selectedStartDate, selectedEndDate])
-
   const handleYearSliderChange = (event, newValue) => {
     setValueYearSlider(newValue);
   };

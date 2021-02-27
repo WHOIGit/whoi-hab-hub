@@ -37,11 +37,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function DataTimeline({mapLayers}) {
+function DataTimeline({mapLayers, dateFilter}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const [chartData, setChartData] = useState([]);
+  const [chartBands, setChartBands] = useState([]);
   const [showTimeline, setShowTimeline] = useState(false);
   const classes = useStyles();
 
@@ -83,10 +84,45 @@ function DataTimeline({mapLayers}) {
         newChartData.push(timeSeries)
       }
       setChartData(newChartData);
-      console.log(newChartData);
     }
 
   }, [results]);
+
+  // update Chart Bands when Dates are changed
+  useEffect(() => {
+    if (dateFilter) {
+      const bandColor = "#e1f5fe"
+      // if seasonal filter, need to create array of date ranges
+      if (dateFilter[2]) {
+        function range(start, end) {
+          return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+        }
+
+        const yearRange = range(dateFilter[0].getFullYear(), dateFilter[1].getFullYear());
+        const newChartBands = yearRange.map(year => {
+          const startDateFields = [year, dateFilter[0].getMonth(), dateFilter[0].getDate()];
+          const startDate = new Date(...startDateFields);
+
+          const endDateFields = [year, dateFilter[1].getMonth(), dateFilter[1].getDate()];
+          const endDate = new Date(...endDateFields);
+
+          return {
+            color: bandColor,
+            from: startDate,
+            to: endDate
+          }
+        })
+        setChartBands(newChartBands);
+      } else {
+        const band = {
+          color: bandColor,
+          from: dateFilter[0],
+          to: dateFilter[1]
+        }
+        setChartBands([band]);
+      }
+    }
+  }, [dateFilter]);
 
   const chartOptions = {
     chart: {
@@ -103,7 +139,8 @@ function DataTimeline({mapLayers}) {
             'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
     },
     xAxis: {
-      type: 'datetime'
+      type: 'datetime',
+      plotBands: chartBands,
     },
     yAxis: {
       title: {

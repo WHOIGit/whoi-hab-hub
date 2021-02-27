@@ -283,6 +283,7 @@ export default function HabMap() {
             setShowDateControls={setShowDateControls}
             mapLayers={mapLayers}
             onDateRangeChange={onDateRangeChange}
+            dateFilter={dateFilter}
           />
         </div>
 

@@ -40,7 +40,9 @@ export default function DateControls({
   setShowDateControls,
   mapLayers,
   onDateRangeChange,
+  dateFilter,
 }) {
+  console.log(dateFilter);
   const classes = useStyles();
   const defaultStartDate = new Date('2017-01-01T21:11:54');
   const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
@@ -87,8 +89,7 @@ export default function DateControls({
         <Grid item xs={12}>
           <DataTimeline
             mapLayers={mapLayers}
-            selectedStartDate={selectedStartDate}
-            selectedEndDate={selectedEndDate}
+            dateFilter={dateFilter}
            />
         </Grid>
       </Grid>
