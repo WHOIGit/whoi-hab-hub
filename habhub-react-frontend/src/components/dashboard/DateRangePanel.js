@@ -122,7 +122,7 @@ export default function DateRangePanel({
   // Set const variables
   const classes = useStyles();
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
-  const [valueMonthSlider, setValueMonthSlider] = useState([1, 12]);
+  const [valueMonthSlider, setValueMonthSlider] = useState([0, 11]);
   const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
 
@@ -174,6 +174,8 @@ export default function DateRangePanel({
   };
 
   const onSliderRangeChange = (valueYearSlider, valueMonthSlider) => {
+    console.log(valueYearSlider);
+    console.log(valueMonthSlider);
     // Calculate new dates based on slider input
     const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);
