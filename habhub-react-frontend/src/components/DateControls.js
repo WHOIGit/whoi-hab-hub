@@ -44,29 +44,6 @@ export default function DateControls({
 }) {
   console.log(dateFilter);
   const classes = useStyles();
-  const defaultStartDate = new Date('2017-01-01T21:11:54');
-  const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
-  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
-
-  function onStartDateChange(date) {
-    setSelectedStartDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(date, selectedEndDate);
-    }
-  };
-
-  function onEndDateChange(date) {
-    setSelectedEndDate(date);
-    if (date instanceof Date && !isNaN(date)) {
-      onDateRangeChange(selectedStartDate, date);
-    }
-  };
-
-  function onDateRangeReset() {
-    setSelectedStartDate(defaultStartDate);
-    setSelectedEndDate(new Date());
-    onDateRangeChange(defaultStartDate, new Date());
-  };
 
   return (
     <div className={`${classes.root} ${showDateControls ? "active" : classes.collapse}`}>
@@ -76,14 +53,7 @@ export default function DateControls({
         >
         <Grid item xs={12}>
           <DateRangePanel
-            selectedStartDate={selectedStartDate}
-            setSelectedStartDate={setSelectedStartDate}
-            selectedEndDate={selectedEndDate}
-            setSelectedEndDate={setSelectedEndDate}
             onDateRangeChange={onDateRangeChange}
-            onStartDateChange={onStartDateChange}
-            onEndDateChange={onEndDateChange}
-            onDateRangeReset={onDateRangeReset}
           />
         </Grid>
         <Grid item xs={12}>

@@ -114,32 +114,58 @@ function valueMonthLabelFormat(value) {
   return value + 1;
 }
 
+const defaultStartDate = new Date('2017-01-01T21:11:54');
+
 export default function DateRangePanel({
-  selectedStartDate,
-  setSelectedStartDate,
-  selectedEndDate,
-  setSelectedEndDate,
   onDateRangeChange,
-  onStartDateChange,
-  onEndDateChange,
-  onDateRangeReset
 }) {
   // Set const variables
   const classes = useStyles();
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([1, 12]);
+  const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
+  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
 
-  const handleYearSliderChange = (event, newValue) => {
-    setValueYearSlider(newValue);
+  function onStartDateChange(date) {
+    setSelectedStartDate(date);
+    if (date instanceof Date && !isNaN(date)) {
+      // trigger parent function to fetch data
+      onDateRangeChange(date, selectedEndDate);
+      // update the slider values to match new date
+      const newYearStart = [date.getFullYear(), selectedEndDate.getFullYear()];
+      setValueYearSlider(newYearStart);
+      const newMonthStart = [date.getMonth(), selectedEndDate.getMonth()];
+      setValueMonthSlider(newMonthStart);
+    }
+  };
+
+  function onEndDateChange(date) {
+    setSelectedEndDate(date);
+    if (date instanceof Date && !isNaN(date)) {
+      // trigger parent function to fetch data
+      onDateRangeChange(selectedStartDate, date);
+      // update the slider values to match new date
+      const newYearEnd = [selectedStartDate.getFullYear(), date.getFullYear()];
+      setValueYearSlider(newYearEnd);
+      const newMonthEnd = [selectedStartDate.getMonth(), date.getMonth()];
+      setValueMonthSlider(newMonthEnd);
+    }
+  };
+
+  function onDateRangeReset() {
+    setSelectedStartDate(defaultStartDate);
+    setSelectedEndDate(new Date());
+    onDateRangeChange(defaultStartDate, new Date());
+    // update the slider values to match new date
+    const newYearStart = [defaultStartDate.getFullYear(), new Date().getFullYear()];
+    setValueYearSlider(newYearStart);
+    const newMonthStart = [defaultStartDate.getMonth(), new Date().getMonth()];
+    setValueMonthSlider(newMonthStart);
   };
 
   const handleYearSliderCommit = (event, newValue) => {
     setValueYearSlider(newValue);
     onSliderRangeChange(newValue, valueMonthSlider);
-  };
-
-  const handleMonthSliderChange = (event, newValue) => {
-    setValueMonthSlider(newValue);
   };
 
   const handleMonthSliderCommit = (event, newValue) => {
@@ -217,7 +243,7 @@ export default function DateRangePanel({
         </Typography>
         <Slider
           value={valueYearSlider}
-          onChange={handleYearSliderChange}
+          onChange={(event, newValue) => setValueYearSlider(newValue)}
           onChangeCommitted={handleYearSliderCommit}
           min={1970}
           max={2021}
@@ -229,7 +255,7 @@ export default function DateRangePanel({
 
         <Slider
           value={valueMonthSlider}
-          onChange={handleMonthSliderChange}
+          onChange={(event, newValue) => setValueMonthSlider(newValue)}
           onChangeCommitted={handleMonthSliderCommit}
           min={0}
           max={11}
