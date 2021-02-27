@@ -116,7 +116,9 @@ function valueMonthLabelFormat(value) {
 
 export default function DateRangePanel({
   selectedStartDate,
+  setSelectedStartDate,
   selectedEndDate,
+  setSelectedEndDate,
   onDateRangeChange,
   onStartDateChange,
   onEndDateChange,
@@ -126,6 +128,10 @@ export default function DateRangePanel({
   const classes = useStyles();
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([1, 12]);
+
+  useEffect(() => {
+
+  }, [selectedStartDate, selectedEndDate])
 
   const handleYearSliderChange = (event, newValue) => {
     setValueYearSlider(newValue);
@@ -149,10 +155,12 @@ export default function DateRangePanel({
     // Calculate new dates based on slider input
     const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);
+    setSelectedStartDate(newStartDate);
 
     const endDateFields = [valueYearSlider[1], valueMonthSlider[1]+1, 0];
     const newEndDate = new Date(...endDateFields);
-    console.log(newStartDate, newEndDate);
+    setSelectedEndDate(newEndDate);
+
     // set "seasonal" filter to TRUE
     onDateRangeChange(newStartDate, newEndDate, true);
   }

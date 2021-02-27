@@ -75,7 +75,9 @@ export default function DateControls({
         <Grid item xs={12}>
           <DateRangePanel
             selectedStartDate={selectedStartDate}
+            setSelectedStartDate={setSelectedStartDate}
             selectedEndDate={selectedEndDate}
+            setSelectedEndDate={setSelectedEndDate}
             onDateRangeChange={onDateRangeChange}
             onStartDateChange={onStartDateChange}
             onEndDateChange={onEndDateChange}
