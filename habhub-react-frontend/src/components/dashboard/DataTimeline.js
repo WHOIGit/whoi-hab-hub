@@ -141,6 +141,13 @@ function DataTimeline({mapLayers, dateFilter}) {
     xAxis: {
       type: 'datetime',
       plotBands: chartBands,
+      events: {
+        afterSetExtremes: function(event) {
+          let start = new Date(Math.ceil(event.min));
+          let end = new Date(Math.floor(event.max));
+          console.log(start, end);
+        }
+      }
     },
     yAxis: {
       title: {

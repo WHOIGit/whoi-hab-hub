@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) {
+export default function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) {
   const classes = useStyles();
   const layerID = 'stations-layer';
   const [error, setError] = useState(null);
@@ -92,5 +92,3 @@ function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor
     </div>
   )
 }
-
-export default StationsMarkers;

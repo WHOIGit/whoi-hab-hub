@@ -180,6 +180,7 @@ export default function HabMap() {
   }
 
   function renderMarkerLayer(layer) {
+    console.log(layer.id);
     if (layer.visibility && layer.id === 'stations-layer') {
       return (
         <StationsMarkers
@@ -188,7 +189,8 @@ export default function HabMap() {
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
-          key={layer.id} />
+          key={layer.id}
+        />
       );
     } else if (layer.id === 'closures-layer') {
       return (
@@ -197,7 +199,9 @@ export default function HabMap() {
           habSpecies={habSpecies}
           dateFilter={dateFilter}
           stateFilter={stateFilter}
-          visibility={layer.visibility} />
+          visibility={layer.visibility}
+          key={layer.id}
+        />
       );
     } else if (layer.id === 'ifcb-layer') {
       return (
@@ -207,7 +211,8 @@ export default function HabMap() {
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
-          key={layer.id} />
+          key={layer.id}
+        />
       );
     } else {
       return;
@@ -238,7 +243,6 @@ export default function HabMap() {
             {...viewport}
             mapboxApiAccessToken={MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mapbox/light-v10"
-            mapOptions={mapOptions}
             onViewportChange={viewport => {
               setViewport(viewport)
             }}
@@ -250,7 +254,6 @@ export default function HabMap() {
 
             <React.Fragment>
               {mapLayers.map(layer => renderMarkerLayer(layer))}
-              //<ClosuresLayer mapRef={mapRef} dateFilter={dateFilter} />
             </React.Fragment>
 
             <div style={navStyle}>

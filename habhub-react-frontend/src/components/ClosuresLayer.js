@@ -1,12 +1,20 @@
 import React, {useState, useEffect} from "react";
 import {Source, Layer} from 'react-map-gl';
 import {format} from 'date-fns';
+import { makeStyles } from '@material-ui/styles';
+import { CircularProgress } from '@material-ui/core';
 
 const API_URL = process.env.REACT_APP_API_URL
 
+const useStyles = makeStyles((theme) => ({
+  placeholder: {
+    margin: '0 auto',
+  },
+}));
+
 export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilter, visibility}) {
   const mapObj = mapRef.current.getMap();
-  console.log(mapObj);
+  const classes = useStyles();
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -37,6 +45,8 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
     function fetchResults() {
       const url = getFetchUrl();
       console.log(url);
+      setIsLoaded(false);
+
       fetch(url).then(res => res.json()).then((result) => {
         setIsLoaded(true);
         setResults(result);
@@ -77,6 +87,7 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       console.log(labelsGeojson);
     }
   }, [results])
+
 
   // Set default layer styles
   const layerClosures = {
@@ -130,36 +141,45 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
     }
   }
 
-  if (!results || !labels) {
-    return null;
-  } else {
-    return (
+  return (
+    <div>
+      {!isLoaded && (
+        <div>
+          <div className={classes.placeholder}>
+            <CircularProgress />
+          </div>
+        </div>
+      )}
+
       <React.Fragment>
-        <Source
-          id="closures-src"
-          type="geojson"
-          data={results}
-          buffer={10}
-          maxzoom={12}
-        >
-        {visibility && (
-          <Layer {...layerClosures}/>
+        {results && (
+          <Source
+            id="closures-src"
+            type="geojson"
+            data={results}
+            buffer={10}
+            maxzoom={12}
+          >
+          {visibility && (
+            <Layer {...layerClosures}/>
+          )}
+          </Source>
         )}
-        </Source>
 
-        <Source
-          id="closures-labels-src"
-          type="geojson"
-          data={labels}
-        >
-        {visibility && (
-          <Layer {...layerClosuresIcons}/>
+        {labels && (
+          <Source
+            id="closures-labels-src"
+            type="geojson"
+            data={labels}
+          >
+          {visibility && (
+            <Layer {...layerClosuresIcons}/>
+          )}
+          </Source>
         )}
-        </Source>
-
-
       </React.Fragment>
-    )
-  }
+
+    </div>
+  );
 
 }
