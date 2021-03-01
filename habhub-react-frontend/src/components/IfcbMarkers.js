@@ -2,13 +2,23 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Source, Layer, Marker } from "react-map-gl";
 import { format } from "date-fns"
+import { CircularProgress } from '@material-ui/core';
+
 import IfcbMarkerIcon from "./IfcbMarkerIcon"
 
 const API_URL = process.env.REACT_APP_API_URL
 
+const useStyles = makeStyles((theme) => ({
+  placeholder: {
+    position: "absolute",
+    left: "50%",
+    top: "40%",
+  },
+}));
+
 export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor, visibility}) {
-  console.log(habSpecies);
   const layerID = "ifcb-layer";
+  const classes = useStyles();
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -107,23 +117,35 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
 
   }
 
-  if (!visibility || !results) {
-    return null;
-  } else {
+  if (visibility) {
     return (
       <div>
-        {results.features.map(feature => renderMarker(feature))}
+        {!isLoaded && (
 
-        <Source
-          id="ifcb-circles-src"
-          type="geojson"
-          data={results}
-          buffer={10}
-          maxzoom={12}
-        >
-          <Layer {...layerIfcbCircles}/>
-        </Source>
+            <div className={classes.placeholder}>
+              <CircularProgress />
+            </div>
+
+        )}
+
+        {results && (
+          <div>
+            {results.features.map(feature => renderMarker(feature))}
+
+            <Source
+              id="ifcb-circles-src"
+              type="geojson"
+              data={results}
+              buffer={10}
+              maxzoom={12}
+            >
+              <Layer {...layerIfcbCircles}/>
+            </Source>
+          </div>
+        )}
       </div>
     )
+  } else {
+    return null;
   }
 }

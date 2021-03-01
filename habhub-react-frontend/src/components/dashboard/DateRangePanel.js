@@ -109,7 +109,6 @@ const marksMonthSlider = [
   },
 ]
 
-
 function valueMonthLabelFormat(value) {
   return value + 1;
 }
@@ -174,8 +173,6 @@ export default function DateRangePanel({
   };
 
   const onSliderRangeChange = (valueYearSlider, valueMonthSlider) => {
-    console.log(valueYearSlider);
-    console.log(valueMonthSlider);
     // Calculate new dates based on slider input
     const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);

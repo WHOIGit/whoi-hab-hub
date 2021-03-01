@@ -8,7 +8,9 @@ const API_URL = process.env.REACT_APP_API_URL
 
 const useStyles = makeStyles((theme) => ({
   placeholder: {
-    margin: '0 auto',
+    position: "absolute",
+    left: "50%",
+    top: "40%",
   },
 }));
 
@@ -144,11 +146,11 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
   return (
     <div>
       {!isLoaded && (
-        <div>
+
           <div className={classes.placeholder}>
             <CircularProgress />
           </div>
-        </div>
+
       )}
 
       <React.Fragment>
