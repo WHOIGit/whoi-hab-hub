@@ -19,12 +19,12 @@ import { ThemeProvider } from '@material-ui/core/styles'
 // Import our stuff
 import SidePane from './SidePane'
 import DashBoard from './dashboard/DashBoard'
+import DateControls from './dashboard/DateControls'
 import DataPanel from './DataPanel'
 import StationsGraph from './StationsGraph'
 import StationsMarkers from './StationsMarkers'
 import IfcbMarkers from './IfcbMarkers'
 import ClosuresLayer from './ClosuresLayer'
-import DateControls from './DateControls'
 import LowerLeftPanel from "./LowerLeftPanel";
 import { layers, species } from '../Constants'
 

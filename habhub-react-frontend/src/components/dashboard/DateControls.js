@@ -17,7 +17,7 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
 } from '@material-ui/pickers';
-import DataTimeline from "./dashboard/DataTimeline";
+import DataTimeline from "./DataTimeline";
 
 const fullWidth = window.outerWidth - 400;
 
@@ -159,10 +159,7 @@ export default function DateControls({
       // trigger parent function to fetch data
       onDateRangeChange(date, selectedEndDate);
       // update the slider values to match new date
-      const newYearStart = [date.getFullYear(), selectedEndDate.getFullYear()];
-      setValueYearSlider(newYearStart);
-      const newMonthStart = [date.getMonth(), selectedEndDate.getMonth()];
-      setValueMonthSlider(newMonthStart);
+      setSliderValuesFromDates(date, selectedEndDate)
     }
   };
 
@@ -172,10 +169,7 @@ export default function DateControls({
       // trigger parent function to fetch data
       onDateRangeChange(selectedStartDate, date);
       // update the slider values to match new date
-      const newYearEnd = [selectedStartDate.getFullYear(), date.getFullYear()];
-      setValueYearSlider(newYearEnd);
-      const newMonthEnd = [selectedStartDate.getMonth(), date.getMonth()];
-      setValueMonthSlider(newMonthEnd);
+      setSliderValuesFromDates(selectedStartDate, date)
     }
   };
 
@@ -183,24 +177,32 @@ export default function DateControls({
     setSelectedStartDate(defaultStartDate);
     setSelectedEndDate(new Date());
     onDateRangeChange(defaultStartDate, new Date());
-    // update the slider values to match new date
-    const newYearStart = [defaultStartDate.getFullYear(), new Date().getFullYear()];
-    setValueYearSlider(newYearStart);
-    const newMonthStart = [defaultStartDate.getMonth(), new Date().getMonth()];
-    setValueMonthSlider(newMonthStart);
+    // update the slider values to match new date, set months to full year range
+    const newSliderYear = [defaultStartDate.getFullYear(), new Date().getFullYear()];
+    setValueYearSlider(newSliderYear);
+    const newSliderMonth = [0, 11];
+    setValueMonthSlider(newSliderMonth);
   };
 
-  const handleYearSliderCommit = (event, newValue) => {
+  function setSliderValuesFromDates(startDate, endDate) {
+    // updates the Slider state values from two Date objects
+    const newSliderYear = [startDate.getFullYear(), endDate.getFullYear()];
+    setValueYearSlider(newSliderYear);
+    const newSliderMonth = [startDate.getMonth(), endDate.getMonth()];
+    setValueMonthSlider(newSliderMonth);
+  }
+
+  function handleYearSliderCommit(event, newValue) {
     setValueYearSlider(newValue);
     onSliderRangeChange(newValue, valueMonthSlider);
   };
 
-  const handleMonthSliderCommit = (event, newValue) => {
+  function handleMonthSliderCommit(event, newValue) {
     setValueMonthSlider(newValue);
     onSliderRangeChange(valueYearSlider, newValue);
   };
 
-  const onSliderRangeChange = (valueYearSlider, valueMonthSlider) => {
+  function onSliderRangeChange(valueYearSlider, valueMonthSlider) {
     // Calculate new dates based on slider input
     const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);
@@ -209,7 +211,6 @@ export default function DateControls({
     const endDateFields = [valueYearSlider[1], valueMonthSlider[1]+1, 0];
     const newEndDate = new Date(...endDateFields);
     setSelectedEndDate(newEndDate);
-
     // set "seasonal" filter to TRUE
     onDateRangeChange(newStartDate, newEndDate, true);
   }
@@ -305,6 +306,11 @@ export default function DateControls({
           <DataTimeline
             mapLayers={mapLayers}
             dateFilter={dateFilter}
+            onDateRangeChange={onDateRangeChange}
+            onDateRangeReset={onDateRangeReset}
+            setSelectedStartDate={setSelectedStartDate}
+            setSelectedEndDate={setSelectedEndDate}
+            setSliderValuesFromDates={setSliderValuesFromDates}
            />
         </Grid>
       </Grid>

@@ -37,7 +37,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function DataTimeline({mapLayers, dateFilter}) {
+function DataTimeline({
+  mapLayers,
+  dateFilter,
+  onDateRangeChange,
+  onDateRangeReset,
+  setSelectedStartDate,
+  setSelectedEndDate,
+  setSliderValuesFromDates,
+}) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -130,6 +138,21 @@ function DataTimeline({mapLayers, dateFilter}) {
       zoomType: 'x',
       width: fullWidth,
       height: 220,
+      // update dateFilter state on zoom selection, then set all date controls to match
+      events: {
+        selection: function(event) {
+            if(event.xAxis != null) {
+              let start = new Date(Math.ceil(event.xAxis[0].min));
+              let end = new Date(Math.floor(event.xAxis[0].max));
+              onDateRangeChange(start, end);
+              setSelectedStartDate(start);
+              setSelectedEndDate(end);
+              setSliderValuesFromDates(start, end);
+            } else {
+              onDateRangeReset();
+            }
+        }
+      },
     },
     title: {
       text: null
@@ -141,13 +164,6 @@ function DataTimeline({mapLayers, dateFilter}) {
     xAxis: {
       type: 'datetime',
       plotBands: chartBands,
-      events: {
-        afterSetExtremes: function(event) {
-          let start = new Date(Math.ceil(event.min));
-          let end = new Date(Math.floor(event.max));
-          console.log(start, end);
-        }
-      }
     },
     yAxis: {
       title: {
