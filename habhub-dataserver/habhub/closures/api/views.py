@@ -35,7 +35,7 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
         end_date = self.request.query_params.get("end_date", None)
         state = self.request.query_params.get("state", None)
         seasonal = self.request.query_params.get('seasonal', None) == 'true'
-
+        exclude_month_range = self.request.query_params.get('exclude_month_range', None) == 'true'
         earliest_closure = ClosureNotice.objects.earliest()
 
         if start_date:
@@ -56,8 +56,13 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
                 year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
 
                 for year in year_range:
-                    range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
-                    range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
+                    # if exclude_month_range filter is true, need to invert the date ranges so they span the next year
+                    if exclude_month_range:
+                        range_start_date = make_aware(datetime.datetime(year, end_date_obj.month , end_date_obj.day))
+                        range_end_date = make_aware(datetime.datetime(year + 1, start_date_obj.month, start_date_obj.day))
+                    else:
+                        range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
+                        range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
 
                     range_dict = {
                         'year': year,

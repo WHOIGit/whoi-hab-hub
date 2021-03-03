@@ -22,6 +22,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
         seasonal = self.request.query_params.get('seasonal', None) == 'true'
+        exclude_month_range = self.request.query_params.get('exclude_month_range', None) == 'true'
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = self.request.query_params.get('smoothing_factor', 1)
 
@@ -43,8 +44,13 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
                 year_range = [*range(start_date_obj.year, end_date_obj.year+1)]
 
                 for year in year_range:
-                    range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
-                    range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
+                    # if exclude_month_range filter is true, need to invert the date ranges so they span the next year
+                    if exclude_month_range:
+                        range_start_date = make_aware(datetime.datetime(year, end_date_obj.month , end_date_obj.day))
+                        range_end_date = make_aware(datetime.datetime(year + 1, start_date_obj.month, start_date_obj.day))
+                    else:
+                        range_start_date = make_aware(datetime.datetime(year, start_date_obj.month, start_date_obj.day))
+                        range_end_date = make_aware(datetime.datetime(year, end_date_obj.month, end_date_obj.day))
 
                     range_dict = {
                         'year': year,

@@ -61,8 +61,7 @@ function StationsGraph({results, chartExpanded, yAxisScale}) {
   }, [yAxisScale]);
 */
   const data = results.properties.timeseries_data;
-  const chartData = data.map(item => [Date.parse(item.date), item.measurement] ).sort();
-  console.log(chartData);
+  const chartData = data.map(item => [Date.parse(item.date), item.measurement] );
 
   const chartOptions = {
     chart: {

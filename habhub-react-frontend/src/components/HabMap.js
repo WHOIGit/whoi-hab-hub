@@ -75,7 +75,13 @@ export default function HabMap() {
   const [mapLayers, setMapLayers] = useState(layers);
   const [habSpecies, setHabSpecies] = useState(species);
   // dateFilter value for API: array [startDate:date, endDate:date, seasonal:boolean]
-  const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date(), false]);
+  // const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date(), false]);
+  const [dateFilter, setDateFilter] = useState({
+    "startDate": defaultStartDate,
+    "endDate": new Date(),
+    "seasonal": false,
+    "exclude_month_range": false
+  });
   const [stateFilter, setStateFilter] = useState(null);
   const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
@@ -137,8 +143,16 @@ export default function HabMap() {
     setHabSpecies(newVisibility);
   }
 
-  function onDateRangeChange(startDate, endDate, seasonal=false) {
-    setDateFilter([startDate, endDate, seasonal]);
+  function onDateRangeChange(startDate, endDate, seasonal=false, exclude_month_range=false) {
+    //setDateFilter([startDate, endDate, seasonal, exclude_month_range]);
+    const newDateFilter = {
+      "startDate": startDate,
+      "endDate": endDate,
+      "seasonal": seasonal,
+      "exclude_month_range": exclude_month_range
+    }
+    setDateFilter(newDateFilter);
+
     // calculate the date range length to determine a smoothing factor to pass API
     const dateRange = differenceInDays(endDate, startDate);
     let newFactor = 4;

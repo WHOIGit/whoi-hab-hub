@@ -3,14 +3,17 @@ import DateFnsUtils from '@date-io/date-fns';
 import { makeStyles } from '@material-ui/styles';
 import {
   Grid,
+  Box,
   List,
   ListItem,
   Slider,
   Typography,
   FormLabel,
   FormControl,
+  FormControlLabel,
   FormGroup,
   IconButton,
+  Checkbox,
 } from '@material-ui/core';
 import { Restore } from '@material-ui/icons';
 import {
@@ -20,41 +23,6 @@ import {
 import DataTimeline from "./DataTimeline";
 
 const fullWidth = window.outerWidth - 400;
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    display: 'flex',
-    margin: theme.spacing(0),
-    width: fullWidth,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    padding: theme.spacing(0),
-    height: "400px",
-    zIndex: 3000,
-    transition: 'all 0.4s',
-  },
-  dateRangePanel: {
-    width: "100%",
-  },
-  button: {
-    margin: theme.spacing(0),
-    position: "absolute",
-    top: "-50px",
-    left: 0,
-  },
-  resetBtn: {
-    position: 'absolute',
-    top: '-3px',
-    right: '15px',
-    zIndex: 100,
-  },
-  collapse: {
-    bottom: "-500px",
-  },
-}));
 
 const marksYearSlider = [
   {
@@ -138,6 +106,45 @@ function valueMonthLabelFormat(value) {
   return value + 1;
 }
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    display: 'flex',
+    margin: theme.spacing(0),
+    width: fullWidth,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    padding: theme.spacing(0),
+    height: "400px",
+    zIndex: 3000,
+    transition: 'all 0.4s',
+  },
+  dateRangePanel: {
+    width: "100%",
+  },
+  button: {
+    margin: theme.spacing(0),
+    position: "absolute",
+    top: "-50px",
+    left: 0,
+  },
+  resetBtn: {
+    position: 'absolute',
+    top: '-3px',
+    right: '15px',
+    zIndex: 100,
+  },
+  collapse: {
+    bottom: "-500px",
+  },
+  sliderContainer: {
+    padding: "12px 16px",
+    color: theme.palette.text.secondary,
+  },
+}));
+
 const defaultStartDate = new Date('2017-01-01T21:11:54');
 
 export default function DateControls({
@@ -152,6 +159,7 @@ export default function DateControls({
   const [valueMonthSlider, setValueMonthSlider] = useState([0, 11]);
   const [selectedStartDate, setSelectedStartDate] = useState(defaultStartDate);
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
+  const [excludeChecked, setExcludeChecked] = useState(false);
 
   function onStartDateChange(date) {
     setSelectedStartDate(date);
@@ -192,12 +200,12 @@ export default function DateControls({
     setValueMonthSlider(newSliderMonth);
   }
 
-  function handleYearSliderCommit(event, newValue) {
+  function onYearSliderCommit(event, newValue) {
     setValueYearSlider(newValue);
     onSliderRangeChange(newValue, valueMonthSlider);
   };
 
-  function handleMonthSliderCommit(event, newValue) {
+  function onMonthSliderCommit(event, newValue) {
     setValueMonthSlider(newValue);
     onSliderRangeChange(valueYearSlider, newValue);
   };
@@ -212,8 +220,13 @@ export default function DateControls({
     const newEndDate = new Date(...endDateFields);
     setSelectedEndDate(newEndDate);
     // set "seasonal" filter to TRUE
-    onDateRangeChange(newStartDate, newEndDate, true);
+    onDateRangeChange(newStartDate, newEndDate, true, excludeChecked);
   }
+
+  function onExcludeChange(event) {
+    setExcludeChecked(event.target.checked);
+    onDateRangeChange(selectedStartDate, selectedEndDate, true, event.target.checked);
+  };
 
   return (
     <div className={`${classes.root} ${showDateControls ? "active" : classes.collapse}`}>
@@ -246,7 +259,7 @@ export default function DateControls({
                             value={selectedStartDate}
                             onChange={onStartDateChange}
                             KeyboardButtonProps={{
-                              'aria-label': 'change date',
+                              'aria-label': 'start date',
                             }}
                           />
                         </FormGroup>
@@ -261,7 +274,7 @@ export default function DateControls({
                             value={selectedEndDate}
                             onChange={onEndDateChange}
                             KeyboardButtonProps={{
-                              'aria-label': 'change date',
+                              'aria-label': 'end date',
                             }}
                           />
                         </FormGroup>
@@ -272,33 +285,49 @@ export default function DateControls({
               </MuiPickersUtilsProvider>
             </Grid>
             <Grid item xs={9}>
-              <Typography variant="body1" gutterBottom>
-                Seasonal range selectors
-              </Typography>
-              <Slider
-                value={valueYearSlider}
-                onChange={(event, newValue) => setValueYearSlider(newValue)}
-                onChangeCommitted={handleYearSliderCommit}
-                min={1970}
-                max={2021}
-                marks={marksYearSlider}
-                valueLabelDisplay="on"
-                aria-labelledby="year-slider"
-                key="year-slider"
-              />
+              <div className={classes.sliderContainer}>
+                <Typography variant="body1" gutterBottom>
+                  Seasonal range selectors
+                </Typography>
+                <Slider
+                  value={valueYearSlider}
+                  onChange={(event, newValue) => setValueYearSlider(newValue)}
+                  onChangeCommitted={onYearSliderCommit}
+                  min={1970}
+                  max={2021}
+                  marks={marksYearSlider}
+                  valueLabelDisplay="on"
+                  aria-labelledby="year-slider"
+                  key="year-slider"
+                />
 
-              <Slider
-                value={valueMonthSlider}
-                onChange={(event, newValue) => setValueMonthSlider(newValue)}
-                onChangeCommitted={handleMonthSliderCommit}
-                min={0}
-                max={11}
-                marks={marksMonthSlider}
-                valueLabelDisplay="on"
-                valueLabelFormat={valueMonthLabelFormat}
-                aria-labelledby="month-slider"
-                key="month-slider"
-              />
+                <Slider
+                  value={valueMonthSlider}
+                  onChange={(event, newValue) => setValueMonthSlider(newValue)}
+                  onChangeCommitted={onMonthSliderCommit}
+                  min={0}
+                  max={11}
+                  marks={marksMonthSlider}
+                  valueLabelDisplay="on"
+                  valueLabelFormat={valueMonthLabelFormat}
+                  aria-labelledby="month-slider"
+                  key="month-slider"
+                />
+                <Box color="text.secondary">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={excludeChecked}
+                        onChange={onExcludeChange}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'exclude selected month range' }}
+                      />
+                    }
+                    label="Exclude selected month range"
+                  />
+                </Box>
+
+              </div>
             </Grid>
           </Grid>
         </Grid>

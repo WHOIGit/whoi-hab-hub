@@ -28,16 +28,14 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
     function getFetchUrl() {
       let baseURL = API_URL + "api/v1/ifcb-datasets/"
       // build API URL to get set Date Filter
-      if (dateFilter.length) {
-        const filterURL = baseURL + "?" + new URLSearchParams({
-            start_date: format(dateFilter[0], "MM/dd/yyyy"),
-            end_date: format(dateFilter[1], "MM/dd/yyyy"),
-            seasonal: dateFilter[2],
-            smoothing_factor: smoothingFactor,
-        })
-        return filterURL;
-      }
-      return baseURL;
+      const filterURL = baseURL + "?" + new URLSearchParams({
+          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
+          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          seasonal: dateFilter.seasonal,
+          exclude_month_range: dateFilter.exclude_month_range,
+          smoothing_factor: smoothingFactor,
+      })
+      return filterURL;
     }
 
     function fetchResults() {

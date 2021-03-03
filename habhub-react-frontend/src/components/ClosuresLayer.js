@@ -28,20 +28,18 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       let baseURL = API_URL + 'api/v1/closures/'
       let filterURL = ''
       // build API URL to get set Date Filter
-      if (dateFilter.length) {
-        filterURL = baseURL + '?' + new URLSearchParams({
-          start_date: format(dateFilter[0], 'MM/dd/yyyy'),
-          end_date: format(dateFilter[1], 'MM/dd/yyyy'),
-          seasonal: dateFilter[2],
+      filterURL = baseURL + '?' + new URLSearchParams({
+        start_date: format(dateFilter.startDate, 'MM/dd/yyyy'),
+        end_date: format(dateFilter.endDate, 'MM/dd/yyyy'),
+        seasonal: dateFilter.seasonal,
+        exclude_month_range: dateFilter.exclude_month_range,
+      })
+      if (stateFilter) {
+        filterURL = filterURL + new URLSearchParams({
+          state: stateFilter
         })
-        if (stateFilter) {
-          filterURL = filterURL + new URLSearchParams({
-            state: stateFilter
-          })
-        }
-        return filterURL;
       }
-      return baseURL;
+      return filterURL;
     }
 
     function fetchResults() {

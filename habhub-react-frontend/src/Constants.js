@@ -22,8 +22,8 @@ export const species = [
     'speciesName': 'Dinophysis norvegica',
     'syndrome': 'DSP',
     'visibility': true,
-    'colorPrimary': '#a6cee3',
-    'colorGradient': ['#eff3ff', '#bdd7e7', '#6baed6', '#a6cee3', '#08519c'],
+    'colorPrimary': '#9e9e9e',
+    'colorGradient': ['#fafafa', '#eeeeee', '#bdbdbd', '#9e9e9e', '#616161'],
   },
   {
     'id': 'Karenia',
@@ -38,16 +38,16 @@ export const species = [
     'speciesName': 'Margalefidinium polykrikoides',
     'syndrome': 'Fish Kills',
     'visibility': true,
-    'colorPrimary': '#b2df8a',
-    'colorGradient': ['#edf8e9', '#bae4b3', '#74c476', '#b2df8a', '#006d2c'],
+    'colorPrimary': '#ffeb3b',
+    'colorGradient': ['#fffde7', '#fff59d', '#fff176', '#ffeb3b', '#fdd835'],
   },
   {
     'id': 'Pseudo-nitzschia',
     'speciesName': 'Pseudo nitzschia',
     'syndrome': 'ASP',
     'visibility': true,
-    'colorPrimary': '#b15928',
-    'colorGradient': ['#feedde', '#fdbe85', '#fd8d3c', '#b15928', '#a63603'],
+    'colorPrimary': '#673ab7',
+    'colorGradient': ['#ede7f6', '#d1c4e9', '#9575cd', '#673ab7', '#311b92'],
   },
 ];
 

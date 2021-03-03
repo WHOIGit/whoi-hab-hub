@@ -101,17 +101,22 @@ function DataTimeline({
     if (dateFilter) {
       const bandColor = "#e1f5fe"
       // if seasonal filter, need to create array of date ranges
-      if (dateFilter[2]) {
+      if (dateFilter.seasonal) {
         function range(start, end) {
           return Array.from({ length: end - start + 1 }, (_, i) => i + start);
         }
 
-        const yearRange = range(dateFilter[0].getFullYear(), dateFilter[1].getFullYear());
+        const yearRange = range(dateFilter.startDate.getFullYear(), dateFilter.endDate.getFullYear());
         const newChartBands = yearRange.map(year => {
-          const startDateFields = [year, dateFilter[0].getMonth(), dateFilter[0].getDate()];
-          const startDate = new Date(...startDateFields);
+          let startDateFields = [year, dateFilter.startDate.getMonth(), dateFilter.startDate.getDate()];
+          let endDateFields = [year, dateFilter.endDate.getMonth(), dateFilter.endDate.getDate()];
 
-          const endDateFields = [year, dateFilter[1].getMonth(), dateFilter[1].getDate()];
+          if (dateFilter.exclude_month_range) {
+             startDateFields = [year, dateFilter.endDate.getMonth(), dateFilter.endDate.getDate()];
+             endDateFields = [year + 1, dateFilter.startDate.getMonth(), dateFilter.startDate.getDate()];
+           }
+
+          const startDate = new Date(...startDateFields);
           const endDate = new Date(...endDateFields);
 
           return {
@@ -124,8 +129,8 @@ function DataTimeline({
       } else {
         const band = {
           color: bandColor,
-          from: dateFilter[0],
-          to: dateFilter[1]
+          from: dateFilter.startDate,
+          to: dateFilter.endDate
         }
         setChartBands([band]);
       }
