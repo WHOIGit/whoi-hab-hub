@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
-import { Grid, Typography } from '@material-ui/core'
+import { Grid, Typography, Box } from '@material-ui/core'
 
 const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
@@ -13,6 +13,9 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     zIndex: 2000,
   },
+  legendGrid : {
+    fontSize: ".8em",
+  }
 }))
 
 export default function LegendCellAbundance() {
@@ -31,6 +34,7 @@ export default function LegendCellAbundance() {
         spacing={0}
         justify="center"
         alignItems="center"
+        className={classes.legendGrid}
         >
         <Grid item xs={2}>
           <svg width={minSquareSize} height={minSquareSize}>
@@ -95,24 +99,25 @@ export default function LegendCellAbundance() {
         </Grid>
 
         <Grid item xs={2}>
-          box
+          ND
         </Grid>
         <Grid item xs={2}>
-          box
+          >100
         </Grid>
         <Grid item xs={2}>
-          box
+          >1000
         </Grid>
         <Grid item xs={2}>
-          box
+          >1x10<sup>4</sup>
         </Grid>
         <Grid item xs={2}>
-          box
+          >1x10<sup>5</sup>
         </Grid>
         <Grid item xs={2}>
-          box
+          >1x10<sup>6</sup>
         </Grid>
       </Grid>
+
 
       <Typography variant="body2" align="center" gutterBottom>
          Cells L <sup>-1</sup>
