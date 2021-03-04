@@ -27,6 +27,7 @@ Function to run import of Bins/Autoclass/Image data from IFCB dashboard
 Args: 'dataset_obj' - Dataset object
 """
 
+"""
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
@@ -40,19 +41,18 @@ def run_species_classifed_import(dataset_obj):
         print("Getting Autoclass files")
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
              print(f"{bin} processed.")
-
 """
+
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
-    if dataset_obj.dashboard_id_name != 'mvco':
-        _get_ifcb_bins_dataset(dataset_obj)
+    _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
     bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
     for bin in bins:
         print('Start autoclass processing...')
         _get_ifcb_autoclass_file(bin)
         print(f"{bin} processed.")
-"""
+
 
 """
 Function to make API request for all IFCB bins by dataset
