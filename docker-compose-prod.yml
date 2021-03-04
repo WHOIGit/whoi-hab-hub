@@ -10,12 +10,13 @@ volumes:
 services:
   react_frontend:
     image: ghcr.io/whoigit/habhub-react-frontend:stable
+    container_name: react_frontend
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
 
   django: &django
     image: ghcr.io/whoigit/habhub-dataserver:stable
-    #container_name: django
+    container_name: django
     depends_on:
       - postgres
       - redis
@@ -58,6 +59,7 @@ services:
 
   celeryworker:
     <<: *django
+    container_name: django_celeryworker
     depends_on:
       - redis
       - postgres
@@ -65,6 +67,7 @@ services:
     command: /start-celeryworker
 
   celerybeat:
+    container_name: django_celerybeat
     <<: *django
     depends_on:
       - redis
@@ -73,6 +76,7 @@ services:
     command: /start-celerybeat
 
   flower:
+    container_name: django_flower
     <<: *django
     ports:
       - "5555:5555"
