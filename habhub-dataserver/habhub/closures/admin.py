@@ -20,7 +20,7 @@ from .models import *
 from .forms import LandmarkForm
 
 # Register your models here.
-
+@admin.register(Landmark)
 class LandmarkAdmin(LeafletGeoAdmin):
     form = LandmarkForm
     list_display = ('name', 'state', 'geom')
@@ -285,8 +285,6 @@ admin.site.register(ShellfishArea, ShellfishAreaAdmin)
 admin.site.register(ClosureNotice, ClosureNoticeAdmin)
 
 admin.site.register(ClosureNoticeMaine, ClosureNoticeMaineAdmin)
-
-admin.site.register(Landmark, LandmarkAdmin)
 
 admin.site.register(Species)
 

@@ -19,7 +19,6 @@ class DatasetForm(forms.ModelForm):
     class Meta(object):
         model = Dataset
         fields = ['name', 'location', 'dashboard_id_name', 'latitude', 'longitude', 'geom', ]
-        widgets = {'geom': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

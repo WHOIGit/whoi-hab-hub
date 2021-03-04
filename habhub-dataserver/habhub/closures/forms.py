@@ -5,7 +5,6 @@ from .models import Landmark
 
 
 class LandmarkForm(forms.ModelForm):
-
     latitude = forms.FloatField(
         min_value=-90,
         max_value=90,
@@ -21,7 +20,6 @@ class LandmarkForm(forms.ModelForm):
         model = Landmark
         exclude = []
         fields = ['name', 'state', 'shellfish_areas', 'latitude', 'longitude', 'geom' ]
-        widgets = {'geom': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
