@@ -17,7 +17,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
 
     def get_queryset(self):
-        queryset = Dataset.objects.exclude(dashboard_id_name='mvco').defer('bins')
+        queryset = Dataset.objects.defer('bins')
         earliest_bin = Bin.objects.earliest()
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
