@@ -3,6 +3,7 @@ import csv
 import datetime
 import concurrent.futures
 import os
+import environ
 from io import BytesIO
 
 from django.conf import settings
@@ -12,6 +13,12 @@ from django.contrib.gis.geos import Point
 
 from .models import *
 
+env = environ.Env()
+
+IFCB_DASHBOARD_URL = env(
+    "IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu"
+)
+
 # Functions to access IFCB Dashboard
 # -------------------------------
 
@@ -19,7 +26,7 @@ from .models import *
 Function to run import of Bins/Autoclass/Image data from IFCB dashboard
 Args: 'dataset_obj' - Dataset object
 """
-"""
+
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
@@ -27,31 +34,32 @@ def run_species_classifed_import(dataset_obj):
     # Create a pool of processes. By default, one is created for each CPU on machine.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Get a list of bins to process
-        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:100]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
         #bins = dataset_obj.bins.filter(species_found__isnull=True)[:500]
         # Process the list of bins, but split the work across the process pool
         print("Getting Autoclass files")
         for bin, data in zip(bins, executor.map(_get_ifcb_autoclass_file, bins)):
              print(f"{bin} processed.")
+
 """
 def run_species_classifed_import(dataset_obj):
     # Get all new bins
     if dataset_obj.dashboard_id_name != 'mvco':
         _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:10]
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
     for bin in bins:
         print('Start autoclass processing...')
         _get_ifcb_autoclass_file(bin)
         print(f"{bin} processed.")
-
+"""
 
 """
 Function to make API request for all IFCB bins by dataset
 Args: 'dataset_obj' - Dataset object
 """
 def _get_ifcb_bins_dataset(dataset_obj):
-    CSV_URL = F'https://ifcb-data.whoi.edu/api/export_metadata/{dataset_obj.dashboard_id_name}'
+    CSV_URL = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
     # speed up the process by getting a values list of current Bin pid
     bins = Bin.objects.filter(dataset=dataset_obj).values_list('pid', flat=True)
     print('Bins:', bins.count())
@@ -112,8 +120,8 @@ Function to make API request for Autoclass CSV file, calculate abundance of targ
 Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
 """
 def _get_ifcb_autoclass_file(bin_obj):
-    BIN_URL = F'https://ifcb-data.whoi.edu/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}'
-    CSV_URL = F'https://ifcb-data.whoi.edu/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
+    BIN_URL = F'{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}'
+    CSV_URL = F'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
     ML_ANALYZED = bin_obj.ml_analyzed
     TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
     print(BIN_URL, bin_obj)
