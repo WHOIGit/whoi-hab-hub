@@ -12,7 +12,9 @@ class DatapointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Datapoint
         fields = (
-            'timestamp', 'count',
+            'timestamp',
+            'count',
+            #'density_percentage',
         )
 
 
@@ -23,16 +25,21 @@ class BinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bin
         fields = (
-            'timestamp', 'count',
+            'timestamp',
+            'count',
+            #'density_percentage',
         )
 
 
 class ClosureNoticeSerializer(serializers.ModelSerializer):
     timestamp = serializers.DateField()
-    count = serializers.IntegerField()
+    data_count = serializers.IntegerField()
+    density_percentage = serializers.DecimalField(max_digits=3, decimal_places=2)
 
     class Meta:
         model = ClosureNotice
         fields = (
-            'timestamp', 'count',
+            'timestamp',
+            'data_count',
+            'density_percentage',
         )

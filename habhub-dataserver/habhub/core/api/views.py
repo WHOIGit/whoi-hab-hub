@@ -3,8 +3,8 @@ import datetime
 from drf_multiple_model.viewsets import ObjectMultipleModelAPIViewSet
 from django_filters import rest_framework as filters
 from django.db import models
-from django.db.models import Count
-from django.db.models.functions import TruncDay, TruncMonth
+from django.db.models import Count, Max, F, ExpressionWrapper, FloatField, Subquery
+from django.db.models.functions import TruncDay, TruncMonth, Cast
 
 from habhub.stations.models import Datapoint
 from habhub.ifcb_datasets.models import Bin
@@ -15,29 +15,44 @@ from .serializers import (
 
 
 class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
-    datapoint_query =  (
+    datapoint_query = (
         Datapoint.objects
-            .annotate(timestamp=TruncMonth('measurement_date')) # Truncate to Day and add to select list
-            .values('timestamp') # Group By Day
-            .annotate(count=Count('id')) # Select the count of the grouping
-            .order_by('timestamp')
+        # Truncate to Month and add to values
+        .annotate(timestamp=TruncMonth('measurement_date'))
+        .values('timestamp')  # Group By Month
+        .annotate(count=Count('id'))  # Select the count of the grouping
+        .order_by('timestamp')
     )
 
-    bin_query =  (
+    bin_query = (
         Bin.objects
-            .annotate(timestamp=TruncMonth('sample_time')) # Truncate to Day and add to select list
-            .values('timestamp') # Group By Day
-            .annotate(count=Count('id')) # Select the count of the grouping
-            .order_by('timestamp')
+        # Truncate to Month and add to values
+        .annotate(timestamp=TruncMonth('sample_time'))
+        .values('timestamp')  # Group By Month
+        .annotate(count=Count('id'))  # Select the count of the grouping
+        .order_by('timestamp')
     )
 
-    closure_query =  (
+    # use a separate subquery to get the max count value
+    closures_max = (
+        ClosureNotice.objects.filter(notice_action="Closed")
+        .annotate(timestamp=TruncMonth('effective_date'))
+        .values('timestamp')
+        .annotate(data_count=Count('id'))
+        .order_by('-data_count')
+        .values('data_count')[:1]
+    )
+
+    closure_query = (
         ClosureNotice.objects
-            .filter(notice_action="Closed")
-            .annotate(timestamp=TruncMonth('effective_date')) # Truncate to Day and add to select list
-            .values('timestamp') # Group By Day
-            .annotate(count=Count('id')) # Select the count of the grouping
-            .order_by('timestamp')
+        .filter(notice_action="Closed")
+        .annotate(timestamp=TruncMonth('effective_date')) # Truncate to Month and add to values
+        .values('timestamp')  # Group By Month
+        .annotate(data_count=Count('id'))  # Select the count of the grouping
+        .annotate(closures_max=Subquery(closures_max.values('data_count')[:1])) # Bring in the max value from a subquery
+        # calculate density percentage. Cast one of the integers to a Floatfield to make division return a float.
+        .annotate(density_percentage=ExpressionWrapper(Cast('data_count', FloatField()) / F('closures_max'), output_field=FloatField()))
+        .order_by('timestamp')
     )
 
     querylist = [
