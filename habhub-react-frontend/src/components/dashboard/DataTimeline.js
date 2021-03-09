@@ -82,8 +82,8 @@ function DataTimeline({
     const newChartData = []
     if (results) {
       for (let [key, value] of Object.entries(results)) {
-        const dataArray = value.map(item => [Date.parse(item.timestamp), item.count]);
-
+        const dataArray = value.map(item => [Date.parse(item.timestamp), parseFloat(item.density_percentage)]);
+        console.log(dataArray);
         const timeSeries = {
           name: key,
           data: dataArray,
@@ -93,7 +93,6 @@ function DataTimeline({
       }
       setChartData(newChartData);
     }
-
   }, [results]);
 
   // update Chart Bands when Dates are changed
@@ -175,6 +174,7 @@ function DataTimeline({
           text: 'Data Density'
       },
       min: 0,
+      max: 1,
     },
     series: chartData
   };

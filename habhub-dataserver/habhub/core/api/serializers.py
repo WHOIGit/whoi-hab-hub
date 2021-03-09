@@ -7,27 +7,29 @@ from habhub.closures.models import ClosureNotice
 
 class DatapointSerializer(serializers.ModelSerializer):
     timestamp = serializers.DateTimeField()
-    count = serializers.IntegerField()
+    data_count = serializers.IntegerField()
+    density_percentage = serializers.DecimalField(max_digits=3, decimal_places=2)
 
     class Meta:
         model = Datapoint
         fields = (
             'timestamp',
-            'count',
-            #'density_percentage',
+            'data_count',
+            'density_percentage',
         )
 
 
 class BinSerializer(serializers.ModelSerializer):
     timestamp = serializers.DateTimeField()
-    count = serializers.IntegerField()
+    data_count = serializers.IntegerField()
+    density_percentage = serializers.DecimalField(max_digits=3, decimal_places=2)
 
     class Meta:
         model = Bin
         fields = (
             'timestamp',
-            'count',
-            #'density_percentage',
+            'data_count',
+            'density_percentage',
         )
 
 
