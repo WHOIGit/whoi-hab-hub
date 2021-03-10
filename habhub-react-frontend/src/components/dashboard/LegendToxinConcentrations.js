@@ -30,25 +30,29 @@ export default function LegendToxinConcentrations({habSpecies, renderColorChips}
     <>
       <Grid
         container
-        spacing={0}
-        >
-        <Grid item xs={2}>
+        spacing={1}
+      >
+        <Grid item xs={3}>
           <Typography variant="body1">
              PST
           </Typography>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={9}>
           {visibleSpecies.map(species => renderColorChips(species))}
         </Grid>
-
-        <Grid item xs={2}>
+      </Grid>
+      <Grid
+        container
+        spacing={1}
+      >
+        <Grid item xs={3}>
         </Grid>
         <Grid item xs={5}>
           <Typography variant="body2">
              0
           </Typography>
         </Grid>
-        <Grid item xs={5}>
+        <Grid item xs={4}>
           <Typography variant="body2" align="right">
              > 2000
           </Typography>

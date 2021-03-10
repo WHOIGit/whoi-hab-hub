@@ -13,8 +13,11 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     zIndex: 2000,
   },
-  legendGrid : {
+  legendGrid: {
     fontSize: ".8em",
+  },
+  legendText: {
+
   }
 }))
 
@@ -31,93 +34,124 @@ export default function LegendCellAbundance() {
     <>
       <Grid
         container
-        spacing={0}
+        spacing={3}
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
         >
-        <Grid item xs={2}>
-          <svg width={minSquareSize} height={minSquareSize}>
-            <line x1={0} y1={0} x2={minSquareSize} y2={minSquareSize} stroke={strokeColor} strokeWidth={2}></line>
-            <line x1={0} y1={minSquareSize} x2={minSquareSize} y2={0} stroke={strokeColor} strokeWidth={2}></line>
-          </svg>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={minSquareSize} height={minSquareSize}>
+              <line x1={0} y1={0} x2={minSquareSize} y2={minSquareSize} stroke={strokeColor} strokeWidth={2}></line>
+              <line x1={0} y1={minSquareSize} x2={minSquareSize} y2={0} stroke={strokeColor} strokeWidth={2}></line>
+            </svg>
+          </Typography>
         </Grid>
-        <Grid item xs={2}>
-          <svg width={minSquareSize} height={minSquareSize}>
-            <rect
-              width={minSquareSize}
-              height={minSquareSize}
-              fill={fillColor}
-              strokeWidth={strokeWidth}
-              stroke={strokeColor}>
-            </rect>
-          </svg>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={minSquareSize} height={minSquareSize}>
+              <rect
+                width={minSquareSize}
+                height={minSquareSize}
+                fill={fillColor}
+                strokeWidth={strokeWidth}
+                stroke={strokeColor}>
+              </rect>
+            </svg>
+          </Typography>
         </Grid>
-        <Grid item xs={2}>
-          <svg width={maxSquareSize / 5 * 2} height={maxSquareSize / 5 * 2}>
-            <rect
-              width={maxSquareSize / 5 * 2}
-              height={maxSquareSize / 5 * 2}
-              fill={fillColor}
-              strokeWidth={strokeWidth}
-              stroke={strokeColor}>
-            </rect>
-          </svg>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={maxSquareSize / 5 * 2} height={maxSquareSize / 5 * 2}>
+              <rect
+                width={maxSquareSize / 5 * 2}
+                height={maxSquareSize / 5 * 2}
+                fill={fillColor}
+                strokeWidth={strokeWidth}
+                stroke={strokeColor}>
+              </rect>
+            </svg>
+          </Typography>
         </Grid>
-        <Grid item xs={2}>
-          <svg width={maxSquareSize / 5 * 3} height={maxSquareSize / 5 * 3}>
-            <rect
-              width={maxSquareSize / 5 * 3}
-              height={maxSquareSize / 5 * 3}
-              fill={fillColor}
-              strokeWidth={strokeWidth}
-              stroke={strokeColor}>
-            </rect>
-          </svg>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={maxSquareSize / 5 * 3} height={maxSquareSize / 5 * 3}>
+              <rect
+                width={maxSquareSize / 5 * 3}
+                height={maxSquareSize / 5 * 3}
+                fill={fillColor}
+                strokeWidth={strokeWidth}
+                stroke={strokeColor}>
+              </rect>
+            </svg>
+          </Typography>
         </Grid>
-        <Grid item xs={2}>
-          <svg width={maxSquareSize / 5 * 4} height={maxSquareSize / 5 * 4}>
-            <rect
-              width={maxSquareSize / 5 * 4}
-              height={maxSquareSize / 5 * 4}
-              fill={fillColor}
-              strokeWidth={strokeWidth}
-              stroke={strokeColor}>
-            </rect>
-          </svg>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={maxSquareSize / 5 * 4} height={maxSquareSize / 5 * 4}>
+              <rect
+                width={maxSquareSize / 5 * 4}
+                height={maxSquareSize / 5 * 4}
+                fill={fillColor}
+                strokeWidth={strokeWidth}
+                stroke={strokeColor}>
+              </rect>
+            </svg>
+          </Typography>
         </Grid>
-        <Grid item xs={2}>
-          <svg width={maxSquareSize} height={maxSquareSize}>
-            <rect
-              width={maxSquareSize}
-              height={maxSquareSize}
-              fill={fillColor}
-              strokeWidth={strokeWidth}
-              stroke={strokeColor}>
-            </rect>
-          </svg>
-        </Grid>
-
-        <Grid item xs={2}>
-          ND
-        </Grid>
-        <Grid item xs={2}>
-          >100
-        </Grid>
-        <Grid item xs={2}>
-          >1000
-        </Grid>
-        <Grid item xs={2}>
-          >1x10<sup>4</sup>
-        </Grid>
-        <Grid item xs={2}>
-          >1x10<sup>5</sup>
-        </Grid>
-        <Grid item xs={2}>
-          >1x10<sup>6</sup>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center">
+            <svg width={maxSquareSize} height={maxSquareSize}>
+              <rect
+                width={maxSquareSize}
+                height={maxSquareSize}
+                fill={fillColor}
+                strokeWidth={strokeWidth}
+                stroke={strokeColor}>
+              </rect>
+            </svg>
+          </Typography>
         </Grid>
       </Grid>
 
+      <Grid
+        container
+        spacing={1}
+        justify="center"
+        alignItems="center"
+        className={classes.legendGrid}
+        >
+        <Grid item >
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            ND
+          </Typography>
+        </Grid>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            >100
+          </Typography>
+        </Grid>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            >1000
+          </Typography>
+        </Grid>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            >1x10<sup>4</sup>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            >1x10<sup>5</sup>
+          </Typography>
+        </Grid>
+        <Grid item >
+          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+            >1x10<sup>6</sup>
+          </Typography>
+        </Grid>
+      </Grid>
 
       <Typography variant="body2" align="center" gutterBottom>
          Cells L <sup>-1</sup>

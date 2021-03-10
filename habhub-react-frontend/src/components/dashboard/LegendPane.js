@@ -27,9 +27,12 @@ const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
-    width: 250,
+    width: 200,
     transition: 'all 0.3s',
     zIndex: 2000,
+  },
+  rootWider: {
+    width: 300,
   },
   rootHeader: {
     paddingBottom: 0,
@@ -47,7 +50,6 @@ export default function LegendPane({
   renderColorChips,
 }) {
   const classes = useStyles()
-  console.log(dataLayer);
 
   let title = null;
 
@@ -58,7 +60,7 @@ export default function LegendPane({
   }
 
   return (
-    <Card className={classes.root}>
+    <Card className={`${classes.root} ${dataLayer === 'ifcb-layer' ? classes.rootWider : "standard"}`}>
         <CardHeader
           classes={{
             root: classes.rootHeader,
