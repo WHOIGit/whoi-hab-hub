@@ -138,7 +138,7 @@ class ClosureNoticeMaineAdmin(LeafletGeoAdmin):
         models.TextField: {'widget': SummernoteWidget},
     }
 
-    inlines = (ExceptionAreaAdminInline, )
+    #inlines = (ExceptionAreaAdminInline, )
 
     def get_queryset(self, request):
         return ClosureNotice.objects.filter(shellfish_areas__state='ME').prefetch_related('shellfish_areas')
