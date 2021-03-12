@@ -64,8 +64,6 @@ function DataPanel({
       console.log(result);
       if (dataLayer === 'stations-layer' || dataLayer === 'ifcb-layer') {
         result.properties.max_mean_values.length ? setHasData(true) : setHasData(false);
-      } else if (dataLayer === 'closures-layer') {
-        result.properties.closures.length ? setHasData(true) : setHasData(false);
       }
     }
 
@@ -73,7 +71,13 @@ function DataPanel({
       const url = getFetchUrl(featureID, dataLayer);
       console.log(url);
       fetch(url)
-        .then(res => res.json())
+        .then(response => {
+          console.log(response.status);
+          if (response.status === 404) {
+            setHasData(false);
+          }
+          return response.json();
+        })
         .then(
           (result) => {
             console.log(result);

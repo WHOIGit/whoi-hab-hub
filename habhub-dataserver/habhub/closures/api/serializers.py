@@ -45,14 +45,27 @@ class ShellfishAreaSerializer(GeoFeatureModelSerializer):
             else:
                 causative_organism = "Unknown"
 
+            document_url = None
+            if closure.document:
+                document_url = closure.document.url
+
+            species_list = []
+            data_events = closure.closure_data_events.filter(shellfish_area=obj)
+
+            for event in data_events:
+                print(event)
+                event_data = {"species": event.species.name, "duration": event.closure_duration}
+                species_list.append(event_data)
+
             data = {
                 "title": closure.title,
                 "id": closure.id,
                 "year": closure.effective_date.year,
                 "month": closure.effective_date.month,
-                "species": [species.name for species in closure.species.all()],
+                "species": species_list,
                 "causative_organism": causative_organism,
                 "effective_date": closure.effective_date,
+                "document_link": document_url,
             }
             closures_list.append(data)
         return closures_list

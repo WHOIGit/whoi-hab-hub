@@ -24,6 +24,7 @@ import {
 
 import StationsGraph from './StationsGraph';
 import IfcbGraph from './IfcbGraph';
+import ClosuresList from './ClosuresList';
 
 const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
@@ -71,16 +72,15 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    const data = results.properties.timeseries_data;
-    const visibleSpecies = habSpecies
-      .filter(species => species.visibility)
-      .map(species => species.id);
+    if (dataLayer === 'ifcb-layer') {
+      const data = results.properties.timeseries_data;
+      const visibleSpecies = habSpecies
+        .filter(species => species.visibility)
+        .map(species => species.id);
 
-    const filteredData = data.filter(item => visibleSpecies.includes(item.species));
-    console.log(data);
-    console.log(visibleSpecies);
-    console.log(filteredData);
-    setVisibleResults(filteredData);
+      const filteredData = data.filter(item => visibleSpecies.includes(item.species));
+      setVisibleResults(filteredData);
+    }
   }, [results, habSpecies]);
 
   function onExpandPanel() {
@@ -101,6 +101,12 @@ export default function SidePane({
     subTitle = `
       ${results.properties.location} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
+    `;
+  } else if (dataLayer === 'closures-layer') {
+    title = `Shellfish Closure: ${results.properties.name}`;
+    subTitle = `
+      State: ${results.properties.state} |
+      ${results.properties.area_description}
     `;
   }
 
@@ -130,6 +136,9 @@ export default function SidePane({
           )}
           {dataLayer==='ifcb-layer' && visibleResults && (
             <IfcbGraph visibleResults={visibleResults} chartExpanded={expandPane} yAxisScale={yAxisScale} />
+          )}
+          {dataLayer==='closures-layer' && (
+            <ClosuresList results={results} />
           )}
         </CardContent>
 

@@ -311,7 +311,7 @@ class ClosureDataEvent(models.Model):
 
     # Get the total duration of the Closure Event
     @property
-    def get_closure_duration(self):
+    def closure_duration(self):
         if self.duration > timedelta(minutes=0):
             return f"{self.duration.days} days"
         return "Ongoing"
