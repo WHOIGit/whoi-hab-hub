@@ -1,16 +1,7 @@
-import React, {
-  useState,
-  useEffect
-} from "react";
-import {
-  makeStyles
-} from '@material-ui/styles';
-import {
-  CircularProgress
-} from '@material-ui/core';
-import {
-  format
-} from 'date-fns';
+import React, { useState, useEffect} from "react";
+import { makeStyles } from '@material-ui/styles';
+import { CircularProgress } from '@material-ui/core';
+import { format } from 'date-fns';
 import SidePane from './SidePane';
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -42,17 +33,20 @@ function DataPanel({
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const [hasData, setHasData] = useState(true);
   const classes = useStyles();
 
   useEffect(() => {
     function getFetchUrl(featureID, dataLayer) {
       let baseURL = ''
-      if (dataLayer == 'stations-layer') {
+      if (dataLayer === 'stations-layer') {
         baseURL = `${API_URL}api/v1/stations/${featureID}/`;
         // Force smoothing_factor to be ignored for Station graphs
         smoothingFactor = 1;
-      } else if (dataLayer == 'ifcb-layer') {
+      } else if (dataLayer === 'ifcb-layer') {
         baseURL = `${API_URL}api/v1/ifcb-datasets/${featureID}/`;
+      } else if (dataLayer === 'closures-layer') {
+        baseURL = `${API_URL}api/v1/closures/${featureID}/`;
       }
 
       const filterURL = baseURL + '?' + new URLSearchParams({
@@ -65,6 +59,16 @@ function DataPanel({
       return filterURL;
     }
 
+    // Need to check different properties to see whether the API result has data for time frame
+    function hasData(result, dataLayer) {
+      console.log(result);
+      if (dataLayer === 'stations-layer' || dataLayer === 'ifcb-layer') {
+        result.properties.max_mean_values.length ? setHasData(true) : setHasData(false);
+      } else if (dataLayer === 'closures-layer') {
+        result.properties.closures.length ? setHasData(true) : setHasData(false);
+      }
+    }
+
     function fetchResults() {
       const url = getFetchUrl(featureID, dataLayer);
       console.log(url);
@@ -75,6 +79,7 @@ function DataPanel({
             console.log(result);
             setIsLoaded(true);
             setResults(result);
+            hasData(result, dataLayer);
           },
           // Note: it's important to handle errors here
           // instead of a catch() block so that we don't swallow
@@ -100,7 +105,7 @@ function DataPanel({
         </div>
       )}
 
-      {results && results.properties.max_mean_values.length && (
+      {results && hasData && (
         <SidePane
           results={results}
           featureID={featureID}

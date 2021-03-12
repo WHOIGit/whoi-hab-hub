@@ -105,6 +105,10 @@ export default function HabMap() {
     console.log(mapObj);
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {layers: interactiveLayerIds});
     console.log(mapFeatures[0]);
+    const feature = mapFeatures[0];
+    feature.layer = feature.layer.id;
+    console.log(feature);
+    setFeatures([feature, ...features]);
   }
 
   function onMarkerClick(event, feature, layerID) {

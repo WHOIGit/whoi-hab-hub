@@ -4,9 +4,7 @@ import React, {
   useRef
 } from 'react'
 import Highcharts from 'highcharts'
-import {
-  makeStyles
-} from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles'
 import {
   Card,
   CardHeader,

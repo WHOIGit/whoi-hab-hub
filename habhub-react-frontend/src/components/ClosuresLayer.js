@@ -144,11 +144,9 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
   return (
     <div>
       {!isLoaded && (
-
           <div className={classes.placeholder}>
             <CircularProgress />
           </div>
-
       )}
 
       <React.Fragment>
