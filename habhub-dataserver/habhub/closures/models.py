@@ -288,7 +288,7 @@ class ClosureDataEvent(models.Model):
                 close_notice_obj.save()
                 self.duration = duration
             except:
-                raise ClosureDataEvent.DoesNotExist
+                pass
         super(ClosureDataEvent, self).save(*args, **kwargs)
 
     # Get current status of this Closure Event
