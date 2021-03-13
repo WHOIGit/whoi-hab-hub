@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Highcharts from 'highcharts';
-import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official';
 import { makeStyles } from '@material-ui/styles';
 import { CircularProgress, Button } from '@material-ui/core';
@@ -8,8 +7,6 @@ import BarChartIcon from '@material-ui/icons/BarChart';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { format } from 'date-fns';
-
-Serieslabel(Highcharts);
 
 const API_URL = process.env.REACT_APP_API_URL
 const fullWidth = window.outerWidth - 400;
@@ -163,7 +160,7 @@ function DataTimeline({
     },
     subtitle: {
       text: document.ontouchstart === undefined ?
-            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+            'Click and drag in the plot area to select date range' : 'Pinch the chart to select data range'
     },
     xAxis: {
       type: 'datetime',
@@ -175,6 +172,13 @@ function DataTimeline({
       },
       min: 0,
       max: 1,
+    },
+    plotOptions: {
+      series: {
+        label: {
+          enabled: false
+        },
+      }
     },
     series: chartData
   };
