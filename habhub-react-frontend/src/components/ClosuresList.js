@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles'
 import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Typography,
   TableContainer,
   Table,
@@ -86,8 +82,8 @@ export default function ClosuresList({results}) {
   }
 
   return (
-    <List>
+    <div>
       {results.properties.closures.map(closure => renderClosureItem(closure))}
-    </List>
+    </div>
   )
 }

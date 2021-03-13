@@ -28,6 +28,9 @@ const useStyles = makeStyles(theme => ({
   body2: {
     ...theme.typography.body2,
   },
+  listItem: {
+    paddingRight: 0,
+  }
 }))
 
 export default function DataLayersPanel({
@@ -92,7 +95,7 @@ export default function DataLayersPanel({
 
   return (
     <List>
-      <ListItem>
+      <ListItem className={classes.listItem}>
         <FormControl component="fieldset" >
           <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
           <FormGroup>

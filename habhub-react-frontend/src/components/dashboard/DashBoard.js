@@ -24,6 +24,7 @@ import {
 } from '@material-ui/icons';
 import DataLayersPanel from './DataLayersPanel';
 import DateRangePanel from './DateRangePanel';
+import LinksPanel from './LinksPanel';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -91,7 +92,7 @@ const useStyles = makeStyles(theme => ({
     color: 'white',
   },
   tabPanelRoot: {
-    maxWidth: "300px"
+    maxWidth: "284px"
   },
   dashboardButtonBox: {
     position: "absolute",
@@ -231,7 +232,7 @@ export default function Dashboard({
             index={2}
             className={classes.tabPanelRoot}
           >
-            Links
+            <LinksPanel />
           </TabPanel>
         </>
       </div>
