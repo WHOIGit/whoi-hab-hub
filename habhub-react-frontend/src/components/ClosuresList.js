@@ -29,10 +29,8 @@ const useStyles = makeStyles(theme => ({
 export default function ClosuresList({results}) {
   const chartRef = useRef();
   const classes = useStyles()
-  console.log(results);
 
   function renderClosureItem(closure) {
-    console.log(closure);
     return (
       <Box mb={4}>
         <Grid

@@ -43,7 +43,7 @@ export const species = [
   },
   {
     'id': 'Pseudo-nitzschia',
-    'speciesName': 'Pseudo nitzschia',
+    'speciesName': 'Pseudo-nitzschia',
     'syndrome': 'ASP',
     'visibility': true,
     'colorPrimary': '#673ab7',

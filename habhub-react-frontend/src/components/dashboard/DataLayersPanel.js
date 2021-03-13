@@ -2,9 +2,7 @@ import React, {
   useState,
   useEffect
 } from 'react';
-import {
-  makeStyles
-} from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import {
   FormLabel,
   FormControl,
@@ -79,7 +77,7 @@ export default function DataLayersPanel({
               variant="body2"
               color="textSecondary"
               >
-                {`${species.speciesName} / ${species.syndrome}`}
+                <em>{species.speciesName}</em> / {species.syndrome}
                 <Box component="span" m={1}>
                   {renderColorChips(species, "primary", 12)}
                 </Box>

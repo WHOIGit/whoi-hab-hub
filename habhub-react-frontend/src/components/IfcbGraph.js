@@ -72,6 +72,11 @@ function IfcbGraph({visibleResults, chartExpanded, yAxisScale}) {
         type: 'linear',
         min: 0
       },
+      legend: {
+        itemStyle: {
+          fontStyle: 'italic',
+        }
+      },
       tooltip: {
         formatter: function () {
             const [y_value, pointData] = highChartsGetMetaData(this);
