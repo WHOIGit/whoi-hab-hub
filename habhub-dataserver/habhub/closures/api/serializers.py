@@ -34,12 +34,12 @@ class ShellfishAreaSerializer(GeoFeatureModelSerializer):
 
     def get_closures(self, obj):
         if obj.closure_notices.exists():
-            closures = obj.closure_notices.all()
+            closures_qs = obj.closure_notices.all()
         else:
             return None
 
         closures_list = []
-        for closure in closures:
+        for closure in closures_qs:
             if closure.causative_organism:
                 causative_organism = closure.causative_organism.name
             else:
@@ -50,11 +50,14 @@ class ShellfishAreaSerializer(GeoFeatureModelSerializer):
                 document_url = closure.document.url
 
             species_list = []
-            data_events = closure.closure_data_events.filter(shellfish_area=obj)
+            data_events_qs = (
+                closure.closure_data_events
+                .filter(shellfish_area=obj)
+                .prefetch_related('species')
+            )
 
-            for event in data_events:
-                print(event)
-                event_data = {"species": event.species.name, "duration": event.closure_duration}
+            for event in data_events_qs:
+                event_data = {"species": event.species.name, "duration": event.get_closure_duration}
                 species_list.append(event_data)
 
             data = {
