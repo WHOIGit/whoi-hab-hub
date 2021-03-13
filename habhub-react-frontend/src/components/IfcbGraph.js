@@ -16,7 +16,7 @@ import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official';
 // Local imports
 import IfcbMetaData from './IfcbMetaData';
-import { species } from '../hab-species';
+import { species } from '../Constants';
 
 Exporting(Highcharts);
 Serieslabel(Highcharts);
