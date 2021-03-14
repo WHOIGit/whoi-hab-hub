@@ -52,7 +52,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
     const value = speciesItem.value
     let squareSize = maxSquareSize;
 
-    if (value < 10e3) {
+    if (value < 100) {
       squareSize = minSquareSize;
     } else if (value < 10e4) {
       squareSize = maxSquareSize / 5 * 2;
@@ -92,25 +92,34 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
 
     // Set fill opacity/stroke color based on Value scale
     let fillOpacity = 1
-    let stroke = "white";
+    let stroke = "green";
+    /*
     if (item.value < 100) {
       fillOpacity = 0;
       stroke = item.color;
+    }*/
+    if (item.value < 100) {
+      return (
+        <>
+        <line x1={xValue} y1={yValue} x2={xValue + squareSize} y2={yValue + squareSize} stroke={stroke} strokeWidth={2}></line>
+        <line x1={xValue + squareSize} y1={yValue} x2={xValue} y2={yValue + squareSize} stroke={stroke} strokeWidth={2}></line>
+        </>
+      )
+    } else {
+      return (
+        <rect
+          width={squareSize}
+          height={squareSize}
+          fill={item.color}
+          fillOpacity={fillOpacity}
+          x={xValue}
+          y={yValue}
+          key={index}
+          strokeWidth={1}
+          stroke={stroke}>
+        </rect>
+      );
     }
-
-    return (
-      <rect
-        width={squareSize}
-        height={squareSize}
-        fill={item.color}
-        fillOpacity={fillOpacity}
-        x={xValue}
-        y={yValue}
-        key={index}
-        strokeWidth={1}
-        stroke={stroke}>
-      </rect>
-    );
   }
 
   return (

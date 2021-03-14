@@ -31,7 +31,7 @@ export default function LegendToxicity({habSpecies, renderColorChips}) {
           </Typography>
         </Grid>
         <Grid item xs={9}>
-          {visibleSpecies.map(species => renderColorChips(species, 27, 20))}
+          {visibleSpecies.map(species => renderColorChips(species, 35, 20))}
         </Grid>
       </Grid>
       <Grid

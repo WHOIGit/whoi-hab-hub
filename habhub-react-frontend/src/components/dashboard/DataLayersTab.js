@@ -58,10 +58,16 @@ export default function DataLayersTab({
   onLayerVisibilityChange,
   onSpeciesVisibilityChange,
   renderColorChips,
+  showMaxMean,
+  setShowMaxMean,
 }) {
   // Set const variables
 
   const classes = useStyles();
+
+  const handleChange = (event) => {
+    setShowMaxMean(event.target.value);
+  };
 
   function renderLayerControl(mapLayer) {
     return (
@@ -108,7 +114,6 @@ export default function DataLayersTab({
 
   function renderSpeciesControl(species) {
     return (
-      <React.Fragment>
         <FormControlLabel
           key={species.id}
           control={
@@ -131,8 +136,6 @@ export default function DataLayersTab({
           }
         />
 
-      </React.Fragment>
-
     );
   }
 
@@ -153,6 +156,16 @@ export default function DataLayersTab({
           <FormGroup>
             {mapLayers.map(layer => renderLayerControl(layer))}
           </FormGroup>
+        </FormControl>
+      </ListItem>
+      <Divider variant="middle" component="li" className={classes.divider} />
+      <ListItem>
+        <FormControl component="fieldset" className={classes.formControl}>
+          <FormLabel component="legend">Data Type</FormLabel>
+          <RadioGroup aria-label="gender" name="gender1" value={showMaxMean} onChange={handleChange}>
+            <FormControlLabel value="max" control={<Radio color="primary" />} label="Max" />
+            <FormControlLabel value="mean" control={<Radio color="primary" />} label="Mean" />
+          </RadioGroup>
         </FormControl>
       </ListItem>
     </List>

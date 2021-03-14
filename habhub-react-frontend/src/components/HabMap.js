@@ -302,6 +302,8 @@ export default function HabMap() {
             setShowControls={setShowControls}
             showDateControls={showDateControls}
             setShowDateControls={setShowDateControls}
+            showMaxMean={showMaxMean}
+            setShowMaxMean={setShowMaxMean}
           />
         </div>
 

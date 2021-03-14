@@ -22,7 +22,7 @@ import LegendToxicity from "./LegendToxicity"
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
-    width: 220,
+    width: 300,
     transition: 'all 0.3s',
     zIndex: 2000,
   },

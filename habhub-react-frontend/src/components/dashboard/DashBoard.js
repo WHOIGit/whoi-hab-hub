@@ -130,6 +130,8 @@ export default function Dashboard({
   setShowControls,
   showDateControls,
   setShowDateControls,
+  showMaxMean,
+  setShowMaxMean,
 }) {
   // Set const variables
   const classes = useStyles();
@@ -214,6 +216,8 @@ export default function Dashboard({
               onLayerVisibilityChange={onLayerVisibilityChange}
               onSpeciesVisibilityChange={onSpeciesVisibilityChange}
               renderColorChips={renderColorChips}
+              showMaxMean={showMaxMean}
+              setShowMaxMean={setShowMaxMean}
             />
           </TabPanel>
           <TabPanel
