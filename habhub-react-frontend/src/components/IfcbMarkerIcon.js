@@ -92,7 +92,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
 
     // Set fill opacity/stroke color based on Value scale
     let fillOpacity = 1
-    let stroke = "green";
+    let stroke = "white";
     /*
     if (item.value < 100) {
       fillOpacity = 0;
@@ -101,8 +101,8 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
     if (item.value < 100) {
       return (
         <>
-        <line x1={xValue} y1={yValue} x2={xValue + squareSize} y2={yValue + squareSize} stroke={stroke} strokeWidth={2}></line>
-        <line x1={xValue + squareSize} y1={yValue} x2={xValue} y2={yValue + squareSize} stroke={stroke} strokeWidth={2}></line>
+        <line x1={xValue} y1={yValue} x2={xValue + squareSize} y2={yValue + squareSize} stroke={item.color} strokeWidth={2}></line>
+        <line x1={xValue + squareSize} y1={yValue} x2={xValue} y2={yValue + squareSize} stroke={item.color} strokeWidth={2}></line>
         </>
       )
     } else {

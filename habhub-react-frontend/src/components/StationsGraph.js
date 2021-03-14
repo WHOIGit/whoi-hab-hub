@@ -17,7 +17,7 @@ import HighchartsReact from 'highcharts-react-official'
 Exporting(Highcharts);
 Serieslabel(Highcharts);
 
-const expandWidth = window.outerWidth - 316;
+const expandWidth = window.outerWidth - 430;
 const useStyles = makeStyles(theme => ({
   chartContainer: {
   },

@@ -24,7 +24,7 @@ Serieslabel(Highcharts);
 const API_URL = process.env.REACT_APP_API_URL;
 const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
 
-const expandWidth = window.outerWidth - 316;
+const expandWidth = window.outerWidth - 430;
 
 const useStyles = makeStyles(theme => ({
   chartContainer: {

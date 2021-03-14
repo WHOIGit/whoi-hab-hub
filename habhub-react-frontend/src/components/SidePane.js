@@ -26,7 +26,7 @@ import StationsGraph from './StationsGraph';
 import IfcbGraph from './IfcbGraph';
 import ClosuresList from './ClosuresList';
 
-const expandWidth = window.outerWidth - 296;
+const expandWidth = window.outerWidth - 420;
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),

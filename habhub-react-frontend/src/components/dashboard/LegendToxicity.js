@@ -51,9 +51,7 @@ export default function LegendToxicity({habSpecies, renderColorChips}) {
           </Typography>
         </Grid>
 
-        <Grid item xs={3}>
-        </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={12}>
           <Typography variant="body2" align="center" gutterBottom>
             &micro;g/100 g meat
           </Typography>

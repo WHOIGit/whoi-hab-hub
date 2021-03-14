@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
     width: "25px",
   },
   closureIcon: {
-    backgroundColor: "#e5bb6a",
+    backgroundColor: "#f2b036",
   }
 }))
 
