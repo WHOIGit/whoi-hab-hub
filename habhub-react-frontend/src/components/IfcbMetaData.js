@@ -85,7 +85,7 @@ const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
               <Button
                 size="small"
                 color="primary"
-                href={`https://ifcb-data.whoi.edu/bin?dataset=${ pointImgData.bin.dataset_id }&bin=${ pointImgData.bin.pid }`}
+                href={`https://habon-ifcb.whoi.edu/bin?dataset=${ pointImgData.bin.dataset_id }&bin=${ pointImgData.bin.pid }`}
                 target="_blank" >
                 IFCB Dashboard source link
               </Button>
