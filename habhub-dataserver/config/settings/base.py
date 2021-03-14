@@ -80,6 +80,7 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'storages',
     'drf_multiple_model',
+    'rest_framework_csv',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',

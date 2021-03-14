@@ -4,7 +4,7 @@ from django.apps import apps
 
 class StationQuerySet(models.QuerySet):
 
-    def add_station_max(self, date_q_filters):
+    def add_station_max(self, date_q_filters=None):
         Datapoint = apps.get_model(app_label='stations', model_name='Datapoint')
         # set up the Subquery query with conditional date filter
         datapoint_query = Datapoint.objects.filter(station=OuterRef('id'))
@@ -25,7 +25,7 @@ class StationQuerySet(models.QuerySet):
             )
         )
 
-    def add_station_mean(self, date_q_filters):
+    def add_station_mean(self, date_q_filters=None):
         Datapoint = apps.get_model(app_label='stations', model_name='Datapoint')
         # set up the base Subquery query with conditional date filter
         datapoint_query = Datapoint.objects.filter(station=OuterRef('id'))

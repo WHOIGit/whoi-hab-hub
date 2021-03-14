@@ -1,6 +1,8 @@
 import datetime
 
 from rest_framework import generics, viewsets
+from rest_framework.settings import api_settings
+from rest_framework_csv.renderers import CSVRenderer
 from django_filters import rest_framework as filters
 from django.db import models
 from django.utils.timezone import make_aware
@@ -9,11 +11,17 @@ from django.db.models import Prefetch, F, Avg, Max, Q
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
 
+class StationCSVRenderer (CSVRenderer):
+    header = ['features.id','features.geometry']
+    labels = {
+        'features.id': 'duck'
+    }
 
 class StationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StationSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ('station_name', 'station_location')
+    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (CSVRenderer,)
 
     def get_queryset(self):
         queryset = Station.objects.all()
@@ -51,7 +59,7 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
                         'end_date': range_end_date
                     }
                     date_ranges.append(range_dict)
-                
+
                 for dr in date_ranges:
                     date_q_filters |= Q(measurement_date__range=(dr['start_date'], dr['end_date'])) # 'or' the Q objects together
             else:
