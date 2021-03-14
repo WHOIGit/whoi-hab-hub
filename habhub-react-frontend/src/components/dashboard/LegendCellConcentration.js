@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function LegendCellAbundance() {
+export default function LegendCellConcentration() {
   const classes = useStyles()
 
   const maxSquareSize = 32;

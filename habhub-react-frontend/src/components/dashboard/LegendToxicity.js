@@ -5,17 +5,10 @@ import { Grid, Typography } from '@material-ui/core'
 const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
   root: {
-    margin: theme.spacing(1),
-    width: 300,
-    transition: 'all 0.3s',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    zIndex: 2000,
   },
 }))
 
-export default function LegendToxinConcentrations({habSpecies, renderColorChips}) {
+export default function LegendToxicity({habSpecies, renderColorChips}) {
   const classes = useStyles()
   const [visibleSpecies, setVisibleSpecies] = useState(habSpecies)
 
@@ -38,7 +31,7 @@ export default function LegendToxinConcentrations({habSpecies, renderColorChips}
           </Typography>
         </Grid>
         <Grid item xs={9}>
-          {visibleSpecies.map(species => renderColorChips(species))}
+          {visibleSpecies.map(species => renderColorChips(species, 27, 20))}
         </Grid>
       </Grid>
       <Grid
@@ -55,6 +48,14 @@ export default function LegendToxinConcentrations({habSpecies, renderColorChips}
         <Grid item xs={4}>
           <Typography variant="body2" align="right">
              > 2000
+          </Typography>
+        </Grid>
+
+        <Grid item xs={3}>
+        </Grid>
+        <Grid item xs={9}>
+          <Typography variant="body2" align="center" gutterBottom>
+            &micro;g/100 g meat
           </Typography>
         </Grid>
       </Grid>

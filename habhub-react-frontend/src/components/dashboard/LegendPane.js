@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef
-} from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import {
   Card,
@@ -20,14 +16,13 @@ import {
   OpenWith,
   Minimize
 } from '@material-ui/icons'
-import LegendCellAbundance from "./LegendCellAbundance"
-import LegendToxinConcentrations from "./LegendToxinConcentrations"
+import LegendCellConcentration from "./LegendCellConcentration"
+import LegendToxicity from "./LegendToxicity"
 
-const expandWidth = window.outerWidth - 296;
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
-    width: 200,
+    width: 220,
     transition: 'all 0.3s',
     zIndex: 2000,
   },
@@ -54,9 +49,9 @@ export default function LegendPane({
   let title = null;
 
   if (dataLayer === 'ifcb-layer') {
-    title = 'Cell Abundance';
+    title = 'Cell Concentration';
   } else if (dataLayer === 'stations-layer') {
-    title = "Toxin Concentrations";
+    title = "Shellfish Toxicity";
   }
 
   return (
@@ -78,11 +73,11 @@ export default function LegendPane({
 
         <CardContent>
           {dataLayer === 'ifcb-layer' && (
-            <LegendCellAbundance />
+            <LegendCellConcentration />
           )}
 
           {dataLayer === 'stations-layer' && (
-            <LegendToxinConcentrations
+            <LegendToxicity
               habSpecies={habSpecies}
               renderColorChips={renderColorChips}
             />

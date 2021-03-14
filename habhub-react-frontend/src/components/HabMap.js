@@ -180,7 +180,7 @@ export default function HabMap() {
     setYAxisScale(event.target.value);
   };
 
-  function renderColorChips(species, chipType="gradient", squareWidth=20) {
+  function renderColorChips(species, chipWidth=20, chipHeight=20, chipType="gradient", ) {
     // default to show all colors in gradient list
     // if chipType is "primary", only show single chip for primary color
     let colors = species.colorGradient;
@@ -188,12 +188,12 @@ export default function HabMap() {
       colors = [species.colorPrimary];
     }
 
-    let svgWidth = squareWidth * colors.length;
+    let svgWidth = chipWidth * colors.length;
 
     return (
-      <svg width={svgWidth} height={squareWidth}>
+      <svg width={svgWidth} height={chipHeight}>
         {colors.map((color, index) => (
-          <rect width={squareWidth} height={squareWidth} fill={color} x={index * 20} key={index}></rect>
+          <rect width={chipWidth} height={chipHeight} fill={color} x={index * chipWidth} key={index}></rect>
         ))}
       </svg>
     )

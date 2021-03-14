@@ -54,7 +54,7 @@ export const species = [
 // array of Data Layers to display on the map
 export const layers = [
   {
-    'name': 'Station Shellfish Toxicity',
+    'name': 'Shellfish Toxicity',
     'id': 'stations-layer',
     'visibility': true,
     'isActive': true,

@@ -82,7 +82,7 @@ export default function DataLayersPanel({
               >
                 <em>{species.speciesName}</em> / {species.syndrome}
                 <Box component="span" m={1}>
-                  {renderColorChips(species, "primary", 12)}
+                  {renderColorChips(species, 12, 12, "primary")}
                 </Box>
               </Typography>
           }
