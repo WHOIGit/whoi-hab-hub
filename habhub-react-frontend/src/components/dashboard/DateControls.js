@@ -22,7 +22,8 @@ import {
 } from '@material-ui/pickers';
 import DataTimeline from "./DataTimeline";
 
-const fullWidth = window.outerWidth - 400;
+const widthWithDashboard = window.outerWidth - 400;
+const widthFull = window.outerWidth - 116;
 
 const marksYearSlider = [
   {
@@ -113,13 +114,18 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     display: 'flex',
     margin: theme.spacing(0),
-    width: fullWidth,
     backgroundColor: 'white',
     alignItems: 'center',
     padding: theme.spacing(0),
     height: "400px",
     zIndex: 3000,
     transition: 'all 0.4s',
+  },
+  dashBoardWidthPanel: {
+    width: widthWithDashboard,
+  },
+  fullWidthPanel: {
+    width: widthFull,
   },
   dateRangePanel: {
     width: "100%",
@@ -148,12 +154,16 @@ const useStyles = makeStyles((theme) => ({
 const defaultStartDate = new Date('2017-01-01T21:11:54');
 
 export default function DateControls({
+  showControls,
+  setShowControls,
   showDateControls,
   setShowDateControls,
   mapLayers,
   onDateRangeChange,
   dateFilter,
 }) {
+  console.log(showControls);
+  console.log(showDateControls,);
   const classes = useStyles();
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([0, 11]);
@@ -229,7 +239,9 @@ export default function DateControls({
   };
 
   return (
-    <div className={`${classes.root} ${showDateControls ? "active" : classes.collapse}`}>
+    <div className={
+        `${classes.root} ${showDateControls ? "active" : classes.collapse} ${showControls ? classes.dashBoardWidthPanel : classes.fullWidthPanel}`
+    }>
       <Grid
         container
         spacing={0}
@@ -340,6 +352,7 @@ export default function DateControls({
             setSelectedStartDate={setSelectedStartDate}
             setSelectedEndDate={setSelectedEndDate}
             setSliderValuesFromDates={setSliderValuesFromDates}
+            showControls={showControls}
            />
         </Grid>
       </Grid>

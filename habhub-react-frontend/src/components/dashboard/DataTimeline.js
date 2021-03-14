@@ -9,7 +9,9 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { format } from 'date-fns';
 
 const API_URL = process.env.REACT_APP_API_URL
-const fullWidth = window.outerWidth - 400;
+
+const widthWithDashboard = window.outerWidth - 400;
+const widthFull = window.outerWidth - 116;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,12 +44,15 @@ function DataTimeline({
   setSelectedStartDate,
   setSelectedEndDate,
   setSliderValuesFromDates,
+  dashBoardWidthPanel,
+  showControls,
 }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const [chartData, setChartData] = useState([]);
   const [chartBands, setChartBands] = useState([]);
+  const [chartWidth, setChartWidth] = useState(widthWithDashboard);
   const [showTimeline, setShowTimeline] = useState(false);
   const classes = useStyles();
 
@@ -133,11 +138,19 @@ function DataTimeline({
     }
   }, [dateFilter]);
 
+  useEffect(() => {
+      if (showControls) {
+        setChartWidth(widthWithDashboard);
+      } else {
+        setChartWidth(widthFull);
+      }
+  }, [showControls, dateFilter]);
+
   const chartOptions = {
     chart: {
       type: 'spline',
       zoomType: 'x',
-      width: fullWidth,
+      width: chartWidth,
       height: 220,
       // update dateFilter state on zoom selection, then set all date controls to match
       events: {

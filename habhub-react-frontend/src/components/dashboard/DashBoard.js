@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 
   },
   collapse: {
-    right: '-280px',
+    right: '-284px',
   },
   toggleArrow: {
     position: 'absolute',
@@ -137,28 +137,43 @@ export default function Dashboard({
   onDateRangeChange,
   onYAxisChange,
   renderColorChips,
+  showControls,
+  setShowControls,
   showDateControls,
   setShowDateControls,
 }) {
   // Set const variables
   const classes = useStyles();
   // Set local state
-  const [showControls, setShowControls] = useState(true);
   const [tabValue, setTabValue] = useState(0);
 
+  function onControlArrowClick() {
+    setShowControls(false);
+  }
+
   function handleTabChange(event, newTabValue) {
+    console.log(event);
+    console.log(tabValue);
     console.log(newTabValue);
+    if (tabValue === newTabValue && showControls) {
+      setShowControls(false);
+    } else {
+      setShowControls(true);
+    }
     setTabValue(newTabValue);
   };
 
   return (
     <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
-      <IconButton
-        className={classes.toggleArrow}
-        onClick={() => setShowControls(!showControls)}
-        aria-label="Open/Close Filter Pane" >
-        {showControls ? <ArrowForward /> :  <ArrowBack />}
-      </IconButton>
+      {showControls && (
+        <IconButton
+          className={classes.toggleArrow}
+          onClick={() => onControlArrowClick()}
+          aria-label="Close Filter Pane" >
+           <ArrowForward />
+        </IconButton>
+      )}
+
       <div className={classes.dashboardContainer}>
         <>
           <div className={classes.iconsContainer}>

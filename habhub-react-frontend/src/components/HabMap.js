@@ -83,6 +83,7 @@ export default function HabMap() {
     "exclude_month_range": false
   });
   const [stateFilter, setStateFilter] = useState(null);
+  const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [yAxisScale, setYAxisScale] = useState('linear');
@@ -294,6 +295,8 @@ export default function HabMap() {
             onDateRangeChange={onDateRangeChange}
             onYAxisChange={onYAxisChange}
             renderColorChips={renderColorChips}
+            showControls={showControls}
+            setShowControls={setShowControls}
             showDateControls={showDateControls}
             setShowDateControls={setShowDateControls}
           />
@@ -301,6 +304,8 @@ export default function HabMap() {
 
         <div>
           <DateControls
+            showControls={showControls}
+            setShowControls={setShowControls}
             showDateControls={showDateControls}
             setShowDateControls={setShowDateControls}
             mapLayers={mapLayers}
