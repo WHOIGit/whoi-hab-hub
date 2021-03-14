@@ -14,7 +14,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StationsMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor}) {
+export default function StationsMarkers({
+  habSpecies,
+  onMarkerClick,
+  dateFilter,
+  smoothingFactor,
+  showMaxMean,
+}) {
   const classes = useStyles();
   const layerID = 'stations-layer';
   const [error, setError] = useState(null);
@@ -75,7 +81,10 @@ export default function StationsMarkers({habSpecies, onMarkerClick, dateFilter, 
             className={classes.button}
             onClick={(event) => onMarkerClick(event, feature, layerID)}
           >
-            <StationsMarkerIcon maxMeanData={feature.properties.max_mean_values} />
+            <StationsMarkerIcon
+              maxMeanData={feature.properties.max_mean_values}
+              showMaxMean={showMaxMean}
+             />
           </div>
         </Marker>
       );

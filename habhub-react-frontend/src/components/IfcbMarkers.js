@@ -16,7 +16,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoothingFactor, visibility}) {
+export default function IfcbMarkers({
+  habSpecies,
+  onMarkerClick,
+  dateFilter,
+  smoothingFactor,
+  visibility,
+  showMaxMean,
+}) {
   const layerID = "ifcb-layer";
   const classes = useStyles();
   const [error, setError] = useState(null);
@@ -83,13 +90,18 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
     }
   }
 
-  function renderMarker(feature) {
+  function renderMarker(feature, showMaxMean) {
     // create new Array with Visible Species/Values
     if (feature.properties.max_mean_values.length) {
       const speciesValues = habSpecies.filter(species => species.visibility)
         .map((item) => {
           const maxMeanItem = feature.properties.max_mean_values.filter(data => item.id === data.species);
-          const value = maxMeanItem[0].max_value;
+          let value = maxMeanItem[0].max_value;
+
+          if (showMaxMean === 'mean') {
+            value = maxMeanItem[0].mean_value;
+          }
+          
           return {
             "species": item.id,
             "value": value,
@@ -128,7 +140,7 @@ export default function IfcbMarkers({habSpecies, onMarkerClick, dateFilter, smoo
 
         {results && (
           <div>
-            {results.features.map(feature => renderMarker(feature))}
+            {results.features.map(feature => renderMarker(feature, showMaxMean))}
 
             <Source
               id="ifcb-circles-src"

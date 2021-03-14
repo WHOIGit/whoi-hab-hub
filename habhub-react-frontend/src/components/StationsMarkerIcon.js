@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { species } from '../hab-species'
+import { species } from '../Constants'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,12 +22,19 @@ const activeSpecies = species.filter(item => item.id === 'Alexandrium_catenella'
 const colors = activeSpecies[0].colorGradient;
 //const colors = species[0].colorGradient;
 
-const StationsMarkerIcon = ({maxMeanData}) => {
+export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
   const classes = useStyles();
-  const [valueType, setValueType] = useState('max');
-  const value = maxMeanData[0].max_value;
+  const [value, setValue] = useState();
 
-  const setGradientColor = (value) => {
+  useEffect(() => {
+    if (showMaxMean === 'mean') {
+      setValue(maxMeanData[0].mean_value);
+    } else {
+      setValue(maxMeanData[0].max_value);
+    }
+  }, [maxMeanData, showMaxMean]);
+
+  function setGradientColor(value) {
     let gradient = colors[4];
 
     if (value < 42) {
@@ -53,5 +60,3 @@ const StationsMarkerIcon = ({maxMeanData}) => {
     </div>
   );
 }
-
-export default StationsMarkerIcon;

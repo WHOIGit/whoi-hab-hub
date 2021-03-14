@@ -86,7 +86,8 @@ export default function HabMap() {
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
-  const [yAxisScale, setYAxisScale] = useState('linear');
+  const [showMaxMean, setShowMaxMean] = useState("max");
+  const [yAxisScale, setYAxisScale] = useState("linear");
 
   const mapRef = useRef();
 
@@ -209,6 +210,7 @@ export default function HabMap() {
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
+          showMaxMean={showMaxMean}
           key={layer.id}
         />
       );
@@ -231,6 +233,7 @@ export default function HabMap() {
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
+          showMaxMean={showMaxMean}
           key={layer.id}
         />
       );

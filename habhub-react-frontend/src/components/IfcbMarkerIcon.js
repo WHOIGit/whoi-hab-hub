@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Marker } from "react-map-gl";
-import { species } from '../hab-species'
+import { species } from '../Constants'
 
 const useStyles = makeStyles((theme) => ({
   button: {
