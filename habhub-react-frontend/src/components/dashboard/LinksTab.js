@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function LinksPanel() {
+export default function LinksTab() {
   const classes = useStyles();
 
   return (

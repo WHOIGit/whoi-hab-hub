@@ -22,9 +22,10 @@ import {
   BarChart,
   Explore,
 } from '@material-ui/icons';
-import DataLayersPanel from './DataLayersPanel';
+import DataLayersTab from './DataLayersTab';
 import DateRangePanel from './DateRangePanel';
-import LinksPanel from './LinksPanel';
+import LegendTab from './LegendTab';
+import LinksTab from './LinksTab';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -207,7 +208,7 @@ export default function Dashboard({
             index={0}
             className={classes.tabPanelRoot}
           >
-            <DataLayersPanel
+            <DataLayersTab
               mapLayers={mapLayers}
               habSpecies={habSpecies}
               onLayerVisibilityChange={onLayerVisibilityChange}
@@ -220,14 +221,17 @@ export default function Dashboard({
             index={1}
             className={classes.tabPanelRoot}
           >
-            Legend
+            <LegendTab
+              habSpecies={habSpecies}
+              renderColorChips={renderColorChips}
+            />
           </TabPanel>
           <TabPanel
             value={tabValue}
             index={2}
             className={classes.tabPanelRoot}
           >
-            <LinksPanel />
+            <LinksTab />
           </TabPanel>
         </>
       </div>

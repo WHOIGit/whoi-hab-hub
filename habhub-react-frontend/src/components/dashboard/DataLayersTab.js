@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function DataLayersPanel({
+export default function DataLayersTab({
   mapLayers,
   habSpecies,
   onLayerVisibilityChange,
