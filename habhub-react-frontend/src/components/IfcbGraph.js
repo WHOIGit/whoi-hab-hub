@@ -12,6 +12,7 @@ import {
 import { Close } from '@material-ui/icons';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
+import ExportData from 'highcharts/modules/export-data';
 import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official';
 // Local imports
@@ -19,6 +20,7 @@ import IfcbMetaData from './IfcbMetaData';
 import { species } from '../Constants';
 
 Exporting(Highcharts);
+ExportData(Highcharts)
 Serieslabel(Highcharts);
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -109,7 +111,23 @@ function IfcbGraph({visibleResults, chartExpanded, yAxisScale}) {
                   }
               }
           }
-      },
+        },
+        exporting: {
+          buttons: {
+              contextButton: {
+                  menuItems: [
+                      'printChart',
+                      'separator',
+                      'downloadPNG',
+                      'downloadJPEG',
+                      'downloadPDF',
+                      'downloadSVG',
+                      'separator',
+                      'downloadCSV',
+                  ]
+              }
+          }
+        },
       series: chartData
     };
     setChartOptions(newChartOptions);

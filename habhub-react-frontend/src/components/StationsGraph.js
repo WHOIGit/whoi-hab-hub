@@ -12,9 +12,12 @@ import {
   Button } from '@material-ui/core'
 import Highcharts from 'highcharts'
 import Exporting from 'highcharts/modules/exporting';
+import ExportData from 'highcharts/modules/export-data';
 import Serieslabel from 'highcharts/modules/series-label';
 import HighchartsReact from 'highcharts-react-official'
+
 Exporting(Highcharts);
+ExportData(Highcharts);
 Serieslabel(Highcharts);
 
 const expandWidth = window.outerWidth - 430;
@@ -91,6 +94,22 @@ function StationsGraph({results, chartExpanded, yAxisScale}) {
     },
     plotOptions: {
       series: {threshold: 100}
+    },
+    exporting: {
+      buttons: {
+          contextButton: {
+              menuItems: [
+                  'printChart',
+                  'separator',
+                  'downloadPNG',
+                  'downloadJPEG',
+                  'downloadPDF',
+                  'downloadSVG',
+                  'separator',
+                  'downloadCSV',
+              ]
+          }
+      }
     },
     series: [{
       name: 'Shellfish meat toxicity',
