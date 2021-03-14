@@ -57,18 +57,6 @@ const useStyles = makeStyles(theme => ({
   collapse: {
     right: '-284px',
   },
-  toggleArrow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: 3000,
-    color: theme.palette.primary.contrastText,
-    backgroundColor: theme.palette.primary.light,
-    borderRadius: 0,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  },
   resetBtn: {
     position: 'absolute',
     top: '-3px',
@@ -165,14 +153,6 @@ export default function Dashboard({
 
   return (
     <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
-      {showControls && (
-        <IconButton
-          className={classes.toggleArrow}
-          onClick={() => onControlArrowClick()}
-          aria-label="Close Filter Pane" >
-           <ArrowForward />
-        </IconButton>
-      )}
 
       <div className={classes.dashboardContainer}>
         <>
