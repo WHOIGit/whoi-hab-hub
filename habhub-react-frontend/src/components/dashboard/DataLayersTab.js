@@ -163,8 +163,18 @@ export default function DataLayersTab({
         <FormControl component="fieldset" className={classes.formControl}>
           <FormLabel component="legend">Data Type</FormLabel>
           <RadioGroup aria-label="gender" name="gender1" value={showMaxMean} onChange={handleChange}>
-            <FormControlLabel value="max" control={<Radio color="primary" />} label="Max" />
-            <FormControlLabel value="mean" control={<Radio color="primary" />} label="Mean" />
+            <FormControlLabel
+              value="max"
+              control={<Radio color="primary" />}
+              label={
+                <Typography variant="body2">Max</Typography>
+              } />
+            <FormControlLabel
+              value="mean"
+              control={<Radio color="primary" />}
+              label={
+                <Typography variant="body2">Mean</Typography>
+              } />
           </RadioGroup>
         </FormControl>
       </ListItem>

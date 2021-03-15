@@ -20,6 +20,9 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3)
   },
+  legendBoxTop: {
+    marginTop: theme.spacing(0),
+  },
   legendDivider: {
     maring: theme.spacing(2)
   },
@@ -33,8 +36,7 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
 
   return (
     <div className={classes.root}>
-
-      <div className={classes.legendBox}>
+      <div className={`${classes.legendBox} ${classes.legendBoxTop}`} >
         <Typography variant="subtitle1" display="block" gutterBottom>
           Data Sources
         </Typography>
