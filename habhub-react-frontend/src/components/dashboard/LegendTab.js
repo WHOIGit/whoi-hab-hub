@@ -33,12 +33,9 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
 
   return (
     <div className={classes.root}>
-      <Typography variant="subtitle1" display="block" gutterBottom>
-        Legend
-      </Typography>
 
       <div className={classes.legendBox}>
-        <Typography variant="body1" display="block" gutterBottom>
+        <Typography variant="subtitle1" display="block" gutterBottom>
           Data Sources
         </Typography>
 
@@ -89,7 +86,7 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
       <Divider />
 
       <div className={classes.legendBox}>
-        <Typography variant="body1" display="block" gutterBottom>
+        <Typography variant="subtitle1" display="block" gutterBottom>
           Cell Concentration
         </Typography>
         <LegendCellConcentration />
@@ -97,7 +94,7 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
       <Divider />
 
       <div className={classes.legendBox}>
-        <Typography variant="body1" display="block" gutterBottom>
+        <Typography variant="subtitle1" display="block" gutterBottom>
           Shellfish Toxicity
         </Typography>
         <LegendToxicity
