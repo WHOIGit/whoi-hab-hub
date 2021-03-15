@@ -21,8 +21,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2)
   },
   legendBox: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3)
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2)
   },
   legendBoxTop: {
     marginTop: theme.spacing(0),
@@ -46,10 +46,27 @@ export default function LegendTab({
 }) {
   const classes = useStyles();
 
-  const handleLegendOpen = (layerID) => {
+  function handleLegendOpen(layerID) {
     if (visibleLegends.indexOf(layerID) === -1 ) {
-      setVisibleLegends([layerID, ...visibleLegends])
+      setVisibleLegends([layerID, ...visibleLegends]);
     }
+  }
+
+  function renderSpeciesList(species) {
+    return (
+      <>
+        <Grid item xs={2}>
+          <div>
+            {renderColorChips(species, 20, 20, "primary")}
+          </div>
+        </Grid>
+        <Grid item xs={10}>
+          <Typography variant="body2" color="textSecondary" className={classes.labelText}>
+            <em>{species.speciesName}</em> / {species.syndrome}
+          </Typography>
+        </Grid>
+      </>
+    );
   }
 
   return (
@@ -102,6 +119,17 @@ export default function LegendTab({
           </Grid>
         </Grid>
 
+      </div>
+      <Divider />
+
+      <div className={classes.legendBox}>
+        <Typography variant="subtitle1" display="block" gutterBottom>
+          HAB Species/Syndrome
+        </Typography>
+
+        <Grid container spacing={0}>
+          {habSpecies.map(species => renderSpeciesList(species))}
+        </Grid>
       </div>
       <Divider />
 
