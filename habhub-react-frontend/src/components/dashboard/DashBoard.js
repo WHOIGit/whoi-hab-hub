@@ -132,6 +132,8 @@ export default function Dashboard({
   setShowDateControls,
   showMaxMean,
   setShowMaxMean,
+  visibleLegends,
+  setVisibleLegends
 }) {
   // Set const variables
   const classes = useStyles();
@@ -228,6 +230,8 @@ export default function Dashboard({
             <LegendTab
               habSpecies={habSpecies}
               renderColorChips={renderColorChips}
+              visibleLegends={visibleLegends}
+              setVisibleLegends={setVisibleLegends}
             />
           </TabPanel>
           <TabPanel

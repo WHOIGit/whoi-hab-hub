@@ -29,34 +29,29 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function LowerLeftPane({
-  mapLayers,
+  visibleLegends,
+  setVisibleLegends,
   habSpecies,
   renderColorChips,
 }) {
   const classes = useStyles();
-  const [visibleLayers, setVisibleLayers] = useState();
-
-  useEffect(() => {
-    const currentLayers = mapLayers.filter(layer => layer.visibility && layer.hasLegend);
-    setVisibleLayers(currentLayers);
-  }, [mapLayers]);
 
   function onLegendPaneClose(layerID) {
-    const newLayers = visibleLayers.filter(layer => layer.id !== layerID)
-    setVisibleLayers(newLayers);
+    const newLegends = visibleLegends.filter(item => item !== layerID)
+    setVisibleLegends(newLegends);
   }
 
-  console.log(visibleLayers);
-  if (visibleLayers) {
+  console.log(visibleLegends);
+  if (visibleLegends) {
     return (
       <div className={classes.root}>
-        {visibleLayers.map(layer => (
+        {visibleLegends.map(item => (
           <LegendPane
-            dataLayer={layer.id}
+            dataLayer={item}
             habSpecies={habSpecies}
             onLegendPaneClose={onLegendPaneClose}
             renderColorChips={renderColorChips}
-            key={layer.id}
+            key={item}
           />
         ))}
       </div>

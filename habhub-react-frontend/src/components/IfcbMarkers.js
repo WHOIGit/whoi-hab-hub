@@ -16,14 +16,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function IfcbMarkers({
+const IfcbMarkers = ({
   habSpecies,
   onMarkerClick,
   dateFilter,
   smoothingFactor,
   visibility,
   showMaxMean,
-}) {
+}) => {
   const layerID = "ifcb-layer";
   const classes = useStyles();
   const [error, setError] = useState(null);
@@ -32,7 +32,7 @@ export default function IfcbMarkers({
   const [circleRadius, setCircleRadius] = useState(12);
 
   useEffect(() => {
-    function getFetchUrl() {
+    const getFetchUrl = () => {
       let baseURL = API_URL + "api/v1/ifcb-datasets/"
       // build API URL to get set Date Filter
       const filterURL = baseURL + "?" + new URLSearchParams({
@@ -45,7 +45,7 @@ export default function IfcbMarkers({
       return filterURL;
     }
 
-    function fetchResults() {
+    const fetchResults = () => {
       const url = getFetchUrl();
       console.log(url);
       fetch(url)
@@ -90,7 +90,7 @@ export default function IfcbMarkers({
     }
   }
 
-  function renderMarker(feature, showMaxMean) {
+  const renderMarker = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
     if (feature.properties.max_mean_values.length) {
       const speciesValues = habSpecies.filter(species => species.visibility)
@@ -101,7 +101,7 @@ export default function IfcbMarkers({
           if (showMaxMean === 'mean') {
             value = maxMeanItem[0].mean_value;
           }
-          
+
           return {
             "species": item.id,
             "value": value,
@@ -159,3 +159,5 @@ export default function IfcbMarkers({
     return null;
   }
 }
+
+export default IfcbMarkers;

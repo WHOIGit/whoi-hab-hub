@@ -5,7 +5,11 @@ import {
   Link,
   Divider,
   Grid,
+  IconButton,
+  Tooltip,
 } from '@material-ui/core';
+import { Launch } from '@material-ui/icons'
+
 import LegendCellConcentration from "./LegendCellConcentration"
 import LegendToxicity from "./LegendToxicity"
 import DiamondMarker from '../../images/diamond.svg';
@@ -29,10 +33,24 @@ const useStyles = makeStyles((theme) => ({
   layerIcon: {
     width: "25px",
   },
+  popper: {
+    zIndex: 9999,
+  }
 }));
 
-export default function LegendTab({ habSpecies, renderColorChips }) {
+export default function LegendTab({
+  habSpecies,
+  renderColorChips,
+  visibleLegends,
+  setVisibleLegends,
+}) {
   const classes = useStyles();
+
+  const handleLegendOpen = (layerID) => {
+    if (visibleLegends.indexOf(layerID) === -1 ) {
+      setVisibleLegends([layerID, ...visibleLegends])
+    }
+  }
 
   return (
     <div className={classes.root}>
@@ -90,6 +108,14 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
       <div className={classes.legendBox}>
         <Typography variant="subtitle1" display="block" gutterBottom>
           Cell Concentration
+          <Tooltip title="Open window"
+            classes={{
+              popper: classes.popper,
+          }}>
+            <IconButton onClick={() => handleLegendOpen("ifcb-layer")} aria-label="open Cell Concentration legend on map">
+              <Launch />
+            </IconButton>
+          </Tooltip>
         </Typography>
         <LegendCellConcentration />
       </div>
@@ -98,6 +124,14 @@ export default function LegendTab({ habSpecies, renderColorChips }) {
       <div className={classes.legendBox}>
         <Typography variant="subtitle1" display="block" gutterBottom>
           Shellfish Toxicity
+          <Tooltip title="Open window"
+            classes={{
+              popper: classes.popper,
+          }}>
+            <IconButton onClick={() => handleLegendOpen("stations-layer")} aria-label="open Shellfish Toxicity legend on map">
+              <Launch />
+            </IconButton>
+          </Tooltip>
         </Typography>
         <LegendToxicity
           habSpecies={habSpecies}

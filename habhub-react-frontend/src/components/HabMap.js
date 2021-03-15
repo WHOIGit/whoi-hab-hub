@@ -88,6 +88,7 @@ export default function HabMap() {
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [showMaxMean, setShowMaxMean] = useState("max");
   const [yAxisScale, setYAxisScale] = useState("linear");
+  const [visibleLegends, setVisibleLegends] = useState(["stations-layer", "ifcb-layer"]);
 
   const mapRef = useRef();
 
@@ -137,6 +138,12 @@ export default function HabMap() {
     // set the features state
     const newFeatures = features.filter(feature => feature.layer.id !== layerID)
     setFeatures(newFeatures);
+
+    // remove any legned panes if they're active, no action on activating
+    if (!event.target.checked) {
+      const newLegends = visibleLegends.filter(item => item !== layerID)
+      setVisibleLegends(newLegends);
+    }
   }
 
   function onSpeciesVisibilityChange(event, speciesID) {
@@ -177,7 +184,6 @@ export default function HabMap() {
   }
 
   function onYAxisChange(event) {
-    console.log(event.target.value);
     setYAxisScale(event.target.value);
   };
 
@@ -304,6 +310,8 @@ export default function HabMap() {
             setShowDateControls={setShowDateControls}
             showMaxMean={showMaxMean}
             setShowMaxMean={setShowMaxMean}
+            visibleLegends={visibleLegends}
+            setVisibleLegends={setVisibleLegends}
           />
         </div>
 
@@ -321,7 +329,8 @@ export default function HabMap() {
 
         <div>
           <LowerLeftPanel
-            mapLayers={mapLayers}
+            visibleLegends={visibleLegends}
+            setVisibleLegends={setVisibleLegends}
             habSpecies={habSpecies}
             renderColorChips={renderColorChips}
           />

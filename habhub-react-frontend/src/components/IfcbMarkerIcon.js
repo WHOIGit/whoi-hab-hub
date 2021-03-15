@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
+const IfcbMarkerIcon = ({feature, layerID, speciesValues, onMarkerClick}) => {
   const [offsetLeft, setOffsetLeft] = useState(-32)
   const [offsetTop, setOffsetTop] = useState(-25)
   const classes = useStyles();
@@ -48,7 +48,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
 
   }, [speciesValues])
 
-  function getSquareSize(speciesItem, maxSquareSize) {
+  const getSquareSize = (speciesItem, maxSquareSize) => {
     const value = speciesItem.value
     let squareSize = maxSquareSize;
 
@@ -64,7 +64,7 @@ function IfcbMarkerIcon({feature, layerID, speciesValues, onMarkerClick}) {
     return squareSize;
   }
 
-  function renderSquare(item, index) {
+  const renderSquare = (item, index) => {
     const squareSize = getSquareSize(item, maxSquareSize)
     // Set 0 index X/Y values
     let xValue = maxSquareSize - squareSize;
