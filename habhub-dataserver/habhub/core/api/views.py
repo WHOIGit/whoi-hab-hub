@@ -42,6 +42,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
     # use a separate subquery to get the max count value
     bin_max = (
         Bin.objects
+        .filter(cell_concentration_data__isnull=False)
         .annotate(timestamp=TruncMonth('sample_time'))
         .values('timestamp')
         .annotate(data_count=Count('id'))
@@ -51,6 +52,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
     bin_query = (
         Bin.objects
+        .filter(cell_concentration_data__isnull=False)
         # Truncate to Month and add to values
         .annotate(timestamp=TruncMonth('sample_time'))
         .values('timestamp')  # Group By Month
