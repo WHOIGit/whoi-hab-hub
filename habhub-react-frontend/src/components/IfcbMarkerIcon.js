@@ -93,7 +93,9 @@ const IfcbMarkerIcon = ({feature, layerID, speciesValues, onMarkerClick}) => {
     // Set fill opacity/stroke color based on Value scale
     let fillOpacity = 1
     let stroke = "white";
-
+    if (item.value < 100) {
+      fillOpacity = 0;
+    }
     return (
       <rect
         width={squareSize}
