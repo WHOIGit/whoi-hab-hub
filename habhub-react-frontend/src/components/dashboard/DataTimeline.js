@@ -188,9 +188,22 @@ function DataTimeline({
         label: {
           enabled: false
         },
-        enableMouseTracking : false,
+        //enableMouseTracking : false,
       }
     },
+    tooltip: { enabled: false },
+    /*
+    tooltip: {
+      formatter: function () {
+          const sampleTime = format(new Date(this.x), 'MMM yyyy');
+          const tooltip = `
+              ${sampleTime}<br>
+              ${this.series.name}
+          `
+          return tooltip;
+      }
+    },
+    */
     series: chartData
   };
 
