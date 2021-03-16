@@ -3,9 +3,6 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { makeStyles } from '@material-ui/styles';
 import { CircularProgress, Button } from '@material-ui/core';
-import BarChartIcon from '@material-ui/icons/BarChart';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { format } from 'date-fns';
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -191,6 +188,7 @@ function DataTimeline({
         label: {
           enabled: false
         },
+        enableMouseTracking : false,
       }
     },
     series: chartData

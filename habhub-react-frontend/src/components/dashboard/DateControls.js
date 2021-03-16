@@ -14,6 +14,7 @@ import {
   FormGroup,
   IconButton,
   Checkbox,
+  Tooltip,
 } from '@material-ui/core';
 import { Restore } from '@material-ui/icons';
 import {
@@ -149,6 +150,9 @@ const useStyles = makeStyles((theme) => ({
     padding: "12px 16px",
     color: theme.palette.text.secondary,
   },
+  popper: {
+    zIndex: 9999,
+  }
 }));
 
 const defaultStartDate = new Date('2017-01-01T21:11:54');
@@ -162,8 +166,6 @@ export default function DateControls({
   onDateRangeChange,
   dateFilter,
 }) {
-  console.log(showControls);
-  console.log(showDateControls,);
   const classes = useStyles();
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([0, 11]);
@@ -255,9 +257,14 @@ export default function DateControls({
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <List>
                     <ListItem>
-                      <IconButton onClick={() => onDateRangeReset()} aria-label="expand" className={classes.resetBtn}>
-                         <Restore />
-                      </IconButton>
+                      <Tooltip title="Reset Dates"
+                        classes={{
+                          popper: classes.popper,
+                      }}>
+                        <IconButton onClick={() => onDateRangeReset()} aria-label="expand" className={classes.resetBtn}>
+                           <Restore />
+                        </IconButton>
+                      </Tooltip>
                       <FormControl component="fieldset" >
                         <FormLabel component="legend">Date Range</FormLabel>
                         <FormGroup>
