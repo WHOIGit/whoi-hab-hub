@@ -75,17 +75,17 @@ export default function HeaderDropdownMenu() {
       >
         <MenuItem>Network Sites</MenuItem>
         <MenuItem onClick={handleClose}>
-          <a href="https://whoi.edu" target="_blank">
+          <a href="https://northeasthab.whoi.edu/" target="_blank" rel="noreferrer">
             <img src={logoNehab} alt="NeHAB Logo" className={classes.menuImg2} />
           </a>
         </MenuItem>
         <MenuItem onClick={handleClose}>
-          <a href="https://whoi.edu" target="_blank">
+          <a href="https://northeasthab.whoi.edu/bloom-monitoring/habon-ne/" target="_blank" rel="noreferrer">
             <img src={logoNehabon} alt="NeHABON Logo" className={classes.menuImg} />
           </a>
         </MenuItem>
         <MenuItem onClick={handleClose}>
-          <a href="https://whoi.edu" target="_blank">
+          <a href="#">
             <img src={logoPhytoArm} alt="PhytoArm Logo" className={classes.menuImg} />
           </a>
         </MenuItem>
