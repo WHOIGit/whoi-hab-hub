@@ -278,6 +278,7 @@ export default function HabMap() {
             onClick={event => onMapClick(event)}
             onLoad={() => onMapLoad()}
             interactiveLayerIds={interactiveLayerIds}
+            preserveDrawingBuffer={true}
             ref={mapRef}
           >
 
@@ -312,6 +313,7 @@ export default function HabMap() {
             setShowMaxMean={setShowMaxMean}
             visibleLegends={visibleLegends}
             setVisibleLegends={setVisibleLegends}
+            mapRef={mapRef}
           />
         </div>
 

@@ -66,9 +66,9 @@ export default function SidePane({
   onPaneClose,
   habSpecies,
 }) {
-  const classes = useStyles()
-  const [expandPane, setExpandPane] = useState(false)
-  const [visibleResults, setVisibleResults] = useState([])
+  const classes = useStyles();
+  const [expandPane, setExpandPane] = useState(false);
+  const [visibleResults, setVisibleResults] = useState([]);
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph

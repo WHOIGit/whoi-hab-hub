@@ -31,14 +31,15 @@ class Dataset(models.Model):
             concentration_dict = {'species': species, 'values': []}
             concentration_values.append(concentration_dict)
 
-        bins_qs = self.bins.all()
-        if bins_qs:
+        if self.bins.exists():
+            bins_qs = self.bins.all()
             for bin in bins_qs:
-                for datapoint in bin.cell_concentration_data:
-                    item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
+                if bin.cell_concentration_data:
+                    for datapoint in bin.cell_concentration_data:
+                        item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
 
-                    if item is not None:
-                        item['values'].append(int(datapoint['cell_concentration']))
+                        if item is not None:
+                            item['values'].append(int(datapoint['cell_concentration']))
 
             for item in concentration_values:
                 data_dict = {

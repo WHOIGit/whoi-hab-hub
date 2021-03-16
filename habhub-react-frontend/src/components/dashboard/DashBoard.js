@@ -133,7 +133,8 @@ export default function Dashboard({
   showMaxMean,
   setShowMaxMean,
   visibleLegends,
-  setVisibleLegends
+  setVisibleLegends,
+  mapRef,
 }) {
   // Set const variables
   const classes = useStyles();
@@ -220,6 +221,7 @@ export default function Dashboard({
               renderColorChips={renderColorChips}
               showMaxMean={showMaxMean}
               setShowMaxMean={setShowMaxMean}
+              mapRef={mapRef}
             />
           </TabPanel>
           <TabPanel

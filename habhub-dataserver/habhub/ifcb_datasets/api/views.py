@@ -87,6 +87,7 @@ class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     # return different sets of fields if the request is list all or retrieve one,
     # so use two different serializers
     def get_serializer_class(self):
+        print(self.action)
         if self.action == 'retrieve':
             if hasattr(self, 'detail_serializer_class'):
                 return self.detail_serializer_class
