@@ -72,7 +72,7 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
           "type": "Feature",
           "properties": {
             "name": item.properties.name,
-            "count": item.properties.closures.length
+            //"count": item.properties.closures.length
           },
           "geometry": item.properties.geom_center_point
         }

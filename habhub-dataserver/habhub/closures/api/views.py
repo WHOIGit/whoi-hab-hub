@@ -12,22 +12,24 @@ from ..models import (
     ClosureDataEvent,
     ShellfishArea,
 )
-from .serializers import ClosureDataEventSerializer, ShellfishAreaSerializer
-
-
-class ClosureDataEventViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ClosureDataEventSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-
-    def get_queryset(self):
-        queryset = ClosureDataEvent.objects.all()
-        return queryset
+from .serializers import ShellfishAreaListSerializer, ShellfishAreaDetailSerializer
 
 
 class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ShellfishAreaSerializer
+    serializer_class = ShellfishAreaListSerializer
+    detail_serializer_class = ShellfishAreaDetailSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ["state"]
+
+    # return different sets of fields if the request is list all or retrieve one,
+    # so use two different serializers
+    def get_serializer_class(self):
+        print(self.action)
+        if self.action == 'retrieve':
+            if hasattr(self, 'detail_serializer_class'):
+                return self.detail_serializer_class
+
+        return super(ShellfishAreaViewSet, self).get_serializer_class()
 
     def get_queryset(self):
         queryset = ShellfishArea.objects.all()

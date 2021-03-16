@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter, SimpleRouter
-from .views import ClosureDataEventViewSet, ShellfishAreaViewSet
+from .views import ShellfishAreaViewSet
 
 # Create a router and register our viewsets with it.
 router = SimpleRouter()
