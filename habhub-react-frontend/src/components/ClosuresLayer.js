@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from "react";
-import {Source, Layer} from 'react-map-gl';
-import {format} from 'date-fns';
-import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import React, { useState, useEffect } from "react";
+import { Source, Layer } from "react-map-gl";
+import { format } from "date-fns";
+import { makeStyles } from "@material-ui/styles";
+import { CircularProgress } from "@material-ui/core";
 
-const API_URL = process.env.REACT_APP_API_URL
+const API_URL = process.env.REACT_APP_API_URL;
 
 const useStyles = makeStyles((theme) => ({
   placeholder: {
@@ -14,7 +14,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilter, visibility}) {
+export default function ClosuresLayer({
+  mapRef,
+  habSpecies,
+  dateFilter,
+  stateFilter,
+  visibility,
+}) {
   const mapObj = mapRef.current.getMap();
   const classes = useStyles();
   const [error, setError] = useState(null);
@@ -25,19 +31,24 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
   // Get Closure data from API
   useEffect(() => {
     function getFetchUrl() {
-      let baseURL = API_URL + 'api/v1/closures/'
-      let filterURL = ''
+      let baseURL = API_URL + "api/v1/closures/";
+      let filterURL = "";
       // build API URL to get set Date Filter
-      filterURL = baseURL + '?' + new URLSearchParams({
-        start_date: format(dateFilter.startDate, 'MM/dd/yyyy'),
-        end_date: format(dateFilter.endDate, 'MM/dd/yyyy'),
-        seasonal: dateFilter.seasonal,
-        exclude_month_range: dateFilter.exclude_month_range,
-      })
+      filterURL =
+        baseURL +
+        "?" +
+        new URLSearchParams({
+          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
+          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          seasonal: dateFilter.seasonal,
+          exclude_month_range: dateFilter.exclude_month_range,
+        });
       if (stateFilter) {
-        filterURL = filterURL + new URLSearchParams({
-          state: stateFilter
-        })
+        filterURL =
+          filterURL +
+          new URLSearchParams({
+            state: stateFilter,
+          });
       }
       return filterURL;
     }
@@ -47,62 +58,65 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
       console.log(url);
       setIsLoaded(false);
 
-      fetch(url).then(res => res.json()).then((result) => {
-        setIsLoaded(true);
-        setResults(result);
-      },
-      // Note: it's important to handle errors here
-      // instead of a catch() block so that we don't swallow
-      // exceptions from actual bugs in components.
-      (error) => {
-        setIsLoaded(true);
-        setError(error);
-      })
+      fetch(url)
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            setIsLoaded(true);
+            setResults(result);
+          },
+          // Note: it's important to handle errors here
+          // instead of a catch() block so that we don't swallow
+          // exceptions from actual bugs in components.
+          (error) => {
+            setIsLoaded(true);
+            setError(error);
+          }
+        );
     }
     // Get the API data
     fetchResults();
-  }, [dateFilter])
+  }, [dateFilter]);
 
   // Need to create a new data source/layer to put label on polygon centroid
   // update the Labels text layer when API results change
   useEffect(() => {
     if (results) {
-      const centerPoints = results.features.map(item => {
+      const centerPoints = results.features.map((item) => {
         const point = {
-          "type": "Feature",
-          "properties": {
-            "name": item.properties.name,
+          type: "Feature",
+          properties: {
+            name: item.properties.name,
             //"count": item.properties.closures.length
           },
-          "geometry": item.properties.geom_center_point
-        }
+          geometry: item.properties.geom_center_point,
+        };
         return point;
-      })
+      });
 
       const labelsGeojson = {
-        "type": "FeatureCollection",
-        "features": centerPoints
+        type: "FeatureCollection",
+        features: centerPoints,
       };
       setLabels(labelsGeojson);
       console.log(labelsGeojson);
     }
-  }, [results])
-
+  }, [results]);
 
   // Set default layer styles
   const layerClosures = {
-    id: 'closures-layer',
-    type: 'fill',
-    source: 'closures-src',
+    id: "closures-layer",
+    type: "fill",
+    source: "closures-src",
     paint: {
-      'fill-color': 'orange',
-      'fill-opacity': 0.5,
-      'fill-outline-color': '#fc4e2a'
+      "fill-color": "orange",
+      "fill-opacity": 0.5,
+      "fill-outline-color": "#fc4e2a",
     },
     layout: {
-      'visibility': 'visible'
-    }
-  }
+      visibility: "visible",
+    },
+  };
   /*
   const layerLabels = {
     id: 'closures-labels-layer',
@@ -131,22 +145,22 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
   }
   */
   const layerClosuresIcons = {
-    id: 'closures-icons-layer',
-    type: 'symbol',
-    source: 'closures-labels-src',
+    id: "closures-icons-layer",
+    type: "symbol",
+    source: "closures-labels-src",
     layout: {
-      'icon-image': 'icon-shellfish-closure',
-      'icon-allow-overlap': false,
-      'visibility': 'visible'
-    }
-  }
+      "icon-image": "icon-shellfish-closure",
+      "icon-allow-overlap": false,
+      visibility: "visible",
+    },
+  };
 
   return (
     <div>
       {!isLoaded && (
-          <div className={classes.placeholder}>
-            <CircularProgress />
-          </div>
+        <div className={classes.placeholder}>
+          <CircularProgress />
+        </div>
       )}
 
       <React.Fragment>
@@ -158,26 +172,16 @@ export default function ClosuresLayer({mapRef, habSpecies, dateFilter, stateFilt
             buffer={10}
             maxzoom={12}
           >
-          {visibility && (
-            <Layer {...layerClosures}/>
-          )}
+            {visibility && <Layer {...layerClosures} />}
           </Source>
         )}
 
         {labels && (
-          <Source
-            id="closures-labels-src"
-            type="geojson"
-            data={labels}
-          >
-          {visibility && (
-            <Layer {...layerClosuresIcons}/>
-          )}
+          <Source id="closures-labels-src" type="geojson" data={labels}>
+            {visibility && <Layer {...layerClosuresIcons} />}
           </Source>
         )}
       </React.Fragment>
-
     </div>
   );
-
 }
