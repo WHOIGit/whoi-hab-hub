@@ -32,36 +32,35 @@ export default function PartnersTab() {
           Funders
         </Typography>
         <Typography variant="body2" display="block" gutterBottom>
-          This site is supported by{" "}
-          <Link href="https://nsf.gov" target="_blank" rel="noreferrer">
-            NSF
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="https://www.niehs.nih.gov"
-            target="_blank"
-            rel="noreferrer"
-          >
-            NIEHS
-          </Link>{" "}
-          through the{" "}
+          This site is supported by the Community Engagement Core of the{" "}
           <Link
             href="https://www2.whoi.edu/site/whcohh"
             target="_blank"
             rel="noreferrer"
           >
-            {" "}
-            Woods Hole Center for Oceans and Human Health
+            Woods Hole Center for Oceans and Human Health (WHCOHH)
           </Link>{" "}
-          and the{" "}
+          through grants from the{" "}
+          <Link href="https://nsf.gov" target="_blank" rel="noreferrer">
+            National Science Foundation (NSF OCE-1841811)
+          </Link>
+          , the{" "}
+          <Link
+            href="https://www.niehs.nih.gov"
+            target="_blank"
+            rel="noreferrer"
+          >
+            National Institute of Environmental Health
+          </Link>{" "}
+          (NIEHS P01ES028949), and the{" "}
           <Link
             href="https://coastalscience.noaa.gov/research/stressor-impacts-mitigation/merhab/"
             target="_blank"
             rel="noreferrer"
           >
-            NOAA NCCOS MERHAB
+            National Oceanic and Atmospheric Administration MERHAB program
           </Link>{" "}
-          program.
+          (NA19NOS478018).
         </Typography>
         <Box mt={3}>
           <Grid container spacing={2}>
