@@ -5,6 +5,7 @@ import { Stars, Tune, Layers, List, Explore } from "@material-ui/icons";
 import DataLayersTab from "./DataLayersTab";
 import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
+import PartnersTab from "./PartnersTab";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -168,7 +169,7 @@ export default function Dashboard({
               />
               <Tab
                 icon={<Stars />}
-                label="Acknowledgements"
+                label="Partners"
                 classes={{
                   root: classes.tabRoot,
                 }}
@@ -213,7 +214,7 @@ export default function Dashboard({
             <LinksTab />
           </TabPanel>
           <TabPanel value={tabValue} index={3} className={classes.tabPanelRoot}>
-            <LinksTab />
+            <PartnersTab />
           </TabPanel>
         </>
       </div>
