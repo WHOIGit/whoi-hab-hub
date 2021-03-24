@@ -13,6 +13,7 @@ import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import LowerLeftPanel from "./LowerLeftPanel";
+import DisclaimerBox from "./DisclaimerBox";
 import { layers, species } from "../Constants";
 
 const MAPBOX_TOKEN =
@@ -330,6 +331,10 @@ export default function HabMap() {
             habSpecies={habSpecies}
             renderColorChips={renderColorChips}
           />
+        </div>
+
+        <div>
+          <DisclaimerBox />
         </div>
       </div>
     </DndProvider>
