@@ -1,14 +1,13 @@
-import React from 'react'
-import { makeStyles } from '@material-ui/styles'
-import { Grid, Typography, Box } from '@material-ui/core'
+import React from "react";
+import { makeStyles } from "@material-ui/styles";
+import { Grid, Typography } from "@material-ui/core";
 
-const expandWidth = window.outerWidth - 296;
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
-    transition: 'all 0.3s',
-    position: 'absolute',
+    transition: "all 0.3s",
+    position: "absolute",
     bottom: 0,
     left: 0,
     zIndex: 2000,
@@ -16,13 +15,11 @@ const useStyles = makeStyles(theme => ({
   legendGrid: {
     fontSize: ".8em",
   },
-  legendText: {
-
-  }
-}))
+  legendText: {},
+}));
 
 export default function LegendCellConcentration() {
-  const classes = useStyles()
+  const classes = useStyles();
 
   const maxSquareSize = 32;
   const minSquareSize = 8;
@@ -38,16 +35,30 @@ export default function LegendCellConcentration() {
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
-        >
-        <Grid item >
+      >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg width={minSquareSize} height={minSquareSize}>
-              <line x1={0} y1={0} x2={minSquareSize} y2={minSquareSize} stroke={strokeColor} strokeWidth={2}></line>
-              <line x1={0} y1={minSquareSize} x2={minSquareSize} y2={0} stroke={strokeColor} strokeWidth={2}></line>
+              <line
+                x1={0}
+                y1={0}
+                x2={minSquareSize}
+                y2={minSquareSize}
+                stroke={strokeColor}
+                strokeWidth={2}
+              ></line>
+              <line
+                x1={0}
+                y1={minSquareSize}
+                x2={minSquareSize}
+                y2={0}
+                stroke={strokeColor}
+                strokeWidth={2}
+              ></line>
             </svg>
           </Typography>
         </Grid>
-        <Grid item >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg width={minSquareSize} height={minSquareSize}>
               <rect
@@ -55,51 +66,60 @@ export default function LegendCellConcentration() {
                 height={minSquareSize}
                 fill={fillColor}
                 strokeWidth={strokeWidth}
-                stroke={strokeColor}>
-              </rect>
+                stroke={strokeColor}
+              ></rect>
             </svg>
           </Typography>
         </Grid>
-        <Grid item >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
-            <svg width={maxSquareSize / 5 * 2} height={maxSquareSize / 5 * 2}>
+            <svg
+              width={(maxSquareSize / 5) * 2}
+              height={(maxSquareSize / 5) * 2}
+            >
               <rect
-                width={maxSquareSize / 5 * 2}
-                height={maxSquareSize / 5 * 2}
+                width={(maxSquareSize / 5) * 2}
+                height={(maxSquareSize / 5) * 2}
                 fill={fillColor}
                 strokeWidth={strokeWidth}
-                stroke={strokeColor}>
-              </rect>
+                stroke={strokeColor}
+              ></rect>
             </svg>
           </Typography>
         </Grid>
-        <Grid item >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
-            <svg width={maxSquareSize / 5 * 3} height={maxSquareSize / 5 * 3}>
+            <svg
+              width={(maxSquareSize / 5) * 3}
+              height={(maxSquareSize / 5) * 3}
+            >
               <rect
-                width={maxSquareSize / 5 * 3}
-                height={maxSquareSize / 5 * 3}
+                width={(maxSquareSize / 5) * 3}
+                height={(maxSquareSize / 5) * 3}
                 fill={fillColor}
                 strokeWidth={strokeWidth}
-                stroke={strokeColor}>
-              </rect>
+                stroke={strokeColor}
+              ></rect>
             </svg>
           </Typography>
         </Grid>
-        <Grid item >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
-            <svg width={maxSquareSize / 5 * 4} height={maxSquareSize / 5 * 4}>
+            <svg
+              width={(maxSquareSize / 5) * 4}
+              height={(maxSquareSize / 5) * 4}
+            >
               <rect
-                width={maxSquareSize / 5 * 4}
-                height={maxSquareSize / 5 * 4}
+                width={(maxSquareSize / 5) * 4}
+                height={(maxSquareSize / 5) * 4}
                 fill={fillColor}
                 strokeWidth={strokeWidth}
-                stroke={strokeColor}>
-              </rect>
+                stroke={strokeColor}
+              ></rect>
             </svg>
           </Typography>
         </Grid>
-        <Grid item >
+        <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg width={maxSquareSize} height={maxSquareSize}>
               <rect
@@ -107,8 +127,8 @@ export default function LegendCellConcentration() {
                 height={maxSquareSize}
                 fill={fillColor}
                 strokeWidth={strokeWidth}
-                stroke={strokeColor}>
-              </rect>
+                stroke={strokeColor}
+              ></rect>
             </svg>
           </Typography>
         </Grid>
@@ -120,43 +140,72 @@ export default function LegendCellConcentration() {
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
-        >
-        <Grid item >
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
+      >
+        <Grid item>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
             ND
           </Typography>
         </Grid>
-        <Grid item >
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
-            >100
-          </Typography>
-        </Grid>
-        <Grid item >
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
-            >1000
-          </Typography>
-        </Grid>
-        <Grid item >
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
-            >1x10<sup>4</sup>
+        <Grid item>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
+            &gt;100
           </Typography>
         </Grid>
         <Grid item>
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
-            >1x10<sup>5</sup>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
+            &gt;1000
           </Typography>
         </Grid>
-        <Grid item >
-          <Typography variant="caption" display="block" align="center" className={classes.legendText}>
-            >1x10<sup>6</sup>
+        <Grid item>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
+            &gt;1x10<sup>4</sup>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
+            &gt;1x10<sup>5</sup>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography
+            variant="caption"
+            display="block"
+            align="center"
+            className={classes.legendText}
+          >
+            &gt;1x10<sup>6</sup>
           </Typography>
         </Grid>
       </Grid>
 
       <Typography variant="body2" align="center" gutterBottom>
-         Cells L <sup>-1</sup>
+        Cells L <sup>-1</sup>
       </Typography>
-
     </>
-  )
+  );
 }

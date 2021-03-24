@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React from "react";
 // Material UI imports
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
-import {
-  Grid,
-  Container
-} from '@material-ui/core';
+import CssBaseline from "@material-ui/core/CssBaseline";
+import { ThemeProvider } from "@material-ui/core/styles";
+import { Container } from "@material-ui/core";
 // Import our stuff
-import Header from './components/Header';
-import HabMap from './components/HabMap';
-import theme from './theme';
+import Header from "./components/Header";
+import HabMap from "./components/HabMap";
+import theme from "./theme";
 
 export default function App() {
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

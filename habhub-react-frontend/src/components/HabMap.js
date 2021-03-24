@@ -1,25 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
-import MapGL, {
-  Source,
-  Layer,
-  Marker,
-  Popup,
-  NavigationControl,
-  FullscreenControl,
-  ScaleControl,
-} from "react-map-gl";
+import React, { useState, useRef } from "react";
+import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { differenceInDays } from "date-fns";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
-import { ThemeProvider } from "@material-ui/core/styles";
 // Import our stuff
-import SidePane from "./SidePane";
 import DashBoard from "./dashboard/DashBoard";
 import DateControls from "./dashboard/DateControls";
 import DataPanel from "./DataPanel";
-import StationsGraph from "./StationsGraph";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
@@ -28,7 +17,6 @@ import { layers, species } from "../Constants";
 
 const MAPBOX_TOKEN =
   "pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug";
-const popupFromZoom = 6;
 const defaultStartDate = new Date("2017-01-01T21:11:54");
 
 const navStyle = {
@@ -45,6 +33,7 @@ const scaleControlStyle = {
   padding: "10px",
 };
 
+// eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
   dataPanelContainer: {
     background: "none",
@@ -66,9 +55,6 @@ export default function HabMap() {
     height: "100vh",
     zoom: 6.7,
   });
-  const mapOptions = {
-    logoPosition: "top-left",
-  };
 
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
@@ -81,11 +67,11 @@ export default function HabMap() {
     seasonal: false,
     exclude_month_range: false,
   });
-  const [stateFilter, setStateFilter] = useState(null);
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
   const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [showMaxMean, setShowMaxMean] = useState("max");
+  // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
   const [visibleLegends, setVisibleLegends] = useState([
     "stations-layer",
@@ -109,7 +95,6 @@ export default function HabMap() {
   }
 
   function onMapClick(event) {
-    const mapObj = mapRef.current.getMap();
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {
       layers: interactiveLayerIds,
     });
@@ -156,7 +141,6 @@ export default function HabMap() {
   }
 
   function onSpeciesVisibilityChange(event, speciesID) {
-    const mapObj = mapRef.current.getMap();
     const newVisibility = habSpecies.map((item) => {
       if (item.id == speciesID) {
         item.visibility = event.target.checked;
@@ -193,10 +177,6 @@ export default function HabMap() {
       newFactor = 3;
     }
     setSmoothingFactor(newFactor);
-  }
-
-  function onYAxisChange(event) {
-    setYAxisScale(event.target.value);
   }
 
   function renderColorChips(
@@ -246,10 +226,7 @@ export default function HabMap() {
     } else if (layer.id === "closures-layer") {
       return (
         <ClosuresLayer
-          mapRef={mapRef}
-          habSpecies={habSpecies}
           dateFilter={dateFilter}
-          stateFilter={stateFilter}
           visibility={layer.visibility}
           key={layer.id}
         />
@@ -321,11 +298,8 @@ export default function HabMap() {
           <DashBoard
             mapLayers={mapLayers}
             habSpecies={habSpecies}
-            yAxisScale={yAxisScale}
             onLayerVisibilityChange={onLayerVisibilityChange}
             onSpeciesVisibilityChange={onSpeciesVisibilityChange}
-            onDateRangeChange={onDateRangeChange}
-            onYAxisChange={onYAxisChange}
             renderColorChips={renderColorChips}
             showControls={showControls}
             setShowControls={setShowControls}
@@ -342,9 +316,7 @@ export default function HabMap() {
         <div>
           <DateControls
             showControls={showControls}
-            setShowControls={setShowControls}
             showDateControls={showDateControls}
-            setShowDateControls={setShowDateControls}
             mapLayers={mapLayers}
             onDateRangeChange={onDateRangeChange}
             dateFilter={dateFilter}

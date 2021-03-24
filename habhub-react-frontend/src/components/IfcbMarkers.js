@@ -8,6 +8,7 @@ import IfcbMarkerIcon from "./IfcbMarkerIcon";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
   placeholder: {
     position: "absolute",

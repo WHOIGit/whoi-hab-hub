@@ -1,41 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import {
-  Typography,
-  Button,
-  Grid,
-  GridList,
-  GridListTile,
-  CircularProgress,
-} from '@material-ui/core';
+import React, { useState, useEffect } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
-const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL
+const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
 
 const useStyles = makeStyles((theme) => ({
   placeholder: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   rootGrid: {
     marginTop: theme.spacing(2),
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
     backgroundColor: theme.palette.background.paper,
   },
   imageGrid: {
-    maxWidth: '100%',
+    maxWidth: "100%",
   },
   gridList: {
-    flexWrap: 'nowrap',
+    flexWrap: "nowrap",
     // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
-    transform: 'translateZ(0)',
+    transform: "translateZ(0)",
   },
 }));
 
-const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
+const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
   const classes = useStyles();
   const [pointImgData, setPointImgData] = useState();
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
 
   const gridSize = chartExpanded ? 3 : 6;
@@ -43,7 +38,7 @@ const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
   useEffect(() => {
     console.log(metaDataUrl);
     fetch(metaDataUrl)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(
         (result) => {
           console.log(result);
@@ -57,58 +52,58 @@ const IfcbMetaData = ({metaDataUrl, chartExpanded}) => {
           setIsLoaded(true);
           setError(error);
         }
-      )
-
-  }, [metaDataUrl])
+      );
+  }, [metaDataUrl]);
 
   return (
     <div>
-    {!pointImgData && (
-      <div className={classes.placeholder}>
-        <CircularProgress />
-      </div>
-    )}
+      {!pointImgData && (
+        <div className={classes.placeholder}>
+          <CircularProgress />
+        </div>
+      )}
 
-    {pointImgData && (
-      <div>
+      {pointImgData && (
         <div>
-          <Grid container spacing={3} >
-            <Grid item xs>
-              <Typography variant="h6">
-                <em>{pointImgData.species}</em>
-              </Typography>
-              <Typography variant="body2">
-                IFCB Bin: {pointImgData.bin.pid}
-              </Typography>
-            </Grid>
-            <Grid item xs style={{ textAlign:'right' }}>
-              <Button
-                size="small"
-                color="primary"
-                href={`https://habon-ifcb.whoi.edu/bin?dataset=${ pointImgData.bin.dataset_id }&bin=${ pointImgData.bin.pid }`}
-                target="_blank" >
-                IFCB Dashboard source link
-              </Button>
-            </Grid>
-          </Grid>
-        </div>
-        <div className={classes.rootGrid}>
-          <Grid container spacing={2} >
-            {pointImgData.images.map((image) => (
-              <Grid item xs={gridSize}>
-                <img
-                  src={`${AWS_BUCKET_URL}${image}`}
-                  alt={pointImgData.species}
-                  className={classes.imageGrid}
-                />
+          <div>
+            <Grid container spacing={3}>
+              <Grid item xs>
+                <Typography variant="h6">
+                  <em>{pointImgData.species}</em>
+                </Typography>
+                <Typography variant="body2">
+                  IFCB Bin: {pointImgData.bin.pid}
+                </Typography>
               </Grid>
-            ))}
-          </Grid>
+              <Grid item xs style={{ textAlign: "right" }}>
+                <Button
+                  size="small"
+                  color="primary"
+                  href={`https://habon-ifcb.whoi.edu/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
+                  target="_blank"
+                >
+                  IFCB Dashboard source link
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
+          <div className={classes.rootGrid}>
+            <Grid container spacing={2}>
+              {pointImgData.images.map((image) => (
+                <Grid item xs={gridSize} key={image}>
+                  <img
+                    src={`${AWS_BUCKET_URL}${image}`}
+                    alt={pointImgData.species}
+                    className={classes.imageGrid}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
-}
+};
 
 export default IfcbMetaData;

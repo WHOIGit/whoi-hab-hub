@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
-import { makeStyles } from '@material-ui/styles';
-import { CircularProgress, Button } from '@material-ui/core';
-import { format } from 'date-fns';
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+import { makeStyles } from "@material-ui/styles";
+import { CircularProgress } from "@material-ui/core";
 
-const API_URL = process.env.REACT_APP_API_URL
+const API_URL = process.env.REACT_APP_API_URL;
 
 const widthWithDashboard = window.outerWidth - 400;
 const widthFull = window.outerWidth - 116;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: 'relative',
-    display: 'flex',
+    position: "relative",
+    display: "flex",
     margin: theme.spacing(0),
-    alignItems: 'center',
+    alignItems: "center",
     padding: theme.spacing(0),
-    transition: 'all 0.3s',
+    transition: "all 0.3s",
   },
   placeholder: {
-    margin: '0 auto',
+    margin: "0 auto",
   },
   button: {
     margin: theme.spacing(0),
@@ -41,16 +40,15 @@ function DataTimeline({
   setSelectedStartDate,
   setSelectedEndDate,
   setSliderValuesFromDates,
-  dashBoardWidthPanel,
   showControls,
 }) {
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
   const [chartData, setChartData] = useState([]);
   const [chartBands, setChartBands] = useState([]);
   const [chartWidth, setChartWidth] = useState(widthWithDashboard);
-  const [showTimeline, setShowTimeline] = useState(false);
   const classes = useStyles();
 
   useEffect(() => {
@@ -58,7 +56,7 @@ function DataTimeline({
       const url = `${API_URL}api/v1/data-density/`;
       console.log(url);
       fetch(url)
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(
           (result) => {
             console.log(result);
@@ -72,23 +70,26 @@ function DataTimeline({
             setIsLoaded(true);
             setError(error);
           }
-        )
+        );
     }
     fetchResults();
-  }, [mapLayers])
+  }, [mapLayers]);
 
   useEffect(() => {
-    const newChartData = []
+    const newChartData = [];
     if (results) {
       for (let [key, value] of Object.entries(results)) {
-        const dataArray = value.map(item => [Date.parse(item.timestamp), parseFloat(item.density_percentage)]);
+        const dataArray = value.map((item) => [
+          Date.parse(item.timestamp),
+          parseFloat(item.density_percentage),
+        ]);
         console.log(dataArray);
         const timeSeries = {
           name: key,
           data: dataArray,
-        }
+        };
 
-        newChartData.push(timeSeries)
+        newChartData.push(timeSeries);
       }
       setChartData(newChartData);
     }
@@ -96,23 +97,42 @@ function DataTimeline({
 
   // update Chart Bands when Dates are changed
   useEffect(() => {
+    function range(start, end) {
+      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+    }
+
     if (dateFilter) {
-      const bandColor = "#e1f5fe"
+      const bandColor = "#e1f5fe";
       // if seasonal filter, need to create array of date ranges
       if (dateFilter.seasonal) {
-        function range(start, end) {
-          return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-        }
-
-        const yearRange = range(dateFilter.startDate.getFullYear(), dateFilter.endDate.getFullYear());
-        const newChartBands = yearRange.map(year => {
-          let startDateFields = [year, dateFilter.startDate.getMonth(), dateFilter.startDate.getDate()];
-          let endDateFields = [year, dateFilter.endDate.getMonth(), dateFilter.endDate.getDate()];
+        const yearRange = range(
+          dateFilter.startDate.getFullYear(),
+          dateFilter.endDate.getFullYear()
+        );
+        const newChartBands = yearRange.map((year) => {
+          let startDateFields = [
+            year,
+            dateFilter.startDate.getMonth(),
+            dateFilter.startDate.getDate(),
+          ];
+          let endDateFields = [
+            year,
+            dateFilter.endDate.getMonth(),
+            dateFilter.endDate.getDate(),
+          ];
 
           if (dateFilter.exclude_month_range) {
-             startDateFields = [year, dateFilter.endDate.getMonth(), dateFilter.endDate.getDate()];
-             endDateFields = [year + 1, dateFilter.startDate.getMonth(), dateFilter.startDate.getDate()];
-           }
+            startDateFields = [
+              year,
+              dateFilter.endDate.getMonth(),
+              dateFilter.endDate.getDate(),
+            ];
+            endDateFields = [
+              year + 1,
+              dateFilter.startDate.getMonth(),
+              dateFilter.startDate.getDate(),
+            ];
+          }
 
           const startDate = new Date(...startDateFields);
           const endDate = new Date(...endDateFields);
@@ -120,65 +140,67 @@ function DataTimeline({
           return {
             color: bandColor,
             from: startDate,
-            to: endDate
-          }
-        })
+            to: endDate,
+          };
+        });
         setChartBands(newChartBands);
       } else {
         const band = {
           color: bandColor,
           from: dateFilter.startDate,
-          to: dateFilter.endDate
-        }
+          to: dateFilter.endDate,
+        };
         setChartBands([band]);
       }
     }
   }, [dateFilter]);
 
   useEffect(() => {
-      if (showControls) {
-        setChartWidth(widthWithDashboard);
-      } else {
-        setChartWidth(widthFull);
-      }
+    if (showControls) {
+      setChartWidth(widthWithDashboard);
+    } else {
+      setChartWidth(widthFull);
+    }
   }, [showControls, dateFilter]);
 
   const chartOptions = {
     chart: {
-      type: 'spline',
-      zoomType: 'x',
+      type: "spline",
+      zoomType: "x",
       width: chartWidth,
       height: 220,
       // update dateFilter state on zoom selection, then set all date controls to match
       events: {
-        selection: function(event) {
-            if(event.xAxis != null) {
-              let start = new Date(Math.ceil(event.xAxis[0].min));
-              let end = new Date(Math.floor(event.xAxis[0].max));
-              onDateRangeChange(start, end);
-              setSelectedStartDate(start);
-              setSelectedEndDate(end);
-              setSliderValuesFromDates(start, end);
-            } else {
-              onDateRangeReset();
-            }
-        }
+        selection: function (event) {
+          if (event.xAxis != null) {
+            let start = new Date(Math.ceil(event.xAxis[0].min));
+            let end = new Date(Math.floor(event.xAxis[0].max));
+            onDateRangeChange(start, end);
+            setSelectedStartDate(start);
+            setSelectedEndDate(end);
+            setSliderValuesFromDates(start, end);
+          } else {
+            onDateRangeReset();
+          }
+        },
       },
     },
     title: {
-      text: null
+      text: null,
     },
     subtitle: {
-      text: document.ontouchstart === undefined ?
-            'Click and drag in the plot area to select date range' : 'Pinch the chart to select data range'
+      text:
+        document.ontouchstart === undefined
+          ? "Click and drag in the plot area to select date range"
+          : "Pinch the chart to select data range",
     },
     xAxis: {
-      type: 'datetime',
+      type: "datetime",
       plotBands: chartBands,
     },
     yAxis: {
       title: {
-          text: 'Data Density'
+        text: "Data Density",
       },
       min: 0,
       max: 1,
@@ -186,10 +208,10 @@ function DataTimeline({
     plotOptions: {
       series: {
         label: {
-          enabled: false
+          enabled: false,
         },
         //enableMouseTracking : false,
-      }
+      },
     },
     tooltip: { enabled: false },
     /*
@@ -204,7 +226,7 @@ function DataTimeline({
       }
     },
     */
-    series: chartData
+    series: chartData,
   };
 
   return (
@@ -218,10 +240,7 @@ function DataTimeline({
       )}
 
       {results && (
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={chartOptions}
-        />
+        <HighchartsReact highcharts={Highcharts} options={chartOptions} />
       )}
     </div>
   );

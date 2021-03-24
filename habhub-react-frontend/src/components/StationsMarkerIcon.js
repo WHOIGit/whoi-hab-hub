@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { species } from '../Constants'
+import React, { useState, useEffect } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { species } from "../Constants";
 
+// eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
   root: {
     width: 20,
     height: 20,
-    fontFamily: 'Verdana',
-    fontSize: '1.8rem',
-    fontWeight: 'bold',
-
+    fontFamily: "Verdana",
+    fontSize: "1.8rem",
+    fontWeight: "bold",
   },
   triangle: {
-    stroke: '#de2d26',
+    stroke: "#de2d26",
     strokeWidth: 2,
-  }
+  },
 }));
 
 // set colors to use for the gradient from Species
-const activeSpecies = species.filter(item => item.id === 'Alexandrium_catenella');
+const activeSpecies = species.filter(
+  (item) => item.id === "Alexandrium_catenella"
+);
 const colors = activeSpecies[0].colorGradient;
 //const colors = species[0].colorGradient;
 
@@ -27,7 +29,7 @@ export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
   const [value, setValue] = useState();
 
   useEffect(() => {
-    if (showMaxMean === 'mean') {
+    if (showMaxMean === "mean") {
       setValue(maxMeanData[0].mean_value);
     } else {
       setValue(maxMeanData[0].max_value);
@@ -52,10 +54,17 @@ export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
 
   return (
     <div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className={classes.root} >
-          <polygon points="50 0, 100 50, 50 100, 0 50" fill={setGradientColor(value)} className={classes.triangle}/>
-          {/*<text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>*/}
-
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 100 100"
+        className={classes.root}
+      >
+        <polygon
+          points="50 0, 100 50, 50 100, 0 50"
+          fill={setGradientColor(value)}
+          className={classes.triangle}
+        />
+        {/*<text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>*/}
       </svg>
     </div>
   );

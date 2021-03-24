@@ -6,6 +6,7 @@ import { CircularProgress } from "@material-ui/core";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
   placeholder: {
     position: "absolute",
@@ -14,15 +15,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ClosuresLayer({
-  mapRef,
-  habSpecies,
-  dateFilter,
-  stateFilter,
-  visibility,
-}) {
-  const mapObj = mapRef.current.getMap();
+export default function ClosuresLayer({ dateFilter, visibility }) {
   const classes = useStyles();
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
@@ -43,13 +38,6 @@ export default function ClosuresLayer({
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.exclude_month_range,
         });
-      if (stateFilter) {
-        filterURL =
-          filterURL +
-          new URLSearchParams({
-            state: stateFilter,
-          });
-      }
       return filterURL;
     }
 

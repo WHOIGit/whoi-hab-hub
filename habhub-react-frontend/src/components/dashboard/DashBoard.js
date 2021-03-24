@@ -1,87 +1,65 @@
-import React, {
-  useState,
-  useEffect
-} from 'react';
-import { makeStyles } from '@material-ui/styles';
-import {
-  IconButton,
-  Button,
-  Typography,
-  Box,
-  AppBar,
-  Tabs,
-  Tab
-} from '@material-ui/core';
-import {
-  ArrowForward,
-  ArrowBack,
-  Restore,
-  Tune,
-  Layers,
-  List,
-  BarChart,
-  Explore,
-} from '@material-ui/icons';
-import DataLayersTab from './DataLayersTab';
-import DateRangePanel from './DateRangePanel';
-import LegendTab from './LegendTab';
-import LinksTab from './LinksTab';
+import React, { useState } from "react";
+import { makeStyles } from "@material-ui/styles";
+import { Button, Typography, Box, Tabs, Tab } from "@material-ui/core";
+import { Stars, Tune, Layers, List, Explore } from "@material-ui/icons";
+import DataLayersTab from "./DataLayersTab";
+import LegendTab from "./LegendTab";
+import LinksTab from "./LinksTab";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     //margin: theme.spacing(1),
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
-    width: '448px',
-    background: 'none',
+    width: "448px",
+    background: "none",
     zIndex: 2000,
-    height: '100vh',
-    overflowY: 'scroll',
-    transition: 'all 0.3s',
+    height: "100vh",
+    overflowY: "scroll",
+    transition: "all 0.3s",
   },
   dashboardContainer: {
     //margin: theme.spacing(1),
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
-    width: '400px',
-    background: '#fff',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-    color: '#6b6b76',
-    outline: 'none',
-    height: '100vh',
-    overflowY: 'scroll',
-    overflowX: 'visible'
-
+    width: "400px",
+    background: "#fff",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+    color: "#6b6b76",
+    outline: "none",
+    height: "100vh",
+    overflowY: "scroll",
+    overflowX: "visible",
   },
   collapse: {
-    right: '-284px',
+    right: "-284px",
   },
   resetBtn: {
-    position: 'absolute',
-    top: '-3px',
-    right: '15px',
+    position: "absolute",
+    top: "-3px",
+    right: "15px",
     zIndex: 100,
   },
   iconsContainer: {
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor: theme.palette.primary.main,
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     right: 0,
     zIndex: 4000,
-    height: '100vh',
+    height: "100vh",
   },
   indicator: {
-    left: '0px'
+    left: "0px",
   },
   tabRoot: {
     minWidth: "110px",
-    color: 'white',
+    color: "white",
   },
   tabPanelRoot: {
-    maxWidth: "284px"
+    maxWidth: "284px",
   },
   dashboardButtonBox: {
     position: "absolute",
@@ -94,12 +72,12 @@ const useStyles = makeStyles(theme => ({
   },
   dashboardButtonLabel: {
     // Aligns the content of the button vertically.
-    flexDirection: 'column'
+    flexDirection: "column",
   },
-}))
+}));
 
 function TabPanel(props) {
-  const {children, value, index, ...other} = props;
+  const { children, value, index, ...other } = props;
   return (
     <div
       role="tabpanel"
@@ -120,11 +98,8 @@ function TabPanel(props) {
 export default function Dashboard({
   mapLayers,
   habSpecies,
-  yAxisScale,
   onLayerVisibilityChange,
   onSpeciesVisibilityChange,
-  onDateRangeChange,
-  onYAxisChange,
   renderColorChips,
   showControls,
   setShowControls,
@@ -141,10 +116,6 @@ export default function Dashboard({
   // Set local state
   const [tabValue, setTabValue] = useState(0);
 
-  function onControlArrowClick() {
-    setShowControls(false);
-  }
-
   function handleTabChange(event, newTabValue) {
     console.log(event);
     console.log(tabValue);
@@ -155,11 +126,14 @@ export default function Dashboard({
       setShowControls(true);
     }
     setTabValue(newTabValue);
-  };
+  }
 
   return (
-    <div className={`${classes.root} control-panel ${showControls ? "active" : classes.collapse}`}>
-
+    <div
+      className={`${classes.root} control-panel ${
+        showControls ? "active" : classes.collapse
+      }`}
+    >
       <div className={classes.dashboardContainer}>
         <>
           <div className={classes.iconsContainer}>
@@ -168,28 +142,35 @@ export default function Dashboard({
               onChange={handleTabChange}
               orientation="vertical"
               classes={{
-                indicator: classes.indicator
+                indicator: classes.indicator,
               }}
             >
               <Tab
                 icon={<Layers />}
                 label="Data Layers"
                 classes={{
-                  root: classes.tabRoot
+                  root: classes.tabRoot,
                 }}
               />
               <Tab
                 icon={<List />}
                 label="Legend"
                 classes={{
-                  root: classes.tabRoot
+                  root: classes.tabRoot,
                 }}
               />
               <Tab
                 icon={<Explore />}
                 label="Links"
                 classes={{
-                  root: classes.tabRoot
+                  root: classes.tabRoot,
+                }}
+              />
+              <Tab
+                icon={<Stars />}
+                label="Acknowledgements"
+                classes={{
+                  root: classes.tabRoot,
                 }}
               />
             </Tabs>
@@ -208,11 +189,7 @@ export default function Dashboard({
             </div>
           </div>
 
-          <TabPanel
-            value={tabValue}
-            index={0}
-            className={classes.tabPanelRoot}
-          >
+          <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
             <DataLayersTab
               mapLayers={mapLayers}
               habSpecies={habSpecies}
@@ -224,11 +201,7 @@ export default function Dashboard({
               mapRef={mapRef}
             />
           </TabPanel>
-          <TabPanel
-            value={tabValue}
-            index={1}
-            className={classes.tabPanelRoot}
-          >
+          <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
             <LegendTab
               habSpecies={habSpecies}
               renderColorChips={renderColorChips}
@@ -236,11 +209,10 @@ export default function Dashboard({
               setVisibleLegends={setVisibleLegends}
             />
           </TabPanel>
-          <TabPanel
-            value={tabValue}
-            index={2}
-            className={classes.tabPanelRoot}
-          >
+          <TabPanel value={tabValue} index={2} className={classes.tabPanelRoot}>
+            <LinksTab />
+          </TabPanel>
+          <TabPanel value={tabValue} index={3} className={classes.tabPanelRoot}>
             <LinksTab />
           </TabPanel>
         </>

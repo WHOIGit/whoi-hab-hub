@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import DateFnsUtils from '@date-io/date-fns';
-import { makeStyles } from '@material-ui/styles';
+import React, { useState } from "react";
+import DateFnsUtils from "@date-io/date-fns";
+import { makeStyles } from "@material-ui/styles";
 import {
   Grid,
   Box,
@@ -15,12 +15,12 @@ import {
   IconButton,
   Checkbox,
   Tooltip,
-} from '@material-ui/core';
-import { Restore } from '@material-ui/icons';
+} from "@material-ui/core";
+import { Restore } from "@material-ui/icons";
 import {
   MuiPickersUtilsProvider,
-  KeyboardDatePicker
-} from '@material-ui/pickers';
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
 import DataTimeline from "./DataTimeline";
 
 const widthWithDashboard = window.outerWidth - 400;
@@ -29,80 +29,80 @@ const widthFull = window.outerWidth - 116;
 const marksYearSlider = [
   {
     value: 1970,
-    label: '1970',
+    label: "1970",
   },
   {
     value: 1980,
-    label: '1980',
+    label: "1980",
   },
   {
     value: 1990,
-    label: '1990',
+    label: "1990",
   },
   {
     value: 2000,
-    label: '2000',
+    label: "2000",
   },
   {
     value: 2010,
-    label: '2010',
+    label: "2010",
   },
   {
     value: 2020,
-    label: '2020',
+    label: "2020",
   },
-]
+];
 
 const marksMonthSlider = [
   {
     value: 0,
-    label: 'Jan',
+    label: "Jan",
   },
   {
     value: 1,
-    label: 'Feb',
+    label: "Feb",
   },
   {
     value: 2,
-    label: 'Mar',
+    label: "Mar",
   },
   {
     value: 3,
-    label: 'Apr',
+    label: "Apr",
   },
   {
     value: 4,
-    label: 'May',
+    label: "May",
   },
   {
     value: 5,
-    label: 'Jun',
+    label: "Jun",
   },
   {
     value: 6,
-    label: 'Jul',
+    label: "Jul",
   },
   {
     value: 7,
-    label: 'Aug',
+    label: "Aug",
   },
   {
     value: 8,
-    label: 'Sep',
+    label: "Sep",
   },
   {
     value: 9,
-    label: 'Oct',
+    label: "Oct",
   },
   {
     value: 10,
-    label: 'Nov',
+    label: "Nov",
   },
   {
     value: 11,
-    label: 'Dec',
+    label: "Dec",
   },
-]
+];
 
 function valueMonthLabelFormat(value) {
   return value + 1;
@@ -110,17 +110,17 @@ function valueMonthLabelFormat(value) {
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: 'fixed',
+    position: "fixed",
     bottom: 0,
     left: 0,
-    display: 'flex',
+    display: "flex",
     margin: theme.spacing(0),
-    backgroundColor: 'white',
-    alignItems: 'center',
+    backgroundColor: "white",
+    alignItems: "center",
     padding: theme.spacing(0),
     height: "400px",
     zIndex: 3000,
-    transition: 'all 0.4s',
+    transition: "all 0.4s",
   },
   dashBoardWidthPanel: {
     width: widthWithDashboard,
@@ -138,9 +138,9 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
   },
   resetBtn: {
-    position: 'absolute',
-    top: '-3px',
-    right: '15px',
+    position: "absolute",
+    top: "-3px",
+    right: "15px",
     zIndex: 100,
   },
   collapse: {
@@ -152,16 +152,14 @@ const useStyles = makeStyles((theme) => ({
   },
   popper: {
     zIndex: 9999,
-  }
+  },
 }));
 
-const defaultStartDate = new Date('2017-01-01T21:11:54');
+const defaultStartDate = new Date("2017-01-01T21:11:54");
 
 export default function DateControls({
   showControls,
-  setShowControls,
   showDateControls,
-  setShowDateControls,
   mapLayers,
   onDateRangeChange,
   dateFilter,
@@ -179,9 +177,9 @@ export default function DateControls({
       // trigger parent function to fetch data
       onDateRangeChange(date, selectedEndDate);
       // update the slider values to match new date
-      setSliderValuesFromDates(date, selectedEndDate)
+      setSliderValuesFromDates(date, selectedEndDate);
     }
-  };
+  }
 
   function onEndDateChange(date) {
     setSelectedEndDate(date);
@@ -189,20 +187,23 @@ export default function DateControls({
       // trigger parent function to fetch data
       onDateRangeChange(selectedStartDate, date);
       // update the slider values to match new date
-      setSliderValuesFromDates(selectedStartDate, date)
+      setSliderValuesFromDates(selectedStartDate, date);
     }
-  };
+  }
 
   function onDateRangeReset() {
     setSelectedStartDate(defaultStartDate);
     setSelectedEndDate(new Date());
     onDateRangeChange(defaultStartDate, new Date());
     // update the slider values to match new date, set months to full year range
-    const newSliderYear = [defaultStartDate.getFullYear(), new Date().getFullYear()];
+    const newSliderYear = [
+      defaultStartDate.getFullYear(),
+      new Date().getFullYear(),
+    ];
     setValueYearSlider(newSliderYear);
     const newSliderMonth = [0, 11];
     setValueMonthSlider(newSliderMonth);
-  };
+  }
 
   function setSliderValuesFromDates(startDate, endDate) {
     // updates the Slider state values from two Date objects
@@ -215,12 +216,12 @@ export default function DateControls({
   function onYearSliderCommit(event, newValue) {
     setValueYearSlider(newValue);
     onSliderRangeChange(newValue, valueMonthSlider);
-  };
+  }
 
   function onMonthSliderCommit(event, newValue) {
     setValueMonthSlider(newValue);
     onSliderRangeChange(valueYearSlider, newValue);
-  };
+  }
 
   function onSliderRangeChange(valueYearSlider, valueMonthSlider) {
     // Calculate new dates based on slider input
@@ -228,7 +229,7 @@ export default function DateControls({
     const newStartDate = new Date(...startDateFields);
     setSelectedStartDate(newStartDate);
 
-    const endDateFields = [valueYearSlider[1], valueMonthSlider[1]+1, 0];
+    const endDateFields = [valueYearSlider[1], valueMonthSlider[1] + 1, 0];
     const newEndDate = new Date(...endDateFields);
     setSelectedEndDate(newEndDate);
     // set "seasonal" filter to TRUE
@@ -237,70 +238,76 @@ export default function DateControls({
 
   function onExcludeChange(event) {
     setExcludeChecked(event.target.checked);
-    onDateRangeChange(selectedStartDate, selectedEndDate, true, event.target.checked);
-  };
+    onDateRangeChange(
+      selectedStartDate,
+      selectedEndDate,
+      true,
+      event.target.checked
+    );
+  }
 
   return (
-    <div className={
-        `${classes.root} ${showDateControls ? "active" : classes.collapse} ${showControls ? classes.dashBoardWidthPanel : classes.fullWidthPanel}`
-    }>
-      <Grid
-        container
-        spacing={0}
-        >
+    <div
+      className={`${classes.root} ${
+        showDateControls ? "active" : classes.collapse
+      } ${showControls ? classes.dashBoardWidthPanel : classes.fullWidthPanel}`}
+    >
+      <Grid container spacing={0}>
         <Grid item xs={12}>
-          <Grid
-            container
-            spacing={1}
-            >
+          <Grid container spacing={1}>
             <Grid item xs={3}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                  <List>
-                    <ListItem>
-                      <Tooltip title="Reset Dates"
-                        classes={{
-                          popper: classes.popper,
-                      }}>
-                        <IconButton onClick={() => onDateRangeReset()} aria-label="expand" className={classes.resetBtn}>
-                           <Restore />
-                        </IconButton>
-                      </Tooltip>
-                      <FormControl component="fieldset" >
-                        <FormLabel component="legend">Date Range</FormLabel>
-                        <FormGroup>
-                          <KeyboardDatePicker
-                            disableToolbar
-                            variant="inline"
-                            format="MM/dd/yyyy"
-                            margin="normal"
-                            id="start-date"
-                            label="Start Date"
-                            value={selectedStartDate}
-                            onChange={onStartDateChange}
-                            KeyboardButtonProps={{
-                              'aria-label': 'start date',
-                            }}
-                          />
-                        </FormGroup>
-                        <FormGroup>
-                          <KeyboardDatePicker
-                            disableToolbar
-                            variant="inline"
-                            format="MM/dd/yyyy"
-                            margin="normal"
-                            id="end-date"
-                            label="End Date"
-                            value={selectedEndDate}
-                            onChange={onEndDateChange}
-                            KeyboardButtonProps={{
-                              'aria-label': 'end date',
-                            }}
-                          />
-                        </FormGroup>
-                      </FormControl>
-
-                    </ListItem>
-                  </List>
+                <List>
+                  <ListItem>
+                    <Tooltip
+                      title="Reset Dates"
+                      classes={{
+                        popper: classes.popper,
+                      }}
+                    >
+                      <IconButton
+                        onClick={() => onDateRangeReset()}
+                        aria-label="expand"
+                        className={classes.resetBtn}
+                      >
+                        <Restore />
+                      </IconButton>
+                    </Tooltip>
+                    <FormControl component="fieldset">
+                      <FormLabel component="legend">Date Range</FormLabel>
+                      <FormGroup>
+                        <KeyboardDatePicker
+                          disableToolbar
+                          variant="inline"
+                          format="MM/dd/yyyy"
+                          margin="normal"
+                          id="start-date"
+                          label="Start Date"
+                          value={selectedStartDate}
+                          onChange={onStartDateChange}
+                          KeyboardButtonProps={{
+                            "aria-label": "start date",
+                          }}
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <KeyboardDatePicker
+                          disableToolbar
+                          variant="inline"
+                          format="MM/dd/yyyy"
+                          margin="normal"
+                          id="end-date"
+                          label="End Date"
+                          value={selectedEndDate}
+                          onChange={onEndDateChange}
+                          KeyboardButtonProps={{
+                            "aria-label": "end date",
+                          }}
+                        />
+                      </FormGroup>
+                    </FormControl>
+                  </ListItem>
+                </List>
               </MuiPickersUtilsProvider>
             </Grid>
             <Grid item xs={9}>
@@ -339,13 +346,14 @@ export default function DateControls({
                         checked={excludeChecked}
                         onChange={onExcludeChange}
                         color="primary"
-                        inputProps={{ 'aria-label': 'exclude selected month range' }}
+                        inputProps={{
+                          "aria-label": "exclude selected month range",
+                        }}
                       />
                     }
                     label="Exclude selected month range"
                   />
                 </Box>
-
               </div>
             </Grid>
           </Grid>
@@ -360,10 +368,9 @@ export default function DateControls({
             setSelectedEndDate={setSelectedEndDate}
             setSliderValuesFromDates={setSliderValuesFromDates}
             showControls={showControls}
-           />
+          />
         </Grid>
       </Grid>
-
     </div>
   );
 }

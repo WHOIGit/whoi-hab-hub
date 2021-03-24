@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { makeStyles } from '@material-ui/styles'
+import React from "react";
+import { makeStyles } from "@material-ui/styles";
 import {
   Typography,
   TableContainer,
@@ -8,23 +8,18 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Paper,
   Box,
   Grid,
-  Divider,
-} from '@material-ui/core'
-import DescriptionIcon from '@material-ui/icons/Description';
+} from "@material-ui/core";
+import DescriptionIcon from "@material-ui/icons/Description";
 
-const expandWidth = window.outerWidth - 316;
-const useStyles = makeStyles(theme => ({
-  table: {
+// eslint-disable-next-line no-unused-vars
+const useStyles = makeStyles((theme) => ({
+  table: {},
+}));
 
-  },
-}))
-
-export default function ClosuresList({results}) {
-  const chartRef = useRef();
-  const classes = useStyles()
+export default function ClosuresList({ results }) {
+  const classes = useStyles();
 
   function renderClosureItem(closure) {
     return (
@@ -34,22 +29,36 @@ export default function ClosuresList({results}) {
           spacing={1}
           alignItems="center"
           className={classes.legendGrid}
-          >
-          <Grid item xs={9} >
+        >
+          <Grid item xs={9}>
             <Typography variant="subtitle1" display="block" gutterBottom>
               Closure Date: {closure.effective_date}
             </Typography>
-            <Typography variant="body2" display="block" color="textSecondary" gutterBottom>
+            <Typography
+              variant="body2"
+              display="block"
+              color="textSecondary"
+              gutterBottom
+            >
               Causative Species: <em>{closure.causative_organism}</em>
             </Typography>
           </Grid>
-          <Grid item xs={3}  >
+          <Grid item xs={3}>
             {closure.document_link && (
               <Box align="center">
-                <a href={closure.document_link} target="_blank">
+                <a
+                  href={closure.document_link}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <DescriptionIcon fontSize="large" />
                 </a>
-                <Typography variant="caption" display="block" color="textSecondary" gutterBottom>
+                <Typography
+                  variant="caption"
+                  display="block"
+                  color="textSecondary"
+                  gutterBottom
+                >
                   Download notice
                 </Typography>
               </Box>
@@ -58,7 +67,11 @@ export default function ClosuresList({results}) {
         </Grid>
 
         <TableContainer>
-          <Table className={classes.table} size="small" aria-label="Species and Duration Table">
+          <Table
+            className={classes.table}
+            size="small"
+            aria-label="Species and Duration Table"
+          >
             <TableHead>
               <TableRow>
                 <TableCell>Species</TableCell>
@@ -78,12 +91,12 @@ export default function ClosuresList({results}) {
           </Table>
         </TableContainer>
       </Box>
-    )
+    );
   }
 
   return (
     <div>
-      {results.properties.closures.map(closure => renderClosureItem(closure))}
+      {results.properties.closures.map((closure) => renderClosureItem(closure))}
     </div>
-  )
+  );
 }

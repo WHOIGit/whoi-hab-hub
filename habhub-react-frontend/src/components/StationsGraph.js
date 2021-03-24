@@ -1,39 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { makeStyles } from '@material-ui/styles'
-import {
-  Card,
-  CardHeader,
-  CardActionArea,
-  CardMedia,
-  CardContent,
-  Typography,
-  CardActions,
-  IconButton,
-  Button } from '@material-ui/core'
-import Highcharts from 'highcharts'
-import Exporting from 'highcharts/modules/exporting';
-import ExportData from 'highcharts/modules/export-data';
-import Serieslabel from 'highcharts/modules/series-label';
-import HighchartsReact from 'highcharts-react-official'
+import React, { useEffect, useRef } from "react";
+import { makeStyles } from "@material-ui/styles";
+import Highcharts from "highcharts";
+import Exporting from "highcharts/modules/exporting";
+import ExportData from "highcharts/modules/export-data";
+import Serieslabel from "highcharts/modules/series-label";
+import HighchartsReact from "highcharts-react-official";
 
 Exporting(Highcharts);
 ExportData(Highcharts);
 Serieslabel(Highcharts);
 
 const expandWidth = window.outerWidth - 430;
-const useStyles = makeStyles(theme => ({
-  chartContainer: {
-  },
+
+// eslint-disable-next-line no-unused-vars
+const useStyles = makeStyles((theme) => ({
+  chartContainer: {},
   chartContainerExpand: {
     width: expandWidth,
-    height: '100%',
-  }
-}))
+    height: "100%",
+  },
+}));
 
-function StationsGraph({results, chartExpanded, yAxisScale}) {
+// eslint-disable-next-line no-unused-vars
+function StationsGraph({ results, chartExpanded, yAxisScale }) {
   const chartRef = useRef();
-  const classes = useStyles()
-  console.log(results);
+  const classes = useStyles();
 
   useEffect(() => {
     if (chartExpanded) {
@@ -43,7 +34,7 @@ function StationsGraph({results, chartExpanded, yAxisScale}) {
       chartRef.current.chart.setSize(550, 300);
     }
   }, [chartExpanded]);
-/*
+  /*
   useEffect(() => {
     console.log(yAxisScale);
     if (yAxisScale==='linear') {
@@ -64,71 +55,79 @@ function StationsGraph({results, chartExpanded, yAxisScale}) {
   }, [yAxisScale]);
 */
   const data = results.properties.timeseries_data;
-  const chartData = data.map(item => [Date.parse(item.date), item.measurement] );
+  const chartData = data.map((item) => [
+    Date.parse(item.date),
+    item.measurement,
+  ]);
 
   const chartOptions = {
     chart: {
-      type: 'spline',
+      type: "spline",
     },
     title: {
-      text: null
+      text: null,
     },
     xAxis: {
-      type: 'datetime'
+      type: "datetime",
     },
     yAxis: {
       title: {
-          text: 'Shellfish meat toxicity'
+        text: "Shellfish meat toxicity",
       },
       min: 0,
       softMax: 150,
-      plotLines: [{
-        value: 80,
-        color: 'red',
-        dashStyle: 'shortdash',
-        width: 2,
-        label: {
-          text: 'Closure threshold'
-        }
-      }]
+      plotLines: [
+        {
+          value: 80,
+          color: "red",
+          dashStyle: "shortdash",
+          width: 2,
+          label: {
+            text: "Closure threshold",
+          },
+        },
+      ],
     },
     plotOptions: {
-      series: {threshold: 100}
+      series: { threshold: 100 },
     },
     exporting: {
       buttons: {
-          contextButton: {
-              menuItems: [
-                  'printChart',
-                  'separator',
-                  'downloadPNG',
-                  'downloadJPEG',
-                  'downloadPDF',
-                  'downloadSVG',
-                  'separator',
-                  'downloadCSV',
-              ]
-          }
-      }
+        contextButton: {
+          menuItems: [
+            "printChart",
+            "separator",
+            "downloadPNG",
+            "downloadJPEG",
+            "downloadPDF",
+            "downloadSVG",
+            "separator",
+            "downloadCSV",
+          ],
+        },
+      },
     },
-    series: [{
-      name: 'Shellfish meat toxicity',
-      data: chartData
-    }]
+    series: [
+      {
+        name: "Shellfish meat toxicity",
+        data: chartData,
+      },
+    ],
   };
 
   return (
-
     <HighchartsReact
       highcharts={Highcharts}
       allowChartUpdate={true}
       options={chartOptions}
-      containerProps={chartExpanded ? { className: classes.chartContainerExpand } : { className: classes.chartContainer }}
+      containerProps={
+        chartExpanded
+          ? { className: classes.chartContainerExpand }
+          : { className: classes.chartContainer }
+      }
       ref={chartRef}
     />
-
-
-  )
+  );
 }
 
 export default StationsGraph;

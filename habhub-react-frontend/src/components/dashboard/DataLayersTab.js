@@ -1,9 +1,7 @@
-import React, {
-  useState,
-  useEffect
-} from 'react';
-import html2canvas from 'html2canvas';
-import { makeStyles } from '@material-ui/styles';
+/* eslint-disable no-unused-vars */
+import React, { useState } from "react";
+import html2canvas from "html2canvas";
+import { makeStyles } from "@material-ui/styles";
 import {
   FormLabel,
   FormControl,
@@ -18,15 +16,13 @@ import {
   Typography,
   Box,
   Grid,
-  IconButton,
-  Tooltip,
-} from '@material-ui/core';
-import ImageIcon from '@material-ui/icons/Image';
-import DiamondMarker from '../../images/diamond.svg';
-import CircleMarker from '../../images/circle.svg';
-import SquareMarker from '../../images/square-orange.svg';
+} from "@material-ui/core";
+import ImageIcon from "@material-ui/icons/Image";
+import DiamondMarker from "../../images/diamond.svg";
+import CircleMarker from "../../images/circle.svg";
+import SquareMarker from "../../images/square-orange.svg";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   divider: {
     marginBottom: theme.spacing(1),
   },
@@ -56,8 +52,8 @@ const useStyles = makeStyles(theme => ({
   },
   popper: {
     zIndex: 9999,
-  }
-}))
+  },
+}));
 
 export default function DataLayersTab({
   mapLayers,
@@ -81,10 +77,10 @@ export default function DataLayersTab({
     if (mapRef.current !== undefined) {
       const mapObj = mapRef.current.getMap();
       console.log(mapObj.getCanvas());
-      const mapCanvas = document.querySelector('.mapboxgl-canvas');
-      html2canvas(mapCanvas).then(function(canvas) {
+      const mapCanvas = document.querySelector(".mapboxgl-canvas");
+      html2canvas(mapCanvas).then(function (canvas) {
         console.log(canvas.toDataURL());
-        saveAs(canvas.toDataURL(), 'file-name.png');
+        saveAs(canvas.toDataURL(), "file-name.png");
       });
     }
     /*
@@ -101,12 +97,12 @@ export default function DataLayersTab({
       document.body.appendChild(a);
       a.click();
     }*/
-  }
+  };
 
   function saveAs(uri, filename) {
     console.log(uri);
-    var link = document.createElement('a');
-    if (typeof link.download === 'string') {
+    var link = document.createElement("a");
+    if (typeof link.download === "string") {
       link.href = uri;
       link.download = filename;
 
@@ -136,27 +132,44 @@ export default function DataLayersTab({
             color="primary"
             checked={mapLayer.visibility}
             onChange={(event) => onLayerVisibilityChange(event, mapLayer.id)}
-            name={mapLayer.name} />
+            name={mapLayer.name}
+          />
         }
-        label = {
+        label={
           <Grid container spacing={0}>
             <Grid item xs={11}>
-              <Typography variant="body2" color="textSecondary" className={classes.labelText}>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                className={classes.labelText}
+              >
                 {mapLayer.name}
               </Typography>
             </Grid>
             <Grid item xs={1}>
               <div>
                 {mapLayer.id === "stations-layer" && (
-                  <img src={DiamondMarker} alt="Station Toxicity Legend Icon" className={classes.layerIcon} />
+                  <img
+                    src={DiamondMarker}
+                    alt="Station Toxicity Legend Icon"
+                    className={classes.layerIcon}
+                  />
                 )}
 
                 {mapLayer.id === "ifcb-layer" && (
-                  <img src={CircleMarker} alt="IFCB Legend Icon" className={classes.layerIcon} />
+                  <img
+                    src={CircleMarker}
+                    alt="IFCB Legend Icon"
+                    className={classes.layerIcon}
+                  />
                 )}
 
                 {mapLayer.id === "closures-layer" && (
-                  <img src="images/icon-shellfish-closure.png" alt="Closures Legend Icon" className={`${classes.layerIcon} ${classes.closureIcon}`} />
+                  <img
+                    src="images/icon-shellfish-closure.png"
+                    alt="Closures Legend Icon"
+                    className={`${classes.layerIcon} ${classes.closureIcon}`}
+                  />
                 )}
               </div>
             </Grid>
@@ -168,27 +181,25 @@ export default function DataLayersTab({
 
   function renderSpeciesControl(species) {
     return (
-        <FormControlLabel
-          key={species.id}
-          control={
-            <Checkbox
-              color="primary"
-              checked={species.visibility}
-              onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
-              name={species.speciesName} />
-          }
-          label={
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              >
-                <em>{species.speciesName}</em> / {species.syndrome}
-                <Box component="span" m={1}>
-                  {renderColorChips(species, 12, 12, "primary")}
-                </Box>
-              </Typography>
-          }
-        />
+      <FormControlLabel
+        key={species.id}
+        control={
+          <Checkbox
+            color="primary"
+            checked={species.visibility}
+            onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
+            name={species.speciesName}
+          />
+        }
+        label={
+          <Typography variant="body2" color="textSecondary">
+            <em>{species.speciesName}</em> / {species.syndrome}
+            <Box component="span" m={1}>
+              {renderColorChips(species, 12, 12, "primary")}
+            </Box>
+          </Typography>
+        }
+      />
     );
   }
 
@@ -198,7 +209,7 @@ export default function DataLayersTab({
         <FormControl component="fieldset" className={classes.formControl}>
           <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
           <FormGroup>
-            {habSpecies.map(species => renderSpeciesControl(species))}
+            {habSpecies.map((species) => renderSpeciesControl(species))}
           </FormGroup>
         </FormControl>
       </ListItem>
@@ -207,7 +218,7 @@ export default function DataLayersTab({
         <FormControl component="fieldset" className={classes.formControl}>
           <FormLabel component="legend">Data Layers</FormLabel>
           <FormGroup>
-            {mapLayers.map(layer => renderLayerControl(layer))}
+            {mapLayers.map((layer) => renderLayerControl(layer))}
           </FormGroup>
         </FormControl>
       </ListItem>
@@ -215,23 +226,25 @@ export default function DataLayersTab({
       <ListItem>
         <FormControl component="fieldset" className={classes.formControl}>
           <FormLabel component="legend">Data Type</FormLabel>
-          <RadioGroup aria-label="gender" name="gender1" value={showMaxMean} onChange={handleMaxMeanChange}>
+          <RadioGroup
+            aria-label="gender"
+            name="gender1"
+            value={showMaxMean}
+            onChange={handleMaxMeanChange}
+          >
             <FormControlLabel
               value="max"
               control={<Radio color="primary" />}
-              label={
-                <Typography variant="body2">Max</Typography>
-              } />
+              label={<Typography variant="body2">Max</Typography>}
+            />
             <FormControlLabel
               value="mean"
               control={<Radio color="primary" />}
-              label={
-                <Typography variant="body2">Mean</Typography>
-              } />
+              label={<Typography variant="body2">Mean</Typography>}
+            />
           </RadioGroup>
         </FormControl>
       </ListItem>
     </List>
-
   );
 }

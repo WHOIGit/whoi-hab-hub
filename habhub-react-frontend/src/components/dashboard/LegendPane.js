@@ -1,29 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { makeStyles } from '@material-ui/styles'
-import {
-  Card,
-  CardHeader,
-  CardActionArea,
-  CardMedia,
-  CardContent,
-  Typography,
-  CardActions,
-  IconButton,
-  Button,
-} from '@material-ui/core'
-import {
-  Close,
-  OpenWith,
-  Minimize
-} from '@material-ui/icons'
-import LegendCellConcentration from "./LegendCellConcentration"
-import LegendToxicity from "./LegendToxicity"
+import React from "react";
+import { makeStyles } from "@material-ui/styles";
+import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
+import { Close } from "@material-ui/icons";
+import LegendCellConcentration from "./LegendCellConcentration";
+import LegendToxicity from "./LegendToxicity";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
-    transition: 'all 0.3s',
+    transition: "all 0.3s",
     zIndex: 2000,
   },
   rootWider: {
@@ -34,9 +20,9 @@ const useStyles = makeStyles(theme => ({
   },
   title: {
     color: theme.palette.primary.main,
-    fontSize: '1.1rem'
+    fontSize: "1.1rem",
   },
-}))
+}));
 
 export default function LegendPane({
   dataLayer,
@@ -44,47 +30,50 @@ export default function LegendPane({
   onLegendPaneClose,
   renderColorChips,
 }) {
-  const classes = useStyles()
+  const classes = useStyles();
 
   let title = null;
 
-  if (dataLayer === 'ifcb-layer') {
-    title = 'Cell Concentration';
-  } else if (dataLayer === 'stations-layer') {
+  if (dataLayer === "ifcb-layer") {
+    title = "Cell Concentration";
+  } else if (dataLayer === "stations-layer") {
     title = "Shellfish Toxicity";
   }
 
   return (
-    <Card className={`${classes.root} ${dataLayer === 'ifcb-layer' ? classes.rootWider : "standard"}`}>
-        <CardHeader
-          classes={{
-            root: classes.rootHeader,
-            title: classes.title,
-          }}
-          action={
-            <React.Fragment>
-              <IconButton onClick={() => onLegendPaneClose(dataLayer)} aria-label="close">
-                <Close />
-              </IconButton>
-            </React.Fragment>
-          }
-          title={title}
-        />
+    <Card
+      className={`${classes.root} ${
+        dataLayer === "ifcb-layer" ? classes.rootWider : "standard"
+      }`}
+    >
+      <CardHeader
+        classes={{
+          root: classes.rootHeader,
+          title: classes.title,
+        }}
+        action={
+          <React.Fragment>
+            <IconButton
+              onClick={() => onLegendPaneClose(dataLayer)}
+              aria-label="close"
+            >
+              <Close />
+            </IconButton>
+          </React.Fragment>
+        }
+        title={title}
+      />
 
-        <CardContent>
-          {dataLayer === 'ifcb-layer' && (
-            <LegendCellConcentration />
-          )}
+      <CardContent>
+        {dataLayer === "ifcb-layer" && <LegendCellConcentration />}
 
-          {dataLayer === 'stations-layer' && (
-            <LegendToxicity
-              habSpecies={habSpecies}
-              renderColorChips={renderColorChips}
-            />
-          )}
-
-        </CardContent>
-
+        {dataLayer === "stations-layer" && (
+          <LegendToxicity
+            habSpecies={habSpecies}
+            renderColorChips={renderColorChips}
+          />
+        )}
+      </CardContent>
     </Card>
-  )
+  );
 }
