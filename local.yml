@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 volumes:
   local_postgres_data: {}
@@ -16,7 +16,7 @@ services:
       - node_modules:/usr/src/app/node_modules
     ports:
       - "3000:3000"
-    command: yarn start
+    command: npm start
 
   django: &django
     build:

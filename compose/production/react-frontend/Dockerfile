@@ -8,7 +8,7 @@ WORKDIR /app
 COPY ./habhub-react-frontend /app
 
 # Install all node packages
-RUN yarn && yarn build
+RUN npm install && npm run build
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
 FROM nginx:alpine
