@@ -21,6 +21,7 @@ import ImageIcon from "@material-ui/icons/Image";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import SquareMarker from "../../images/square-orange.svg";
+import { HabSpeciesForm } from "../../features/hab-species/HabSpeciesForm";
 
 const useStyles = makeStyles((theme) => ({
   divider: {
@@ -206,12 +207,7 @@ export default function DataLayersTab({
   return (
     <List>
       <ListItem className={classes.listItem}>
-        <FormControl component="fieldset" className={classes.formControl}>
-          <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
-          <FormGroup>
-            {habSpecies.map((species) => renderSpeciesControl(species))}
-          </FormGroup>
-        </FormControl>
+        <HabSpeciesForm />
       </ListItem>
       <Divider variant="middle" component="li" className={classes.divider} />
       <ListItem>
