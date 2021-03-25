@@ -16,8 +16,7 @@ import LowerLeftPanel from "./LowerLeftPanel";
 import DisclaimerBox from "./DisclaimerBox";
 import { layers, species } from "../Constants";
 
-const MAPBOX_TOKEN =
-  "pk.eyJ1IjoiZWFuZHJld3MiLCJhIjoiY2p6c2xxOWx4MDJudDNjbjIyNTdzNWxqaCJ9.Ayp0hdQGjUayka8dJFwSug";
+const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const defaultStartDate = new Date("2017-01-01T21:11:54");
 
 const navStyle = {
