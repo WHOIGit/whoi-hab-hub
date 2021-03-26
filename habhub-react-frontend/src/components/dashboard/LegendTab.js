@@ -14,6 +14,7 @@ import LegendToxicity from "./LegendToxicity";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import SquareMarker from "../../images/square-orange.svg";
+import HabSpeciesList from "../../features/hab-species/HabSpeciesList";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,37 +38,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LegendTab({
-  habSpecies,
-  renderColorChips,
-  visibleLegends,
-  setVisibleLegends,
-}) {
+export default function LegendTab({ visibleLegends, setVisibleLegends }) {
   const classes = useStyles();
 
   function handleLegendOpen(layerID) {
     if (visibleLegends.indexOf(layerID) === -1) {
       setVisibleLegends([layerID, ...visibleLegends]);
     }
-  }
-
-  function renderSpeciesList(species) {
-    return (
-      <>
-        <Grid item xs={2}>
-          <div>{renderColorChips(species, 20, 20, "primary")}</div>
-        </Grid>
-        <Grid item xs={10}>
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            className={classes.labelText}
-          >
-            <em>{species.speciesName}</em> / {species.syndrome}
-          </Typography>
-        </Grid>
-      </>
-    );
   }
 
   return (
@@ -159,9 +136,7 @@ export default function LegendTab({
           HAB Species/Syndrome
         </Typography>
 
-        <Grid container spacing={0}>
-          {habSpecies.map((species) => renderSpeciesList(species))}
-        </Grid>
+        <HabSpeciesList />
       </div>
       <Divider />
 
@@ -203,10 +178,7 @@ export default function LegendTab({
             </IconButton>
           </Tooltip>
         </Typography>
-        <LegendToxicity
-          habSpecies={habSpecies}
-          renderColorChips={renderColorChips}
-        />
+        <LegendToxicity />
       </div>
     </div>
   );

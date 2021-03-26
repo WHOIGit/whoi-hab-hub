@@ -99,7 +99,6 @@ function TabPanel(props) {
 export default function Dashboard({
   mapLayers,
   onLayerVisibilityChange,
-  renderColorChips,
   showControls,
   setShowControls,
   showDateControls,
@@ -116,9 +115,6 @@ export default function Dashboard({
   const [tabValue, setTabValue] = useState(0);
 
   function handleTabChange(event, newTabValue) {
-    console.log(event);
-    console.log(tabValue);
-    console.log(newTabValue);
     if (tabValue === newTabValue && showControls) {
       setShowControls(false);
     } else {
@@ -192,7 +188,6 @@ export default function Dashboard({
             <DataLayersTab
               mapLayers={mapLayers}
               onLayerVisibilityChange={onLayerVisibilityChange}
-              renderColorChips={renderColorChips}
               showMaxMean={showMaxMean}
               setShowMaxMean={setShowMaxMean}
               mapRef={mapRef}
@@ -200,7 +195,6 @@ export default function Dashboard({
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
             <LegendTab
-              renderColorChips={renderColorChips}
               visibleLegends={visibleLegends}
               setVisibleLegends={setVisibleLegends}
             />

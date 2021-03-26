@@ -168,36 +168,6 @@ export default function HabMap() {
     setSmoothingFactor(newFactor);
   }
 
-  function renderColorChips(
-    species,
-    chipWidth = 20,
-    chipHeight = 20,
-    chipType = "gradient"
-  ) {
-    // default to show all colors in gradient list
-    // if chipType is "primary", only show single chip for primary color
-    let colors = species.colorGradient;
-    if (chipType === "primary") {
-      colors = [species.colorPrimary];
-    }
-
-    let svgWidth = chipWidth * colors.length;
-
-    return (
-      <svg width={svgWidth} height={chipHeight}>
-        {colors.map((color, index) => (
-          <rect
-            width={chipWidth}
-            height={chipHeight}
-            fill={color}
-            x={index * chipWidth}
-            key={index}
-          ></rect>
-        ))}
-      </svg>
-    );
-  }
-
   function renderMarkerLayer(layer) {
     console.log(layer.id);
     if (layer.visibility && layer.id === "stations-layer") {
@@ -284,7 +254,6 @@ export default function HabMap() {
           <DashBoard
             mapLayers={mapLayers}
             onLayerVisibilityChange={onLayerVisibilityChange}
-            renderColorChips={renderColorChips}
             showControls={showControls}
             setShowControls={setShowControls}
             showDateControls={showDateControls}
@@ -311,7 +280,6 @@ export default function HabMap() {
           <LowerLeftPanel
             visibleLegends={visibleLegends}
             setVisibleLegends={setVisibleLegends}
-            renderColorChips={renderColorChips}
           />
         </div>
 

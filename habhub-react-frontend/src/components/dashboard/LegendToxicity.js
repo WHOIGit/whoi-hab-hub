@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Grid, Typography } from "@material-ui/core";
+import HabSpeciesColorChip from "../../features/hab-species/HabSpeciesColorChip";
 
-export default function LegendToxicity({ renderColorChips }) {
+export default function LegendToxicity() {
   const habSpecies = useSelector((state) => state.habSpecies);
   const [visibleSpecies, setVisibleSpecies] = useState();
 
@@ -23,7 +24,14 @@ export default function LegendToxicity({ renderColorChips }) {
             <Typography variant="body1">PST</Typography>
           </Grid>
           <Grid item xs={9}>
-            {visibleSpecies.map((species) => renderColorChips(species, 35, 20))}
+            {visibleSpecies.map((species) => (
+              <HabSpeciesColorChip
+                species={species}
+                chipWidth={35}
+                chipHeight={20}
+                key={species.id}
+              />
+            ))}
           </Grid>
         </Grid>
         <Grid container spacing={1}>
