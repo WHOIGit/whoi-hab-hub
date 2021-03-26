@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
 import { format } from "date-fns";
@@ -16,12 +17,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function StationsMarkers({
-  habSpecies,
   onMarkerClick,
   dateFilter,
   smoothingFactor,
   showMaxMean,
 }) {
+  const habSpecies = useSelector((state) => state.habSpecies);
   const classes = useStyles();
   const layerID = "stations-layer";
   // eslint-disable-next-line no-unused-vars

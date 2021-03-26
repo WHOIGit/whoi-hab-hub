@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
 import { Close, OpenWith, Minimize } from "@material-ui/icons";
@@ -45,8 +46,8 @@ export default function SidePane({
   dataLayer,
   yAxisScale,
   onPaneClose,
-  habSpecies,
 }) {
+  const habSpecies = useSelector((state) => state.habSpecies);
   const classes = useStyles();
   const [expandPane, setExpandPane] = useState(false);
   const [visibleResults, setVisibleResults] = useState([]);

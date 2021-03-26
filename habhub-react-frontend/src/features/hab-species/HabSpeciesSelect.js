@@ -11,6 +11,7 @@ import {
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
 import { changeSpeciesVisibility } from "./habSpeciesSlice";
+import HabSpeciesColorChip from "./HabSpeciesColorChip";
 
 const useStyles = makeStyles(() => ({
   formControl: {
@@ -18,37 +19,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-function renderColorChips(
-  species,
-  chipWidth = 20,
-  chipHeight = 20,
-  chipType = "gradient"
-) {
-  // default to show all colors in gradient list
-  // if chipType is "primary", only show single chip for primary color
-  let colors = species.colorGradient;
-  if (chipType === "primary") {
-    colors = [species.colorPrimary];
-  }
-
-  let svgWidth = chipWidth * colors.length;
-
-  return (
-    <svg width={svgWidth} height={chipHeight}>
-      {colors.map((color, index) => (
-        <rect
-          width={chipWidth}
-          height={chipHeight}
-          fill={color}
-          x={index * chipWidth}
-          key={index}
-        ></rect>
-      ))}
-    </svg>
-  );
-}
-
-export function HabSpeciesForm() {
+export default function HabSpeciesForm() {
   const habSpecies = useSelector((state) => state.habSpecies);
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -80,7 +51,12 @@ export function HabSpeciesForm() {
                 <Typography variant="body2" color="textSecondary">
                   <em>{species.speciesName}</em> / {species.syndrome}
                   <Box component="span" m={1}>
-                    {renderColorChips(species, 12, 12, "primary")}
+                    <HabSpeciesColorChip
+                      species={species}
+                      chipWidth={12}
+                      chipHeight={12}
+                      chipType="primary"
+                    />
                   </Box>
                 </Typography>
               }

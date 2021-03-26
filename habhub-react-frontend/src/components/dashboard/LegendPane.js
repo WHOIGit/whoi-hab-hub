@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function LegendPane({
   dataLayer,
-  habSpecies,
   onLegendPaneClose,
   renderColorChips,
 }) {
@@ -68,10 +67,7 @@ export default function LegendPane({
         {dataLayer === "ifcb-layer" && <LegendCellConcentration />}
 
         {dataLayer === "stations-layer" && (
-          <LegendToxicity
-            habSpecies={habSpecies}
-            renderColorChips={renderColorChips}
-          />
+          <LegendToxicity renderColorChips={renderColorChips} />
         )}
       </CardContent>
     </Card>

@@ -17,7 +17,6 @@ const useStyles = makeStyles((theme) => ({
 export default function LowerLeftPane({
   visibleLegends,
   setVisibleLegends,
-  habSpecies,
   renderColorChips,
 }) {
   const classes = useStyles();
@@ -34,7 +33,6 @@ export default function LowerLeftPane({
         {visibleLegends.map((item) => (
           <LegendPane
             dataLayer={item}
-            habSpecies={habSpecies}
             onLegendPaneClose={onLegendPaneClose}
             renderColorChips={renderColorChips}
             key={item}

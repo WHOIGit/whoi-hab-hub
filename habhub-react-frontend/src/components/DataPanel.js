@@ -28,7 +28,6 @@ function DataPanel({
   smoothingFactor,
   yAxisScale,
   onPaneClose,
-  habSpecies,
 }) {
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -122,7 +121,6 @@ function DataPanel({
           dataLayer={dataLayer}
           yAxisScale={yAxisScale}
           onPaneClose={onPaneClose}
-          habSpecies={habSpecies}
         />
       )}
     </div>

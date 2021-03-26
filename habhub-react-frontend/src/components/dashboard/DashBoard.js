@@ -98,9 +98,7 @@ function TabPanel(props) {
 
 export default function Dashboard({
   mapLayers,
-  habSpecies,
   onLayerVisibilityChange,
-  onSpeciesVisibilityChange,
   renderColorChips,
   showControls,
   setShowControls,
@@ -193,9 +191,7 @@ export default function Dashboard({
           <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
             <DataLayersTab
               mapLayers={mapLayers}
-              habSpecies={habSpecies}
               onLayerVisibilityChange={onLayerVisibilityChange}
-              onSpeciesVisibilityChange={onSpeciesVisibilityChange}
               renderColorChips={renderColorChips}
               showMaxMean={showMaxMean}
               setShowMaxMean={setShowMaxMean}
@@ -204,7 +200,6 @@ export default function Dashboard({
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
             <LegendTab
-              habSpecies={habSpecies}
               renderColorChips={renderColorChips}
               visibleLegends={visibleLegends}
               setVisibleLegends={setVisibleLegends}

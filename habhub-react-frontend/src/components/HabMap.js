@@ -14,7 +14,7 @@ import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import LowerLeftPanel from "./LowerLeftPanel";
 import DisclaimerBox from "./DisclaimerBox";
-import { layers, species } from "../Constants";
+import { layers } from "../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const defaultStartDate = new Date("2017-01-01T21:11:54");
@@ -58,7 +58,6 @@ export default function HabMap() {
 
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
-  const [habSpecies, setHabSpecies] = useState(species);
   // dateFilter value for API: array [startDate:date, endDate:date, seasonal:boolean]
   // const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date(), false]);
   const [dateFilter, setDateFilter] = useState({
@@ -140,16 +139,6 @@ export default function HabMap() {
     }
   }
 
-  function onSpeciesVisibilityChange(event, speciesID) {
-    const newVisibility = habSpecies.map((item) => {
-      if (item.id == speciesID) {
-        item.visibility = event.target.checked;
-      }
-      return item;
-    });
-    setHabSpecies(newVisibility);
-  }
-
   function onDateRangeChange(
     startDate,
     endDate,
@@ -214,7 +203,6 @@ export default function HabMap() {
     if (layer.visibility && layer.id === "stations-layer") {
       return (
         <StationsMarkers
-          habSpecies={habSpecies}
           onMarkerClick={onMarkerClick}
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
@@ -234,7 +222,6 @@ export default function HabMap() {
     } else if (layer.id === "ifcb-layer") {
       return (
         <IfcbMarkers
-          habSpecies={habSpecies}
           onMarkerClick={onMarkerClick}
           dateFilter={dateFilter}
           smoothingFactor={smoothingFactor}
@@ -262,7 +249,6 @@ export default function HabMap() {
                 smoothingFactor={smoothingFactor}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
-                habSpecies={habSpecies}
               />
             ))}
           </div>
@@ -297,9 +283,7 @@ export default function HabMap() {
         <div>
           <DashBoard
             mapLayers={mapLayers}
-            habSpecies={habSpecies}
             onLayerVisibilityChange={onLayerVisibilityChange}
-            onSpeciesVisibilityChange={onSpeciesVisibilityChange}
             renderColorChips={renderColorChips}
             showControls={showControls}
             setShowControls={setShowControls}
@@ -327,7 +311,6 @@ export default function HabMap() {
           <LowerLeftPanel
             visibleLegends={visibleLegends}
             setVisibleLegends={setVisibleLegends}
-            habSpecies={habSpecies}
             renderColorChips={renderColorChips}
           />
         </div>

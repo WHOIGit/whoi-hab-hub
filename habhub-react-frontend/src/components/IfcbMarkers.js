@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Source, Layer } from "react-map-gl";
 import { format } from "date-fns";
@@ -18,13 +19,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function IfcbMarkers({
-  habSpecies,
   onMarkerClick,
   dateFilter,
   smoothingFactor,
   visibility,
   showMaxMean,
 }) {
+  const habSpecies = useSelector((state) => state.habSpecies);
   const layerID = "ifcb-layer";
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars

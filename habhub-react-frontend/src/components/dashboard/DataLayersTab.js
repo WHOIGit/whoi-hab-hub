@@ -21,7 +21,7 @@ import ImageIcon from "@material-ui/icons/Image";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import SquareMarker from "../../images/square-orange.svg";
-import { HabSpeciesForm } from "../../features/hab-species/HabSpeciesForm";
+import HabSpeciesSelect from "../../features/hab-species/HabSpeciesSelect";
 
 const useStyles = makeStyles((theme) => ({
   divider: {
@@ -58,9 +58,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function DataLayersTab({
   mapLayers,
-  habSpecies,
   onLayerVisibilityChange,
-  onSpeciesVisibilityChange,
   renderColorChips,
   showMaxMean,
   setShowMaxMean,
@@ -180,34 +178,10 @@ export default function DataLayersTab({
     );
   }
 
-  function renderSpeciesControl(species) {
-    return (
-      <FormControlLabel
-        key={species.id}
-        control={
-          <Checkbox
-            color="primary"
-            checked={species.visibility}
-            onChange={(event) => onSpeciesVisibilityChange(event, species.id)}
-            name={species.speciesName}
-          />
-        }
-        label={
-          <Typography variant="body2" color="textSecondary">
-            <em>{species.speciesName}</em> / {species.syndrome}
-            <Box component="span" m={1}>
-              {renderColorChips(species, 12, 12, "primary")}
-            </Box>
-          </Typography>
-        }
-      />
-    );
-  }
-
   return (
     <List>
       <ListItem className={classes.listItem}>
-        <HabSpeciesForm />
+        <HabSpeciesSelect />
       </ListItem>
       <Divider variant="middle" component="li" className={classes.divider} />
       <ListItem>
