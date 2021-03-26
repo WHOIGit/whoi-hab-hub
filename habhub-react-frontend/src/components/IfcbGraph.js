@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { IconButton } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
@@ -9,7 +10,6 @@ import Serieslabel from "highcharts/modules/series-label";
 import HighchartsReact from "highcharts-react-official";
 // Local imports
 import IfcbMetaData from "./IfcbMetaData";
-import { species } from "../Constants";
 
 Exporting(Highcharts);
 ExportData(Highcharts);
@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
 
 // eslint-disable-next-line no-unused-vars
 function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
+  const habSpecies = useSelector((state) => state.habSpecies);
   const classes = useStyles();
   const chartRef = useRef();
   // Local state
@@ -160,7 +161,7 @@ function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
       .map((item) => [Date.parse(item.sample_time), item.cell_concentration])
       .sort();
 
-    const seriesColor = species
+    const seriesColor = habSpecies
       .filter((item) => item.id === dataObj.species)
       .map((item) => item.colorPrimary)
       .toString();

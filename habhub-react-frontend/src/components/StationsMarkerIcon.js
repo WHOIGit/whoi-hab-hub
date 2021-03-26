@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
-import { species } from "../Constants";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
@@ -17,16 +17,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// set colors to use for the gradient from Species
-const activeSpecies = species.filter(
-  (item) => item.id === "Alexandrium_catenella"
-);
-const colors = activeSpecies[0].colorGradient;
-//const colors = species[0].colorGradient;
-
 export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
+  const habSpecies = useSelector((state) => state.habSpecies);
   const classes = useStyles();
   const [value, setValue] = useState();
+
+  // set colors to use for the gradient from Species
+  const activeSpecies = habSpecies.filter(
+    (item) => item.id === "Alexandrium_catenella"
+  );
+  const colors = activeSpecies[0].colorGradient;
+  //const colors = species[0].colorGradient;
 
   useEffect(() => {
     if (showMaxMean === "mean") {
