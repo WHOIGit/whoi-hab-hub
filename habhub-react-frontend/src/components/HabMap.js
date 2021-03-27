@@ -7,7 +7,8 @@ import { differenceInDays } from "date-fns";
 import { makeStyles } from "@material-ui/styles";
 // Import our stuff
 import DashBoard from "./dashboard/DashBoard";
-import DateControls from "./dashboard/DateControls";
+//import DateControls from "./dashboard/DateControls";
+import DateControls from "../features/date-filter/DateControls";
 import DataPanel from "./DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
@@ -140,13 +141,13 @@ export default function HabMap() {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   function onDateRangeChange(
     startDate,
     endDate,
     seasonal = false,
     exclude_month_range = false
   ) {
-    //setDateFilter([startDate, endDate, seasonal, exclude_month_range]);
     const newDateFilter = {
       startDate: startDate,
       endDate: endDate,
@@ -272,8 +273,6 @@ export default function HabMap() {
             showControls={showControls}
             showDateControls={showDateControls}
             mapLayers={mapLayers}
-            onDateRangeChange={onDateRangeChange}
-            dateFilter={dateFilter}
           />
         </div>
 
