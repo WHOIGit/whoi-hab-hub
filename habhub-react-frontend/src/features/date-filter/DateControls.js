@@ -185,6 +185,8 @@ export default function DateControls({
       const payload = {
         startDate: date.toISOString(),
         endDate: selectedEndDate.toISOString(),
+        seasonal: false,
+        excludeMonthRange: false,
       };
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
@@ -199,6 +201,8 @@ export default function DateControls({
       const payload = {
         startDate: dateFilter.startDate,
         endDate: date.toISOString(),
+        seasonal: false,
+        excludeMonthRange: false,
       };
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
@@ -206,19 +210,26 @@ export default function DateControls({
     }
   };
 
-  function onDateRangeReset() {
-    setSelectedStartDate(dateFilter.startDate);
+  const onDateRangeReset = () => {
+    setSelectedStartDate(parseISO(dateFilter.defaultStartDate));
     setSelectedEndDate(new Date());
-    onDateRangeChange(dateFilter.startDate, new Date());
+
+    // trigger parent function to fetch data
+    const payload = {
+      startDate: dateFilter.defaultStartDate,
+      endDate: new Date().toISOString(),
+    };
+    dispatch(changeDateRange(payload));
+
     // update the slider values to match new date, set months to full year range
     const newSliderYear = [
-      dateFilter.startDate.getFullYear(),
+      parseISO(dateFilter.defaultStartDate).getFullYear(),
       new Date().getFullYear(),
     ];
     setValueYearSlider(newSliderYear);
     const newSliderMonth = [0, 11];
     setValueMonthSlider(newSliderMonth);
-  }
+  };
 
   function setSliderValuesFromDates(startDate, endDate) {
     // updates the Slider state values from two Date objects
@@ -248,7 +259,15 @@ export default function DateControls({
     const newEndDate = new Date(...endDateFields);
     setSelectedEndDate(newEndDate);
     // set "seasonal" filter to TRUE
-    onDateRangeChange(newStartDate, newEndDate, true, excludeChecked);
+    // trigger parent function to fetch data
+    const payload = {
+      startDate: newStartDate.toISOString(),
+      endDate: newEndDate.toISOString(),
+      seasonal: true,
+      excludeMonthRange: excludeChecked,
+    };
+    dispatch(changeDateRange(payload));
+    //onDateRangeChange(newStartDate, newEndDate, true, excludeChecked);
   }
 
   function onExcludeChange(event) {
@@ -298,7 +317,7 @@ export default function DateControls({
                           margin="normal"
                           id="start-date"
                           label="Start Date"
-                          value={selectedStartDate}
+                          value={dateFilter.startDate}
                           onChange={onStartDateChange}
                           KeyboardButtonProps={{
                             "aria-label": "start date",

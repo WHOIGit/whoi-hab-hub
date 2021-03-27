@@ -1,8 +1,11 @@
 import { sub, differenceInDays, parseISO } from "date-fns";
 import { createSlice } from "@reduxjs/toolkit";
 
+const defaultStartDate = sub(new Date(), { years: 3 }).toISOString();
+
 const initialState = {
-  startDate: sub(new Date(), { years: 3 }).toISOString(),
+  defaultStartDate: defaultStartDate,
+  startDate: defaultStartDate,
   endDate: new Date().toISOString(),
   seasonal: false,
   excludeMonthRange: false,
@@ -39,6 +42,8 @@ export const dateFilterSlice = createSlice({
           payload: {
             startDate: payload.startDate,
             endDate: payload.endDate,
+            seasonal: payload.seasonal,
+            excludeMonthRange: payload.excludeMonthRange,
             smoothingFactor: handleSmoothingFactor(
               payload.startDate,
               payload.endDate
