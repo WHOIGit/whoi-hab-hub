@@ -1,2 +1,4 @@
 # whoi-hab-hub
-HAB map project in Django
+HAB data API and map project.
+
+The HAB hub data portal is being developed as a data access and visualization portal for the New England Harmful Algal Bloom Observing Network (neHABON). 
