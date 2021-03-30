@@ -20,7 +20,7 @@ Steps for default Local Deployment:
 
 1. Docker and Docker Compose installed: [instructions](https://docs.docker.com/compose/install)
 2. Clone repo to your local computer:  `git clone https://github.com/WHOIGit/whoi-hab-hub.git`
-3. Create local `.env `files for both Django data server and React frontend client. Continued below...
+3. Create local `.env` files for both Django data server and React frontend client. Continued below...
 
 **Step 3 details**
 
@@ -30,19 +30,20 @@ These variable should NOT be kept in version control.
 **For the Django Data Server**
 
 The `habhub-dataserver` directory contains the Django backend application. This directory also includes a ``.envs.example`` directory that you can use as
-a template to create your own ``.envs`` directory and files. HABhub requires this ".envs" directory to be in the Django application root level directory. (ex. environmental variables file path: `habhub-dataserver/.envs/.production/.django`)
+a template to create your own ``.envs`` directory and files. HABhub requires this ".envs" directory to be in the Django application root level directory. (ex. environmental variables file path: `habhub-dataserver/.envs/.local/.django`)
 
 Final directory structure:
 
 ```
 habhub-dataserver
 -- .envs/
-    -- .production/
-      -- .django 
-      -- .postgres
     -- .local/
       -- .django
       -- .postgres
+    -- .production/
+      -- .django 
+      -- .postgres
+    
 ```
 **For the React Frontend Client**
 
