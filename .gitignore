@@ -283,4 +283,4 @@ celerybeat-schedule
 .env
 .envs/
 !.envs.example/
-!react-frontend/.env
+#react-frontend/.env
