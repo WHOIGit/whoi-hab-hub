@@ -18,14 +18,15 @@ Steps for default Local Deployment:
 
 1. Docker and Docker Compose installed: [instructions](https://docs.docker.com/compose/install)
 2. Clone repo to your local computer:  `git clone https://github.com/WHOIGit/whoi-hab-hub.git`
-3. Create local `.env `files for both Django data server and React frontend client
+3. Create local `.env `files for both Django data server and React frontend client. Continued below...
 
-**Step 3 details**
+### Step 3 details
 
 HABhub uses environmental variables for configs such as API links, API tokens, and secrets like database usernames/passwords.
 These variable should NOT be kept in version control. 
 
-### Django Data Server
+**Django Data Server**
+
 The `habhub-dataserver` directory contains the Django backend application. This directory also includes a ``.envs.example`` directory that you can use as
 a template to create your own ``.envs`` directory and files. HABhub requires this ".envs" directory to be in the Django application root level directory. (ex. environmental variables file path: `habhub-dataserver/.envs/.production/.django`)
 
@@ -41,7 +42,7 @@ habhub-dataserver
       -- .django
       -- .postgres
 ```
-### React Frontend Client
+**React Frontend Client**
 
 The `habhub-react-frontend` directory contains the React frontend application. Create a new default `.env` file in this directory using the provided `.env.example` file as a template. You can also use the example `.env.development` and `.env.production` files to set different values for environmental variables depending on the environment. Any variable named in one of these environment specific files will be used instead of the default value in the regular `.env` file.
 
@@ -53,7 +54,7 @@ The REACT_APP_API_URL is the base URL of the HABhub data server you want to use.
 
 The REACT_APP_MAPBOX_TOKEN is the API token for Mapbox access. To get a Mapbox GL JS token, create an account [here](https://account.mapbox.com/auth/signup/)
 
-Step 4
+**Step 4**
 
 Open your terminal and `cd` to the root level of the `whoi-hab-hub` directory. Run the following Docker Compose commands:
 ```
