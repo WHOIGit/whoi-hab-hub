@@ -78,3 +78,5 @@ docker-compose -f local.yml run --rm django python manage.py createsuperuser
 The frontend map application will now be available at: http://localhost:3000/
 
 The backend data server will be available at: http://localhost:8000/
+
+To access the Django admin system, login with your new superuser credentials at: http://localhost:8000/admin
