@@ -24,7 +24,7 @@ import {
   KeyboardDatePicker,
 } from "@material-ui/pickers";
 
-import DataTimeline from "../../components/dashboard/DataTimeline";
+import DataTimeline from "./DataTimeline";
 import { changeDateRange } from "./dateFilterSlice";
 
 const widthWithDashboard = window.outerWidth - 400;
@@ -163,7 +163,6 @@ export default function DateControls({
   showControls,
   showDateControls,
   mapLayers,
-  onDateRangeChange,
 }) {
   const dateFilter = useSelector((state) => state.dateFilter);
   const dispatch = useDispatch();
@@ -177,6 +176,7 @@ export default function DateControls({
     parseISO(dateFilter.endDate)
   );
   const [excludeChecked, setExcludeChecked] = useState(false);
+  const [chartZoomReset, setChartZoomReset] = useState();
 
   const onStartDateChange = (date) => {
     setSelectedStartDate(date);
@@ -191,6 +191,8 @@ export default function DateControls({
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
       setSliderValuesFromDates(date, selectedEndDate);
+      // reset timeline chart zoom if necesssary
+      setChartZoomReset(true);
     }
   };
 
@@ -207,6 +209,8 @@ export default function DateControls({
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
       setSliderValuesFromDates(selectedStartDate, date);
+      // reset timeline chart zoom if necesssary
+      setChartZoomReset(true);
     }
   };
 
@@ -218,6 +222,8 @@ export default function DateControls({
     const payload = {
       startDate: dateFilter.defaultStartDate,
       endDate: new Date().toISOString(),
+      seasonal: false,
+      excludeMonthRange: false,
     };
     dispatch(changeDateRange(payload));
 
@@ -229,27 +235,29 @@ export default function DateControls({
     setValueYearSlider(newSliderYear);
     const newSliderMonth = [0, 11];
     setValueMonthSlider(newSliderMonth);
+    // reset timeline chart zoom if necesssary
+    setChartZoomReset(true);
   };
 
-  function setSliderValuesFromDates(startDate, endDate) {
+  const setSliderValuesFromDates = (startDate, endDate) => {
     // updates the Slider state values from two Date objects
     const newSliderYear = [startDate.getFullYear(), endDate.getFullYear()];
     setValueYearSlider(newSliderYear);
     const newSliderMonth = [startDate.getMonth(), endDate.getMonth()];
     setValueMonthSlider(newSliderMonth);
-  }
+  };
 
-  function onYearSliderCommit(event, newValue) {
+  const onYearSliderCommit = (event, newValue) => {
     setValueYearSlider(newValue);
     onSliderRangeChange(newValue, valueMonthSlider);
-  }
+  };
 
-  function onMonthSliderCommit(event, newValue) {
+  const onMonthSliderCommit = (event, newValue) => {
     setValueMonthSlider(newValue);
     onSliderRangeChange(valueYearSlider, newValue);
-  }
+  };
 
-  function onSliderRangeChange(valueYearSlider, valueMonthSlider) {
+  const onSliderRangeChange = (valueYearSlider, valueMonthSlider) => {
     // Calculate new dates based on slider input
     const startDateFields = [valueYearSlider[0], valueMonthSlider[0], 1];
     const newStartDate = new Date(...startDateFields);
@@ -267,18 +275,20 @@ export default function DateControls({
       excludeMonthRange: excludeChecked,
     };
     dispatch(changeDateRange(payload));
-    //onDateRangeChange(newStartDate, newEndDate, true, excludeChecked);
-  }
+    // reset timeline chart zoom if necesssary
+    setChartZoomReset(true);
+  };
 
-  function onExcludeChange(event) {
+  const onExcludeChange = (event) => {
     setExcludeChecked(event.target.checked);
-    onDateRangeChange(
-      selectedStartDate,
-      selectedEndDate,
-      true,
-      event.target.checked
-    );
-  }
+    const payload = {
+      startDate: selectedStartDate.toISOString(),
+      endDate: selectedEndDate.toISOString(),
+      seasonal: true,
+      excludeMonthRange: event.target.checked,
+    };
+    dispatch(changeDateRange(payload));
+  };
 
   return (
     <div
@@ -395,12 +405,13 @@ export default function DateControls({
         <Grid item xs={12}>
           <DataTimeline
             mapLayers={mapLayers}
-            onDateRangeChange={onDateRangeChange}
             onDateRangeReset={onDateRangeReset}
             setSelectedStartDate={setSelectedStartDate}
             setSelectedEndDate={setSelectedEndDate}
             setSliderValuesFromDates={setSliderValuesFromDates}
             showControls={showControls}
+            chartZoomReset={chartZoomReset}
+            setChartZoomReset={setChartZoomReset}
           />
         </Grid>
       </Grid>

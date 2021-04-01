@@ -35,6 +35,8 @@ export const dateFilterSlice = createSlice({
       reducer(state, action) {
         state.startDate = action.payload.startDate;
         state.endDate = action.payload.endDate;
+        state.seasonal = action.payload.seasonal;
+        state.excludeMonthRange = action.payload.excludeMonthRange;
         state.smoothingFactor = action.payload.smoothingFactor;
       },
       prepare(payload) {

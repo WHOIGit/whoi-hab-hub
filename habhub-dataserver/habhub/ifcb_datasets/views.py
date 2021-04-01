@@ -194,7 +194,6 @@ class BinAjaxGetImagesBySpecies(View):
                 # img_path = F"media/ifcb/images/{img_name}.png"
                 images.append(img_path)
 
-        print(images)
         if format == 'json':
             bin_images_json = {
                 'bin': {

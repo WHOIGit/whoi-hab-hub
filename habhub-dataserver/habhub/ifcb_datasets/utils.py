@@ -7,9 +7,12 @@ from django.core.files.storage import default_storage
 
 
 """
-Function to make url request to IFCB Dashboard get image if missing locally
+Function to make url request to IFCB Dashboard get image if missing locally,
+save it to local/AWS storage
 Args: 'dataset_obj': Dataset object, 'img_name': string
 """
+
+
 def _get_image_ifcb_dashboard(dataset_obj, img_name):
     image = None
     img_key = f'ifcb/images/{img_name}.png'
