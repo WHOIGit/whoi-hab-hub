@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Source, Layer } from "react-map-gl";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
@@ -18,14 +19,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function IfcbMarkers({
-  onMarkerClick,
-  dateFilter,
-  smoothingFactor,
-  visibility,
-  showMaxMean,
-}) {
+function IfcbMarkers({ onMarkerClick, visibility, showMaxMean }) {
   const habSpecies = useSelector((state) => state.habSpecies);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const layerID = "ifcb-layer";
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -42,11 +38,11 @@ function IfcbMarkers({
         baseURL +
         "?" +
         new URLSearchParams({
-          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
-          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
+          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.exclude_month_range,
-          smoothing_factor: smoothingFactor,
+          smoothing_factor: dateFilter.smoothingFactor,
         });
       return filterURL;
     };
@@ -96,7 +92,7 @@ function IfcbMarkers({
     },
   };
 
-  function renderMarker(feature, showMaxMean) {
+  const renderMarker = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
     if (feature.properties.max_mean_values.length) {
       const speciesValues = habSpecies
@@ -133,7 +129,7 @@ function IfcbMarkers({
     } else {
       return;
     }
-  }
+  };
 
   if (visibility) {
     return (

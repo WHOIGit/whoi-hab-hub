@@ -1,25 +1,25 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useRef } from "react";
 import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { differenceInDays } from "date-fns";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
 // Import our stuff
-import DashBoard from "./dashboard/DashBoard";
+import DashBoard from "../../components/dashboard/DashBoard";
 //import DateControls from "./dashboard/DateControls";
-import DateControls from "../features/date-filter/DateControls";
-import DataPanel from "./DataPanel";
+import DateControls from "../date-filter/DateControls";
+import DataPanel from "../../components/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
-import LowerLeftPanel from "./LowerLeftPanel";
-import DisclaimerBox from "./DisclaimerBox";
-import { layers } from "../Constants";
+import LowerLeftPanel from "../../components/LowerLeftPanel";
+import DisclaimerBox from "../../components/DisclaimerBox";
+import { layers } from "../../Constants";
 
 // eslint-disable-next-line no-undef
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-const defaultStartDate = new Date("2017-01-01T21:11:54");
+const interactiveLayerIds = ["closures-layer"];
 
 const navStyle = {
   position: "absolute",
@@ -60,17 +60,8 @@ export default function HabMap() {
 
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
-  // dateFilter value for API: array [startDate:date, endDate:date, seasonal:boolean]
-  // const [dateFilter, setDateFilter] = useState([defaultStartDate, new Date(), false]);
-  const [dateFilter, setDateFilter] = useState({
-    startDate: defaultStartDate,
-    endDate: new Date(),
-    seasonal: false,
-    exclude_month_range: false,
-  });
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
-  const [smoothingFactor, setSmoothingFactor] = useState(4);
   const [showMaxMean, setShowMaxMean] = useState("max");
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
@@ -78,10 +69,7 @@ export default function HabMap() {
     "stations-layer",
     "ifcb-layer",
   ]);
-
   const mapRef = useRef();
-
-  const interactiveLayerIds = ["closures-layer"];
 
   function onMapLoad() {
     const mapObj = mapRef.current.getMap();
@@ -141,62 +129,23 @@ export default function HabMap() {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
-  function onDateRangeChange(
-    startDate,
-    endDate,
-    seasonal = false,
-    exclude_month_range = false
-  ) {
-    const newDateFilter = {
-      startDate: startDate,
-      endDate: endDate,
-      seasonal: seasonal,
-      exclude_month_range: exclude_month_range,
-    };
-    setDateFilter(newDateFilter);
-
-    // calculate the date range length to determine a smoothing factor to pass API
-    const dateRange = differenceInDays(endDate, startDate);
-    let newFactor = 4;
-
-    if (dateRange < 90) {
-      newFactor = 1;
-    } else if (dateRange < 180) {
-      newFactor = 2;
-    } else if (dateRange < 240) {
-      newFactor = 3;
-    }
-    setSmoothingFactor(newFactor);
-  }
-
   function renderMarkerLayer(layer) {
     console.log(layer.id);
     if (layer.visibility && layer.id === "stations-layer") {
       return (
         <StationsMarkers
           onMarkerClick={onMarkerClick}
-          dateFilter={dateFilter}
-          smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
           showMaxMean={showMaxMean}
           key={layer.id}
         />
       );
     } else if (layer.id === "closures-layer") {
-      return (
-        <ClosuresLayer
-          dateFilter={dateFilter}
-          visibility={layer.visibility}
-          key={layer.id}
-        />
-      );
+      return <ClosuresLayer visibility={layer.visibility} key={layer.id} />;
     } else if (layer.id === "ifcb-layer") {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}
-          dateFilter={dateFilter}
-          smoothingFactor={smoothingFactor}
           visibility={layer.visibility}
           showMaxMean={showMaxMean}
           key={layer.id}
@@ -217,8 +166,6 @@ export default function HabMap() {
                 key={feature.id}
                 featureID={feature.id}
                 dataLayer={feature.layer}
-                dateFilter={dateFilter}
-                smoothingFactor={smoothingFactor}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
               />

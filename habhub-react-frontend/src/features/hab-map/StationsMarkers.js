@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import StationsMarkerIcon from "./StationsMarkerIcon";
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
@@ -16,13 +17,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StationsMarkers({
-  onMarkerClick,
-  dateFilter,
-  smoothingFactor,
-  showMaxMean,
-}) {
+export default function StationsMarkers({ onMarkerClick, showMaxMean }) {
   const habSpecies = useSelector((state) => state.habSpecies);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const classes = useStyles();
   const layerID = "stations-layer";
   // eslint-disable-next-line no-unused-vars
@@ -39,11 +36,11 @@ export default function StationsMarkers({
         baseURL +
         "?" +
         new URLSearchParams({
-          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
-          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
+          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.exclude_month_range,
-          smoothing_factor: smoothingFactor,
+          smoothing_factor: dateFilter.smoothingFactor,
         });
       return filterURL;
     }
@@ -69,7 +66,7 @@ export default function StationsMarkers({
         );
     }
     fetchResults();
-  }, [dateFilter, smoothingFactor]);
+  }, [dateFilter]);
 
   function renderMarker(feature) {
     const visibleSpecies = habSpecies.filter(

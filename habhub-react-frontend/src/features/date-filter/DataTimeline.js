@@ -8,6 +8,7 @@ import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 import { changeDateRange } from "./dateFilterSlice";
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 const widthWithDashboard = window.outerWidth - 400;

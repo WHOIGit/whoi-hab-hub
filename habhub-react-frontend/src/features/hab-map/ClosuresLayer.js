@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Source, Layer } from "react-map-gl";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
@@ -15,7 +17,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ClosuresLayer({ dateFilter, visibility }) {
+export default function ClosuresLayer({ visibility }) {
+  const dateFilter = useSelector((state) => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -33,8 +36,8 @@ export default function ClosuresLayer({ dateFilter, visibility }) {
         baseURL +
         "?" +
         new URLSearchParams({
-          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
-          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
+          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.exclude_month_range,
         });
