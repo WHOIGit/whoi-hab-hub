@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
+// eslint-disable-next-line no-unused-vars
 const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
 
 const useStyles = makeStyles((theme) => ({
@@ -92,7 +93,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
               {pointImgData.images.map((image) => (
                 <Grid item xs={gridSize} key={image}>
                   <img
-                    src={`${AWS_BUCKET_URL}${image}`}
+                    src={image}
                     alt={pointImgData.species}
                     className={classes.imageGrid}
                   />
