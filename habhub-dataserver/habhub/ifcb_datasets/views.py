@@ -1,5 +1,6 @@
 import datetime
 from statistics import mean
+import environ
 
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
@@ -12,8 +13,16 @@ from .models import *
 from .utils import _get_image_ifcb_dashboard
 from .api.serializers import DatasetListSerializer
 
+env = environ.Env()
+
+IFCB_DASHBOARD_URL = env(
+    "IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu"
+)
+
 ######### AJAX Views to return geoJSON for maps #############
 # AJAX views to get GeoJSON responses for all IFCB Dataset map layer
+
+
 class DatasetAjaxGetAllView(View):
 
     def get(self, request, *args, **kwargs):
@@ -77,7 +86,7 @@ class IFCBMapMainView(TemplateView):
                     if concentration_vals:
                         max_val = max(concentration_vals)
                         mean_val = int(mean(concentration_vals))
-                    data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
+                    data['values'].append({'species': species[1], 'max': max_val, 'mean': mean_val, })
             concentrations_pastweek.append(data)
 
         context.update({
@@ -118,7 +127,7 @@ class DatasetAjaxGetMapSidebar(View):
                     img_name = data['image_numbers'][0]
                     # need to check is this image exists locally. If not, go get it and cache locally
                     _get_image_ifcb_dashboard(dataset_obj, img_name)
-                    img_path= F"ifcb/images/{img_name}.png"
+                    img_path = F"ifcb/images/{img_name}.png"
                     images.append((species[1], img_path))
 
             dashboard_data = {
@@ -127,9 +136,9 @@ class DatasetAjaxGetMapSidebar(View):
                 'depth': last_bin.depth,
                 'total_bins': dataset_obj.bins.count(),
                 'images': images,
-                #'concentrations_pastweek': concentrations_pastweek,
+                # 'concentrations_pastweek': concentrations_pastweek,
             }
-            return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data,})
+            return render(request, 'ifcb_datasets/_dashboard_sidebar_detail.html', {'dataset_obj': dataset_obj, 'dashboard_data': dashboard_data, })
         # If no pk, return the main "home" sidebar template
         # Get past week concentration data across Datasets
         concentrations_pastweek = []
@@ -149,9 +158,9 @@ class DatasetAjaxGetMapSidebar(View):
                             concentration_vals.append(item['cell_concentration'])
                     max_val = max(concentration_vals)
                     mean_val = int(mean(concentration_vals))
-                    data['values'].append({'species' : species[1], 'max' : max_val, 'mean' : mean_val, })
+                    data['values'].append({'species': species[1], 'max': max_val, 'mean': mean_val, })
             concentrations_pastweek.append(data)
-        return render(request, 'ifcb_datasets/_dashboard_sidebar_home.html', {'concentrations_pastweek': concentrations_pastweek,})
+        return render(request, 'ifcb_datasets/_dashboard_sidebar_home.html', {'concentrations_pastweek': concentrations_pastweek, })
 
 
 # Function to load IFBC map sidebar
@@ -179,15 +188,16 @@ class BinAjaxGetImagesBySpecies(View):
             image_numbers = data['image_numbers'][:30]
             print(image_numbers)
             for img_name in image_numbers:
+                img_path = f'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{img_name}.png'
                 # need to check is this image exists locally. If not, go get it and cache locally
-                _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
-                img_path= F"media/ifcb/images/{img_name}.png"
+                # _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
+                # img_path = F"media/ifcb/images/{img_name}.png"
                 images.append(img_path)
 
         print(images)
         if format == 'json':
             bin_images_json = {
-                'bin' : {
+                'bin': {
                     'pid': bin_obj.pid,
                     'dataset_id': bin_obj.dataset.dashboard_id_name
                 },

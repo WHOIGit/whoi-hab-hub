@@ -1,0 +1,23 @@
+# General
+# ------------------------------------------------------------------------------
+USE_DOCKER=yes
+IPYTHONDIR=/app/.ipython
+
+# Redis
+# ------------------------------------------------------------------------------
+REDIS_URL=redis://redis:6379/0
+
+DJANGO_SECRET_KEY=i9MpoOjaTOq5j2VK9JhzA9pwoQ3Wtb4OhQNRdxkf8h6OqxyEimj1UmoeuTO7J0aD
+DJANGO_ADMIN_URL=admin/
+
+# Celery
+# ------------------------------------------------------------------------------
+
+# Flower
+CELERY_FLOWER_USER=OSptfYSERXlnglRjEMZkFcLxvWRzQqaz
+CELERY_FLOWER_PASSWORD=OhQNRdxkf8h6OqxyEimj1UmoeuTO7J0aD
+
+# HABHub settings
+# ------------------------------------------------------------------------------
+# This needs to be set to the IFCB dashboard root URL you want to ingest data from.
+IFCB_DASHBOARD_URL=https://habon-ifcb.whoi.edu
