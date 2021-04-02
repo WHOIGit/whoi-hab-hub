@@ -7,9 +7,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { makeStyles } from "@material-ui/styles";
 // Import our stuff
 import DashBoard from "../../components/dashboard/DashBoard";
-//import DateControls from "./dashboard/DateControls";
-import DateControls from "../date-filter/DateControls";
-import DataPanel from "../../components/DataPanel";
+import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
@@ -48,7 +46,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function HabMap() {
+export default function HabMap({
+  showControls,
+  setShowControls,
+  showDateControls,
+  setShowDateControls,
+}) {
   const classes = useStyles();
   const [viewport, setViewport] = useState({
     latitude: 42.89,
@@ -60,8 +63,6 @@ export default function HabMap() {
 
   const [features, setFeatures] = useState([]);
   const [mapLayers, setMapLayers] = useState(layers);
-  const [showControls, setShowControls] = useState(true);
-  const [showDateControls, setShowDateControls] = useState(false);
   const [showMaxMean, setShowMaxMean] = useState("max");
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
@@ -71,7 +72,7 @@ export default function HabMap() {
   ]);
   const mapRef = useRef();
 
-  function onMapLoad() {
+  const onMapLoad = () => {
     const mapObj = mapRef.current.getMap();
     // Load the custom icon image from the 'public' directory for the Closures Layer
     mapObj.loadImage(
@@ -81,25 +82,24 @@ export default function HabMap() {
         mapObj.addImage("icon-shellfish-closure", image);
       }
     );
-  }
+  };
 
-  function onMapClick(event) {
+  const onMapClick = (event) => {
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {
       layers: interactiveLayerIds,
     });
-    console.log(mapFeatures[0]);
     const feature = mapFeatures[0];
 
     if (feature !== undefined) {
       feature.layer = feature.layer.id;
       setFeatures([feature, ...features]);
     }
-  }
+  };
 
-  function onMarkerClick(event, feature, layerID) {
+  const onMarkerClick = (event, feature, layerID) => {
     feature.layer = layerID;
     setFeatures([feature, ...features]);
-  }
+  };
 
   function onPaneClose(featureID) {
     const newFeatures = features.filter((feature) => feature.id !== featureID);
@@ -211,15 +211,6 @@ export default function HabMap() {
             setShowMaxMean={setShowMaxMean}
             visibleLegends={visibleLegends}
             setVisibleLegends={setVisibleLegends}
-            mapRef={mapRef}
-          />
-        </div>
-
-        <div>
-          <DateControls
-            showControls={showControls}
-            showDateControls={showDateControls}
-            mapLayers={mapLayers}
           />
         </div>
 

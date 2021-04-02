@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function DataTimeline({
-  mapLayers,
+  dataLayers,
   onDateRangeReset,
   setSelectedStartDate,
   setSelectedEndDate,
@@ -83,7 +83,7 @@ function DataTimeline({
         );
     }
     fetchResults();
-  }, [mapLayers]);
+  }, [dataLayers]);
 
   useEffect(() => {
     const newChartData = [];

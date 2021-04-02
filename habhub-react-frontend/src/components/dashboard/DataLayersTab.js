@@ -62,61 +62,13 @@ export default function DataLayersTab({
   renderColorChips,
   showMaxMean,
   setShowMaxMean,
-  mapRef,
 }) {
   // Set const variables
   const classes = useStyles();
-  const [imgShot, setImgShot] = useState();
 
   const handleMaxMeanChange = (event) => {
     setShowMaxMean(event.target.value);
   };
-
-  const handleMapScreenshot = () => {
-    if (mapRef.current !== undefined) {
-      const mapObj = mapRef.current.getMap();
-      console.log(mapObj.getCanvas());
-      const mapCanvas = document.querySelector(".mapboxgl-canvas");
-      html2canvas(mapCanvas).then(function (canvas) {
-        console.log(canvas.toDataURL());
-        saveAs(canvas.toDataURL(), "file-name.png");
-      });
-    }
-    /*
-    if (mapRef.current !== undefined) {
-      const mapObj = mapRef.current.getMap();
-      console.log(mapObj);
-      const imgData  = mapObj.getCanvas().toDataURL();
-      const imgHTML = `<img src="${imgData}", width=200, height=200/>`
-      console.log(imgHTML);
-      setImgShot(imgData)
-      const a = document.createElement("a");
-      a.href = imgData;
-      a.download = "HABhub-map";
-      document.body.appendChild(a);
-      a.click();
-    }*/
-  };
-
-  function saveAs(uri, filename) {
-    console.log(uri);
-    var link = document.createElement("a");
-    if (typeof link.download === "string") {
-      link.href = uri;
-      link.download = filename;
-
-      //Firefox requires the link to be in the body
-      document.body.appendChild(link);
-
-      //simulate click
-      link.click();
-
-      //remove the link when done
-      document.body.removeChild(link);
-    } else {
-      window.open(uri);
-    }
-  }
 
   function renderLayerControl(mapLayer) {
     return (

@@ -71,8 +71,8 @@ export default function SidePane({
     setExpandPane(!expandPane);
   }
 
-  let title = null;
-  let subTitle = null;
+  let title;
+  let subTitle;
 
   if (dataLayer === "stations-layer") {
     title = `Station Toxicity Data: ${results.properties.station_location}`;

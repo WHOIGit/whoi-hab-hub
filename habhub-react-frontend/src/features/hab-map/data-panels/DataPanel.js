@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import SidePane from "./SidePane";
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 const useStyles = makeStyles((theme) => ({
@@ -21,14 +23,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function DataPanel({
-  featureID,
-  dataLayer,
-  dateFilter,
-  smoothingFactor,
-  yAxisScale,
-  onPaneClose,
-}) {
+function DataPanel({ featureID, dataLayer, yAxisScale, onPaneClose }) {
+  const dateFilter = useSelector((state) => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -39,6 +35,7 @@ function DataPanel({
   useEffect(() => {
     function getFetchUrl(featureID, dataLayer) {
       let baseURL = "";
+      let smoothingFactor = dateFilter.smoothingFactor;
       if (dataLayer === "stations-layer") {
         baseURL = `${API_URL}api/v1/stations/${featureID}/`;
         // Force smoothing_factor to be ignored for Station graphs
@@ -53,8 +50,8 @@ function DataPanel({
         baseURL +
         "?" +
         new URLSearchParams({
-          start_date: format(dateFilter.startDate, "MM/dd/yyyy"),
-          end_date: format(dateFilter.endDate, "MM/dd/yyyy"),
+          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
+          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.exclude_month_range,
           smoothing_factor: smoothingFactor,
@@ -100,7 +97,7 @@ function DataPanel({
         );
     }
     fetchResults();
-  }, [featureID, dataLayer, dateFilter, smoothingFactor]);
+  }, [featureID, dataLayer, dateFilter]);
 
   console.log(results);
 

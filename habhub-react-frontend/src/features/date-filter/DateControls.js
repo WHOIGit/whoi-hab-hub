@@ -159,14 +159,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DateControls({
-  showControls,
-  showDateControls,
-  mapLayers,
-}) {
+export default function DateControls({ showControls, showDateControls }) {
   const dateFilter = useSelector((state) => state.dateFilter);
+  const dataLayers = useSelector((state) => state.dataLayers);
+
   const dispatch = useDispatch();
   const classes = useStyles();
+
   const [valueYearSlider, setValueYearSlider] = useState([2017, 2021]);
   const [valueMonthSlider, setValueMonthSlider] = useState([0, 11]);
   const [selectedStartDate, setSelectedStartDate] = useState(
@@ -404,7 +403,7 @@ export default function DateControls({
         </Grid>
         <Grid item xs={12}>
           <DataTimeline
-            mapLayers={mapLayers}
+            dataLayers={dataLayers}
             onDateRangeReset={onDateRangeReset}
             setSelectedStartDate={setSelectedStartDate}
             setSelectedEndDate={setSelectedEndDate}

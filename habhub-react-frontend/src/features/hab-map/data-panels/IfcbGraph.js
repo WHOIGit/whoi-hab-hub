@@ -15,6 +15,7 @@ Exporting(Highcharts);
 ExportData(Highcharts);
 Serieslabel(Highcharts);
 
+// eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 const expandWidth = window.outerWidth - 430;
 

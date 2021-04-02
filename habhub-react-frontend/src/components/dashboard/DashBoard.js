@@ -107,7 +107,6 @@ export default function Dashboard({
   setShowMaxMean,
   visibleLegends,
   setVisibleLegends,
-  mapRef,
 }) {
   // Set const variables
   const classes = useStyles();
@@ -190,7 +189,6 @@ export default function Dashboard({
               onLayerVisibilityChange={onLayerVisibilityChange}
               showMaxMean={showMaxMean}
               setShowMaxMean={setShowMaxMean}
-              mapRef={mapRef}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
