@@ -1,19 +1,23 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
 // Import our stuff
-import DashBoard from "../../components/dashboard/DashBoard";
+import DashBoard from "../dashboard/DashBoard";
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import LowerLeftPanel from "../../components/LowerLeftPanel";
 import DisclaimerBox from "../../components/DisclaimerBox";
-import { layers } from "../../Constants";
+import {
+  selectVisibleLayers,
+  selectVisibleLayerIds,
+} from "../data-layers/dataLayersSlice";
 
 // eslint-disable-next-line no-undef
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
@@ -61,9 +65,9 @@ export default function HabMap({
     zoom: 6.7,
   });
 
+  const visibleLayers = useSelector(selectVisibleLayers);
+  const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const [features, setFeatures] = useState([]);
-  const [mapLayers, setMapLayers] = useState(layers);
-  const [showMaxMean, setShowMaxMean] = useState("max");
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
   const [visibleLegends, setVisibleLegends] = useState([
@@ -71,6 +75,20 @@ export default function HabMap({
     "ifcb-layer",
   ]);
   const mapRef = useRef();
+
+  useEffect(() => {
+    const newFeatures = features.filter((feature) =>
+      visibleLayerIds.includes(feature.layer)
+    );
+    setFeatures(newFeatures);
+
+    /*
+    if (!event.target.checked) {
+      const newLegends = visibleLegends.filter((item) => item !== layerID);
+      setVisibleLegends(newLegends);
+    }
+    */
+  }, [visibleLayerIds]);
 
   const onMapLoad = () => {
     const mapObj = mapRef.current.getMap();
@@ -101,60 +119,28 @@ export default function HabMap({
     setFeatures([feature, ...features]);
   };
 
-  function onPaneClose(featureID) {
+  const onPaneClose = (featureID) => {
     const newFeatures = features.filter((feature) => feature.id !== featureID);
     setFeatures(newFeatures);
-  }
+  };
 
-  function onLayerVisibilityChange(event, layerID) {
-    // set the mapLayers state
-    const newVisibility = mapLayers.map((item) => {
-      if (item.id === layerID) {
-        item.visibility = event.target.checked;
-      }
-      return item;
-    });
-    setMapLayers(newVisibility);
-
-    // set the features state
-    const newFeatures = features.filter(
-      (feature) => feature.layer.id !== layerID
-    );
-    setFeatures(newFeatures);
-
-    // remove any legned panes if they're active, no action on activating
-    if (!event.target.checked) {
-      const newLegends = visibleLegends.filter((item) => item !== layerID);
-      setVisibleLegends(newLegends);
-    }
-  }
-
-  function renderMarkerLayer(layer) {
-    console.log(layer.id);
-    if (layer.visibility && layer.id === "stations-layer") {
+  const renderMarkerLayer = (layer) => {
+    if (layer.id === "stations-layer") {
       return (
         <StationsMarkers
           onMarkerClick={onMarkerClick}
           visibility={layer.visibility}
-          showMaxMean={showMaxMean}
           key={layer.id}
         />
       );
     } else if (layer.id === "closures-layer") {
-      return <ClosuresLayer visibility={layer.visibility} key={layer.id} />;
+      return <ClosuresLayer key={layer.id} />;
     } else if (layer.id === "ifcb-layer") {
-      return (
-        <IfcbMarkers
-          onMarkerClick={onMarkerClick}
-          visibility={layer.visibility}
-          showMaxMean={showMaxMean}
-          key={layer.id}
-        />
-      );
+      return <IfcbMarkers onMarkerClick={onMarkerClick} key={layer.id} />;
     } else {
       return;
     }
-  }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -187,7 +173,7 @@ export default function HabMap({
             ref={mapRef}
           >
             <React.Fragment>
-              {mapLayers.map((layer) => renderMarkerLayer(layer))}
+              {visibleLayers.map((layer) => renderMarkerLayer(layer))}
             </React.Fragment>
 
             <div style={navStyle}>
@@ -201,14 +187,10 @@ export default function HabMap({
 
         <div>
           <DashBoard
-            mapLayers={mapLayers}
-            onLayerVisibilityChange={onLayerVisibilityChange}
             showControls={showControls}
             setShowControls={setShowControls}
             showDateControls={showDateControls}
             setShowDateControls={setShowDateControls}
-            showMaxMean={showMaxMean}
-            setShowMaxMean={setShowMaxMean}
             visibleLegends={visibleLegends}
             setVisibleLegends={setVisibleLegends}
           />

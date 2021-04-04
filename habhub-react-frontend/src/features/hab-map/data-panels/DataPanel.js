@@ -23,7 +23,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function DataPanel({ featureID, dataLayer, yAxisScale, onPaneClose }) {
+export default function DataPanel({
+  featureID,
+  dataLayer,
+  yAxisScale,
+  onPaneClose,
+}) {
   const dateFilter = useSelector((state) => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -123,5 +128,3 @@ function DataPanel({ featureID, dataLayer, yAxisScale, onPaneClose }) {
     </div>
   );
 }
-
-export default DataPanel;

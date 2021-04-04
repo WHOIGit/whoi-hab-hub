@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -17,10 +17,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
+export default function StationsMarkerIcon({ maxMeanValue }) {
   const habSpecies = useSelector((state) => state.habSpecies);
   const classes = useStyles();
-  const [value, setValue] = useState();
 
   // set colors to use for the gradient from Species
   const activeSpecies = habSpecies.filter(
@@ -28,14 +27,6 @@ export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
   );
   const colors = activeSpecies[0].colorGradient;
   //const colors = species[0].colorGradient;
-
-  useEffect(() => {
-    if (showMaxMean === "mean") {
-      setValue(maxMeanData[0].mean_value);
-    } else {
-      setValue(maxMeanData[0].max_value);
-    }
-  }, [maxMeanData, showMaxMean]);
 
   function setGradientColor(value) {
     let gradient = colors[4];
@@ -62,7 +53,7 @@ export default function StationsMarkerIcon({ maxMeanData, showMaxMean }) {
       >
         <polygon
           points="50 0, 100 50, 50 100, 0 50"
-          fill={setGradientColor(value)}
+          fill={setGradientColor(maxMeanValue)}
           className={classes.triangle}
         />
         {/*<text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>*/}

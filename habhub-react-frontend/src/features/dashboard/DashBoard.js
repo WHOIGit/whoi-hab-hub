@@ -97,14 +97,10 @@ function TabPanel(props) {
 }
 
 export default function Dashboard({
-  mapLayers,
-  onLayerVisibilityChange,
   showControls,
   setShowControls,
   showDateControls,
   setShowDateControls,
-  showMaxMean,
-  setShowMaxMean,
   visibleLegends,
   setVisibleLegends,
 }) {
@@ -184,12 +180,7 @@ export default function Dashboard({
           </div>
 
           <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
-            <DataLayersTab
-              mapLayers={mapLayers}
-              onLayerVisibilityChange={onLayerVisibilityChange}
-              showMaxMean={showMaxMean}
-              setShowMaxMean={setShowMaxMean}
-            />
+            <DataLayersTab />
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
             <LegendTab

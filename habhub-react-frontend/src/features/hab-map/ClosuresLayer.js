@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ClosuresLayer({ visibility }) {
+export default function ClosuresLayer() {
   const dateFilter = useSelector((state) => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -163,13 +163,13 @@ export default function ClosuresLayer({ visibility }) {
             buffer={10}
             maxzoom={12}
           >
-            {visibility && <Layer {...layerClosures} />}
+            <Layer {...layerClosures} />
           </Source>
         )}
 
         {labels && (
           <Source id="closures-labels-src" type="geojson" data={labels}>
-            {visibility && <Layer {...layerClosuresIcons} />}
+            <Layer {...layerClosuresIcons} />
           </Source>
         )}
       </React.Fragment>

@@ -3,7 +3,9 @@ import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
 import { format, parseISO } from "date-fns";
+
 import StationsMarkerIcon from "./StationsMarkerIcon";
+import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 
 // eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
@@ -17,9 +19,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StationsMarkers({ onMarkerClick, showMaxMean }) {
+export default function StationsMarkers({ onMarkerClick }) {
   const habSpecies = useSelector((state) => state.habSpecies);
   const dateFilter = useSelector((state) => state.dateFilter);
+  const showMaxMean = useSelector(selectMaxMeanOption);
   const classes = useStyles();
   const layerID = "stations-layer";
   // eslint-disable-next-line no-unused-vars
@@ -75,7 +78,16 @@ export default function StationsMarkers({ onMarkerClick, showMaxMean }) {
         feature.properties.hab_species.includes(species.id)
     );
 
-    if (visibleSpecies.length && feature.properties.max_mean_values.length) {
+    let maxMeanValue;
+    if (feature.properties.max_mean_values.length) {
+      if (showMaxMean === "mean") {
+        maxMeanValue = feature.properties.max_mean_values[0].mean_value;
+      } else {
+        maxMeanValue = feature.properties.max_mean_values[0].max_value;
+      }
+    }
+
+    if (visibleSpecies.length && maxMeanValue) {
       return (
         <Marker
           key={feature.id}
@@ -87,10 +99,7 @@ export default function StationsMarkers({ onMarkerClick, showMaxMean }) {
             className={classes.button}
             onClick={(event) => onMarkerClick(event, feature, layerID)}
           >
-            <StationsMarkerIcon
-              maxMeanData={feature.properties.max_mean_values}
-              showMaxMean={showMaxMean}
-            />
+            <StationsMarkerIcon maxMeanValue={maxMeanValue} />
           </div>
         </Marker>
       );

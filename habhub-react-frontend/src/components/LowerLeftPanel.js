@@ -1,6 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/styles";
-import LegendPane from "./dashboard/LegendPane";
+import LegendPane from "../features/dashboard/LegendPane";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({

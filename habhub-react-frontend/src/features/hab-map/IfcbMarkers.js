@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
+import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 
 // eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
@@ -19,9 +20,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function IfcbMarkers({ onMarkerClick, visibility, showMaxMean }) {
+function IfcbMarkers({ onMarkerClick }) {
   const habSpecies = useSelector((state) => state.habSpecies);
   const dateFilter = useSelector((state) => state.dateFilter);
+  const showMaxMean = useSelector(selectMaxMeanOption);
   const layerID = "ifcb-layer";
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -131,37 +133,33 @@ function IfcbMarkers({ onMarkerClick, visibility, showMaxMean }) {
     }
   };
 
-  if (visibility) {
-    return (
-      <div>
-        {!isLoaded && (
-          <div className={classes.placeholder}>
-            <CircularProgress />
-          </div>
-        )}
+  return (
+    <div>
+      {!isLoaded && (
+        <div className={classes.placeholder}>
+          <CircularProgress />
+        </div>
+      )}
 
-        {results && (
-          <div>
-            {results.features.map((feature) =>
-              renderMarker(feature, showMaxMean)
-            )}
+      {results && (
+        <div>
+          {results.features.map((feature) =>
+            renderMarker(feature, showMaxMean)
+          )}
 
-            <Source
-              id="ifcb-circles-src"
-              type="geojson"
-              data={results}
-              buffer={10}
-              maxzoom={12}
-            >
-              <Layer {...layerIfcbCircles} />
-            </Source>
-          </div>
-        )}
-      </div>
-    );
-  } else {
-    return null;
-  }
+          <Source
+            id="ifcb-circles-src"
+            type="geojson"
+            data={results}
+            buffer={10}
+            maxzoom={12}
+          >
+            <Layer {...layerIfcbCircles} />
+          </Source>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default IfcbMarkers;
