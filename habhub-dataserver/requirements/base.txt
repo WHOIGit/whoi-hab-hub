@@ -37,3 +37,5 @@ django-summernote==0.8.11.6
 geopy==2.0.0
 django-multiselectfield==0.1.12
 requests==2.24.0
+colour==0.1.5
+django-colorfield==0.4.1

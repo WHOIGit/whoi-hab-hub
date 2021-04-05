@@ -9,12 +9,12 @@ from habhub.stations import views as stations_views
 from habhub.closures import views as closures_views
 from habhub.esp_instrument import views as esp_instrument_views
 
-admin.site.site_header = 'WHOI HABHub Administration'                    # default: "Django Administration"
-admin.site.index_title = 'Site administration'                 # default: "Site administration"
-admin.site.site_title = 'WHOI HABHub Administration'  # default: "Django site admin"
+admin.site.site_header = 'WHOI HABHub Administration'
+admin.site.index_title = 'Site administration'
+admin.site.site_title = 'WHOI HABHub Administration'
 
 urlpatterns = [
-    #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    # path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),
@@ -39,7 +39,6 @@ urlpatterns = [
     path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
     # API urls
     path('api/v1/', include('habhub.core.api.urls', namespace='api_v1')),
-    #path('api/v1/closure-notices/', closures_views.ClosureNoticeAjaxGetAllView.as_view(), name='api_closure_notices_all'),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
 

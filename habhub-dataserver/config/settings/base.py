@@ -81,6 +81,7 @@ THIRD_PARTY_APPS = [
     'storages',
     'drf_multiple_model',
     'rest_framework_csv',
+    'colorfield',
 ]
 LOCAL_APPS = [
     'habhub.users.apps.UsersAppConfig',
