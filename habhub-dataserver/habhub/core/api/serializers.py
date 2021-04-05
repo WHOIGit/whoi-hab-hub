@@ -1,8 +1,29 @@
 from rest_framework import serializers
 
+from ..models import TargetSpecies, DataLayer
 from habhub.stations.models import Datapoint
 from habhub.ifcb_datasets.models import Bin
 from habhub.closures.models import ClosureNotice
+
+
+class TargetSpeciesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TargetSpecies
+        fields = (
+            'species_id',
+            'display_name'
+        )
+
+
+class DataLayerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DataLayer
+        fields = (
+            'layer_id',
+            'name'
+        )
 
 
 class DatapointSerializer(serializers.ModelSerializer):

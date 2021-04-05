@@ -63,7 +63,7 @@ function DataTimeline({
 
   useEffect(() => {
     function fetchResults() {
-      const url = `${API_URL}api/v1/data-density/`;
+      const url = `${API_URL}api/v1/core/data-density/`;
       console.log(url);
       fetch(url)
         .then((res) => res.json())
@@ -128,7 +128,7 @@ function DataTimeline({
             filterEndDate.getDate(),
           ];
 
-          if (dateFilter.exclude_month_range) {
+          if (dateFilter.excludeMonthRange) {
             startDateFields = [
               year,
               filterEndDate.getMonth(),
