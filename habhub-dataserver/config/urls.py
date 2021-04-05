@@ -11,7 +11,7 @@ from habhub.esp_instrument import views as esp_instrument_views
 
 admin.site.site_header = 'WHOI HABHub Administration'                    # default: "Django Administration"
 admin.site.index_title = 'Site administration'                 # default: "Site administration"
-admin.site.site_title = 'WHOI HABHub Administration' # default: "Django site admin"
+admin.site.site_title = 'WHOI HABHub Administration'  # default: "Django site admin"
 
 urlpatterns = [
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -37,13 +37,9 @@ urlpatterns = [
     path('stations/', include('habhub.stations.urls', namespace='stations')),
     path('ifcb-datasets/', include('habhub.ifcb_datasets.urls', namespace='ifcb_datasets')),
     path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
-    #path('ifcb-cruises/', include('habhub.ifcb_cruises.urls', namespace='ifcb_cruises')),
     # API urls
-    path('api/v1/', include('habhub.stations.api.urls')),
-    path('api/v1/', include('habhub.ifcb_datasets.api.urls')),
-    path('api/v1/', include('habhub.closures.api.urls')),
-    path('api/v1/', include('habhub.core.api.urls')),
-    path('api/v1/closure-notices/', closures_views.ClosureNoticeAjaxGetAllView.as_view(), name='api_closure_notices_all'),
+    path('api/v1/', include('habhub.core.api.urls', namespace='api_v1')),
+    #path('api/v1/closure-notices/', closures_views.ClosureNoticeAjaxGetAllView.as_view(), name='api_closure_notices_all'),
     # Summernote WYSIWYG
     path('summernote/', include('django_summernote.urls')),
 
