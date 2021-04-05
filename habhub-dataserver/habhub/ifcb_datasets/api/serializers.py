@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from ..models import Dataset, Bin
+from habhub.core.models import TargetSpecies
 
 
 class DatasetListSerializer(GeoFeatureModelSerializer):
@@ -20,7 +21,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
     timeseries_data = serializers.SerializerMethodField('get_datapoints')
 
     class Meta(DatasetListSerializer.Meta):
-        fields = DatasetListSerializer.Meta.fields + ['timeseries_data',]
+        fields = DatasetListSerializer.Meta.fields + ['timeseries_data', ]
 
     def __init__(self, *args, **kwargs):
         super(DatasetDetailSerializer, self).__init__(*args, **kwargs)
@@ -36,15 +37,16 @@ class DatasetDetailSerializer(DatasetListSerializer):
         concentration_timeseries = list()
 
         # set up data structure to store results
-        for species in Bin.TARGET_SPECIES:
-            dict = {'species': species[0], 'species_display': species[1], 'data': [],}
+        for species in TargetSpecies.objects.all():
+            dict = {'species': species.species_id, 'species_display': species.display_name, 'data': [], }
             concentration_timeseries.append(dict)
 
         for bin in bins_qs:
             date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
             for datapoint in bin.cell_concentration_data:
-                index = next((index for (index, data) in enumerate(concentration_timeseries) if data['species'] == datapoint['species']), None)
+                index = next((index for (index, data) in enumerate(concentration_timeseries)
+                             if data['species'] == datapoint['species']), None)
                 if index is not None:
                     data_dict = {
                         'sample_time': date_str,

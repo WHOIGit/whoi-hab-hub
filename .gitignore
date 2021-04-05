@@ -284,3 +284,5 @@ celerybeat-schedule
 .envs/
 !.envs.example/
 #react-frontend/.env
+
+.vscode/

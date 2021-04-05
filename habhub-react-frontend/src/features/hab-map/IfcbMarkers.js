@@ -43,7 +43,7 @@ function IfcbMarkers({ onMarkerClick }) {
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
-          exclude_month_range: dateFilter.exclude_month_range,
+          exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor,
         });
       return filterURL;

@@ -6,12 +6,15 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
+from habhub.core.models import TargetSpecies
+
 # IFCB dataset models
+
 
 class Dataset(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100, null=False, blank=True)
-    geom =  models.PointField(srid=4326, null=True, blank=True)
+    geom = models.PointField(srid=4326, null=True, blank=True)
     # the lookup name from the IFCB dashboard
     dashboard_id_name = models.CharField(max_length=100)
 
@@ -22,12 +25,12 @@ class Dataset(models.Model):
         return F'{self.name} - {self.location}'
 
     def get_max_mean_values(self):
-        TARGET_SPECIES = [species[0] for species in Bin.TARGET_SPECIES]
+        target_list = TargetSpecies.objects.values_list('species_id', flat=True)
         # set up data structure to store results
         concentration_values = []
         max_mean_values = []
 
-        for species in TARGET_SPECIES:
+        for species in target_list:
             concentration_dict = {'species': species, 'values': []}
             concentration_values.append(concentration_dict)
 
@@ -36,7 +39,8 @@ class Dataset(models.Model):
             for bin in bins_qs:
                 if bin.cell_concentration_data:
                     for datapoint in bin.cell_concentration_data:
-                        item = next((item for item in concentration_values if item['species'] == datapoint['species']), None)
+                        item = next(
+                            (item for item in concentration_values if item['species'] == datapoint['species']), None)
 
                         if item is not None:
                             item['values'].append(int(datapoint['cell_concentration']))
@@ -70,7 +74,7 @@ class Bin(models.Model):
 
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True, db_index=True)
-    geom =  models.PointField(srid=4326, null=True, blank=True)
+    geom = models.PointField(srid=4326, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
     sample_time = models.DateTimeField(default=timezone.now, db_index=True)
     ifcb = models.PositiveIntegerField(null=True, blank=True)
