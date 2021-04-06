@@ -9,5 +9,9 @@ class DataLayerAdmin(admin.ModelAdmin):
     readonly_fields = ('layer_id',)
 
 
-admin.site.register(TargetSpecies)
+class TargetSpeciesAdmin(admin.ModelAdmin):
+    readonly_fields = ('color_gradient',)
+
+
+admin.site.register(TargetSpecies, TargetSpeciesAdmin)
 admin.site.register(DataLayer, DataLayerAdmin)

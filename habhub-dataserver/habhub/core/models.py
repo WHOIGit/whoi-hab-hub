@@ -1,6 +1,10 @@
+from colour import Color
+
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from colorfield.fields import ColorField
+
+from .utils import linear_gradient
 
 
 class TargetSpecies(models.Model):
@@ -13,7 +17,9 @@ class TargetSpecies(models.Model):
     display_name = models.CharField(max_length=100, db_index=True)
     syndrome = models.CharField(max_length=100, blank=True)
     primary_color = ColorField(default='#FF0000')
-    color_gradient = ArrayField(models.CharField(max_length=7), null=True, blank=True, default=None)
+    color_gradient = ArrayField(
+        models.CharField(max_length=7), null=True, blank=True, default=None
+    )
 
     class Meta:
         ordering = ['species_id']
@@ -21,6 +27,18 @@ class TargetSpecies(models.Model):
 
     def __str__(self):
         return self.display_name
+
+    def save(self, *args, **kwargs):
+        # Custom save method to create color gradient based on primary_color
+        dark_shade = Color(self.primary_color)
+        dark_shade.luminance = .35
+        color_gradient = linear_gradient(self.primary_color, "#FFFFFF", 5)
+        # remove white
+        color_gradient.pop()
+        # add dark_shade
+        color_gradient.insert(0, dark_shade.hex)
+        self.color_gradient = color_gradient
+        super(TargetSpecies, self).save(*args, **kwargs)
 
 
 class DataLayer(models.Model):
