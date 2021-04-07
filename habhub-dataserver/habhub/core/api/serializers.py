@@ -17,11 +17,12 @@ class TargetSpeciesSerializer(serializers.ModelSerializer):
 
 
 class DataLayerSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source='layer_id')
 
     class Meta:
         model = DataLayer
         fields = (
-            'layer_id',
+            'id',
             'name'
         )
 

@@ -1,5 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
+/*
 const layers = [
   {
     name: "Shellfish Toxicity",
@@ -25,13 +29,23 @@ const layers = [
     hasLegend: false,
     showMaxMean: "max"
   }
-];
+];*/
 
 const initialState = {
-  layers: layers,
+  layers: [],
   status: "idle",
   error: null
 };
+
+// API call from middleware
+export const fetchLayers = createAsyncThunk(
+  "dataLayers/fetchLayers",
+  async () => {
+    const url = API_URL + "api/v1/core/data-layers/";
+    const response = await axios.get(url);
+    return response.data;
+  }
+);
 
 export const dataLayersSlice = createSlice({
   name: "dataLayers",
@@ -40,7 +54,6 @@ export const dataLayersSlice = createSlice({
     changeLayerVisibility: (state, action) => {
       state.layers.forEach(element => {
         if (element.id == action.payload.layerID) {
-          console.log(element);
           element.visibility = action.payload.checked;
         }
       });
@@ -49,6 +62,25 @@ export const dataLayersSlice = createSlice({
       state.layers.forEach(element => {
         element.showMaxMean = action.payload.value;
       });
+    }
+  },
+  extraReducers: {
+    [fetchLayers.pending]: state => {
+      state.status = "loading";
+    },
+    [fetchLayers.fulfilled]: (state, action) => {
+      state.status = "succeeded";
+      // Add any fetched layers to the array
+      state.layers = state.layers.concat(action.payload);
+      state.layers.forEach(element => {
+        element.visibility = true;
+        element.showMaxMean = "max";
+        element.hasLegend = true;
+      });
+    },
+    [fetchLayers.rejected]: (state, action) => {
+      state.status = "failed";
+      state.error = action.error.message;
     }
   }
 });

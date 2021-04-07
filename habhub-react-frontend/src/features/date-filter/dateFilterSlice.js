@@ -9,7 +9,7 @@ const initialState = {
   endDate: new Date().toISOString(),
   seasonal: false,
   excludeMonthRange: false,
-  smoothingFactor: 4,
+  smoothingFactor: 4
 };
 
 function handleSmoothingFactor(startDate, endDate) {
@@ -49,12 +49,12 @@ export const dateFilterSlice = createSlice({
             smoothingFactor: handleSmoothingFactor(
               payload.startDate,
               payload.endDate
-            ),
-          },
+            )
+          }
         };
-      },
-    },
-  },
+      }
+    }
+  }
 });
 
 // Action creators are generated for each case reducer function

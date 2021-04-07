@@ -7,6 +7,6 @@ export default configureStore({
   reducer: {
     habSpecies: habSpeciesReducer,
     dataLayers: dataLayersReduder,
-    dateFilter: dateFilterReducer,
-  },
+    dateFilter: dateFilterReducer
+  }
 });
