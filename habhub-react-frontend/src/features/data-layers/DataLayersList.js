@@ -10,18 +10,18 @@ import ClosureIcon from "../../images/icon-shellfish-closure.png";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%",
+    width: "100%"
   },
   layerIcon: {
-    width: "25px",
-  },
+    width: "25px"
+  }
 }));
 
 export default function DataLayersList() {
-  const dataLayers = useSelector((state) => state.dataLayers);
+  const dataLayers = useSelector(state => state.dataLayers.layers);
   const classes = useStyles();
 
-  const renderLayerGrid = (dataLayer) => {
+  const renderLayerGrid = dataLayer => {
     let imgSrc;
     if (dataLayer.id === "stations-layer") {
       imgSrc = DiamondMarker;
@@ -78,7 +78,7 @@ export default function DataLayersList() {
 
   return (
     <Grid container spacing={0}>
-      {dataLayers.map((layer) => renderLayerGrid(layer))}
+      {dataLayers.map(layer => renderLayerGrid(layer))}
     </Grid>
   );
 }

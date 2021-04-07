@@ -3,7 +3,6 @@ version: "3.7"
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
-  node_modules: {}
 
 services:
   react_frontend:
@@ -13,7 +12,7 @@ services:
     image: habhub_local_react_frontend
     volumes:
       - ./habhub-react-frontend:/usr/src/app
-      - node_modules:/usr/src/app/node_modules
+      - /usr/src/app/node_modules #<- Use anonymous volume to keep node_modules directory
     ports:
       - "3000:3000"
     command: npm start

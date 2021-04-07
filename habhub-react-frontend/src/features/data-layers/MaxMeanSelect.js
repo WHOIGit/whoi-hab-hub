@@ -5,20 +5,20 @@ import {
   RadioGroup,
   Radio,
   FormControlLabel,
-  Typography,
+  Typography
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
-import { changeMaxMean } from "./dataLayersSlice";
+import { changeMaxMean, selectMaxMeanOption } from "./dataLayersSlice";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%",
-  },
+    width: "100%"
+  }
 }));
 
 export default function MaxMeanSelect() {
-  const dataLayers = useSelector((state) => state.dataLayers);
+  const showMaxMean = useSelector(selectMaxMeanOption);
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -28,11 +28,11 @@ export default function MaxMeanSelect() {
       <RadioGroup
         aria-label="Show Max or Mean"
         name="Show Max or Mean"
-        value={dataLayers[0].showMaxMean}
-        onChange={(event) =>
+        value={showMaxMean}
+        onChange={event =>
           dispatch(
             changeMaxMean({
-              value: event.target.value,
+              value: event.target.value
             })
           )
         }

@@ -1,13 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialLayers = [
+const layers = [
   {
     name: "Shellfish Toxicity",
     id: "stations-layer",
     visibility: true,
     isActive: true,
     hasLegend: true,
-    showMaxMean: "max",
+    showMaxMean: "max"
   },
   {
     name: "IFCB Cell Concentration",
@@ -15,7 +15,7 @@ const initialLayers = [
     visibility: true,
     isActive: true,
     hasLegend: true,
-    showMaxMean: "max",
+    showMaxMean: "max"
   },
   {
     name: "Shellfish Bed Closures",
@@ -23,16 +23,22 @@ const initialLayers = [
     visibility: true,
     isActive: true,
     hasLegend: false,
-    showMaxMean: "max",
-  },
+    showMaxMean: "max"
+  }
 ];
+
+const initialState = {
+  layers: layers,
+  status: "idle",
+  error: null
+};
 
 export const dataLayersSlice = createSlice({
   name: "dataLayers",
-  initialState: initialLayers,
+  initialState: initialState,
   reducers: {
     changeLayerVisibility: (state, action) => {
-      state.forEach((element) => {
+      state.layers.forEach(element => {
         if (element.id == action.payload.layerID) {
           console.log(element);
           element.visibility = action.payload.checked;
@@ -40,11 +46,11 @@ export const dataLayersSlice = createSlice({
       });
     },
     changeMaxMean: (state, action) => {
-      state.forEach((element) => {
+      state.layers.forEach(element => {
         element.showMaxMean = action.payload.value;
       });
-    },
-  },
+    }
+  }
 });
 
 // Action creators are generated for each case reducer function
@@ -54,16 +60,17 @@ export default dataLayersSlice.reducer;
 
 // Selector functions
 // return only the currently visible layers
-export const selectVisibleLayers = (state) =>
-  state.dataLayers.filter((layer) => layer.visibility);
+export const selectVisibleLayers = state =>
+  state.dataLayers.layers.filter(layer => layer.visibility);
 
 // return a flat array of just the dataLayer IDs
-export const selectVisibleLayerIds = (state) => {
-  const flattenedLayers = state.dataLayers
-    .filter((layer) => layer.visibility)
-    .map((layer) => layer.id);
+export const selectVisibleLayerIds = state => {
+  const flattenedLayers = state.dataLayers.layers
+    .filter(layer => layer.visibility)
+    .map(layer => layer.id);
   return flattenedLayers;
 };
 
 // return max/mean value selection
-export const selectMaxMeanOption = (state) => state.dataLayers[0].showMaxMean;
+export const selectMaxMeanOption = state =>
+  state.dataLayers.layers[0].showMaxMean;

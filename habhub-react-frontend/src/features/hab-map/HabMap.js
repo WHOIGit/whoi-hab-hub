@@ -16,7 +16,7 @@ import LowerLeftPanel from "../../components/LowerLeftPanel";
 import DisclaimerBox from "../../components/DisclaimerBox";
 import {
   selectVisibleLayers,
-  selectVisibleLayerIds,
+  selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
 
 // eslint-disable-next-line no-undef
@@ -27,18 +27,18 @@ const navStyle = {
   position: "absolute",
   bottom: 72,
   left: 0,
-  padding: "10px",
+  padding: "10px"
 };
 
 const scaleControlStyle = {
   position: "absolute",
   bottom: 36,
   left: 0,
-  padding: "10px",
+  padding: "10px"
 };
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   dataPanelContainer: {
     background: "none",
     position: "absolute",
@@ -46,15 +46,15 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     zIndex: 3000,
     maxHeight: "100vh",
-    overflowY: "scroll",
-  },
+    overflowY: "scroll"
+  }
 }));
 
 export default function HabMap({
   showControls,
   setShowControls,
   showDateControls,
-  setShowDateControls,
+  setShowDateControls
 }) {
   const classes = useStyles();
   const [viewport, setViewport] = useState({
@@ -62,7 +62,7 @@ export default function HabMap({
     longitude: -69.75,
     width: "100%",
     height: "100vh",
-    zoom: 6.7,
+    zoom: 6.7
   });
 
   const visibleLayers = useSelector(selectVisibleLayers);
@@ -72,12 +72,12 @@ export default function HabMap({
   const [yAxisScale, setYAxisScale] = useState("linear");
   const [visibleLegends, setVisibleLegends] = useState([
     "stations-layer",
-    "ifcb-layer",
+    "ifcb-layer"
   ]);
   const mapRef = useRef();
 
   useEffect(() => {
-    const newFeatures = features.filter((feature) =>
+    const newFeatures = features.filter(feature =>
       visibleLayerIds.includes(feature.layer)
     );
     setFeatures(newFeatures);
@@ -93,18 +93,18 @@ export default function HabMap({
   const onMapLoad = () => {
     const mapObj = mapRef.current.getMap();
     // Load the custom icon image from the 'public' directory for the Closures Layer
-    mapObj.loadImage(
-      "images/icon-shellfish-closure.png",
-      function (error, image) {
-        if (error) throw error;
-        mapObj.addImage("icon-shellfish-closure", image);
-      }
-    );
+    mapObj.loadImage("images/icon-shellfish-closure.png", function(
+      error,
+      image
+    ) {
+      if (error) throw error;
+      mapObj.addImage("icon-shellfish-closure", image);
+    });
   };
 
-  const onMapClick = (event) => {
+  const onMapClick = event => {
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {
-      layers: interactiveLayerIds,
+      layers: interactiveLayerIds
     });
     const feature = mapFeatures[0];
 
@@ -119,12 +119,12 @@ export default function HabMap({
     setFeatures([feature, ...features]);
   };
 
-  const onPaneClose = (featureID) => {
-    const newFeatures = features.filter((feature) => feature.id !== featureID);
+  const onPaneClose = featureID => {
+    const newFeatures = features.filter(feature => feature.id !== featureID);
     setFeatures(newFeatures);
   };
 
-  const renderMarkerLayer = (layer) => {
+  const renderMarkerLayer = layer => {
     if (layer.id === "stations-layer") {
       return (
         <StationsMarkers
@@ -147,7 +147,7 @@ export default function HabMap({
       <div>
         {features && (
           <div className={classes.dataPanelContainer}>
-            {features.map((feature) => (
+            {features.map(feature => (
               <DataPanel
                 key={feature.id}
                 featureID={feature.id}
@@ -163,17 +163,17 @@ export default function HabMap({
             {...viewport}
             mapboxApiAccessToken={MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mapbox/light-v10"
-            onViewportChange={(viewport) => {
+            onViewportChange={viewport => {
               setViewport(viewport);
             }}
-            onClick={(event) => onMapClick(event)}
+            onClick={event => onMapClick(event)}
             onLoad={() => onMapLoad()}
             interactiveLayerIds={interactiveLayerIds}
             preserveDrawingBuffer={true}
             ref={mapRef}
           >
             <React.Fragment>
-              {visibleLayers.map((layer) => renderMarkerLayer(layer))}
+              {visibleLayers.map(layer => renderMarkerLayer(layer))}
             </React.Fragment>
 
             <div style={navStyle}>
