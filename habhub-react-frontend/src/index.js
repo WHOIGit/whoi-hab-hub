@@ -6,7 +6,9 @@ import ReactGA from "react-ga";
 import store from "./app/store";
 import { Provider } from "react-redux";
 import { fetchHabSpecies } from "./features/hab-species/habSpeciesSlice";
+import { fetchLayers } from "./features/data-layers/dataLayersSlice";
 
+store.dispatch(fetchLayers());
 store.dispatch(fetchHabSpecies());
 
 // Google Analytics setup
