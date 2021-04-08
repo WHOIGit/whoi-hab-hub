@@ -4,14 +4,14 @@ import { Grid, Typography } from "@material-ui/core";
 import HabSpeciesColorChip from "../../features/hab-species/HabSpeciesColorChip";
 
 export default function LegendToxicity() {
-  const habSpecies = useSelector((state) => state.habSpecies);
+  const habSpecies = useSelector(state => state.habSpecies.species);
   const [visibleSpecies, setVisibleSpecies] = useState();
 
   useEffect(() => {
     if (habSpecies) {
       const currentSpecies = habSpecies
-        .filter((species) => species.visibility)
-        .filter((species) => species.syndrome === "PSP");
+        .filter(species => species.visibility)
+        .filter(species => species.syndrome === "PSP");
       setVisibleSpecies(currentSpecies);
     }
   }, [habSpecies]);
@@ -24,7 +24,7 @@ export default function LegendToxicity() {
             <Typography variant="body1">PST</Typography>
           </Grid>
           <Grid item xs={9}>
-            {visibleSpecies.map((species) => (
+            {visibleSpecies.map(species => (
               <HabSpeciesColorChip
                 species={species}
                 chipWidth={35}

@@ -7,12 +7,15 @@ from habhub.closures.models import ClosureNotice
 
 
 class TargetSpeciesSerializer(serializers.ModelSerializer):
-
+    id = serializers.CharField(source='species_id')
     class Meta:
         model = TargetSpecies
         fields = (
-            'species_id',
-            'display_name'
+            'id',
+            'display_name',
+            'syndrome',
+            'primary_color',
+            'color_gradient'
         )
 
 

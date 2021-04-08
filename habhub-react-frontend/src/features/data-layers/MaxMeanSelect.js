@@ -21,6 +21,7 @@ export default function MaxMeanSelect() {
   const showMaxMean = useSelector(selectMaxMeanOption);
   const dispatch = useDispatch();
   const classes = useStyles();
+  console.log(showMaxMean);
 
   return (
     <FormControl component="fieldset" className={classes.formControl}>

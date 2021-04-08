@@ -7,22 +7,23 @@ import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
+import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
 
 // eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   placeholder: {
     position: "absolute",
     left: "50%",
-    top: "40%",
-  },
+    top: "40%"
+  }
 }));
 
 function IfcbMarkers({ onMarkerClick }) {
-  const habSpecies = useSelector((state) => state.habSpecies);
-  const dateFilter = useSelector((state) => state.dateFilter);
+  const visibleSpecies = useSelector(selectVisibleSpecies);
+  const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   const layerID = "ifcb-layer";
   const classes = useStyles();
@@ -44,7 +45,7 @@ function IfcbMarkers({ onMarkerClick }) {
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor,
+          smoothing_factor: dateFilter.smoothingFactor
         });
       return filterURL;
     };
@@ -53,9 +54,9 @@ function IfcbMarkers({ onMarkerClick }) {
       const url = getFetchUrl();
       console.log(url);
       fetch(url)
-        .then((res) => res.json())
+        .then(res => res.json())
         .then(
-          (result) => {
+          result => {
             console.log(result);
             setIsLoaded(true);
             setResults(result);
@@ -63,7 +64,7 @@ function IfcbMarkers({ onMarkerClick }) {
           // Note: it"s important to handle errors here
           // instead of a catch() block so that we don"t swallow
           // exceptions from actual bugs in components.
-          (error) => {
+          error => {
             setIsLoaded(true);
             setError(error);
           }
@@ -73,11 +74,10 @@ function IfcbMarkers({ onMarkerClick }) {
   }, [dateFilter]);
 
   useEffect(() => {
-    const visibleSpecies = habSpecies.filter((species) => species.visibility);
     const radiusFactor = visibleSpecies.length > 3 ? 3 : visibleSpecies.length;
     const newRadius = 8 * radiusFactor;
     setCircleRadius(newRadius);
-  }, [habSpecies]);
+  }, [visibleSpecies]);
 
   const layerIfcbCircles = {
     id: "ifcb-circles-layer",
@@ -87,34 +87,32 @@ function IfcbMarkers({ onMarkerClick }) {
       "circle-opacity": 0,
       "circle-radius": circleRadius,
       "circle-stroke-width": 4,
-      "circle-stroke-color": "#467fcf",
+      "circle-stroke-color": "#467fcf"
     },
     layout: {
-      visibility: "visible",
-    },
+      visibility: "visible"
+    }
   };
 
   const renderMarker = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
-    if (feature.properties.max_mean_values.length) {
-      const speciesValues = habSpecies
-        .filter((species) => species.visibility)
-        .map((item) => {
-          const maxMeanItem = feature.properties.max_mean_values.filter(
-            (data) => item.id === data.species
-          );
-          let value = maxMeanItem[0].max_value;
+    if (feature.properties.maxMeanValues.length) {
+      const speciesValues = visibleSpecies.map(item => {
+        const maxMeanItem = feature.properties.maxMeanValues.filter(
+          data => item.id === data.species
+        );
+        let value = maxMeanItem[0].maxValue;
 
-          if (showMaxMean === "mean") {
-            value = maxMeanItem[0].mean_value;
-          }
+        if (showMaxMean === "mean") {
+          value = maxMeanItem[0].meanValue;
+        }
 
-          return {
-            species: item.id,
-            value: value,
-            color: item.colorPrimary,
-          };
-        });
+        return {
+          species: item.id,
+          value: value,
+          color: item.primaryColor
+        };
+      });
 
       if (speciesValues.length) {
         return (
@@ -123,6 +121,7 @@ function IfcbMarkers({ onMarkerClick }) {
             layerID={layerID}
             speciesValues={speciesValues}
             onMarkerClick={onMarkerClick}
+            key={feature.id}
           />
         );
       } else {
@@ -143,9 +142,7 @@ function IfcbMarkers({ onMarkerClick }) {
 
       {results && (
         <div>
-          {results.features.map((feature) =>
-            renderMarker(feature, showMaxMean)
-          )}
+          {results.features.map(feature => renderMarker(feature, showMaxMean))}
 
           <Source
             id="ifcb-circles-src"

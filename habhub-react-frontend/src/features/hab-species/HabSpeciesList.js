@@ -6,17 +6,17 @@ import HabSpeciesColorChip from "./HabSpeciesColorChip";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%",
-  },
+    width: "100%"
+  }
 }));
 
 export default function HabSpeciesList() {
-  const habSpecies = useSelector((state) => state.habSpecies);
+  const habSpecies = useSelector(state => state.habSpecies.species);
   const classes = useStyles();
 
   return (
     <Grid container spacing={0}>
-      {habSpecies.map((species) => {
+      {habSpecies.map(species => {
         return (
           <>
             <Grid item xs={2}>
@@ -35,7 +35,7 @@ export default function HabSpeciesList() {
                 color="textSecondary"
                 className={classes.labelText}
               >
-                <em>{species.speciesName}</em> / {species.syndrome}
+                <em>{species.displayName}</em> / {species.syndrome}
               </Typography>
             </Grid>
           </>

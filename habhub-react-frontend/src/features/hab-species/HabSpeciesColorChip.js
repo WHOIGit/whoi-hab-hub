@@ -6,12 +6,12 @@ export default function HabSpeciesColorChip({
   species,
   chipWidth = 20,
   chipHeight = 20,
-  chipType = "gradient",
+  chipType = "gradient"
 }) {
   let colors = species.colorGradient;
 
   if (chipType === "primary") {
-    colors = [species.colorPrimary];
+    colors = [species.primaryColor];
   }
 
   let svgWidth = chipWidth * colors.length;

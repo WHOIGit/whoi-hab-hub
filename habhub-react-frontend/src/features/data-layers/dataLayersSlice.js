@@ -3,41 +3,14 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-/*
-const layers = [
-  {
-    name: "Shellfish Toxicity",
-    id: "stations-layer",
-    visibility: true,
-    isActive: true,
-    hasLegend: true,
-    showMaxMean: "max"
-  },
-  {
-    name: "IFCB Cell Concentration",
-    id: "ifcb-layer",
-    visibility: true,
-    isActive: true,
-    hasLegend: true,
-    showMaxMean: "max"
-  },
-  {
-    name: "Shellfish Bed Closures",
-    id: "closures-layer",
-    visibility: true,
-    isActive: true,
-    hasLegend: false,
-    showMaxMean: "max"
-  }
-];*/
-
 const initialState = {
   layers: [],
+  showMaxMean: "max",
   status: "idle",
   error: null
 };
 
-// API call from middleware
+// API request for available dataLayers in HABhub
 export const fetchLayers = createAsyncThunk(
   "dataLayers/fetchLayers",
   async () => {
@@ -59,9 +32,7 @@ export const dataLayersSlice = createSlice({
       });
     },
     changeMaxMean: (state, action) => {
-      state.layers.forEach(element => {
-        element.showMaxMean = action.payload.value;
-      });
+      state.showMaxMean = action.payload.value;
     }
   },
   extraReducers: {
@@ -74,7 +45,6 @@ export const dataLayersSlice = createSlice({
       state.layers = state.layers.concat(action.payload);
       state.layers.forEach(element => {
         element.visibility = true;
-        element.showMaxMean = "max";
         element.hasLegend = true;
       });
     },
@@ -104,5 +74,4 @@ export const selectVisibleLayerIds = state => {
 };
 
 // return max/mean value selection
-export const selectMaxMeanOption = state =>
-  state.dataLayers.layers[0].showMaxMean;
+export const selectMaxMeanOption = state => state.dataLayers.showMaxMean;

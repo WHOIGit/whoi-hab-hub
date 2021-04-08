@@ -6,7 +6,7 @@ import {
   FormControlLabel,
   Checkbox,
   Typography,
-  Box,
+  Box
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,12 +15,12 @@ import HabSpeciesColorChip from "./HabSpeciesColorChip";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%",
-  },
+    width: "100%"
+  }
 }));
 
 export default function HabSpeciesForm() {
-  const habSpecies = useSelector((state) => state.habSpecies);
+  const habSpecies = useSelector(state => state.habSpecies.species);
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -28,7 +28,7 @@ export default function HabSpeciesForm() {
     <FormControl component="fieldset" className={classes.formControl}>
       <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
       <FormGroup>
-        {habSpecies.map((species) => {
+        {habSpecies.map(species => {
           return (
             <FormControlLabel
               key={species.id}
@@ -36,11 +36,11 @@ export default function HabSpeciesForm() {
                 <Checkbox
                   color="primary"
                   checked={species.visibility}
-                  onChange={(event) =>
+                  onChange={event =>
                     dispatch(
                       changeSpeciesVisibility({
                         checked: event.target.checked,
-                        species: species,
+                        species: species
                       })
                     )
                   }
@@ -49,7 +49,7 @@ export default function HabSpeciesForm() {
               }
               label={
                 <Typography variant="body2" color="textSecondary">
-                  <em>{species.speciesName}</em> / {species.syndrome}
+                  <em>{species.displayName}</em> / {species.syndrome}
                   <Box component="span" m={1}>
                     <HabSpeciesColorChip
                       species={species}

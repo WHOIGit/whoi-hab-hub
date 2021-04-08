@@ -65,7 +65,6 @@ export default function HabMap({
     zoom: 6.7
   });
 
-  const visibleLayers = useSelector(selectVisibleLayers);
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const [features, setFeatures] = useState([]);
   // eslint-disable-next-line no-unused-vars
@@ -124,19 +123,13 @@ export default function HabMap({
     setFeatures(newFeatures);
   };
 
-  const renderMarkerLayer = layer => {
-    if (layer.id === "stations-layer") {
-      return (
-        <StationsMarkers
-          onMarkerClick={onMarkerClick}
-          visibility={layer.visibility}
-          key={layer.id}
-        />
-      );
-    } else if (layer.id === "closures-layer") {
-      return <ClosuresLayer key={layer.id} />;
-    } else if (layer.id === "ifcb-layer") {
-      return <IfcbMarkers onMarkerClick={onMarkerClick} key={layer.id} />;
+  const renderMarkerLayer = layerID => {
+    if (layerID === "stations-layer") {
+      return <StationsMarkers onMarkerClick={onMarkerClick} key={layerID} />;
+    } else if (layerID === "closures-layer") {
+      return <ClosuresLayer key={layerID} />;
+    } else if (layerID === "ifcb-layer") {
+      return <IfcbMarkers onMarkerClick={onMarkerClick} key={layerID} />;
     } else {
       return;
     }
@@ -173,7 +166,7 @@ export default function HabMap({
             ref={mapRef}
           >
             <React.Fragment>
-              {visibleLayers.map(layer => renderMarkerLayer(layer))}
+              {visibleLayerIds.map(layer => renderMarkerLayer(layer))}
             </React.Fragment>
 
             <div style={navStyle}>

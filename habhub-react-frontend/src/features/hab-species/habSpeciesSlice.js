@@ -1,5 +1,15 @@
-import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
+const initialState = {
+  species: [],
+  status: "idle",
+  error: null
+};
+
+/*
 const initialSpecies = [
   {
     id: "Alexandrium_catenella",
@@ -7,7 +17,7 @@ const initialSpecies = [
     syndrome: "PSP",
     visibility: true,
     colorPrimary: "#e31a1c",
-    colorGradient: ["#fee5d9", "#fcae91", "#fb6a4a", "#e31a1c", "#a50f15"],
+    colorGradient: ["#fee5d9", "#fcae91", "#fb6a4a", "#e31a1c", "#a50f15"]
   },
   {
     id: "Dinophysis_acuminata",
@@ -15,7 +25,7 @@ const initialSpecies = [
     syndrome: "DSP",
     visibility: true,
     colorPrimary: "#1f78b4",
-    colorGradient: ["#eff3ff", "#bdd7e7", "#6baed6", "#1f78b4", "#08519c"],
+    colorGradient: ["#eff3ff", "#bdd7e7", "#6baed6", "#1f78b4", "#08519c"]
   },
   {
     id: "Dinophysis_norvegica",
@@ -23,7 +33,7 @@ const initialSpecies = [
     syndrome: "DSP",
     visibility: true,
     colorPrimary: "#9e9e9e",
-    colorGradient: ["#fafafa", "#eeeeee", "#bdbdbd", "#9e9e9e", "#616161"],
+    colorGradient: ["#fafafa", "#eeeeee", "#bdbdbd", "#9e9e9e", "#616161"]
   },
   {
     id: "Karenia",
@@ -31,7 +41,7 @@ const initialSpecies = [
     syndrome: "Fish Kills",
     visibility: true,
     colorPrimary: "#33a02c",
-    colorGradient: ["#edf8e9", "#bae4b3", "#74c476", "#33a02c", "#006d2c"],
+    colorGradient: ["#edf8e9", "#bae4b3", "#74c476", "#33a02c", "#006d2c"]
   },
   {
     id: "Margalefidinium",
@@ -39,7 +49,7 @@ const initialSpecies = [
     syndrome: "Fish Kills",
     visibility: true,
     colorPrimary: "#ffeb3b",
-    colorGradient: ["#fffde7", "#fff59d", "#fff176", "#ffeb3b", "#fdd835"],
+    colorGradient: ["#fffde7", "#fff59d", "#fff176", "#ffeb3b", "#fdd835"]
   },
   {
     id: "Pseudo-nitzschia",
@@ -47,26 +57,57 @@ const initialSpecies = [
     syndrome: "ASP",
     visibility: true,
     colorPrimary: "#673ab7",
-    colorGradient: ["#ede7f6", "#d1c4e9", "#9575cd", "#673ab7", "#311b92"],
-  },
-];
+    colorGradient: ["#ede7f6", "#d1c4e9", "#9575cd", "#673ab7", "#311b92"]
+  }
+];*/
+
+// API request for available dataLayers in HABhub
+export const fetchHabSpecies = createAsyncThunk(
+  "habSpecies/fetchHabSpecies",
+  async () => {
+    const url = API_URL + "api/v1/core/target-species/";
+    const response = await axios.get(url);
+    return response.data;
+  }
+);
 
 export const habSpeciesSlice = createSlice({
   name: "habSpecies",
-  initialState: initialSpecies,
+  initialState: initialState,
   reducers: {
     changeSpeciesVisibility: (state, action) => {
-      state.forEach((element) => {
+      state.forEach(element => {
         if (element.id == action.payload.species.id) {
-          console.log(element);
           element.visibility = action.payload.checked;
         }
       });
-    },
+    }
   },
+  extraReducers: {
+    [fetchHabSpecies.pending]: state => {
+      state.status = "loading";
+    },
+    [fetchHabSpecies.fulfilled]: (state, action) => {
+      state.status = "succeeded";
+      // Add any fetched layers to the array
+      state.species = state.species.concat(action.payload);
+      state.species.forEach(element => {
+        element.visibility = true;
+      });
+    },
+    [fetchHabSpecies.rejected]: (state, action) => {
+      state.status = "failed";
+      state.error = action.error.message;
+    }
+  }
 });
 
 // Action creators are generated for each case reducer function
 export const { changeSpeciesVisibility } = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;
+
+// Selector functions
+// return only the currently visible layers
+export const selectVisibleSpecies = state =>
+  state.habSpecies.species.filter(item => item.visibility);

@@ -9,16 +9,16 @@ import { CircularProgress } from "@material-ui/core";
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   placeholder: {
     position: "absolute",
     left: "50%",
-    top: "40%",
-  },
+    top: "40%"
+  }
 }));
 
 export default function ClosuresLayer() {
-  const dateFilter = useSelector((state) => state.dateFilter);
+  const dateFilter = useSelector(state => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -39,7 +39,7 @@ export default function ClosuresLayer() {
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
-          exclude_month_range: dateFilter.exclude_month_range,
+          exclude_month_range: dateFilter.exclude_month_range
         });
       return filterURL;
     }
@@ -50,16 +50,16 @@ export default function ClosuresLayer() {
       setIsLoaded(false);
 
       fetch(url)
-        .then((res) => res.json())
+        .then(res => res.json())
         .then(
-          (result) => {
+          result => {
             setIsLoaded(true);
             setResults(result);
           },
           // Note: it's important to handle errors here
           // instead of a catch() block so that we don't swallow
           // exceptions from actual bugs in components.
-          (error) => {
+          error => {
             setIsLoaded(true);
             setError(error);
           }
@@ -73,21 +73,21 @@ export default function ClosuresLayer() {
   // update the Labels text layer when API results change
   useEffect(() => {
     if (results) {
-      const centerPoints = results.features.map((item) => {
+      const centerPoints = results.features.map(item => {
         const point = {
           type: "Feature",
           properties: {
-            name: item.properties.name,
+            name: item.properties.name
             //"count": item.properties.closures.length
           },
-          geometry: item.properties.geom_center_point,
+          geometry: item.properties.geomCenterPoint
         };
         return point;
       });
 
       const labelsGeojson = {
         type: "FeatureCollection",
-        features: centerPoints,
+        features: centerPoints
       };
       setLabels(labelsGeojson);
       console.log(labelsGeojson);
@@ -102,11 +102,11 @@ export default function ClosuresLayer() {
     paint: {
       "fill-color": "orange",
       "fill-opacity": 0.5,
-      "fill-outline-color": "#fc4e2a",
+      "fill-outline-color": "#fc4e2a"
     },
     layout: {
-      visibility: "visible",
-    },
+      visibility: "visible"
+    }
   };
   /*
   const layerLabels = {
@@ -142,8 +142,8 @@ export default function ClosuresLayer() {
     layout: {
       "icon-image": "icon-shellfish-closure",
       "icon-allow-overlap": false,
-      visibility: "visible",
-    },
+      visibility: "visible"
+    }
   };
 
   return (

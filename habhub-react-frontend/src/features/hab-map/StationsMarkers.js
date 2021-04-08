@@ -11,17 +11,17 @@ import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   button: {
     background: "none",
     border: "none",
-    cursor: "pointer",
-  },
+    cursor: "pointer"
+  }
 }));
 
 export default function StationsMarkers({ onMarkerClick }) {
-  const habSpecies = useSelector((state) => state.habSpecies);
-  const dateFilter = useSelector((state) => state.dateFilter);
+  const habSpecies = useSelector(state => state.habSpecies.species);
+  const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   const classes = useStyles();
   const layerID = "stations-layer";
@@ -43,7 +43,7 @@ export default function StationsMarkers({ onMarkerClick }) {
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor,
+          smoothing_factor: dateFilter.smoothingFactor
         });
       return filterURL;
     }
@@ -52,9 +52,9 @@ export default function StationsMarkers({ onMarkerClick }) {
       const url = getFetchUrl();
       console.log(url);
       fetch(url)
-        .then((res) => res.json())
+        .then(res => res.json())
         .then(
-          (result) => {
+          result => {
             console.log(result);
             setIsLoaded(true);
             setResults(result);
@@ -62,7 +62,7 @@ export default function StationsMarkers({ onMarkerClick }) {
           // Note: it's important to handle errors here
           // instead of a catch() block so that we don't swallow
           // exceptions from actual bugs in components.
-          (error) => {
+          error => {
             setIsLoaded(true);
             setError(error);
           }
@@ -73,17 +73,16 @@ export default function StationsMarkers({ onMarkerClick }) {
 
   function renderMarker(feature) {
     const visibleSpecies = habSpecies.filter(
-      (species) =>
-        species.visibility &&
-        feature.properties.hab_species.includes(species.id)
+      species =>
+        species.visibility && feature.properties.habSpecies.includes(species.id)
     );
 
     let maxMeanValue;
-    if (feature.properties.max_mean_values.length) {
+    if (feature.properties.maxMeanValues.length) {
       if (showMaxMean === "mean") {
-        maxMeanValue = feature.properties.max_mean_values[0].mean_value;
+        maxMeanValue = feature.properties.maxMeanValues[0].meanValue;
       } else {
-        maxMeanValue = feature.properties.max_mean_values[0].max_value;
+        maxMeanValue = feature.properties.maxMeanValues[0].maxValue;
       }
     }
 
@@ -97,7 +96,7 @@ export default function StationsMarkers({ onMarkerClick }) {
         >
           <div
             className={classes.button}
-            onClick={(event) => onMarkerClick(event, feature, layerID)}
+            onClick={event => onMarkerClick(event, feature, layerID)}
           >
             <StationsMarkerIcon maxMeanValue={maxMeanValue} />
           </div>
@@ -110,7 +109,7 @@ export default function StationsMarkers({ onMarkerClick }) {
 
   return (
     <div>
-      {results && results.features.map((feature) => renderMarker(feature))}
+      {results && results.features.map(feature => renderMarker(feature))}
     </div>
   );
 }
