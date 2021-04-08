@@ -29,16 +29,16 @@ export default function StationsMarkerIcon({ maxMeanValue }) {
   //const colors = species[0].colorGradient;
 
   function setGradientColor(value) {
-    let gradient = colors[0];
+    let gradient = colors[4];
 
     if (value < 42) {
-      gradient = colors[4];
+      gradient = colors[0];
     } else if (value < 60) {
-      gradient = colors[3];
+      gradient = colors[1];
     } else if (value < 80) {
       gradient = colors[2];
     } else if (value < 100) {
-      gradient = colors[1];
+      gradient = colors[3];
     }
 
     return gradient;

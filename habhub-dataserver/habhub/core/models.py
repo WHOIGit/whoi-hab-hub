@@ -33,10 +33,12 @@ class TargetSpecies(models.Model):
         dark_shade = Color(self.primary_color)
         dark_shade.luminance = .35
         color_gradient = linear_gradient(self.primary_color, "#FFFFFF", 5)
+        print(color_gradient)
         # remove white
         color_gradient.pop()
         # add dark_shade
         color_gradient.insert(0, dark_shade.hex)
+        color_gradient.reverse()
         self.color_gradient = color_gradient
         super(TargetSpecies, self).save(*args, **kwargs)
 

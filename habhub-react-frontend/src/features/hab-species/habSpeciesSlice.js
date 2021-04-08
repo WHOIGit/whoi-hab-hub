@@ -111,3 +111,7 @@ export default habSpeciesSlice.reducer;
 // return only the currently visible layers
 export const selectVisibleSpecies = state =>
   state.habSpecies.species.filter(item => item.visibility);
+
+// get species by syndrome
+export const selectSpeciesBySyndrome = (state, syndrome) =>
+  state.habSpecies.species.filter(item => item.syndrome === syndrome);
