@@ -16,12 +16,12 @@ import {
   FormGroup,
   IconButton,
   Checkbox,
-  Tooltip,
+  Tooltip
 } from "@material-ui/core";
 import { Restore } from "@material-ui/icons";
 import {
   MuiPickersUtilsProvider,
-  KeyboardDatePicker,
+  KeyboardDatePicker
 } from "@material-ui/pickers";
 
 import DataTimeline from "./DataTimeline";
@@ -33,86 +33,86 @@ const widthFull = window.outerWidth - 116;
 const marksYearSlider = [
   {
     value: 1970,
-    label: "1970",
+    label: "1970"
   },
   {
     value: 1980,
-    label: "1980",
+    label: "1980"
   },
   {
     value: 1990,
-    label: "1990",
+    label: "1990"
   },
   {
     value: 2000,
-    label: "2000",
+    label: "2000"
   },
   {
     value: 2010,
-    label: "2010",
+    label: "2010"
   },
   {
     value: 2020,
-    label: "2020",
-  },
+    label: "2020"
+  }
 ];
 
 const marksMonthSlider = [
   {
     value: 0,
-    label: "Jan",
+    label: "Jan"
   },
   {
     value: 1,
-    label: "Feb",
+    label: "Feb"
   },
   {
     value: 2,
-    label: "Mar",
+    label: "Mar"
   },
   {
     value: 3,
-    label: "Apr",
+    label: "Apr"
   },
   {
     value: 4,
-    label: "May",
+    label: "May"
   },
   {
     value: 5,
-    label: "Jun",
+    label: "Jun"
   },
   {
     value: 6,
-    label: "Jul",
+    label: "Jul"
   },
   {
     value: 7,
-    label: "Aug",
+    label: "Aug"
   },
   {
     value: 8,
-    label: "Sep",
+    label: "Sep"
   },
   {
     value: 9,
-    label: "Oct",
+    label: "Oct"
   },
   {
     value: 10,
-    label: "Nov",
+    label: "Nov"
   },
   {
     value: 11,
-    label: "Dec",
-  },
+    label: "Dec"
+  }
 ];
 
 function valueMonthLabelFormat(value) {
   return value + 1;
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     position: "fixed",
     bottom: 0,
@@ -124,44 +124,43 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(0),
     height: "400px",
     zIndex: 3000,
-    transition: "all 0.4s",
+    transition: "all 0.4s"
   },
   dashBoardWidthPanel: {
-    width: widthWithDashboard,
+    width: widthWithDashboard
   },
   fullWidthPanel: {
-    width: widthFull,
+    width: widthFull
   },
   dateRangePanel: {
-    width: "100%",
+    width: "100%"
   },
   button: {
     margin: theme.spacing(0),
     position: "absolute",
     top: "-50px",
-    left: 0,
+    left: 0
   },
   resetBtn: {
     position: "absolute",
     top: "-3px",
     right: "15px",
-    zIndex: 100,
+    zIndex: 100
   },
   collapse: {
-    bottom: "-500px",
+    bottom: "-500px"
   },
   sliderContainer: {
     padding: "12px 16px",
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.secondary
   },
   popper: {
-    zIndex: 9999,
-  },
+    zIndex: 9999
+  }
 }));
 
 export default function DateControls({ showControls, showDateControls }) {
-  const dateFilter = useSelector((state) => state.dateFilter);
-  const dataLayers = useSelector((state) => state.dataLayers);
+  const dateFilter = useSelector(state => state.dateFilter);
 
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -177,7 +176,7 @@ export default function DateControls({ showControls, showDateControls }) {
   const [excludeChecked, setExcludeChecked] = useState(false);
   const [chartZoomReset, setChartZoomReset] = useState();
 
-  const onStartDateChange = (date) => {
+  const onStartDateChange = date => {
     setSelectedStartDate(date);
     if (date instanceof Date && !isNaN(date)) {
       // trigger Redux dispatch function to fetch data
@@ -185,7 +184,7 @@ export default function DateControls({ showControls, showDateControls }) {
         startDate: date.toISOString(),
         endDate: selectedEndDate.toISOString(),
         seasonal: false,
-        excludeMonthRange: false,
+        excludeMonthRange: false
       };
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
@@ -195,7 +194,7 @@ export default function DateControls({ showControls, showDateControls }) {
     }
   };
 
-  const onEndDateChange = (date) => {
+  const onEndDateChange = date => {
     setSelectedEndDate(date);
     if (date instanceof Date && !isNaN(date)) {
       // trigger parent function to fetch data
@@ -203,7 +202,7 @@ export default function DateControls({ showControls, showDateControls }) {
         startDate: dateFilter.startDate,
         endDate: date.toISOString(),
         seasonal: false,
-        excludeMonthRange: false,
+        excludeMonthRange: false
       };
       dispatch(changeDateRange(payload));
       // update the slider values to match new date
@@ -222,14 +221,14 @@ export default function DateControls({ showControls, showDateControls }) {
       startDate: dateFilter.defaultStartDate,
       endDate: new Date().toISOString(),
       seasonal: false,
-      excludeMonthRange: false,
+      excludeMonthRange: false
     };
     dispatch(changeDateRange(payload));
 
     // update the slider values to match new date, set months to full year range
     const newSliderYear = [
       parseISO(dateFilter.defaultStartDate).getFullYear(),
-      new Date().getFullYear(),
+      new Date().getFullYear()
     ];
     setValueYearSlider(newSliderYear);
     const newSliderMonth = [0, 11];
@@ -271,20 +270,20 @@ export default function DateControls({ showControls, showDateControls }) {
       startDate: newStartDate.toISOString(),
       endDate: newEndDate.toISOString(),
       seasonal: true,
-      excludeMonthRange: excludeChecked,
+      excludeMonthRange: excludeChecked
     };
     dispatch(changeDateRange(payload));
     // reset timeline chart zoom if necesssary
     setChartZoomReset(true);
   };
 
-  const onExcludeChange = (event) => {
+  const onExcludeChange = event => {
     setExcludeChecked(event.target.checked);
     const payload = {
       startDate: selectedStartDate.toISOString(),
       endDate: selectedEndDate.toISOString(),
       seasonal: true,
-      excludeMonthRange: event.target.checked,
+      excludeMonthRange: event.target.checked
     };
     dispatch(changeDateRange(payload));
   };
@@ -305,7 +304,7 @@ export default function DateControls({ showControls, showDateControls }) {
                     <Tooltip
                       title="Reset Dates"
                       classes={{
-                        popper: classes.popper,
+                        popper: classes.popper
                       }}
                     >
                       <IconButton
@@ -329,7 +328,7 @@ export default function DateControls({ showControls, showDateControls }) {
                           value={dateFilter.startDate}
                           onChange={onStartDateChange}
                           KeyboardButtonProps={{
-                            "aria-label": "start date",
+                            "aria-label": "start date"
                           }}
                         />
                       </FormGroup>
@@ -344,7 +343,7 @@ export default function DateControls({ showControls, showDateControls }) {
                           value={selectedEndDate}
                           onChange={onEndDateChange}
                           KeyboardButtonProps={{
-                            "aria-label": "end date",
+                            "aria-label": "end date"
                           }}
                         />
                       </FormGroup>
@@ -390,7 +389,7 @@ export default function DateControls({ showControls, showDateControls }) {
                         onChange={onExcludeChange}
                         color="primary"
                         inputProps={{
-                          "aria-label": "exclude selected month range",
+                          "aria-label": "exclude selected month range"
                         }}
                       />
                     }
@@ -403,7 +402,6 @@ export default function DateControls({ showControls, showDateControls }) {
         </Grid>
         <Grid item xs={12}>
           <DataTimeline
-            dataLayers={dataLayers}
             onDateRangeReset={onDateRangeReset}
             setSelectedStartDate={setSelectedStartDate}
             setSelectedEndDate={setSelectedEndDate}
