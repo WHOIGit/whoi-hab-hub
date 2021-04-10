@@ -11,7 +11,7 @@ import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
-import DisclaimerBox from "../../components/DisclaimerBox";
+import DisclaimerBox from "./DisclaimerBox";
 import {
   selectVisibleLayers,
   selectVisibleLayerIds

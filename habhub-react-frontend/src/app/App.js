@@ -28,16 +28,14 @@ export default function App() {
           <>
             <HabMap />
 
-            <div>
-              <DashBoard
-                showControls={showControls}
-                setShowControls={setShowControls}
-                showDateControls={showDateControls}
-                setShowDateControls={setShowDateControls}
-                visibleLegends={visibleLegends}
-                setVisibleLegends={setVisibleLegends}
-              />
-            </div>
+            <DashBoard
+              showControls={showControls}
+              setShowControls={setShowControls}
+              showDateControls={showDateControls}
+              setShowDateControls={setShowDateControls}
+              visibleLegends={visibleLegends}
+              setVisibleLegends={setVisibleLegends}
+            />
 
             <DateControls
               showControls={showControls}
