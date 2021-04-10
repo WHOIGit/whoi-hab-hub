@@ -14,7 +14,6 @@ import theme from "./theme";
 export default function App() {
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
-  const [visibleLegends, setVisibleLegends] = useState([]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -30,8 +29,6 @@ export default function App() {
               setShowControls={setShowControls}
               showDateControls={showDateControls}
               setShowDateControls={setShowDateControls}
-              visibleLegends={visibleLegends}
-              setVisibleLegends={setVisibleLegends}
             />
 
             <DateControls
@@ -39,10 +36,7 @@ export default function App() {
               showDateControls={showDateControls}
             />
 
-            <LowerLeftPanel
-              visibleLegends={visibleLegends}
-              setVisibleLegends={setVisibleLegends}
-            />
+            <LowerLeftPanel />
           </>
         </main>
       </Container>
