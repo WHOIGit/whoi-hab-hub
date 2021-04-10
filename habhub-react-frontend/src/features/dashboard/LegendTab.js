@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Typography, Divider, IconButton, Tooltip } from "@material-ui/core";
 import { Launch } from "@material-ui/icons";
@@ -8,6 +8,7 @@ import LegendToxicity from "../legends/LegendToxicity";
 import LegendCellConcentration from "../legends/LegendCellConcentration";
 import HabSpeciesList from "../hab-species/HabSpeciesList";
 import DataLayersList from "../data-layers/DataLayersList";
+import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -28,70 +29,72 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function LegendTab({ visibleLegends, setVisibleLegends }) {
+export default function LegendTab() {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const dataLayers = useSelector(state => state.dataLayers.layers);
 
   const handleLegendOpen = layerID => {
-    if (visibleLegends.indexOf(layerID) === -1) {
-      setVisibleLegends([layerID, ...visibleLegends]);
-    }
+    dispatch(
+      changeLegendVisibility({
+        layerID: layerID,
+        legendVisibility: true
+      })
+    );
   };
 
   const renderLegendGraphics = layer => {
-    let content;
-
     if (layer === "ifcb-layer") {
-      content = (
+      return (
         <>
-          <Typography variant="subtitle1" display="block" gutterBottom>
-            Cell Concentration
-            <Tooltip
-              title="Open window"
-              classes={{
-                popper: classes.popper
-              }}
-            >
-              <IconButton
-                onClick={() => handleLegendOpen("ifcb-layer")}
-                aria-label="open Cell Concentration legend on map"
+          <div className={classes.legendBox}>
+            <Typography variant="subtitle1" display="block" gutterBottom>
+              Cell Concentration
+              <Tooltip
+                title="Open window"
+                classes={{
+                  popper: classes.popper
+                }}
               >
-                <Launch />
-              </IconButton>
-            </Tooltip>
-          </Typography>
-          <LegendCellConcentration />
+                <IconButton
+                  onClick={() => handleLegendOpen(layer)}
+                  aria-label="open Cell Concentration legend on map"
+                >
+                  <Launch />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <LegendCellConcentration />
+          </div>
+          <Divider />
         </>
       );
     } else if (layer === "stations-layer") {
-      content = (
+      return (
         <>
-          <Typography variant="subtitle1" display="block" gutterBottom>
-            Shellfish Toxicity
-            <Tooltip
-              title="Open window"
-              classes={{
-                popper: classes.popper
-              }}
-            >
-              <IconButton
-                onClick={() => handleLegendOpen("stations-layer")}
-                aria-label="open Shellfish Toxicity legend on map"
+          <div className={classes.legendBox}>
+            <Typography variant="subtitle1" display="block" gutterBottom>
+              Shellfish Toxicity
+              <Tooltip
+                title="Open window"
+                classes={{
+                  popper: classes.popper
+                }}
               >
-                <Launch />
-              </IconButton>
-            </Tooltip>
-          </Typography>
-          <LegendToxicity />
+                <IconButton
+                  onClick={() => handleLegendOpen(layer)}
+                  aria-label="open Shellfish Toxicity legend on map"
+                >
+                  <Launch />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <LegendToxicity />
+          </div>
+          <Divider />
         </>
       );
     }
-    return (
-      <>
-        <div className={classes.legendBox}>{content}</div>
-        <Divider />
-      </>
-    );
   };
 
   return (

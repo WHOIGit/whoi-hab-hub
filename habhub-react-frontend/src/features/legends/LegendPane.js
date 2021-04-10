@@ -1,37 +1,36 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
 import LegendCellConcentration from "./LegendCellConcentration";
 import LegendToxicity from "./LegendToxicity";
+import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
     transition: "all 0.3s",
-    zIndex: 2000,
+    zIndex: 2000
   },
   rootWider: {
-    width: 300,
+    width: 300
   },
   rootHeader: {
-    paddingBottom: 0,
+    paddingBottom: 0
   },
   title: {
     color: theme.palette.primary.main,
-    fontSize: "1.1rem",
-  },
+    fontSize: "1.1rem"
+  }
 }));
 
-export default function LegendPane({
-  dataLayer,
-  onLegendPaneClose,
-  renderColorChips,
-}) {
+export default function LegendPane({ dataLayer }) {
+  const dispatch = useDispatch();
   const classes = useStyles();
 
-  let title = null;
+  let title;
 
   if (dataLayer === "ifcb-layer") {
     title = "Cell Concentration";
@@ -48,12 +47,19 @@ export default function LegendPane({
       <CardHeader
         classes={{
           root: classes.rootHeader,
-          title: classes.title,
+          title: classes.title
         }}
         action={
           <React.Fragment>
             <IconButton
-              onClick={() => onLegendPaneClose(dataLayer)}
+              onClick={() =>
+                dispatch(
+                  changeLegendVisibility({
+                    layerID: dataLayer,
+                    legendVisibility: false
+                  })
+                )
+              }
               aria-label="close"
             >
               <Close />
@@ -66,9 +72,7 @@ export default function LegendPane({
       <CardContent>
         {dataLayer === "ifcb-layer" && <LegendCellConcentration />}
 
-        {dataLayer === "stations-layer" && (
-          <LegendToxicity renderColorChips={renderColorChips} />
-        )}
+        {dataLayer === "stations-layer" && <LegendToxicity />}
       </CardContent>
     </Card>
   );

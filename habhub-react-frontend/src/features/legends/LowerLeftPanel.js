@@ -1,7 +1,8 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import LegendPane from "./LegendPane";
-
+import { selectLayerLegendIds } from "../data-layers/dataLayersSlice";
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles(theme => ({
   root: {
@@ -14,33 +15,19 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function LowerLeftPane({
-  visibleLegends,
-  setVisibleLegends,
-  renderColorChips
-}) {
+export default function LowerLeftPane() {
+  const legendLayerIds = useSelector(selectLayerLegendIds);
   const classes = useStyles();
 
-  function onLegendPaneClose(layerID) {
-    const newLegends = visibleLegends.filter(item => item !== layerID);
-    setVisibleLegends(newLegends);
-  }
-
-  console.log(visibleLegends);
-  if (visibleLegends) {
-    return (
-      <div className={classes.root}>
-        {visibleLegends.map(item => (
-          <LegendPane
-            dataLayer={item}
-            onLegendPaneClose={onLegendPaneClose}
-            renderColorChips={renderColorChips}
-            key={item}
-          />
-        ))}
-      </div>
-    );
-  } else {
+  if (!legendLayerIds) {
     return null;
   }
+
+  return (
+    <div className={classes.root}>
+      {legendLayerIds.map(legend => (
+        <LegendPane dataLayer={legend} key={legend} />
+      ))}
+    </div>
+  );
 }

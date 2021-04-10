@@ -14,10 +14,7 @@ import theme from "./theme";
 export default function App() {
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
-  const [visibleLegends, setVisibleLegends] = useState([
-    "stations-layer",
-    "ifcb-layer"
-  ]);
+  const [visibleLegends, setVisibleLegends] = useState([]);
 
   return (
     <ThemeProvider theme={theme}>

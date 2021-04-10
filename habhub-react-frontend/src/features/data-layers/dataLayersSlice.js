@@ -2,6 +2,9 @@ import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const API_URL = process.env.REACT_APP_API_URL;
+// list of dataLayer IDs that have an available floating Legend window pane
+// need to check it against the active layers in the API results
+const legendLayerIds = ["stations-layer", "ifcb-layer"];
 
 const initialState = {
   layers: [],
@@ -33,6 +36,13 @@ export const dataLayersSlice = createSlice({
     },
     changeMaxMean: (state, action) => {
       state.showMaxMean = action.payload.value;
+    },
+    changeLegendVisibility: (state, action) => {
+      state.layers.forEach(element => {
+        if (element.id == action.payload.layerID) {
+          element.legendVisibility = action.payload.legendVisibility;
+        }
+      });
     }
   },
   extraReducers: {
@@ -45,7 +55,9 @@ export const dataLayersSlice = createSlice({
       state.layers = state.layers.concat(action.payload);
       state.layers.forEach(element => {
         element.visibility = true;
-        element.hasLegend = true;
+        if (legendLayerIds.includes(element.id)) {
+          element.legendVisibility = true;
+        }
       });
     },
     [fetchLayers.rejected]: (state, action) => {
@@ -56,7 +68,11 @@ export const dataLayersSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeLayerVisibility, changeMaxMean } = dataLayersSlice.actions;
+export const {
+  changeLayerVisibility,
+  changeMaxMean,
+  changeLegendVisibility
+} = dataLayersSlice.actions;
 
 export default dataLayersSlice.reducer;
 
@@ -67,10 +83,18 @@ export const selectVisibleLayers = state =>
 
 // return a flat array of just the dataLayer IDs
 export const selectVisibleLayerIds = state => {
-  const flattenedLayers = state.dataLayers.layers
+  const layerIds = state.dataLayers.layers
     .filter(layer => layer.visibility)
     .map(layer => layer.id);
-  return flattenedLayers;
+  return layerIds;
+};
+
+// return a flat array of just the dataLayer IDs that have a Legend pane
+export const selectLayerLegendIds = state => {
+  const layerIds = state.dataLayers.layers
+    .filter(layer => layer.legendVisibility)
+    .map(layer => layer.id);
+  return layerIds;
 };
 
 // return max/mean value selection
