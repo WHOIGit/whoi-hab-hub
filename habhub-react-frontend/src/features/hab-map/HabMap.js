@@ -7,12 +7,10 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
 // Import our stuff
-import DashBoard from "../dashboard/DashBoard";
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
-import LowerLeftPanel from "../../components/LowerLeftPanel";
 import DisclaimerBox from "../../components/DisclaimerBox";
 import {
   selectVisibleLayers,
@@ -50,12 +48,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function HabMap({
-  showControls,
-  setShowControls,
-  showDateControls,
-  setShowDateControls
-}) {
+export default function HabMap() {
   const classes = useStyles();
   const [viewport, setViewport] = useState({
     latitude: 42.89,
@@ -69,10 +62,6 @@ export default function HabMap({
   const [features, setFeatures] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
-  const [visibleLegends, setVisibleLegends] = useState([
-    "stations-layer",
-    "ifcb-layer"
-  ]);
   const mapRef = useRef();
 
   useEffect(() => {
@@ -176,24 +165,6 @@ export default function HabMap({
               <ScaleControl />
             </div>
           </MapGL>
-        </div>
-
-        <div>
-          <DashBoard
-            showControls={showControls}
-            setShowControls={setShowControls}
-            showDateControls={showDateControls}
-            setShowDateControls={setShowDateControls}
-            visibleLegends={visibleLegends}
-            setVisibleLegends={setVisibleLegends}
-          />
-        </div>
-
-        <div>
-          <LowerLeftPanel
-            visibleLegends={visibleLegends}
-            setVisibleLegends={setVisibleLegends}
-          />
         </div>
 
         <div>

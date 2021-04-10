@@ -113,6 +113,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
         active_layers = DataLayer.objects.filter(is_active=True)
         querylist = []
+        
         for layer in active_layers:
             if layer.layer_id == 'ifcb-layer':
                 querylist.append({

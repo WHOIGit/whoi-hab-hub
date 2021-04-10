@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { Grid, Typography } from "@material-ui/core";
-import HabSpeciesColorChip from "../../features/hab-species/HabSpeciesColorChip";
+import HabSpeciesColorChip from "../hab-species/HabSpeciesColorChip";
 import { selectSpeciesBySyndrome } from "../hab-species/habSpeciesSlice";
 
 const LegendToxicity = () => {

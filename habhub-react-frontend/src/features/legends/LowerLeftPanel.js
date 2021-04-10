@@ -1,28 +1,28 @@
 import React from "react";
 import { makeStyles } from "@material-ui/styles";
-import LegendPane from "../features/dashboard/LegendPane";
+import LegendPane from "./LegendPane";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     width: 250,
     transition: "all 0.3s",
     position: "absolute",
     bottom: 0,
     left: 0,
-    zIndex: 2000,
-  },
+    zIndex: 2000
+  }
 }));
 
 export default function LowerLeftPane({
   visibleLegends,
   setVisibleLegends,
-  renderColorChips,
+  renderColorChips
 }) {
   const classes = useStyles();
 
   function onLegendPaneClose(layerID) {
-    const newLegends = visibleLegends.filter((item) => item !== layerID);
+    const newLegends = visibleLegends.filter(item => item !== layerID);
     setVisibleLegends(newLegends);
   }
 
@@ -30,7 +30,7 @@ export default function LowerLeftPane({
   if (visibleLegends) {
     return (
       <div className={classes.root}>
-        {visibleLegends.map((item) => (
+        {visibleLegends.map(item => (
           <LegendPane
             dataLayer={item}
             onLegendPaneClose={onLegendPaneClose}

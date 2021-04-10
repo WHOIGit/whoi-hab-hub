@@ -1,127 +1,154 @@
 {% load static i18n %}<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>{% block title %}HAB Map{% endblock title %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
 
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
 
     {% block css %}
 
     <!-- Latest compiled and minified Bootstrap 4.1.1 CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+      integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+      crossorigin="anonymous"
+    />
 
     <!-- Third-party CSS libraries go here -->
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-    <link href="{% static 'css/vendor/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+    />
+    <link
+      href="{% static 'css/vendor/bootstrap-datetimepicker.min.css' %}"
+      rel="stylesheet"
+    />
 
     <!-- Load jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <!-- Load Mapbox GL -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
-    
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+
     <!-- Bootstrap datepicker -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js" type="text/javascript" ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js"
+      type="text/javascript"
+    ></script>
 
     <!-- This file stores project-specific CSS -->
-    <link href="{% static 'css/project.css' %}" rel="stylesheet">
-
+    <link href="{% static 'css/project.css' %}" rel="stylesheet" />
 
     {% endblock %}
-
   </head>
 
   <body>
-
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-dark bg-blue">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button
+          class="navbar-toggler navbar-toggler-right"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand" href="{% url 'home' %}">
-            <img src="{% static 'images/WHOI-Primary-Logo.png' %}" alt="Woods Hole Oceanographic Institution">
+          <img
+            src="{% static 'images/WHOI-Primary-Logo.png' %}"
+            alt="Woods Hole Oceanographic Institution"
+          />
         </a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
-
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbar-maps" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Maps
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbar-maps">
-                    <a class="dropdown-item" href="{% url 'ifcb_datasets:ifcb_map_main' %}">IFCB Cell Concentration Map</a>
-                    <a class="dropdown-item" href="{% url 'closures:closures_map_main' %}">Closures Map</a>
-                    <a class="dropdown-item" href="{% url 'stations:stations_map_main' %}">Shellfish Toxicity Map</a>
-                </div>
+              <a class="nav-link" href="{% url 'home' %}"
+                >Home <span class="sr-only">(current)</span></a
+              >
             </li>
 
             <li class="nav-item">
               <a class="nav-link" href="{% url 'about' %}">About</a>
             </li>
             {% if request.user.is_authenticated %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a>
-              </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
-              </li>
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a
+                class="nav-link"
+                href="{% url 'users:detail' request.user.username  %}"
+                >{% trans "My Profile" %}</a
+              >
+            </li>
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a class="nav-link" href="{% url 'account_logout' %}"
+                >{% trans "Sign Out" %}</a
+              >
+            </li>
             {% else %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-              </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
-              </li>
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a
+                id="sign-up-link"
+                class="nav-link"
+                href="{% url 'account_signup' %}"
+                >{% trans "Sign Up" %}</a
+              >
+            </li>
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a
+                id="log-in-link"
+                class="nav-link"
+                href="{% url 'account_login' %}"
+                >{% trans "Sign In" %}</a
+              >
+            </li>
             {% endif %}
           </ul>
         </div>
       </nav>
-
     </div>
 
     <div class="container-fluid">
-
-      {% if messages %}
-          {% for message in messages %}
-              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-          {% endfor %}
-      {% endif %}
-
-      {% block content %}
-
-      {% endblock content %}
-
-    </div> <!-- /container -->
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% block content %} {% endblock content %}
+    </div>
+    <!-- /container -->
 
     <!--Footer-->
     <footer class="page-footer mt-4">
-
       <!--Copyright-->
       <div class="footer-copyright py-3 text-center">
-         <small>Woods Hole Oceanographic Institution</small>
+        <small>Woods Hole Oceanographic Institution</small>
       </div>
       <!--/.Copyright-->
-
     </footer>
     <!--/.Footer-->
 
@@ -132,19 +159,24 @@
     <!-- Placed at the end of the document so the pages load faster -->
 
     <!-- Required by Bootstrap v4.1.1 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+      integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+      integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- Your stuff: Third-party javascript libraries go here -->
-   <script src="{% static 'js/vendor/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'js/vendor/bootstrap-datetimepicker.min.js' %}"></script>
 
     <!-- place project specific Javascript in this file -->
 
     <script src="{% static 'js/project.js' %}"></script>
 
-    {% block javascript %}
-
-
-    {% endblock javascript %}
+    {% block javascript %} {% endblock javascript %}
   </body>
 </html>
