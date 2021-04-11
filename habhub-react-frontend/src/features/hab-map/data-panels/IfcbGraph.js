@@ -159,17 +159,17 @@ function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
   }, [yAxisScale]);
 */
   function handleChartDataFormat(dataObj) {
+    console.log(dataObj);
+    console.log(habSpecies);
     const dataArray = dataObj.data
       .map(item => [Date.parse(item.sampleTime), item.cellConcentration])
       .sort();
 
-    const seriesColor = habSpecies
-      .filter(item => item.id === dataObj.species)
-      .map(item => item.colorPrimary)
-      .toString();
+    const seriesColor = habSpecies.find(item => item.id === dataObj.species);
 
+    console.log(seriesColor);
     const timeSeries = {
-      color: seriesColor,
+      color: seriesColor.primaryColor,
       name: dataObj.speciesDisplay,
       data: dataArray
     };
