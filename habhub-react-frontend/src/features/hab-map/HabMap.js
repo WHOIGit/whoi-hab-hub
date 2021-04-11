@@ -17,8 +17,11 @@ import {
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
 
-// eslint-disable-next-line no-undef
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
+const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
+const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
+const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
+
 const interactiveLayerIds = ["closures-layer"];
 
 const navStyle = {
@@ -51,9 +54,9 @@ const useStyles = makeStyles(theme => ({
 export default function HabMap() {
   const classes = useStyles();
   const [viewport, setViewport] = useState({
-    latitude: 42.89,
-    longitude: -69.75,
-    zoom: 6.7,
+    latitude: MAP_LATITUDE,
+    longitude: MAP_LONGITUDE,
+    zoom: MAP_ZOOM,
     width: "100%",
     height: "100vh"
   });
