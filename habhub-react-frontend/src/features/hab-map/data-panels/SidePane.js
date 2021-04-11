@@ -7,23 +7,24 @@ import { Close, OpenWith, Minimize } from "@material-ui/icons";
 import StationsGraph from "./StationsGraph";
 import IfcbGraph from "./IfcbGraph";
 import ClosuresList from "./ClosuresList";
+import { selectAllSpecies } from "../../hab-species/habSpeciesSlice";
 
 const expandWidth = window.outerWidth - 420;
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
     width: 600,
-    transition: "all 0.3s",
+    transition: "all 0.3s"
   },
   media: {
-    height: 140,
+    height: 140
   },
   title: {
     color: theme.palette.primary.main,
-    fontSize: "1.2rem",
+    fontSize: "1.2rem"
   },
   header: {
-    color: theme.palette.primary.main,
+    color: theme.palette.primary.main
   },
   expand: {
     position: "fixed",
@@ -32,12 +33,12 @@ const useStyles = makeStyles((theme) => ({
     width: expandWidth,
     height: "95vh",
     zIndex: 3000,
-    overflowY: "scroll",
+    overflowY: "scroll"
   },
   expandContent: {
     width: expandWidth,
-    height: "80%",
-  },
+    height: "80%"
+  }
 }));
 
 export default function SidePane({
@@ -45,9 +46,9 @@ export default function SidePane({
   featureID,
   dataLayer,
   yAxisScale,
-  onPaneClose,
+  onPaneClose
 }) {
-  const habSpecies = useSelector((state) => state.habSpecies);
+  const habSpecies = useSelector(selectAllSpecies);
   const classes = useStyles();
   const [expandPane, setExpandPane] = useState(false);
   const [visibleResults, setVisibleResults] = useState([]);
@@ -55,12 +56,12 @@ export default function SidePane({
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
     if (dataLayer === "ifcb-layer") {
-      const data = results.properties.timeseries_data;
+      const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
-        .filter((species) => species.visibility)
-        .map((species) => species.id);
+        .filter(species => species.visibility)
+        .map(species => species.id);
 
-      const filteredData = data.filter((item) =>
+      const filteredData = data.filter(item =>
         visibleSpecies.includes(item.species)
       );
       setVisibleResults(filteredData);
@@ -75,7 +76,7 @@ export default function SidePane({
   let subTitle;
 
   if (dataLayer === "stations-layer") {
-    title = `Station Toxicity Data: ${results.properties.station_location}`;
+    title = `Station Toxicity Data: ${results.properties.stationLocation}`;
     subTitle = `
       Station Name: ${results.properties.station_name} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
@@ -90,7 +91,7 @@ export default function SidePane({
     title = `Shellfish Closure: ${results.properties.name}`;
     subTitle = `
       State: ${results.properties.state} |
-      ${results.properties.area_description}
+      ${results.properties.areaDescription}
     `;
   }
 
@@ -98,7 +99,7 @@ export default function SidePane({
     <Card className={`${expandPane ? classes.expand : ""} ${classes.root}`}>
       <CardHeader
         classes={{
-          title: classes.title, // class name, e.g. `classes-nesting-label-x`
+          title: classes.title // class name, e.g. `classes-nesting-label-x`
         }}
         action={
           <React.Fragment>

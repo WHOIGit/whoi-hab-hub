@@ -13,12 +13,12 @@ Serieslabel(Highcharts);
 const expandWidth = window.outerWidth - 430;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   chartContainer: {},
   chartContainerExpand: {
     width: expandWidth,
-    height: "100%",
-  },
+    height: "100%"
+  }
 }));
 
 // eslint-disable-next-line no-unused-vars
@@ -54,25 +54,22 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
     }
   }, [yAxisScale]);
 */
-  const data = results.properties.timeseries_data;
-  const chartData = data.map((item) => [
-    Date.parse(item.date),
-    item.measurement,
-  ]);
+  const data = results.properties.timeseriesData;
+  const chartData = data.map(item => [Date.parse(item.date), item.measurement]);
 
   const chartOptions = {
     chart: {
-      type: "spline",
+      type: "spline"
     },
     title: {
-      text: null,
+      text: null
     },
     xAxis: {
-      type: "datetime",
+      type: "datetime"
     },
     yAxis: {
       title: {
-        text: "Shellfish meat toxicity",
+        text: "Shellfish meat toxicity"
       },
       min: 0,
       softMax: 150,
@@ -83,13 +80,13 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
           dashStyle: "shortdash",
           width: 2,
           label: {
-            text: "Closure threshold",
-          },
-        },
-      ],
+            text: "Closure threshold"
+          }
+        }
+      ]
     },
     plotOptions: {
-      series: { threshold: 100 },
+      series: { threshold: 100 }
     },
     exporting: {
       buttons: {
@@ -102,17 +99,17 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
             "downloadPDF",
             "downloadSVG",
             "separator",
-            "downloadCSV",
-          ],
-        },
-      },
+            "downloadCSV"
+          ]
+        }
+      }
     },
     series: [
       {
         name: "Shellfish meat toxicity",
-        data: chartData,
-      },
-    ],
+        data: chartData
+      }
+    ]
   };
 
   return (

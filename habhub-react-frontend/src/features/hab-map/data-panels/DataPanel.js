@@ -8,7 +8,7 @@ import SidePane from "./SidePane";
 // eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     display: "flex",
     margin: theme.spacing(1),
@@ -16,20 +16,20 @@ const useStyles = makeStyles((theme) => ({
     height: 300,
     backgroundColor: "white",
     alignItems: "center",
-    padding: theme.spacing(2),
+    padding: theme.spacing(2)
   },
   placeholder: {
-    margin: "0 auto",
-  },
+    margin: "0 auto"
+  }
 }));
 
 export default function DataPanel({
   featureID,
   dataLayer,
   yAxisScale,
-  onPaneClose,
+  onPaneClose
 }) {
-  const dateFilter = useSelector((state) => state.dateFilter);
+  const dateFilter = useSelector(state => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -59,7 +59,7 @@ export default function DataPanel({
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: smoothingFactor,
+          smoothing_factor: smoothingFactor
         });
       return filterURL;
     }
@@ -68,7 +68,7 @@ export default function DataPanel({
     function hasData(result, dataLayer) {
       console.log(result);
       if (dataLayer === "stations-layer" || dataLayer === "ifcb-layer") {
-        result.properties.max_mean_values.length
+        result.properties.maxMeanValues.length
           ? setHasData(true)
           : setHasData(false);
       }
@@ -78,7 +78,7 @@ export default function DataPanel({
       const url = getFetchUrl(featureID, dataLayer);
       console.log(url);
       fetch(url)
-        .then((response) => {
+        .then(response => {
           console.log(response.status);
           if (response.status === 404) {
             setHasData(false);
@@ -86,7 +86,7 @@ export default function DataPanel({
           return response.json();
         })
         .then(
-          (result) => {
+          result => {
             console.log(result);
             setIsLoaded(true);
             setResults(result);
@@ -95,7 +95,7 @@ export default function DataPanel({
           // Note: it's important to handle errors here
           // instead of a catch() block so that we don't swallow
           // exceptions from actual bugs in components.
-          (error) => {
+          error => {
             setIsLoaded(true);
             setError(error);
           }

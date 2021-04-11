@@ -76,7 +76,7 @@ export const habSpeciesSlice = createSlice({
   initialState: initialState,
   reducers: {
     changeSpeciesVisibility: (state, action) => {
-      state.forEach(element => {
+      state.species.forEach(element => {
         if (element.id == action.payload.species.id) {
           element.visibility = action.payload.checked;
         }
@@ -108,6 +108,9 @@ export const { changeSpeciesVisibility } = habSpeciesSlice.actions;
 export default habSpeciesSlice.reducer;
 
 // Selector functions
+// return all species
+export const selectAllSpecies = state => state.habSpecies.species;
+
 // return only the currently visible layers
 export const selectVisibleSpecies = state =>
   state.habSpecies.species.filter(item => item.visibility);

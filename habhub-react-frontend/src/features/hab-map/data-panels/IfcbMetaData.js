@@ -5,25 +5,25 @@ import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 // eslint-disable-next-line no-unused-vars
 const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   placeholder: {
-    textAlign: "center",
+    textAlign: "center"
   },
   rootGrid: {
     marginTop: theme.spacing(2),
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "space-around",
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper
   },
   imageGrid: {
-    maxWidth: "100%",
+    maxWidth: "100%"
   },
   gridList: {
     flexWrap: "nowrap",
     // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
-    transform: "translateZ(0)",
-  },
+    transform: "translateZ(0)"
+  }
 }));
 
 const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
@@ -39,9 +39,9 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
   useEffect(() => {
     console.log(metaDataUrl);
     fetch(metaDataUrl)
-      .then((res) => res.json())
+      .then(res => res.json())
       .then(
-        (result) => {
+        result => {
           console.log(result);
           setIsLoaded(true);
           setPointImgData(result);
@@ -49,7 +49,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
         // Note: it's important to handle errors here
         // instead of a catch() block so that we don't swallow
         // exceptions from actual bugs in components.
-        (error) => {
+        error => {
           setIsLoaded(true);
           setError(error);
         }
@@ -90,7 +90,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
           </div>
           <div className={classes.rootGrid}>
             <Grid container spacing={2}>
-              {pointImgData.images.map((image) => (
+              {pointImgData.images.map(image => (
                 <Grid item xs={gridSize} key={image}>
                   <img
                     src={image}

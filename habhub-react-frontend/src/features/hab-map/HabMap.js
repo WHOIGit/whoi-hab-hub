@@ -53,9 +53,9 @@ export default function HabMap() {
   const [viewport, setViewport] = useState({
     latitude: 42.89,
     longitude: -69.75,
+    zoom: 6.7,
     width: "100%",
-    height: "100vh",
-    zoom: 6.7
+    height: "100vh"
   });
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
