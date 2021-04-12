@@ -48,7 +48,11 @@ export default function HabSpeciesForm() {
                 />
               }
               label={
-                <Typography variant="body2" color="textSecondary">
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  component="span"
+                >
                   <em>{species.displayName}</em> / {species.syndrome}
                   <Box component="span" m={1}>
                     <HabSpeciesColorChip

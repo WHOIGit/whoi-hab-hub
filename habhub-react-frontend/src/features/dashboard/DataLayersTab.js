@@ -7,13 +7,13 @@ import HabSpeciesSelect from "../hab-species/HabSpeciesSelect";
 import DataLayersSelect from "../data-layers/DataLayersSelect";
 import MaxMeanSelect from "../data-layers/MaxMeanSelect";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   divider: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1)
   },
   listItem: {
-    paddingRight: 0,
-  },
+    paddingRight: 0
+  }
 }));
 
 export default function DataLayersTab() {
