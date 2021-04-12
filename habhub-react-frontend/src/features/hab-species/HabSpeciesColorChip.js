@@ -14,6 +14,10 @@ export default function HabSpeciesColorChip({
     colors = [species.primaryColor];
   }
 
+  if (!colors) {
+    return null;
+  }
+
   let svgWidth = chipWidth * colors.length;
 
   return (
