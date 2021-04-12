@@ -72,10 +72,6 @@ def _get_ifcb_bins_dataset(dataset_obj):
         lines = (line.decode('utf-8') for line in response.iter_lines())
         #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
         for row in csv.DictReader(lines):
-            # Some datasets have old formats that don't play well with HABHub, skip older bins
-            if 'IFCB1' in row['pid']:
-                continue
-
             # Only ingest new Bins
             if row['pid'] not in bins:
                 print(row['pid'])
