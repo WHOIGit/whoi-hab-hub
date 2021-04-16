@@ -158,7 +158,7 @@ export default function HabMap() {
             ref={mapRef}
           >
             <React.Fragment>
-              {visibleLayerIds.map(layer => renderMarkerLayer(layer))}
+              {visibleLayerIds.reverse().map(layer => renderMarkerLayer(layer))}
             </React.Fragment>
 
             <div style={navStyle}>
