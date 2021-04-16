@@ -19,6 +19,9 @@ env = environ.Env()
 IFCB_DASHBOARD_URL = env(
     "IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu"
 )
+IFCB_DASHBOARD_THROTTLE_RATE = env(
+    "IFCB_DASHBOARD_THROTTLE_RATE", default=50
+)
 
 # Functions to access IFCB Dashboard
 # -------------------------------
@@ -49,7 +52,7 @@ def run_species_classifed_import(dataset_obj):
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:50]
+    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:IFCB_DASHBOARD_THROTTLE_RATE]
     for bin in bins:
         print('Start autoclass processing...')
         _get_ifcb_autoclass_file(bin)
@@ -61,53 +64,60 @@ def _get_ifcb_bins_dataset(dataset_obj):
     Function to make API request for all IFCB bins by dataset
     Args: 'dataset_obj' - Dataset object
     """
-    csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
-    # speed up the process by getting a values list of current Bin pid
-    bins = Bin.objects.filter(dataset=dataset_obj).values_list('pid', flat=True)
-    print('Bins:', bins.count())
+    # get the most recent Bin
+    try:
+        latest_bin = dataset_obj.bins.latest()
+    except Bin.DoesNotExist:
+        latest_bin = None
 
-    response = requests.get(csv_url)
-    print(response.status_code)
+    if latest_bin:
+        start_date = latest_bin.sample_time
+        params = {'start_date': start_date}
+    else:
+        params = {}
+
+    csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
+
+    response = requests.get(csv_url, params=params)
+    print(response.status_code, response.url)
     if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
-        #row = next((row for row in csv.DictReader(lines) if row['pid'] not in bins), False)
+
         for row in csv.DictReader(lines):
-            # Only ingest new Bins
-            if row['pid'] not in bins:
-                print(row['pid'])
-                sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
+            print(row['pid'])
+            sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
 
-                geom = None
-                if row['longitude'] and row['latitude']:
-                    geom = Point(float(row['longitude']), float(row['latitude']))
+            geom = None
+            if row['longitude'] and row['latitude']:
+                geom = Point(float(row['longitude']), float(row['latitude']))
 
-                depth = None
-                if row['depth']:
-                    depth = row['depth']
+            depth = None
+            if row['depth']:
+                depth = row['depth']
 
-                ml_analyzed = None
-                if row['ml_analyzed'] and float(row['ml_analyzed']) > 0:
-                    ml_analyzed = row['ml_analyzed']
+            ml_analyzed = None
+            if row['ml_analyzed'] and float(row['ml_analyzed']) > 0:
+                ml_analyzed = row['ml_analyzed']
 
-                try:
-                    bin = Bin.objects.create(
-                        pid=row['pid'],
-                        dataset=dataset_obj,
-                        geom=geom,
-                        sample_time=row['sample_time'],
-                        ifcb=row['ifcb'],
-                        ml_analyzed=ml_analyzed,
-                        depth=depth,
-                        cruise=row['cruise'],
-                        cast=row['cast'],
-                        niskin=row['niskin'],
-                        sample_type=row['sample_type'],
-                        n_images=row['n_images'],
-                        skip=row['skip'],
-                    )
-                    print(F"row saved - {bin.pid}")
-                except Exception as e:
-                    print(e)
+            try:
+                bin = Bin.objects.create(
+                    pid=row['pid'],
+                    dataset=dataset_obj,
+                    geom=geom,
+                    sample_time=row['sample_time'],
+                    ifcb=row['ifcb'],
+                    ml_analyzed=ml_analyzed,
+                    depth=depth,
+                    cruise=row['cruise'],
+                    cast=row['cast'],
+                    niskin=row['niskin'],
+                    sample_type=row['sample_type'],
+                    n_images=row['n_images'],
+                    skip=row['skip'],
+                )
+                print(F"row saved - {bin.pid}")
+            except Exception as e:
+                print(e)
 
 
 """
