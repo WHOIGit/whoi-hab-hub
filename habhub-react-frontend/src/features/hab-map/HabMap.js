@@ -12,6 +12,7 @@ import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
+import CurrentDateChip from "../date-filter/CurrentDateChip";
 import {
   selectVisibleLayers,
   selectVisibleLayerIds
@@ -130,6 +131,9 @@ export default function HabMap() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
+        <div>
+          <CurrentDateChip />
+        </div>
         {features && (
           <div className={classes.dataPanelContainer}>
             {features.map(feature => (
