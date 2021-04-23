@@ -1,0 +1,69 @@
+version: "3.7"
+
+volumes:
+  local_postgres_data: {}
+  local_postgres_data_backups: {}
+
+services:
+  react_frontend:
+    build:
+      context: .
+      dockerfile: ./compose/local/react-frontend/Dockerfile
+    image: habhub_local_react_frontend
+    volumes:
+      - ./habhub-react-frontend:/usr/src/app
+      - /usr/src/app/node_modules #<- Use anonymous volume to keep node_modules directory
+    ports:
+      - "3000:3000"
+    command: npm start
+
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: habhub_local_django
+    depends_on:
+      - postgres
+    volumes:
+      - ./habhub-dataserver:/app
+    env_file:
+      - ./habhub-dataserver/.envs/.local/.django
+      - ./habhub-dataserver/.envs/.local/.postgres
+    ports:
+      - "8000:8000"
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/m1.Dockerfile
+    image: habhub_production_postgres
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_data_backups:/backups
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./habhub-dataserver/.envs/.local/.postgres
+
+  celeryworker:
+    <<: *django
+    image: habhub_local_celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: habhub_local_celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
+
+  redis:
+    image: redis:6.0
+    restart: unless-stopped
