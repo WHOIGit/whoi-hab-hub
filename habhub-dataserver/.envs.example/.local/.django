@@ -21,3 +21,8 @@ CELERY_FLOWER_PASSWORD=OhQNRdxkf8h6OqxyEimj1UmoeuTO7J0aD
 # ------------------------------------------------------------------------------
 # This needs to be set to the IFCB dashboard root URL you want to ingest data from.
 IFCB_DASHBOARD_URL=https://habon-ifcb.whoi.edu
+
+# How many IFCB Bins per Dataset to process in a single data request. Increasing this number will
+# speed up the import of large data sets, but can cause performance issues for the
+# IFCB dashboard. Adjust the ingestion rate as appropriate to your resources.
+IFCB_DASHBOARD_THROTTLE_RATE=50

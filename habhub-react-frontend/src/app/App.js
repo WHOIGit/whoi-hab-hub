@@ -27,13 +27,12 @@ export default function App() {
             <DashBoard
               showControls={showControls}
               setShowControls={setShowControls}
-              showDateControls={showDateControls}
-              setShowDateControls={setShowDateControls}
             />
 
             <DateControls
               showControls={showControls}
               showDateControls={showDateControls}
+              setShowDateControls={setShowDateControls}
             />
 
             <LowerLeftPanel />

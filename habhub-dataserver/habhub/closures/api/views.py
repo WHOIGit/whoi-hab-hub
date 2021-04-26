@@ -38,7 +38,10 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
         state = self.request.query_params.get("state", None)
         seasonal = self.request.query_params.get('seasonal', None) == 'true'
         exclude_month_range = self.request.query_params.get('exclude_month_range', None) == 'true'
-        earliest_closure = ClosureNotice.objects.earliest()
+        try:
+            earliest_closure = ClosureNotice.objects.earliest()
+        except ClosureNotice.DoesNotExist:
+            return queryset
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()

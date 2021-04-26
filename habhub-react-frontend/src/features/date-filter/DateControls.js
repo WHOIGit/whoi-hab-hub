@@ -25,6 +25,7 @@ import {
 } from "@material-ui/pickers";
 
 import DataTimeline from "./DataTimeline";
+import DateDashboardButtons from "./DateDashboardButtons";
 import { changeDateRange } from "./dateFilterSlice";
 
 const widthWithDashboard = window.outerWidth - 400;
@@ -159,7 +160,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function DateControls({ showControls, showDateControls }) {
+export default function DateControls({
+  showControls,
+  showDateControls,
+  setShowDateControls
+}) {
   const dateFilter = useSelector(state => state.dateFilter);
 
   const dispatch = useDispatch();
@@ -289,129 +294,143 @@ export default function DateControls({ showControls, showDateControls }) {
   };
 
   return (
-    <div
-      className={`${classes.root} ${
-        showDateControls ? "active" : classes.collapse
-      } ${showControls ? classes.dashBoardWidthPanel : classes.fullWidthPanel}`}
-    >
-      <Grid container spacing={0}>
-        <Grid item xs={12}>
-          <Grid container spacing={1}>
-            <Grid item xs={3}>
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <List>
-                  <ListItem>
-                    <Tooltip
-                      title="Reset Dates"
-                      classes={{
-                        popper: classes.popper
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => onDateRangeReset()}
-                        aria-label="expand"
-                        className={classes.resetBtn}
-                      >
-                        <Restore />
-                      </IconButton>
-                    </Tooltip>
-                    <FormControl component="fieldset">
-                      <FormLabel component="legend">Date Range</FormLabel>
-                      <FormGroup>
-                        <KeyboardDatePicker
-                          disableToolbar
-                          variant="inline"
-                          format="MM/dd/yyyy"
-                          margin="normal"
-                          id="start-date"
-                          label="Start Date"
-                          value={dateFilter.startDate}
-                          onChange={onStartDateChange}
-                          KeyboardButtonProps={{
-                            "aria-label": "start date"
-                          }}
-                        />
-                      </FormGroup>
-                      <FormGroup>
-                        <KeyboardDatePicker
-                          disableToolbar
-                          variant="inline"
-                          format="MM/dd/yyyy"
-                          margin="normal"
-                          id="end-date"
-                          label="End Date"
-                          value={selectedEndDate}
-                          onChange={onEndDateChange}
-                          KeyboardButtonProps={{
-                            "aria-label": "end date"
-                          }}
-                        />
-                      </FormGroup>
-                    </FormControl>
-                  </ListItem>
-                </List>
-              </MuiPickersUtilsProvider>
-            </Grid>
-            <Grid item xs={9}>
-              <div className={classes.sliderContainer}>
-                <Typography variant="body1" gutterBottom>
-                  Seasonal range selectors
-                </Typography>
-                <Slider
-                  value={valueYearSlider}
-                  onChange={(event, newValue) => setValueYearSlider(newValue)}
-                  onChangeCommitted={onYearSliderCommit}
-                  min={1970}
-                  max={2021}
-                  marks={marksYearSlider}
-                  valueLabelDisplay="on"
-                  aria-labelledby="year-slider"
-                  key="year-slider"
-                />
-
-                <Slider
-                  value={valueMonthSlider}
-                  onChange={(event, newValue) => setValueMonthSlider(newValue)}
-                  onChangeCommitted={onMonthSliderCommit}
-                  min={0}
-                  max={11}
-                  marks={marksMonthSlider}
-                  valueLabelDisplay="on"
-                  valueLabelFormat={valueMonthLabelFormat}
-                  aria-labelledby="month-slider"
-                  key="month-slider"
-                />
-                <Box color="text.secondary">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={excludeChecked}
-                        onChange={onExcludeChange}
-                        color="primary"
-                        inputProps={{
-                          "aria-label": "exclude selected month range"
+    <>
+      <DateDashboardButtons
+        showDateControls={showDateControls}
+        setShowDateControls={setShowDateControls}
+        setSelectedStartDate={setSelectedStartDate}
+        setSelectedEndDate={setSelectedEndDate}
+        setSliderValuesFromDates={setSliderValuesFromDates}
+        setChartZoomReset={setChartZoomReset}
+      />
+      <div
+        className={`${classes.root} ${
+          showDateControls ? "active" : classes.collapse
+        } ${
+          showControls ? classes.dashBoardWidthPanel : classes.fullWidthPanel
+        }`}
+      >
+        <Grid container spacing={0}>
+          <Grid item xs={12}>
+            <Grid container spacing={1}>
+              <Grid item xs={3}>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <List>
+                    <ListItem>
+                      <Tooltip
+                        title="Reset Dates"
+                        classes={{
+                          popper: classes.popper
                         }}
-                      />
-                    }
-                    label="Exclude selected month range"
+                      >
+                        <IconButton
+                          onClick={() => onDateRangeReset()}
+                          aria-label="expand"
+                          className={classes.resetBtn}
+                        >
+                          <Restore />
+                        </IconButton>
+                      </Tooltip>
+                      <FormControl component="fieldset">
+                        <FormLabel component="legend">Date Range</FormLabel>
+                        <FormGroup>
+                          <KeyboardDatePicker
+                            disableToolbar
+                            variant="inline"
+                            format="MM/dd/yyyy"
+                            margin="normal"
+                            id="start-date"
+                            label="Start Date"
+                            value={dateFilter.startDate}
+                            onChange={onStartDateChange}
+                            KeyboardButtonProps={{
+                              "aria-label": "start date"
+                            }}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <KeyboardDatePicker
+                            disableToolbar
+                            variant="inline"
+                            format="MM/dd/yyyy"
+                            margin="normal"
+                            id="end-date"
+                            label="End Date"
+                            value={selectedEndDate}
+                            onChange={onEndDateChange}
+                            KeyboardButtonProps={{
+                              "aria-label": "end date"
+                            }}
+                          />
+                        </FormGroup>
+                      </FormControl>
+                    </ListItem>
+                  </List>
+                </MuiPickersUtilsProvider>
+              </Grid>
+              <Grid item xs={9}>
+                <div className={classes.sliderContainer}>
+                  <Typography variant="body1" gutterBottom>
+                    Seasonal range selectors
+                  </Typography>
+                  <Slider
+                    value={valueYearSlider}
+                    onChange={(event, newValue) => setValueYearSlider(newValue)}
+                    onChangeCommitted={onYearSliderCommit}
+                    min={1970}
+                    max={2021}
+                    marks={marksYearSlider}
+                    valueLabelDisplay="on"
+                    aria-labelledby="year-slider"
+                    key="year-slider"
                   />
-                </Box>
-              </div>
+
+                  <Slider
+                    value={valueMonthSlider}
+                    onChange={(event, newValue) =>
+                      setValueMonthSlider(newValue)
+                    }
+                    onChangeCommitted={onMonthSliderCommit}
+                    min={0}
+                    max={11}
+                    marks={marksMonthSlider}
+                    valueLabelDisplay="on"
+                    valueLabelFormat={valueMonthLabelFormat}
+                    aria-labelledby="month-slider"
+                    key="month-slider"
+                  />
+                  <Box color="text.secondary">
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={excludeChecked}
+                          onChange={onExcludeChange}
+                          color="primary"
+                          inputProps={{
+                            "aria-label": "exclude selected month range"
+                          }}
+                        />
+                      }
+                      label="Exclude selected month range"
+                    />
+                  </Box>
+                </div>
+              </Grid>
             </Grid>
           </Grid>
+          <Grid item xs={12}>
+            <DataTimeline
+              onDateRangeReset={onDateRangeReset}
+              setSelectedStartDate={setSelectedStartDate}
+              setSelectedEndDate={setSelectedEndDate}
+              setSliderValuesFromDates={setSliderValuesFromDates}
+              showControls={showControls}
+              chartZoomReset={chartZoomReset}
+              setChartZoomReset={setChartZoomReset}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={12}>
-          <DataTimeline
-            onDateRangeReset={onDateRangeReset}
-            setSelectedStartDate={setSelectedStartDate}
-            setSelectedEndDate={setSelectedEndDate}
-            setSliderValuesFromDates={setSliderValuesFromDates}
-            showControls={showControls}
-            chartZoomReset={chartZoomReset}
-            setChartZoomReset={setChartZoomReset}
-          />
-        </Grid>
-      </Grid>
-    </div>
+      </div>
+    </>
   );
 }

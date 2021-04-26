@@ -1,7 +1,24 @@
 import { sub, differenceInDays, parseISO } from "date-fns";
 import { createSlice } from "@reduxjs/toolkit";
 
-const defaultStartDate = sub(new Date(), { years: 3 }).toISOString();
+// Get user set startDate from .env, set default if unavailable
+let defaultStartDate = sub(new Date(), {
+  years: 1,
+  months: 0,
+  days: 0
+}).toISOString();
+
+if (
+  process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS &&
+  process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS &&
+  process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS
+) {
+  defaultStartDate = sub(new Date(), {
+    years: process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS,
+    months: process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS,
+    days: process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS
+  }).toISOString();
+}
 
 const initialState = {
   defaultStartDate: defaultStartDate,
