@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/styles";
-import { Button, Typography, Box, Tabs, Tab } from "@material-ui/core";
-import { Stars, Tune, Layers, List, Explore } from "@material-ui/icons";
+import { Typography, Box, Tabs, Tab } from "@material-ui/core";
+import { Stars, Layers, List, Explore } from "@material-ui/icons";
 import DataLayersTab from "./DataLayersTab";
 import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     //margin: theme.spacing(1),
     position: "absolute",
@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 2000,
     height: "100vh",
     overflowY: "scroll",
-    transition: "all 0.3s",
+    transition: "all 0.3s"
   },
   dashboardContainer: {
     //margin: theme.spacing(1),
@@ -32,16 +32,16 @@ const useStyles = makeStyles((theme) => ({
     outline: "none",
     height: "100vh",
     overflowY: "scroll",
-    overflowX: "visible",
+    overflowX: "visible"
   },
   collapse: {
-    right: "-284px",
+    right: "-284px"
   },
   resetBtn: {
     position: "absolute",
     top: "-3px",
     right: "15px",
-    zIndex: 100,
+    zIndex: 100
   },
   iconsContainer: {
     borderLeft: `1px solid ${theme.palette.divider}`,
@@ -50,31 +50,31 @@ const useStyles = makeStyles((theme) => ({
     top: 0,
     right: 0,
     zIndex: 4000,
-    height: "100vh",
+    height: "100vh"
   },
   indicator: {
-    left: "0px",
+    left: "0px"
   },
   tabRoot: {
     minWidth: "110px",
-    color: "white",
+    color: "white"
   },
   tabPanelRoot: {
-    maxWidth: "284px",
+    maxWidth: "284px"
   },
   dashboardButtonBox: {
     position: "absolute",
-    bottom: 0,
+    bottom: 0
   },
   dashboardButton: {
     color: "white",
     width: "100%",
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1)
   },
   dashboardButtonLabel: {
     // Aligns the content of the button vertically.
-    flexDirection: "column",
-  },
+    flexDirection: "column"
+  }
 }));
 
 function TabPanel(props) {
@@ -99,10 +99,8 @@ function TabPanel(props) {
 export default function Dashboard({
   showControls,
   setShowControls,
-  showDateControls,
-  setShowDateControls,
   visibleLegends,
-  setVisibleLegends,
+  setVisibleLegends
 }) {
   // Set const variables
   const classes = useStyles();
@@ -132,51 +130,38 @@ export default function Dashboard({
               onChange={handleTabChange}
               orientation="vertical"
               classes={{
-                indicator: classes.indicator,
+                indicator: classes.indicator
               }}
             >
               <Tab
                 icon={<Layers />}
                 label="Data Layers"
                 classes={{
-                  root: classes.tabRoot,
+                  root: classes.tabRoot
                 }}
               />
               <Tab
                 icon={<List />}
                 label="Legend"
                 classes={{
-                  root: classes.tabRoot,
+                  root: classes.tabRoot
                 }}
               />
               <Tab
                 icon={<Explore />}
                 label="Links"
                 classes={{
-                  root: classes.tabRoot,
+                  root: classes.tabRoot
                 }}
               />
               <Tab
                 icon={<Stars />}
                 label="Partners"
                 classes={{
-                  root: classes.tabRoot,
+                  root: classes.tabRoot
                 }}
               />
             </Tabs>
-
-            <div className={classes.dashboardButtonBox}>
-              <Button
-                classes={{
-                  root: classes.dashboardButton,
-                  label: classes.dashboardButtonLabel,
-                }}
-                onClick={() => setShowDateControls(!showDateControls)}
-              >
-                <Tune />
-                Date Controls
-              </Button>
-            </div>
           </div>
 
           <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
