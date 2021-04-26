@@ -279,10 +279,11 @@ media/
 celerybeat-schedule
 
 .ipython/
-# all env files except for frontend React app
+# all env files except for examples
 .env
+.env.development
+.env.production
 .envs/
 !.envs.example/
-#react-frontend/.env
 
 .vscode/

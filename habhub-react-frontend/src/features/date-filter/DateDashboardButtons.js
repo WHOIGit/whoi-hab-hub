@@ -1,7 +1,8 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { Button } from "@material-ui/core";
-import ScheduleIcon from "@material-ui/icons/Schedule";
+//import ScheduleIcon from "@material-ui/icons/Schedule";
+import MyLocationIcon from "@material-ui/icons/MyLocation";
 import TuneIcon from "@material-ui/icons/Tune";
 import { makeStyles } from "@material-ui/styles";
 import { sub } from "date-fns";
@@ -11,7 +12,7 @@ const useStyles = makeStyles(theme => ({
   root: {
     position: "absolute",
     right: 0,
-    bottom: theme.spacing(2),
+    bottom: theme.spacing(1),
     zIndex: 2000,
     width: "116px"
   },
@@ -64,7 +65,7 @@ export default function DateDashboardButtons({
         }}
         onClick={onCurrentDataClick}
       >
-        <ScheduleIcon />
+        <MyLocationIcon />
         Current Data
       </Button>
 
