@@ -99,22 +99,24 @@ function IfcbMarkers({ onMarkerClick }) {
     if (!feature.properties.maxMeanValues.length) {
       return null;
     }
-    const speciesValues = visibleSpecies.map(item => {
-      const maxMeanItem = feature.properties.maxMeanValues.filter(
-        data => item.id === data.species
-      );
-      let value = maxMeanItem[0].maxValue;
+    const speciesValues = visibleSpecies
+      .map(item => {
+        const maxMeanItem = feature.properties.maxMeanValues.filter(
+          data => item.id === data.species
+        );
+        let value = maxMeanItem[0].maxValue;
 
-      if (showMaxMean === "mean") {
-        value = maxMeanItem[0].meanValue;
-      }
+        if (showMaxMean === "mean") {
+          value = maxMeanItem[0].meanValue;
+        }
 
-      return {
-        species: item.id,
-        value: value,
-        color: item.primaryColor
-      };
-    });
+        return {
+          species: item.id,
+          value: value,
+          color: item.primaryColor
+        };
+      })
+      .sort((a, b) => (a.value < b.value ? 1 : -1));
 
     if (!speciesValues.length) {
       return null;

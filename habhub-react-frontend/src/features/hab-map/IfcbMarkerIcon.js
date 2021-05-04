@@ -38,7 +38,6 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     gridVertical = Math.ceil(speciesValues.length / 4);
   }
 
-  console.log(gridVertical);
   useEffect(() => {
     // Dynamically adjust the Marker offsets and Circle width depending on # of species
     // Set a base offset based on the first items X/Y position in the SVG
@@ -106,9 +105,7 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     if ((index + 1) % 3 === 0) {
       rowEnd = true;
     }
-    console.log(index);
-    console.log((index + 1) % 3);
-    console.log(rowEnd);
+
     return (
       <>
         <div className={classes.gridItem} style={{ height: squareSize }}>
