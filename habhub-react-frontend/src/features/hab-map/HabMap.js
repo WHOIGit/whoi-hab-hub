@@ -14,7 +14,7 @@ import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
 import CurrentDateChip from "../date-filter/CurrentDateChip";
 import {
-  selectVisibleLayers,
+  selectInteractiveLayerIds,
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
 
@@ -22,8 +22,6 @@ const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
 const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
 const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
-
-const interactiveLayerIds = ["closures-layer"];
 
 const navStyle = {
   position: "absolute",
@@ -63,6 +61,8 @@ export default function HabMap() {
   });
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
+  // only refers to map layer that use the Mapbox Layer/Source properties
+  const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
   const [features, setFeatures] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
@@ -95,12 +95,13 @@ export default function HabMap() {
   };
 
   const onMapClick = event => {
-    const mapFeatures = mapRef.current.queryRenderedFeatures(event.point, {
-      layers: interactiveLayerIds
-    });
+    const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
 
-    if (feature !== undefined) {
+    if (
+      feature !== undefined &&
+      interactiveLayerIds.includes(feature.layer.id)
+    ) {
       feature.layer = feature.layer.id;
       setFeatures([feature, ...features]);
     }

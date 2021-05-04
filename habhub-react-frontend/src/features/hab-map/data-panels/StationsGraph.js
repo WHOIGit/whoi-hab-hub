@@ -59,10 +59,17 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
 
   const chartOptions = {
     chart: {
-      type: "spline"
+      type: "spline",
+      zoomType: "x"
     },
     title: {
       text: null
+    },
+    subtitle: {
+      text:
+        document.ontouchstart === undefined
+          ? "Click and drag in the plot area to zoom in"
+          : "Pinch the chart to zoom in"
     },
     xAxis: {
       type: "datetime"
