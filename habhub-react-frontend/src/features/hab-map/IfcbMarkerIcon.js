@@ -1,13 +1,23 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { Grid } from "@material-ui/core";
 import { Marker } from "react-map-gl";
 
-// eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   button: {
     background: "none",
     border: "none",
     cursor: "pointer"
+  },
+  squaresGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "baseline"
+  },
+  gridBreak: {
+    flexBasis: "100%",
+    height: 0
   }
 }));
 
@@ -15,14 +25,24 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
   const [offsetLeft, setOffsetLeft] = useState(-32);
   const [offsetTop, setOffsetTop] = useState(-25);
   const classes = useStyles();
+  // set some constants for square sizes
   const maxSquareSize = 32;
   const minSquareSize = 8;
+  // set default grid structure for different #s of species. Max squares across = 4
+  let gridHorizontal = 3;
+  let gridVertical = 2;
+  if (speciesValues.length > 6) {
+    gridHorizontal = 4;
+  }
+  if (speciesValues.length > 5) {
+    gridVertical = Math.ceil(speciesValues.length / 4);
+  }
 
+  console.log(gridVertical);
   useEffect(() => {
     // Dynamically adjust the Marker offsets and Circle width depending on # of species
     // Set a base offset based on the first items X/Y position in the SVG
-    const defaultOffsetCorrection =
-      maxSquareSize - getSquareSize(speciesValues[0], maxSquareSize);
+    const defaultOffsetCorrection = 0;
     // Sort array by max/mean value
     const sortedValues = speciesValues.sort(
       (a, b) => Number(a.value) - Number(b.value)
@@ -41,8 +61,8 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     const offsetTop = (maxHeight / 2) * -1 - defaultOffsetCorrection;
 
     // Set the X offset
-    // Max 3 items across, so get the 3 highest values
-    const maxWidthArr = sortedValues.slice(-3);
+    // Max items across = gridHorizontal, so get that slice of highest values
+    const maxWidthArr = sortedValues.slice(-Math.abs(gridHorizontal));
     // Sum values
     const maxWidth = maxWidthArr.reduce(function(a, b) {
       return a + getSquareSize(b, maxSquareSize);
@@ -70,29 +90,6 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
 
   const renderSquare = (item, index) => {
     const squareSize = getSquareSize(item, maxSquareSize);
-    // Set 0 index X/Y values
-    let xValue = maxSquareSize - squareSize;
-    let yValue = maxSquareSize - squareSize;
-
-    if (index === 1) {
-      xValue = maxSquareSize;
-    } else if (index === 2) {
-      // get the last middle square width to calculate the last X value for the SVG Glyphs
-      const lastItem = speciesValues[1];
-      const middleSquareWidth = getSquareSize(lastItem, maxSquareSize);
-      xValue = maxSquareSize + middleSquareWidth;
-    } else if (index === 3) {
-      yValue = maxSquareSize;
-    } else if (index === 4) {
-      xValue = maxSquareSize;
-      yValue = maxSquareSize;
-    } else if (index === 5) {
-      // get the last middle square width to calculate the last X value for the SVG Glyphs
-      const lastItem = speciesValues[4];
-      const middleSquareWidth = getSquareSize(lastItem, maxSquareSize);
-      xValue = maxSquareSize + middleSquareWidth;
-      yValue = maxSquareSize;
-    }
 
     // Set fill opacity/stroke color based on Value scale
     let fillOpacity = 1;
@@ -100,18 +97,37 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     if (item.value < 100) {
       fillOpacity = 0;
     }
+
+    let rowStart = false;
+    let rowEnd = false;
+    if (!index % 3) {
+      rowStart = true;
+    }
+    if ((index + 1) % 3 === 0) {
+      rowEnd = true;
+    }
+    console.log(index);
+    console.log((index + 1) % 3);
+    console.log(rowEnd);
     return (
-      <rect
-        width={squareSize}
-        height={squareSize}
-        fill={item.color}
-        fillOpacity={fillOpacity}
-        x={xValue}
-        y={yValue}
-        key={index}
-        strokeWidth={1}
-        stroke={stroke}
-      ></rect>
+      <>
+        <div className={classes.gridItem} style={{ height: squareSize }}>
+          <svg width={squareSize} height={squareSize}>
+            <rect
+              width={squareSize}
+              height={squareSize}
+              fill={item.color}
+              fillOpacity={fillOpacity}
+              x={0}
+              y={0}
+              key={index}
+              strokeWidth={1}
+              stroke={stroke}
+            ></rect>
+          </svg>
+        </div>
+        {rowEnd && <div className={classes.gridBreak}></div>}
+      </>
     );
     /*
     if (item.value < 100) {
@@ -152,10 +168,8 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
         className={classes.button}
         onClick={event => onMarkerClick(event, feature, layerID)}
       >
-        <div>
-          <svg width={maxSquareSize * 3} height={maxSquareSize * 2}>
-            {speciesValues.map((item, index) => renderSquare(item, index))}
-          </svg>
+        <div className={classes.squaresGrid}>
+          {speciesValues.map((item, index) => renderSquare(item, index))}
         </div>
       </div>
     </Marker>

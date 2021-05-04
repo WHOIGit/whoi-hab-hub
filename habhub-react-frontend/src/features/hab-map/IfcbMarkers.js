@@ -96,40 +96,38 @@ function IfcbMarkers({ onMarkerClick }) {
 
   const renderMarker = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
-    if (feature.properties.maxMeanValues.length) {
-      const speciesValues = visibleSpecies.map(item => {
-        const maxMeanItem = feature.properties.maxMeanValues.filter(
-          data => item.id === data.species
-        );
-        let value = maxMeanItem[0].maxValue;
-
-        if (showMaxMean === "mean") {
-          value = maxMeanItem[0].meanValue;
-        }
-
-        return {
-          species: item.id,
-          value: value,
-          color: item.primaryColor
-        };
-      });
-
-      if (speciesValues.length) {
-        return (
-          <IfcbMarkerIcon
-            feature={feature}
-            layerID={layerID}
-            speciesValues={speciesValues}
-            onMarkerClick={onMarkerClick}
-            key={feature.id}
-          />
-        );
-      } else {
-        return;
-      }
-    } else {
-      return;
+    if (!feature.properties.maxMeanValues.length) {
+      return null;
     }
+    const speciesValues = visibleSpecies.map(item => {
+      const maxMeanItem = feature.properties.maxMeanValues.filter(
+        data => item.id === data.species
+      );
+      let value = maxMeanItem[0].maxValue;
+
+      if (showMaxMean === "mean") {
+        value = maxMeanItem[0].meanValue;
+      }
+
+      return {
+        species: item.id,
+        value: value,
+        color: item.primaryColor
+      };
+    });
+
+    if (!speciesValues.length) {
+      return null;
+    }
+    return (
+      <IfcbMarkerIcon
+        feature={feature}
+        layerID={layerID}
+        speciesValues={speciesValues}
+        onMarkerClick={onMarkerClick}
+        key={feature.id}
+      />
+    );
   };
 
   return (

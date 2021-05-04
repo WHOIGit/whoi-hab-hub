@@ -46,10 +46,17 @@ class Dataset(models.Model):
                             item['values'].append(int(datapoint['cell_concentration']))
 
             for item in concentration_values:
+                if item['values']:
+                    max_value = max(item['values'])
+                    mean_value = mean(item['values'])
+                else:
+                    max_value = 0
+                    mean_value = 0
+                    
                 data_dict = {
                     'species': item['species'],
-                    'max_value': max(item['values']),
-                    'mean_value': mean(item['values']),
+                    'max_value': max_value,
+                    'mean_value': mean_value,
                 }
                 max_mean_values.append(data_dict)
 
