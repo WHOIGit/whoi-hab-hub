@@ -5,6 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // list of dataLayer IDs that have an available floating Legend window pane
 // need to check it against the active layers in the API results
 const legendLayerIds = ["stations-layer", "ifcb-layer"];
+const interactiveLayerIds = ["closures-layer"];
 
 const initialState = {
   layers: [],
@@ -58,6 +59,9 @@ export const dataLayersSlice = createSlice({
         if (legendLayerIds.includes(element.id)) {
           element.legendVisibility = true;
         }
+        if (interactiveLayerIds.includes(element.id)) {
+          element.interactiveLayer = true;
+        }
       });
     },
     [fetchLayers.rejected]: (state, action) => {
@@ -85,6 +89,15 @@ export const selectVisibleLayers = state =>
 export const selectVisibleLayerIds = state => {
   const layerIds = state.dataLayers.layers
     .filter(layer => layer.visibility)
+    .map(layer => layer.id);
+  return layerIds;
+};
+
+// return a flat array of just the dataLayer IDs that are interactive with Mapbox Layer propery
+export const selectInteractiveLayerIds = state => {
+  const layerIds = state.dataLayers.layers
+    .filter(layer => layer.visibility)
+    .filter(layer => layer.interactiveLayer)
     .map(layer => layer.id);
   return layerIds;
 };

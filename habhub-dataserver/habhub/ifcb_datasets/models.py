@@ -52,7 +52,7 @@ class Dataset(models.Model):
                 else:
                     max_value = 0
                     mean_value = 0
-                    
+
                 data_dict = {
                     'species': item['species'],
                     'max_value': max_value,
