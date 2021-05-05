@@ -21,7 +21,12 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
+export default function IfcbMarkerSquaresGrid({
+  feature,
+  layerID,
+  speciesValues,
+  onMarkerClick
+}) {
   const [offsetLeft, setOffsetLeft] = useState(15);
   const [offsetTop, setOffsetTop] = useState(-10);
   const classes = useStyles();
@@ -64,11 +69,7 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
       fillOpacity = 0;
     }
 
-    let rowStart = false;
     let rowEnd = false;
-    if (!index % 3) {
-      rowStart = true;
-    }
     if ((index + 1) % 3 === 0) {
       rowEnd = true;
     }
@@ -137,6 +138,4 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
       </div>
     </Marker>
   );
-};
-
-export default IfcbMarkerIcon;
+}
