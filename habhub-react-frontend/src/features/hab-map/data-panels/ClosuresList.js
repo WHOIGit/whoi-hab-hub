@@ -9,13 +9,13 @@ import {
   TableRow,
   TableCell,
   Box,
-  Grid,
+  Grid
 } from "@material-ui/core";
 import DescriptionIcon from "@material-ui/icons/Description";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles((theme) => ({
-  table: {},
+const useStyles = makeStyles(theme => ({
+  table: {}
 }));
 
 export default function ClosuresList({ results }) {
@@ -23,7 +23,7 @@ export default function ClosuresList({ results }) {
 
   function renderClosureItem(closure) {
     return (
-      <Box mb={4}>
+      <Box mb={4} key={closure.id}>
         <Grid
           container
           spacing={1}
@@ -79,7 +79,7 @@ export default function ClosuresList({ results }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {closure.species.map((row) => (
+              {closure.species.map(row => (
                 <TableRow key={row.species}>
                   <TableCell component="th" scope="row">
                     {row.species}
@@ -96,7 +96,7 @@ export default function ClosuresList({ results }) {
 
   return (
     <div>
-      {results.properties.closures.map((closure) => renderClosureItem(closure))}
+      {results.properties.closures.map(closure => renderClosureItem(closure))}
     </div>
   );
 }
