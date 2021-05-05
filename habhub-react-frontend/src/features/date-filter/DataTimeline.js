@@ -64,12 +64,10 @@ function DataTimeline({
   useEffect(() => {
     function fetchResults() {
       const url = `${API_URL}api/v1/core/data-density/`;
-      console.log(url);
       fetch(url)
         .then(res => res.json())
         .then(
           result => {
-            console.log(result);
             setIsLoaded(true);
             setResults(result);
           },
@@ -93,7 +91,7 @@ function DataTimeline({
           Date.parse(item.timestamp),
           parseFloat(item.densityPercentage)
         ]);
-        console.log(dataArray);
+
         const timeSeries = {
           name: key,
           data: dataArray

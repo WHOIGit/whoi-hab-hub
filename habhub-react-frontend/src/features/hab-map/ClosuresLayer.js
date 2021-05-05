@@ -169,7 +169,7 @@ export default function ClosuresLayer() {
 
         {labels && (
           <Source id="closures-labels-src" type="geojson" data={labels}>
-            <Layer {...layerClosuresIcons} />
+            <Layer {...layerClosuresIcons} key="closures-layer" />
           </Source>
         )}
       </React.Fragment>

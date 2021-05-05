@@ -22,8 +22,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
-  const [offsetLeft, setOffsetLeft] = useState(-32);
-  const [offsetTop, setOffsetTop] = useState(-25);
+  const [offsetLeft, setOffsetLeft] = useState(15);
+  const [offsetTop, setOffsetTop] = useState(-10);
   const classes = useStyles();
   // set some constants for square sizes
   const maxSquareSize = 32;
@@ -37,39 +37,6 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
   if (speciesValues.length > 5) {
     gridVertical = Math.ceil(speciesValues.length / 4);
   }
-
-  useEffect(() => {
-    // Dynamically adjust the Marker offsets and Circle width depending on # of species
-    // Set a base offset based on the first items X/Y position in the SVG
-    const defaultOffsetCorrection = 0;
-    // Sort array by max/mean value
-    const sortedValues = speciesValues.sort(
-      (a, b) => Number(a.value) - Number(b.value)
-    );
-    let maxHeight = 0;
-    // Set the Y offset
-    if (sortedValues.length > 3) {
-      // if two rows of values, get the highest two values
-      maxHeight =
-        getSquareSize(sortedValues.slice(-1)[0], maxSquareSize) +
-        getSquareSize(sortedValues.slice(-2)[0], maxSquareSize);
-    } else {
-      // else just get the highest
-      maxHeight = getSquareSize(sortedValues.slice(-1)[0], maxSquareSize);
-    }
-    const offsetTop = (maxHeight / 2) * -1 - defaultOffsetCorrection;
-
-    // Set the X offset
-    // Max items across = gridHorizontal, so get that slice of highest values
-    const maxWidthArr = sortedValues.slice(-Math.abs(gridHorizontal));
-    // Sum values
-    const maxWidth = maxWidthArr.reduce(function(a, b) {
-      return a + getSquareSize(b, maxSquareSize);
-    }, 0);
-    const offsetLeft = (maxWidth / 2) * -1 - defaultOffsetCorrection;
-    setOffsetLeft(offsetLeft);
-    setOffsetTop(offsetTop);
-  }, [speciesValues]);
 
   const getSquareSize = (speciesItem, maxSquareSize) => {
     const value = speciesItem.value;
@@ -107,7 +74,7 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     }
 
     return (
-      <>
+      <React.Fragment key={index}>
         <div className={classes.gridItem} style={{ height: squareSize }}>
           <svg width={squareSize} height={squareSize}>
             <rect
@@ -117,14 +84,13 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
               fillOpacity={fillOpacity}
               x={0}
               y={0}
-              key={index}
               strokeWidth={1}
               stroke={stroke}
             ></rect>
           </svg>
         </div>
         {rowEnd && <div className={classes.gridBreak}></div>}
-      </>
+      </React.Fragment>
     );
     /*
     if (item.value < 100) {

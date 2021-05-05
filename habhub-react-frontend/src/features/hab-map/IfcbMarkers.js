@@ -21,7 +21,9 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function IfcbMarkers({ onMarkerClick }) {
+const circleRadius = 7;
+
+export default function IfcbMarkers({ onMarkerClick }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
@@ -31,7 +33,6 @@ function IfcbMarkers({ onMarkerClick }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const [circleRadius, setCircleRadius] = useState(12);
 
   useEffect(() => {
     const getFetchUrl = () => {
@@ -73,21 +74,16 @@ function IfcbMarkers({ onMarkerClick }) {
     fetchResults();
   }, [dateFilter]);
 
-  useEffect(() => {
-    const radiusFactor = visibleSpecies.length > 3 ? 3 : visibleSpecies.length;
-    const newRadius = 8 * radiusFactor;
-    setCircleRadius(newRadius);
-  }, [visibleSpecies]);
-
   const layerIfcbCircles = {
     id: "ifcb-circles-layer",
     type: "circle",
     source: "ifcb-circles-src",
     paint: {
-      "circle-opacity": 0,
+      "circle-opacity": 1,
+      "circle-color": "#90caf9",
       "circle-radius": circleRadius,
-      "circle-stroke-width": 4,
-      "circle-stroke-color": "#467fcf"
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#1976d2"
     },
     layout: {
       visibility: "visible"
@@ -158,5 +154,3 @@ function IfcbMarkers({ onMarkerClick }) {
     </div>
   );
 }
-
-export default IfcbMarkers;
