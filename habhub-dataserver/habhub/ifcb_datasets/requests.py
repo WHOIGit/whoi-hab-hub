@@ -132,7 +132,6 @@ def _get_ifcb_autoclass_file(bin_obj):
     ml_analyzed = bin_obj.ml_analyzed
 
     target_list = TargetSpecies.objects.values_list('species_id', flat=True)
-    print(target_list)
     print(bin_url, bin_obj)
     species_found = []
     # set up data structure to store results
