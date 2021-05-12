@@ -1,7 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import GA4React from "ga-4-react";
 import App from "./app/App";
-import ReactGA from "react-ga";
+
 // Redux
 import store from "./app/store";
 import { Provider } from "react-redux";
@@ -13,14 +14,17 @@ store.dispatch(fetchHabSpecies());
 
 // Google Analytics setup
 const GA_UID = process.env.REACT_APP_GA_UID;
-ReactGA.initialize(GA_UID);
-ReactGA.pageview(window.location.pathname + window.location.search);
+const ga4react = new GA4React(GA_UID);
 
-ReactDOM.render(
-  <Provider store={store}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  </Provider>,
-  document.getElementById("root")
-);
+(async () => {
+  await ga4react.initialize();
+
+  ReactDOM.render(
+    <Provider store={store}>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </Provider>,
+    document.getElementById("root")
+  );
+})();

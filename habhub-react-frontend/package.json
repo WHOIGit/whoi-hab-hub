@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.21.1",
     "date-fns": "^2.16.1",
+    "ga-4-react": "^0.1.281",
     "highcharts": "^9.1.0",
     "highcharts-react-official": "^3.0.0",
     "html2canvas": "^1.0.0-rc.7",
