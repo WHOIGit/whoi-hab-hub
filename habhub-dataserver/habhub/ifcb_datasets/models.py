@@ -17,6 +17,7 @@ class Dataset(models.Model):
     geom = models.PointField(srid=4326, null=True, blank=True)
     # the lookup name from the IFCB dashboard
     dashboard_id_name = models.CharField(max_length=100)
+    fixed_location = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']

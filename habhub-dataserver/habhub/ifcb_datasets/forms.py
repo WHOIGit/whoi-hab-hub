@@ -8,17 +8,17 @@ class DatasetForm(forms.ModelForm):
     latitude = forms.FloatField(
         min_value=-90,
         max_value=90,
-        required=True,
+        required=False,
     )
     longitude = forms.FloatField(
         min_value=-180,
         max_value=180,
-        required=True,
+        required=False,
     )
 
     class Meta(object):
         model = Dataset
-        fields = ['name', 'location', 'dashboard_id_name', 'latitude', 'longitude', 'geom', ]
+        fields = ['name', 'location', 'dashboard_id_name', 'fixed_location', 'latitude', 'longitude', 'geom', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
