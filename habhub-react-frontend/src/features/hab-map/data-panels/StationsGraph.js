@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/styles";
 import Highcharts from "highcharts";
 import Exporting from "highcharts/modules/exporting";
@@ -25,6 +25,77 @@ const useStyles = makeStyles(theme => ({
 function StationsGraph({ results, chartExpanded, yAxisScale }) {
   const chartRef = useRef();
   const classes = useStyles();
+  const [chartOptions, setChartOptions] = useState({});
+
+  useEffect(() => {
+    const data = results.properties.timeseriesData;
+    const chartData = data
+      .map(item => [Date.parse(item.date), item.measurement])
+      .sort();
+
+    const chartOptions = {
+      chart: {
+        type: "spline",
+        zoomType: "x"
+      },
+      title: {
+        text: null
+      },
+      subtitle: {
+        text:
+          document.ontouchstart === undefined
+            ? "Click and drag in the plot area to zoom in"
+            : "Pinch the chart to zoom in"
+      },
+      xAxis: {
+        type: "datetime"
+      },
+      yAxis: {
+        title: {
+          text: "Shellfish meat toxicity"
+        },
+        min: 0,
+        softMax: 150,
+        plotLines: [
+          {
+            value: 80,
+            color: "red",
+            dashStyle: "shortdash",
+            width: 2,
+            label: {
+              text: "Closure threshold"
+            }
+          }
+        ]
+      },
+      plotOptions: {
+        series: { threshold: 100 }
+      },
+      exporting: {
+        buttons: {
+          contextButton: {
+            menuItems: [
+              "printChart",
+              "separator",
+              "downloadPNG",
+              "downloadJPEG",
+              "downloadPDF",
+              "downloadSVG",
+              "separator",
+              "downloadCSV"
+            ]
+          }
+        }
+      },
+      series: [
+        {
+          name: "Shellfish meat toxicity",
+          data: chartData
+        }
+      ]
+    };
+    setChartOptions(chartOptions);
+  }, [results]);
 
   useEffect(() => {
     if (chartExpanded) {
@@ -53,76 +124,11 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
       });
     }
   }, [yAxisScale]);
-*/
-  const data = results.properties.timeseriesData;
-  const chartData = data.map(item => [Date.parse(item.date), item.measurement]);
-
-  const chartOptions = {
-    chart: {
-      type: "spline",
-      zoomType: "x"
-    },
-    title: {
-      text: null
-    },
-    subtitle: {
-      text:
-        document.ontouchstart === undefined
-          ? "Click and drag in the plot area to zoom in"
-          : "Pinch the chart to zoom in"
-    },
-    xAxis: {
-      type: "datetime"
-    },
-    yAxis: {
-      title: {
-        text: "Shellfish meat toxicity"
-      },
-      min: 0,
-      softMax: 150,
-      plotLines: [
-        {
-          value: 80,
-          color: "red",
-          dashStyle: "shortdash",
-          width: 2,
-          label: {
-            text: "Closure threshold"
-          }
-        }
-      ]
-    },
-    plotOptions: {
-      series: { threshold: 100 }
-    },
-    exporting: {
-      buttons: {
-        contextButton: {
-          menuItems: [
-            "printChart",
-            "separator",
-            "downloadPNG",
-            "downloadJPEG",
-            "downloadPDF",
-            "downloadSVG",
-            "separator",
-            "downloadCSV"
-          ]
-        }
-      }
-    },
-    series: [
-      {
-        name: "Shellfish meat toxicity",
-        data: chartData
-      }
-    ]
-  };
+  */
 
   return (
     <HighchartsReact
       highcharts={Highcharts}
-      allowChartUpdate={true}
       options={chartOptions}
       containerProps={
         chartExpanded

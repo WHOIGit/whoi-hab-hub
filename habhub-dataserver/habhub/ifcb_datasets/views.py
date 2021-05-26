@@ -9,6 +9,7 @@ from django.views.generic import View, DetailView, TemplateView
 from django.db.models import Avg, Max, Prefetch
 from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
 
+from habhub.core.models import TargetSpecies
 from .models import *
 from .utils import _get_image_ifcb_dashboard
 from .api.serializers import DatasetListSerializer
@@ -172,9 +173,10 @@ class BinAjaxGetImagesBySpecies(View):
         format = request.GET.get('format')
 
         images = []
-        # AJAX is sending display name, convert it to the database key
+        # AJAX is sending display name
         TARGET_SPECIES = Bin.TARGET_SPECIES
-        species = next((item for item in TARGET_SPECIES if item[1] == species), False)
+        target_list = TargetSpecies.objects.all()
+        species = next((item for item in target_list if item.display_name == species), False)
         print(species)
         try:
             bin_obj = Bin.objects.get(pid=bin_pid)
@@ -183,7 +185,7 @@ class BinAjaxGetImagesBySpecies(View):
             bin_obj = None
 
         if bin_obj and species:
-            data = bin_obj.get_concentration_data_by_species(species[0])
+            data = bin_obj.get_concentration_data_by_species(species.species_id)
             print(data)
             image_numbers = data['image_numbers'][:30]
             print(image_numbers)
@@ -200,8 +202,8 @@ class BinAjaxGetImagesBySpecies(View):
                     'pid': bin_obj.pid,
                     'dataset_id': bin_obj.dataset.dashboard_id_name
                 },
-                'species': species[1],
+                'species': species.display_name,
                 'images': images,
             }
             return JsonResponse(bin_images_json)
-        return render(request, 'ifcb_datasets/_dashboard_sidebar_images_pane.html', {'bin_obj': bin_obj, 'images': images, 'species': species[1]})
+        return render(request, 'ifcb_datasets/_dashboard_sidebar_images_pane.html', {'bin_obj': bin_obj, 'images': images, 'species': species.display_name})

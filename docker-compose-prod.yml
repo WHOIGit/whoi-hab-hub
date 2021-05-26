@@ -1,9 +1,8 @@
-version: '3.7'
+version: "3.7"
 
 volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
-  production_nginx: {}
   static_volume_habhub: {}
   media_volume_habhub: {}
 
@@ -21,8 +20,8 @@ services:
       - postgres
       - redis
     volumes:
-      - static_volume_habhub:/app/staticfiles  # <-- bind the static files
-      - media_volume_habhub:/app/media  # <-- bind the media files
+      - static_volume_habhub:/app/staticfiles # <-- bind the static files
+      - media_volume_habhub:/app/media # <-- bind the media files
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
@@ -48,7 +47,7 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
       - ./.ssl/whoi_certs:/etc/ssl/whoi_certs:ro # bind a local directory with the WHOI SSL certs
-      - production_nginx:/var/log/nginx
+      - ./nginx/log:/var/log/nginx # mount local directory for NGINX logs
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
