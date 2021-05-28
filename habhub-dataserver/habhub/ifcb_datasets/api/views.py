@@ -9,7 +9,7 @@ from django.db import models
 from django.db.models import Prefetch, F, Q
 
 from ..models import Dataset, Bin
-from .serializers import DatasetListSerializer, DatasetDetailSerializer
+from .serializers import DatasetListSerializer, DatasetDetailSerializer, SpatialDatasetSerializer
 from .mixins import DatasetFiltersMixin
 
 
@@ -34,8 +34,7 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class SpatialDatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
-    serializer_class = DatasetListSerializer
-    detail_serializer_class = DatasetDetailSerializer
+    serializer_class = SpatialDatasetSerializer
 
     def get_queryset(self):
         queryset = Dataset.objects.filter(fixed_location=False).defer("bins")
