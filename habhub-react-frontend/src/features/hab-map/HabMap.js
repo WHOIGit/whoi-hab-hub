@@ -10,6 +10,7 @@ import { makeStyles } from "@material-ui/styles";
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
+import IfcbSpatialMarkers from "./IfcbSpatialMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
 import CurrentDateChip from "../date-filter/CurrentDateChip";
@@ -163,6 +164,7 @@ export default function HabMap() {
             ref={mapRef}
           >
             <React.Fragment>
+              <IfcbSpatialMarkers onMarkerClick={onMarkerClick} />
               {visibleLayerIds.reverse().map(layer => renderMarkerLayer(layer))}
             </React.Fragment>
 

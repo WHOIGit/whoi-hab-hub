@@ -11,7 +11,7 @@ custom mixin to handle all filtering by query_params for IFCB Datasets
 """
 class DatasetFiltersMixin:
 
-    def handle_query_param_filters(self, queryset):
+    def handle_query_param_filters(self, queryset, is_fixed_location=True):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
@@ -35,7 +35,16 @@ class DatasetFiltersMixin:
         else:
             end_date_obj = timezone.now()
 
-        # Only want to get all Bin data is this is a detail view or filtered by date
+        # create empty Q objects to handle conditional filtering
+        date_q_filters = Q()
+        #geo_q_filters = Q()
+        # add Geographic filter is this is SPATIAL dataset
+        """
+        if not is_fixed_location:
+            geo_q_filters = Q(
+                sample_time__range=(dr["start_date"], dr["end_date"])
+            )
+        """
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
             if seasonal:
@@ -74,42 +83,28 @@ class DatasetFiltersMixin:
                     }
                     date_ranges.append(range_dict)
 
-                date_q_filters = Q()
                 for dr in date_ranges:
                     date_q_filters |= Q(
                         sample_time__range=(dr["start_date"], dr["end_date"])
                     )  # 'or' the Q objects together
-
-                queryset = queryset.prefetch_related(
-                    Prefetch(
-                        "bins",
-                        queryset=Bin.objects.filter(
-                            cell_concentration_data__isnull=False
-                        )
-                        .filter(date_q_filters)
-                        .annotate(smoothing=F("id") % smoothing_factor)
-                        .filter(smoothing=0),
-                    )
-                )
             else:
-                queryset = queryset.prefetch_related(
-                    Prefetch(
-                        "bins",
-                        queryset=Bin.objects.filter(
-                            cell_concentration_data__isnull=False
-                        )
-                        .filter(sample_time__range=[start_date_obj, end_date_obj])
-                        .annotate(smoothing=F("id") % smoothing_factor)
-                        .filter(smoothing=0),
-                    )
+                date_q_filters |= Q(
+                    sample_time__range=([start_date_obj, end_date_obj])
                 )
-        elif self.action == "retrieve":
-            queryset = queryset.prefetch_related(
-                Prefetch(
-                    "bins",
-                    queryset=Bin.objects.filter(cell_concentration_data__isnull=False)
-                    .annotate(smoothing=F("id") % smoothing_factor)
-                    .filter(smoothing=0),
+
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "bins",
+                queryset=Bin.objects.filter(
+                    cell_concentration_data__isnull=False
                 )
+                .filter(date_q_filters)
+                .annotate(smoothing=F("id") % smoothing_factor)
+                .filter(smoothing=0),
             )
+        )
+        """
+        if not is_fixed_location:
+            queryset = queryset.add_bins_geo_extent(date_q_filters)
+        """
         return queryset

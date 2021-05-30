@@ -35,7 +35,7 @@ class StationQuerySet(models.QuerySet):
 
         # now get the Avg value for this set of Datapoints
         datapoint_query = (
-            datapoint_query.values('station_id') # group cities by state
+            datapoint_query.values('station_id') # group by station
                            .order_by() # reset ordering
                            .annotate(station_mean=Avg('measurement'))
                            .values('station_mean')[:1] # Only have 1 row & 1 value allowed

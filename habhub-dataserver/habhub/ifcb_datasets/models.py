@@ -1,3 +1,4 @@
+import s2sphere
 from statistics import mean
 from django.contrib.gis.db import models
 from django.db.models import F
@@ -7,6 +8,7 @@ from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
 from habhub.core.models import TargetSpecies
+from .managers import DatasetQuerySet
 
 # IFCB dataset models
 
@@ -18,6 +20,8 @@ class Dataset(models.Model):
     # the lookup name from the IFCB dashboard
     dashboard_id_name = models.CharField(max_length=100)
     fixed_location = models.BooleanField(default=True)
+
+    #objects = DatasetQuerySet.as_manager()
 
     class Meta:
         ordering = ['name']
@@ -65,24 +69,10 @@ class Dataset(models.Model):
 
 
 class Bin(models.Model):
-    ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'
-    DINOPHYSIS_ACUMINATA = 'Dinophysis_acuminata'
-    DINOPHYSIS_NORVEGICA = 'Dinophysis_norvegica'
-    KARENIA = 'Karenia'
-    MARGALEFIDINIUM = 'Margalefidinium'
-    PSEUDO_NITZSCHIA = 'Pseudo-nitzschia'
-    TARGET_SPECIES = (
-        (ALEXANDRIUM_CATENELLA, 'Alexandrium catenella'),
-        (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
-        (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
-        (KARENIA, 'Karenia'),
-        (MARGALEFIDINIUM, 'Margalefidinium polykrikoides'),
-        (PSEUDO_NITZSCHIA, 'Pseudo nitzschia'),
-    )
-
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True, db_index=True)
     geom = models.PointField(srid=4326, null=True, blank=True)
+    geom_s2_token = models.CharField(max_length=100, db_index=True, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, related_name='bins', on_delete=models.CASCADE)
     sample_time = models.DateTimeField(default=timezone.now, db_index=True)
     ifcb = models.PositiveIntegerField(null=True, blank=True)
@@ -104,6 +94,19 @@ class Bin(models.Model):
 
     def __str__(self):
         return self.pid
+
+    # Custom save method to add S2 token for each lat/lng Point
+    def save(self, *args, **kwargs):
+        # s2 cell level of ~1.27 km^2 to represent lat/lng of Bins
+        cell_level = 13
+        try:
+            ll = s2sphere.LatLng.from_degrees(self.geom.coords[1], self.geom.coords[0])
+            cellid = s2sphere.CellId.from_lat_lng(ll).parent(cell_level)
+            token = cellid.to_token()
+            self.geom_s2_token = token
+        except Exception as e:
+            pass
+        super(Bin, self).save(*args, **kwargs)
 
     def get_concentration_units(self):
         return 'cells/L'

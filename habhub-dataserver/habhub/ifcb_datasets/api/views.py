@@ -39,14 +39,5 @@ class SpatialDatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = Dataset.objects.filter(fixed_location=False).defer("bins")
         # call custom filter method from mixin
-        queryset = self.handle_query_param_filters(queryset)
+        queryset = self.handle_query_param_filters(queryset, is_fixed_location=False)
         return queryset
-
-    # return different sets of fields if the request is list all or retrieve one,
-    # so use two different serializers
-    def get_serializer_class(self):
-        if self.action == "retrieve":
-            if hasattr(self, "detail_serializer_class"):
-                return self.detail_serializer_class
-
-        return super(SpatialDatasetViewSet, self).get_serializer_class()
