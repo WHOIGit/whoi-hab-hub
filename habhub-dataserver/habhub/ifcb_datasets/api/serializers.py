@@ -2,7 +2,7 @@ import s2sphere
 
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
 
 from ..models import Dataset, Bin
@@ -82,27 +82,29 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         bins = obj.bins.all()
         bins = bins.filter(cell_concentration_data__isnull=False, geom_s2_token__isnull=False).exclude(geom=zero_pt)
         # Extent returns (ne, sw) points of box
-        qs = bins.aggregate(Extent('geom'))
-        print(qs['geom__extent'])
-        bin_tokens = bins.values_list('geom_s2_token', flat=True)
+        bbbox_extent = bins.aggregate(Extent('geom'))
+        #bin_tokens = bins.values_list('geom_s2_token', flat=True)
         # S2 functions to get gridded
         r = s2sphere.RegionCoverer()
         r.min_level=7
         r.max_level=7
-        p1 = s2sphere.LatLng.from_degrees(qs['geom__extent'][1], qs['geom__extent'][0])
-        p2 = s2sphere.LatLng.from_degrees(qs['geom__extent'][3], qs['geom__extent'][2])
+        p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
+        p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
         #box = s2sphere.LatLngRect.from_point_pair(p1, p2)
         #print(box)
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
         points = []
-
+        """
         for cellid in covering:
             cell_center_ll = cellid.to_lat_lng()
             lat_lng = self.convert_s2_point_to_latlng(cell_center_ll)
             token = cellid.to_token()
+
             # get all Bins within this cell
             bins_in_cell = [token for token in bin_tokens if cellid.contains(s2sphere.CellId.from_token(token))]
-
+            # get max/mean values for the cell
+            #max_mean = obj.get_max_mean_values(query_by_token=bins_in_cell)
+            #print(max_mean)
             if bins_in_cell:
                 point = {
                     "token": token,
@@ -111,31 +113,42 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
                     "bins": bins_in_cell
                 }
                 points.append(point)
-
-        return points
-
         """
-        # Builds GEOS polygons out of cell vertices
-        vertices = []
-        print(new_cell.get_rect_bound())
-        vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
-        print(len(vertices))
-        points = []
-        for v in vertices:
-            # get just lat/long coords from S2 LatLng
-            print(v.lat())
-            coords = str(v).split()[-1].split(",")
-            print(coords)
-            point = Point(float(coords[1]), float(coords[0]))
-            print(point)
-            points.append(point)
-        # close the loop for a Polygon
-        points.append(points[0])
-        print(points)
-        poly = Polygon(points)
-        print(poly)
-        geoms.append(poly)
-        """
+        geoms = []
+        grid_points = []
+
+        for cellid in covering:
+            cell_center_ll = cellid.to_lat_lng()
+            lat_lng = self.convert_s2_point_to_latlng(cell_center_ll)
+            token = cellid.to_token()
+            # Builds GEOS polygons out of cell vertices
+            # use these polygons to query PostGIS, faster than s2?
+            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            poly_points = []
+            for v in vertices:
+                # get just lat/long coords from S2 LatLng
+                coords = str(v).split()[-1].split(",")
+                point = Point(float(coords[1]), float(coords[0]))
+                poly_points.append(point)
+            # close the loop for a Polygon
+            poly_points.append(poly_points[0])
+            poly = Polygon(poly_points)
+            geoms.append(poly)
+
+            # get all Bins within this cell
+            bins_in_cell = bins.filter(geom__within=poly)    
+
+            if bins_in_cell.exists():
+                max_mean = obj.get_max_mean_values(queryset=bins_in_cell)
+                grid_point = {
+                    "token": token,
+                    "lat": lat_lng["lat"],
+                    "long": lat_lng["long"],
+                    #"bins": bins_in_cell
+                }
+                grid_points.append(grid_point)
+
+        return grid_points
 
     def get_max_mean_values(self, obj):
         return obj.get_max_mean_values()

@@ -29,7 +29,7 @@ class Dataset(models.Model):
     def __str__(self):
         return F'{self.name} - {self.location}'
 
-    def get_max_mean_values(self):
+    def get_max_mean_values(self, queryset=None):
         target_list = TargetSpecies.objects.values_list('species_id', flat=True)
         # set up data structure to store results
         concentration_values = []
@@ -40,7 +40,11 @@ class Dataset(models.Model):
             concentration_values.append(concentration_dict)
 
         if self.bins.exists():
-            bins_qs = self.bins.all()
+            if queryset:
+                bins_qs = queryset
+            else:
+                bins_qs = self.bins.all()
+
             for bin in bins_qs:
                 if bin.cell_concentration_data:
                     for datapoint in bin.cell_concentration_data:
