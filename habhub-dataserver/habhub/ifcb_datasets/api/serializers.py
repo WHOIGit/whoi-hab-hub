@@ -1,7 +1,9 @@
 import s2sphere
+from collections import OrderedDict
 
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
+from rest_framework_gis.fields import GeometryField
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
 
@@ -63,15 +65,33 @@ class DatasetDetailSerializer(DatasetListSerializer):
 
 
 class SpatialDatasetSerializer(serializers.ModelSerializer):
-    max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
     #bbox = GeometrySerializerMethodField()
-    grid_center_points = serializers.SerializerMethodField('get_grid_center_points')
+    features = serializers.SerializerMethodField('get_grid_center_points')
 
     class Meta:
         model = Dataset
-        fields = ['id', 'name', 'location', 'dashboard_id_name', 'grid_center_points', 'max_mean_values', ]
+        fields = ['id', 'name', 'location', 'dashboard_id_name', 'features' ]
+        
+    def to_representation(self, instance):
+        data = super(SpatialDatasetSerializer, self).to_representation(instance)
+        # must be "FeatureCollection" according to GeoJSON spec
+        res = OrderedDict()
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        res["type"] = "FeatureCollection"
+        # add metadata attribute, optional for GeoJSON
+        metadata = OrderedDict()
+        for k,v in data.items():
+            if k != "features":
+                metadata[k] = data[k]
+        res["metadata"] = metadata
+        # required features attribute
+        # MUST be present in output according to GeoJSON spec
+        res["features"] = data["features"]
+        return res
 
     def convert_s2_point_to_latlng(self, s2_point):
+        # utility function to convert S2 points to lat/lng
         coords = str(s2_point).split()[-1].split(",")
         lat_lng = {"lat": float(coords[0]), "long": float(coords[1])}
         return lat_lng
@@ -84,16 +104,14 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         # Extent returns (ne, sw) points of box
         bbbox_extent = bins.aggregate(Extent('geom'))
         #bin_tokens = bins.values_list('geom_s2_token', flat=True)
-        # S2 functions to get gridded
+        # S2 functions to get even grid of polygons to cover bounding box
         r = s2sphere.RegionCoverer()
         r.min_level=7
         r.max_level=7
         p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
         p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
-        #box = s2sphere.LatLngRect.from_point_pair(p1, p2)
-        #print(box)
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
-        points = []
+
         """
         for cellid in covering:
             cell_center_ll = cellid.to_lat_lng()
@@ -114,15 +132,15 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
                 }
                 points.append(point)
         """
-        geoms = []
-        grid_points = []
+        features = []
+        # prepare OrderedDict geojson structure
 
         for cellid in covering:
             cell_center_ll = cellid.to_lat_lng()
             lat_lng = self.convert_s2_point_to_latlng(cell_center_ll)
             token = cellid.to_token()
             # Builds GEOS polygons out of cell vertices
-            # use these polygons to query PostGIS, faster than s2?
+            # use these polygons to query PostGIS
             vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
             poly_points = []
             for v in vertices:
@@ -133,22 +151,27 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
             # close the loop for a Polygon
             poly_points.append(poly_points[0])
             poly = Polygon(poly_points)
-            geoms.append(poly)
+            centroid = poly.centroid
 
             # get all Bins within this cell
-            bins_in_cell = bins.filter(geom__within=poly)    
+            bins_in_cell = bins.filter(geom__within=poly)
 
             if bins_in_cell.exists():
                 max_mean = obj.get_max_mean_values(queryset=bins_in_cell)
-                grid_point = {
-                    "token": token,
-                    "lat": lat_lng["lat"],
-                    "long": lat_lng["long"],
-                    #"bins": bins_in_cell
-                }
-                grid_points.append(grid_point)
+                feature = OrderedDict()
+                # required type attribute
+                # must be "Feature" according to GeoJSON spec
+                feature["type"] = "Feature"
+                # required geometry attribute
+                # MUST be present in output according to GeoJSON spec
+                geo_field = GeometryField()
+                feature["geometry"] = geo_field.to_representation(centroid)
+                # set GeoJSON properties
+                properties = OrderedDict()
+                properties["s2_token"] = token
+                properties["max_mean"] = max_mean
+                feature["properties"] = properties
+                #
+                features.append(feature)
 
-        return grid_points
-
-    def get_max_mean_values(self, obj):
-        return obj.get_max_mean_values()
+        return features
