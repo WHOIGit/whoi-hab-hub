@@ -71,7 +71,7 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
         fields = ['id', 'name', 'location', 'dashboard_id_name', 'features' ]
-        
+
     def to_representation(self, instance):
         data = super(SpatialDatasetSerializer, self).to_representation(instance)
         # must be "FeatureCollection" according to GeoJSON spec
@@ -169,7 +169,7 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
                 # set GeoJSON properties
                 properties = OrderedDict()
                 properties["s2_token"] = token
-                properties["max_mean"] = max_mean
+                properties["max_mean_values"] = max_mean
                 feature["properties"] = properties
                 #
                 features.append(feature)
