@@ -31,7 +31,7 @@ export default function IfcbMarkerSquaresGrid({
   const [offsetTop, setOffsetTop] = useState(-10);
   const classes = useStyles();
   // set some constants for square sizes
-  const maxSquareSize = 32;
+  const maxSquareSize = 30;
   const minSquareSize = 8;
   // set default grid structure for different #s of species. Max squares across = 4
   let gridHorizontal = 3;
@@ -49,11 +49,11 @@ export default function IfcbMarkerSquaresGrid({
 
     if (value < 100) {
       squareSize = minSquareSize;
-    } else if (value < 10e4) {
+    } else if (value < 1e4) {
       squareSize = (maxSquareSize / 5) * 2;
-    } else if (value < 10e5) {
+    } else if (value < 1e5) {
       squareSize = (maxSquareSize / 5) * 3;
-    } else if (value < 10e6) {
+    } else if (value < 1e6) {
       squareSize = (maxSquareSize / 5) * 4;
     }
     return squareSize;

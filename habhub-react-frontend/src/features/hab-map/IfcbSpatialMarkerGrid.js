@@ -29,7 +29,7 @@ export default function IfcbSpatialMarkerGrid({
 }) {
   const classes = useStyles();
   // set some constants for square sizes
-  const maxSquareSize = 32;
+  const maxSquareSize = 30;
   const minSquareSize = 8;
   // set default grid structure for different #s of species. Max squares across = 4
   let gridHorizontal = 3;
@@ -44,16 +44,18 @@ export default function IfcbSpatialMarkerGrid({
   const getSquareSize = (speciesItem, maxSquareSize) => {
     const value = speciesItem.value;
     let squareSize = maxSquareSize;
-
+    console.log(value);
     if (value < 100) {
       squareSize = minSquareSize;
-    } else if (value < 10e4) {
+    } else if (value < 1e4) {
       squareSize = (maxSquareSize / 5) * 2;
-    } else if (value < 10e5) {
+    } else if (value < 1e5) {
       squareSize = (maxSquareSize / 5) * 3;
-    } else if (value < 10e6) {
+      console.log(squareSize);
+    } else if (value < 1e6) {
       squareSize = (maxSquareSize / 5) * 4;
     }
+    console.log(squareSize);
     return squareSize;
   };
 
@@ -75,17 +77,14 @@ export default function IfcbSpatialMarkerGrid({
     return (
       <React.Fragment key={index}>
         <div className={classes.gridItem} style={{ height: squareSize }}>
-          <svg width={squareSize} height={squareSize}>
-            <rect
-              width={squareSize}
-              height={squareSize}
+          <svg viewBox="0 0 100 100" width={squareSize} height={squareSize}>
+            <polygon
+              points="0 0, 100 100, 0 100"
               fill={item.color}
               fillOpacity={fillOpacity}
-              x={0}
-              y={0}
               strokeWidth={1}
               stroke={stroke}
-            ></rect>
+            />
           </svg>
         </div>
         {rowEnd && <div className={classes.gridBreak}></div>}

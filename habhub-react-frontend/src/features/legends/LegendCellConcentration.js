@@ -2,7 +2,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/styles";
 import { Grid, Typography } from "@material-ui/core";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
@@ -10,18 +10,18 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     bottom: 0,
     left: 0,
-    zIndex: 2000,
+    zIndex: 2000
   },
   legendGrid: {
-    fontSize: ".8em",
+    fontSize: ".8em"
   },
-  legendText: {},
+  legendText: {}
 }));
 
 export default function LegendCellConcentration() {
   const classes = useStyles();
 
-  const maxSquareSize = 32;
+  const maxSquareSize = 30;
   const minSquareSize = 8;
   const strokeColor = "black";
   const strokeWidth = 4;

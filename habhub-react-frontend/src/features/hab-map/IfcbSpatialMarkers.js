@@ -82,6 +82,7 @@ export default function IfcbSpatialMarkers({ onMarkerClick }) {
     if (!feature.properties.maxMeanValues.length) {
       return null;
     }
+
     const speciesValues = visibleSpecies.map(item => {
       const maxMeanItem = feature.properties.maxMeanValues.filter(
         data => item.id === data.species
@@ -103,36 +104,17 @@ export default function IfcbSpatialMarkers({ onMarkerClick }) {
     if (!speciesValues.length) {
       return null;
     }
-    return (
-      <IfcbSpatialMarkerGrid
-        feature={feature}
-        layerID={layerID}
-        speciesValues={speciesValues}
-        onMarkerClick={onMarkerClick}
-        key={feature.id}
-      />
-    );
-  }
-
-  function renderMarker(feature) {
-    console.log(feature);
-    return (
-      <>
-        <Marker
-          key={feature.properties.s2Token}
-          latitude={feature.geometry.coordinates[1]}
-          longitude={feature.geometry.coordinates[0]}
-          captureClick={true}
-        >
-          <div
-            className={classes.button}
-            onClick={event => onMarkerClick(event, feature, layerID)}
-          >
-            <img src={SquareMarker} alt="Grid point" />
-          </div>
-        </Marker>
-      </>
-    );
+    if (feature.properties.s2Token == "4cac4") {
+      return (
+        <IfcbSpatialMarkerGrid
+          feature={feature}
+          layerID={layerID}
+          speciesValues={speciesValues}
+          onMarkerClick={onMarkerClick}
+          key={feature.id}
+        />
+      );
+    }
   }
 
   if (results === undefined) {

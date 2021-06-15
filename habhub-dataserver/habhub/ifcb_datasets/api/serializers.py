@@ -98,8 +98,13 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
 
     def get_grid_center_points(self, obj):
         # run aggregate funtion on Bin queryset to get bounding box coords
+        features = []
         zero_pt = Point(0, 0)
         bins = obj.bins.all()
+
+        if not bins:
+            return features
+
         bins = bins.filter(cell_concentration_data__isnull=False, geom_s2_token__isnull=False).exclude(geom=zero_pt)
         # Extent returns (ne, sw) points of box
         bbbox_extent = bins.aggregate(Extent('geom'))
@@ -132,7 +137,6 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
                 }
                 points.append(point)
         """
-        features = []
         # prepare OrderedDict geojson structure
 
         for cellid in covering:
