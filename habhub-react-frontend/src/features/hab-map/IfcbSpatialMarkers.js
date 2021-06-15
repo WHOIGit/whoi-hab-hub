@@ -104,17 +104,16 @@ export default function IfcbSpatialMarkers({ onMarkerClick }) {
     if (!speciesValues.length) {
       return null;
     }
-    if (feature.properties.s2Token == "4cac4") {
-      return (
-        <IfcbSpatialMarkerGrid
-          feature={feature}
-          layerID={layerID}
-          speciesValues={speciesValues}
-          onMarkerClick={onMarkerClick}
-          key={feature.id}
-        />
-      );
-    }
+
+    return (
+      <IfcbSpatialMarkerGrid
+        feature={feature}
+        layerID={layerID}
+        speciesValues={speciesValues}
+        onMarkerClick={onMarkerClick}
+        key={feature.id}
+      />
+    );
   }
 
   if (results === undefined) {

@@ -44,18 +44,17 @@ export default function IfcbSpatialMarkerGrid({
   const getSquareSize = (speciesItem, maxSquareSize) => {
     const value = speciesItem.value;
     let squareSize = maxSquareSize;
-    console.log(value);
+
     if (value < 100) {
       squareSize = minSquareSize;
     } else if (value < 1e4) {
       squareSize = (maxSquareSize / 5) * 2;
     } else if (value < 1e5) {
       squareSize = (maxSquareSize / 5) * 3;
-      console.log(squareSize);
     } else if (value < 1e6) {
       squareSize = (maxSquareSize / 5) * 4;
     }
-    console.log(squareSize);
+
     return squareSize;
   };
 
