@@ -9,7 +9,7 @@ from io import BytesIO
 from django.conf import settings
 from django.shortcuts import render
 from django.core.files.storage import default_storage
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 
 from .models import *
 from habhub.core.models import TargetSpecies
@@ -23,13 +23,38 @@ IFCB_DASHBOARD_THROTTLE_RATE = env(
     "IFCB_DASHBOARD_THROTTLE_RATE", default=50
 )
 
+def valid_lonlat(lon: float, lat: float):
+    """
+    This validates a lat and lon point can be located
+    in the bounds of the WGS84 CRS, after wrapping the
+    longitude value within [-180, 180)
+
+    :param lon: a longitude value
+    :param lat: a latitude value
+    :return: (lon, lat) if valid, None otherwise
+    """
+    # ignore points that are set to 0,0
+    if lon == 0 and lat == 0:
+        return None
+
+    # Put the longitude in the range of [0,360):
+    lon %= 360
+    # Put the longitude in the range of [-180,180):
+    if lon >= 180:
+        lon -= 360
+    lon_lat_point = Point(lon, lat)
+    bbox =  (-180.0, -90.0, 180.0, 90.0)
+    lon_lat_bounds = Polygon.from_bbox(bbox)
+    # return lon_lat_bounds.intersects(lon_lat_point)
+    # would not provide any corrected values
+
+    if lon_lat_bounds.intersects(lon_lat_point):
+        return lon, lat
+    else:
+        return None
+
 # Functions to access IFCB Dashboard
 # -------------------------------
-
-"""
-Function to run import of Bins/Autoclass/Image data from IFCB dashboard
-Args: 'dataset_obj' - Dataset object
-"""
 
 """
 def run_species_classifed_import(dataset_obj):
@@ -47,8 +72,11 @@ def run_species_classifed_import(dataset_obj):
              print(f"{bin} processed.")
 """
 
-
 def run_species_classifed_import(dataset_obj):
+    """
+    Function to run import of Bins/Autoclass/Image data from IFCB dashboard
+    Args: 'dataset_obj' - Dataset object
+    """
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
     print('Complete Bin import.')
@@ -85,11 +113,24 @@ def _get_ifcb_bins_dataset(dataset_obj):
 
         for row in csv.DictReader(lines):
             print(row['pid'])
-            sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
-
-            geom = None
+            # check for valid long/lat. Skip row if no valid geo data
             if row['longitude'] and row['latitude']:
-                geom = Point(float(row['longitude']), float(row['latitude']))
+                lon = float(row['longitude'])
+                lat = float(row['latitude'])
+                lon_lat = valid_lonlat(lon, lat)
+
+                if lon_lat is None:
+                    print("invalid long/lat")
+                    continue
+                else:
+                    lon, lat = lon_lat
+
+                geom = Point(lon, lat)
+            else:
+                print("no long/lat")
+                continue
+
+            sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
 
             depth = None
             if row['depth']:
@@ -120,13 +161,11 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 print(e)
 
 
-"""
-Function to make API request for Autoclass CSV file, calculate abundance of target species
-Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
-"""
-
-
 def _get_ifcb_autoclass_file(bin_obj):
+    """
+    Function to make API request for Autoclass CSV file, calculate abundance of target species
+    Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
+    """
     bin_url = F'{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}'
     csv_url = F'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
     ml_analyzed = bin_obj.ml_analyzed

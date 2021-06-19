@@ -2,8 +2,10 @@ import os
 import requests
 from io import BytesIO
 
+from django.contrib.gis.geos import Polygon
 from django.conf import settings
 from django.core.files.storage import default_storage
+from .models import Bin
 
 
 """
@@ -12,6 +14,16 @@ save it to local/AWS storage
 Args: 'dataset_obj': Dataset object, 'img_name': string
 """
 
+def get_bins_outside_target_area():
+    # create bounding box that covers the North Atlantic
+    bbox =  (-81, 25, -47, 49)
+    poly = Polygon.from_bbox(bbox)
+    print(poly)
+    # get all Bins within this cell
+    bins = Bin.objects.exclude(geom__within=poly)
+    print(bins.count())
+    for bin in bins:
+        print(bin.geom)
 
 def _get_image_ifcb_dashboard(dataset_obj, img_name):
     image = None

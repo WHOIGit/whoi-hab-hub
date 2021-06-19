@@ -1,4 +1,5 @@
 import s2sphere
+from statistics import mean
 from collections import OrderedDict
 
 from rest_framework import serializers
@@ -108,6 +109,7 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         bins = bins.filter(cell_concentration_data__isnull=False, geom_s2_token__isnull=False).exclude(geom=zero_pt)
         # Extent returns (ne, sw) points of box
         bbbox_extent = bins.aggregate(Extent('geom'))
+        print(bbbox_extent)
         #bin_tokens = bins.values_list('geom_s2_token', flat=True)
         # S2 functions to get even grid of polygons to cover bounding box
         r = s2sphere.RegionCoverer()
@@ -115,6 +117,8 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         r.max_level=7
         p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
         p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
+        print(p1)
+        print(p2)
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
 
         """
@@ -179,3 +183,155 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
                 features.append(feature)
 
         return features
+
+
+class SpatialBinSerializer(serializers.Serializer):
+    #bbox = GeometrySerializerMethodField()
+    features = serializers.SerializerMethodField('get_grid_center_points')
+
+    def to_representation(self, instance):
+        data = super(SpatialBinSerializer, self).to_representation(instance)
+        # must be "FeatureCollection" according to GeoJSON spec
+        res = OrderedDict()
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        res["type"] = "FeatureCollection"
+        # add metadata attribute, optional for GeoJSON
+        metadata = OrderedDict()
+        for k,v in data.items():
+            if k != "features":
+                metadata[k] = data[k]
+        res["metadata"] = metadata
+        # required features attribute
+        # MUST be present in output according to GeoJSON spec
+        res["features"] = data["features"]
+        return res
+
+    def convert_s2_point_to_latlng(self, s2_point):
+        # utility function to convert S2 points to lat/lng
+        coords = str(s2_point).split()[-1].split(",")
+        lat_lng = {"lat": float(coords[0]), "long": float(coords[1])}
+        return lat_lng
+
+    def get_grid_center_points(self, obj):
+        # run aggregate funtion on Bin queryset to get bounding box coords
+        features = []
+        zero_pt = Point(0, 0)
+        bins = obj.all()
+
+        if not bins:
+            return features
+
+        # Extent returns (ne, sw) points of box
+        bbbox_extent = bins.aggregate(Extent('geom'))
+        print(bbbox_extent)
+        #bin_tokens = bins.values_list('geom_s2_token', flat=True)
+        # S2 functions to get even grid of polygons to cover bounding box
+        r = s2sphere.RegionCoverer()
+        r.min_level=7
+        r.max_level=7
+        p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
+        p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
+        print(p1)
+        print(p2)
+        covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
+
+        """
+        for cellid in covering:
+            cell_center_ll = cellid.to_lat_lng()
+            lat_lng = self.convert_s2_point_to_latlng(cell_center_ll)
+            token = cellid.to_token()
+
+            # get all Bins within this cell
+            bins_in_cell = [token for token in bin_tokens if cellid.contains(s2sphere.CellId.from_token(token))]
+            # get max/mean values for the cell
+            #max_mean = obj.get_max_mean_values(query_by_token=bins_in_cell)
+            #print(max_mean)
+            if bins_in_cell:
+                point = {
+                    "token": token,
+                    "lat": lat_lng["lat"],
+                    "long": lat_lng["long"],
+                    "bins": bins_in_cell
+                }
+                points.append(point)
+        """
+        # prepare OrderedDict geojson structure
+
+        for cellid in covering:
+            cell_center_ll = cellid.to_lat_lng()
+            lat_lng = self.convert_s2_point_to_latlng(cell_center_ll)
+            token = cellid.to_token()
+            # Builds GEOS polygons out of cell vertices
+            # use these polygons to query PostGIS
+            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            poly_points = []
+            for v in vertices:
+                # get just lat/long coords from S2 LatLng
+                coords = str(v).split()[-1].split(",")
+                point = Point(float(coords[1]), float(coords[0]))
+                poly_points.append(point)
+            # close the loop for a Polygon
+            poly_points.append(poly_points[0])
+            poly = Polygon(poly_points)
+            centroid = poly.centroid
+
+            # get all Bins within this cell
+            bins_in_cell = bins.filter(geom__within=poly)
+
+            if bins_in_cell.exists():
+                max_mean = self.get_max_mean_values(queryset=bins_in_cell)
+                feature = OrderedDict()
+                # required type attribute
+                # must be "Feature" according to GeoJSON spec
+                feature["type"] = "Feature"
+                # required geometry attribute
+                # MUST be present in output according to GeoJSON spec
+                geo_field = GeometryField()
+                feature["geometry"] = geo_field.to_representation(centroid)
+                # set GeoJSON properties
+                properties = OrderedDict()
+                properties["s2_token"] = token
+                properties["max_mean_values"] = max_mean
+                feature["properties"] = properties
+                #
+                features.append(feature)
+
+        return features
+
+    def get_max_mean_values(self, queryset):
+        bins_qs = queryset
+        target_list = TargetSpecies.objects.values_list('species_id', flat=True)
+        # set up data structure to store results
+        concentration_values = []
+        max_mean_values = []
+
+        for species in target_list:
+            concentration_dict = {'species': species, 'values': []}
+            concentration_values.append(concentration_dict)
+
+        for bin in bins_qs:
+            if bin.cell_concentration_data:
+                for datapoint in bin.cell_concentration_data:
+                    item = next(
+                        (item for item in concentration_values if item['species'] == datapoint['species']), None)
+
+                    if item is not None:
+                        item['values'].append(int(datapoint['cell_concentration']))
+
+        for item in concentration_values:
+            if item['values']:
+                max_value = max(item['values'])
+                mean_value = mean(item['values'])
+            else:
+                max_value = 0
+                mean_value = 0
+
+            data_dict = {
+                'species': item['species'],
+                'max_value': max_value,
+                'mean_value': mean_value,
+            }
+            max_mean_values.append(data_dict)
+
+        return max_mean_values

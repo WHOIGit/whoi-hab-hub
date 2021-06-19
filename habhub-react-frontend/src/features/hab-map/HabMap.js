@@ -65,6 +65,7 @@ export default function HabMap() {
   // only refers to map layer that use the Mapbox Layer/Source properties
   const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
   const [features, setFeatures] = useState([]);
+  const [mapBounds, setMapBounds] = useState({});
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
@@ -156,6 +157,11 @@ export default function HabMap() {
             mapStyle="mapbox://styles/mapbox/light-v10"
             onViewportChange={viewport => {
               setViewport(viewport);
+              const mapObj = mapRef.current.getMap();
+              console.log(mapObj);
+              let bounds = mapObj.getBounds();
+              setMapBounds(bounds);
+              console.log(bounds);
             }}
             onClick={event => onMapClick(event)}
             onLoad={() => onMapLoad()}
@@ -164,7 +170,10 @@ export default function HabMap() {
             ref={mapRef}
           >
             <React.Fragment>
-              <IfcbSpatialMarkers onMarkerClick={onMarkerClick} />
+              <IfcbSpatialMarkers
+                onMarkerClick={onMarkerClick}
+                mapBounds={mapBounds}
+              />
               {visibleLayerIds.reverse().map(layer => renderMarkerLayer(layer))}
             </React.Fragment>
 

@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function IfcbSpatialMarkers({ onMarkerClick }) {
+export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);
@@ -49,7 +49,9 @@ export default function IfcbSpatialMarkers({ onMarkerClick }) {
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor
+          smoothing_factor: dateFilter.smoothingFactor,
+          bbox_sw: `${mapBounds._sw.lng},${mapBounds._sw.lat}`,
+          bbox_ne: `${mapBounds._ne.lng},${mapBounds._ne.lat}`
         });
       return filterURL;
     }
@@ -74,8 +76,10 @@ export default function IfcbSpatialMarkers({ onMarkerClick }) {
           }
         );
     }
-    fetchResults();
-  }, [dateFilter]);
+    if (mapBounds._sw !== undefined) {
+      fetchResults();
+    }
+  }, [dateFilter, mapBounds]);
 
   function renderIconGrid(feature, showMaxMean) {
     // create new Array with Visible Species/Values

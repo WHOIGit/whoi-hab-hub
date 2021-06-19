@@ -6,11 +6,11 @@ from django.utils.timezone import make_aware
 
 from ..models import Bin
 
-"""
-custom mixin to handle all filtering by query_params for IFCB Datasets
-"""
-class DatasetFiltersMixin:
 
+class DatasetFiltersMixin:
+    """
+    custom mixin to handle all filtering by query_params for IFCB Datasets
+    """
     def handle_query_param_filters(self, queryset, is_fixed_location=True):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
@@ -20,6 +20,9 @@ class DatasetFiltersMixin:
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
+        bbox_sw = self.request.query_params.get("bbox_sw", None)
+        bbox_ne = self.request.query_params.get("bbox_ne", None)
+        print(bbox_sw)
         try:
             earliest_bin = Bin.objects.earliest()
         except Bin.DoesNotExist:
