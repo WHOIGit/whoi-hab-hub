@@ -7,9 +7,11 @@ from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.db import models
 from django.db.models import Prefetch, F, Q
+from django.contrib.gis.geos import Polygon
+from django.contrib.gis.db.models import Extent
 
 from ..models import Dataset, Bin
-from .serializers import DatasetListSerializer, DatasetDetailSerializer, SpatialDatasetSerializer, SpatialBinSerializer
+from .serializers import DatasetListSerializer, DatasetDetailSerializer, SpatialDatasetSerializer, SpatialBinSerializer, BoundingBoxSerializer
 from .mixins import DatasetFiltersMixin
 
 
@@ -44,10 +46,21 @@ class SpatialDatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class SpatialBinViewSet(viewsets.ViewSet):
-
     def list(self, request):
         queryset = self.handle_query_param_filters()
-        serializer = SpatialBinSerializer(queryset)
+        serializer = SpatialBinSerializer(queryset, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=False, url_path="max-bounding-box")
+    def max_bounding_box(self, request):
+        # Get the maximum size bounding box that can be returned from queryset
+        # Extent returns (ne, sw) points of box
+        bbbox_extent = Bin.objects.all().aggregate(Extent('geom'))
+        print(bbbox_extent)
+        bounding_box = bbbox_extent["geom__extent"]
+        data = {"bounding_box": bounding_box}
+        #poly = Polygon.from_bbox(bbox)
+        serializer = BoundingBoxSerializer(data)
         return Response(serializer.data)
 
     def handle_query_param_filters(self):
@@ -61,7 +74,7 @@ class SpatialBinViewSet(viewsets.ViewSet):
         smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
-        print(bbox_sw)
+
         try:
             earliest_bin = Bin.objects.earliest()
         except Bin.DoesNotExist:
@@ -135,5 +148,12 @@ class SpatialBinViewSet(viewsets.ViewSet):
             .annotate(smoothing=F("id") % smoothing_factor)
             .filter(smoothing=0)
         )
+
+        if bbox_sw and bbox_ne:
+            bbox_sw = bbox_sw.split(",")
+            bbox_ne = bbox_ne.split(",")
+            poly_bbox = Polygon.from_bbox(bbox_sw + bbox_ne)
+            print(poly_bbox)
+            queryset = queryset.filter(geom__within=poly_bbox)
 
         return queryset

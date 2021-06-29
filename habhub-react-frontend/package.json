@@ -11,6 +11,8 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@turf/boolean-intersects": "^6.4.0",
+    "@turf/square-grid": "^6.4.0",
     "axios": "^0.21.1",
     "date-fns": "^2.16.1",
     "ga-4-react": "^0.1.281",

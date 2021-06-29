@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
+import * as turfMeta from "@turf/meta";
 import { format, parseISO } from "date-fns";
 import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
 import SquareMarker from "../../images/square-orange.svg";
@@ -23,7 +24,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
+export default function IfcbSpatialMarkers({
+  onMarkerClick,
+  mapBounds,
+  gridSquare
+}) {
+  console.log(gridSquare);
+
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);
@@ -39,7 +46,9 @@ export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
 
   useEffect(() => {
     function getFetchUrl() {
-      const baseURL = API_URL + "api/v1/ifcb-datasets-spatial/";
+      const baseURL = API_URL + "api/v1/spatial-cell-concentration/";
+      const coords = turfMeta.coordAll(gridSquare);
+      console.log(coords);
       // build API URL to get set Date Filter
       const filterURL =
         baseURL +
@@ -50,8 +59,8 @@ export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor,
-          bbox_sw: `${mapBounds._sw.lng},${mapBounds._sw.lat}`,
-          bbox_ne: `${mapBounds._ne.lng},${mapBounds._ne.lat}`
+          bbox_sw: coords[0],
+          bbox_ne: coords[2]
         });
       return filterURL;
     }
@@ -76,10 +85,8 @@ export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
           }
         );
     }
-    if (mapBounds._sw !== undefined) {
-      fetchResults();
-    }
-  }, [dateFilter, mapBounds]);
+    fetchResults();
+  }, [dateFilter, gridSquare]);
 
   function renderIconGrid(feature, showMaxMean) {
     // create new Array with Visible Species/Values
@@ -125,7 +132,7 @@ export default function IfcbSpatialMarkers({ onMarkerClick, mapBounds }) {
   }
   return (
     <div>
-      {results[0].features.map(feature => renderIconGrid(feature, showMaxMean))}
+      {results.features.map(feature => renderIconGrid(feature, showMaxMean))}
     </div>
   );
 }
