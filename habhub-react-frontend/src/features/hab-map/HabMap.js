@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import MapGL, {
   NavigationControl,
   ScaleControl,
@@ -15,7 +15,9 @@ import { makeStyles } from "@material-ui/styles";
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
-import IfcbSpatialMarkers from "./IfcbSpatialMarkers";
+import IfcbSpatialLayer from "./IfcbSpatialLayer";
+import SpatialBinsLayer from "./SpatialBinsLayer";
+import SpatialGridLayer from "./SpatialGridLayer";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
 import CurrentDateChip from "../date-filter/CurrentDateChip";
@@ -23,6 +25,7 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
+import { changeActiveGridSquares, changeGridZoom } from "./spatialGridSlice";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
@@ -57,8 +60,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function HabMap() {
-  const gridJson = useSelector(state => state.spatialGrid.gridJson);
-  const gridSquares = useSelector(state => state.spatialGrid.gridSquares);
+  //const gridSquares = useSelector(state => state.spatialGrid.gridSquares);
+  //const gridSquares = useSelector(selectActiveGridSquares);
+
   const classes = useStyles();
   const [viewport, setViewport] = useState({
     latitude: MAP_LATITUDE,
@@ -75,19 +79,15 @@ export default function HabMap() {
   const [mapBounds, setMapBounds] = useState(null);
   const [gridZoomRange, setGridZoomRange] = useState([
     { gridLength: 15, maxZoom: 100, minZoom: 8, isActive: false },
-    { gridLength: 30, maxZoom: 8, minZoom: 7, isActive: false },
-    { gridLength: 60, maxZoom: 7, minZoom: 6, isActive: true },
-    { gridLength: 120, maxZoom: 6, minZoom: 5, isActive: false },
+    { gridLength: 40, maxZoom: 8, minZoom: 7, isActive: false },
+    { gridLength: 70, maxZoom: 7, minZoom: 6, isActive: true },
+    { gridLength: 150, maxZoom: 6, minZoom: 5, isActive: false },
     { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false }
   ]);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
-
-  const getGridZoomRange = () => {
-    const zoom = gridZoomRange.filter(item => item.isActive)[0];
-    return zoom;
-  };
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const newFeatures = features.filter(feature =>
@@ -104,17 +104,67 @@ export default function HabMap() {
   }, [visibleLayerIds]);
 
   useEffect(() => {
-    console.log(gridZoomRange);
-    if (gridSquares !== null) {
-      /*
-      const mapObj = mapRef.current.getMap();
-      console.log(viewport.zoom);
-      // Get the initial map bounds, set state to load spatial data
-      const bounds = mapObj.getBounds();
-      setMapBounds(bounds);
-      */
+    // effect to set the active grid squares based on map Bounds
+    console.log(mapBounds);
+    //const zoomRange = gridZoomRange.filter(item => item.isActive);
+    if (mapBounds !== null) {
+      // trigger Redux dispatch function to fetch active grid squaresdata
+      const payload = {
+        mapBounds: mapBounds
+      };
+      dispatch(changeActiveGridSquares(payload));
     }
-  }, [gridZoomRange]);
+  }, [mapBounds]);
+
+  const getGridZoomRange = () => {
+    const zoom = gridZoomRange.filter(item => item.isActive)[0];
+    return zoom;
+  };
+
+  const handleMapBoundsUpdates = viewport => {
+    // Get the map viewport bounds, set state to load spatial data
+    if (mapRef.current !== undefined) {
+      const mapObj = mapRef.current.getMap();
+      const bounds = mapObj.getBounds();
+      const bbox = [
+        bounds._sw.lng,
+        bounds._sw.lat,
+        bounds._ne.lng,
+        bounds._ne.lat
+      ];
+      setMapBounds(bbox);
+    }
+  };
+
+  const handleZoomUpdates = viewport => {
+    // set the zoom levels for Spatial Grid
+    console.log(viewport.zoom);
+    const currentZoomRange = getGridZoomRange();
+    console.log(currentZoomRange);
+    if (
+      viewport.zoom > currentZoomRange.maxZoom ||
+      viewport.zoom < currentZoomRange.minZoom
+    ) {
+      console.log("UPDATE GRID");
+      const newRange = gridZoomRange.map(item => {
+        if (viewport.zoom < item.maxZoom && viewport.zoom > item.minZoom) {
+          item.isActive = true;
+        } else {
+          item.isActive = false;
+        }
+        return item;
+      });
+      console.log(newRange);
+      setGridZoomRange(newRange);
+      /*
+      const zoomRange = newRange.filter(item => item.isActive)[0];
+      // trigger Redux dispatch function to change grid zoom
+      const payload = {
+        zoomRange: zoomRange
+      };*/
+      //dispatch(changeGridZoom(payload));
+    }
+  };
 
   const onMapLoad = () => {
     const mapObj = mapRef.current.getMap();
@@ -126,9 +176,8 @@ export default function HabMap() {
       if (error) throw error;
       mapObj.addImage("icon-shellfish-closure", image);
     });
-    // Get the initial map bounds, set state to load spatial data
-    const bounds = mapObj.getBounds();
-    setMapBounds(bounds);
+    // set the initial bbox/zoom levels for Spatial Grid
+    handleMapBoundsUpdates(viewport);
   };
 
   const onMapClick = event => {
@@ -142,6 +191,12 @@ export default function HabMap() {
       feature.layer = feature.layer.id;
       setFeatures([feature, ...features]);
     }
+  };
+
+  const onMapTransitionEnd = () => {
+    console.log("END TRANSIT");
+    handleZoomUpdates(viewport);
+    //handleMapBoundsUpdates(viewport);
   };
 
   const onMarkerClick = (event, feature, layerID) => {
@@ -161,34 +216,28 @@ export default function HabMap() {
       return <ClosuresLayer key={layerID} />;
     } else if (layerID === "ifcb-layer") {
       return (
-        <div>
-          {gridSquares.map((item, index) => (
-            <IfcbSpatialMarkers
-              onMarkerClick={onMarkerClick}
-              mapBounds={mapBounds}
-              gridSquare={item}
-              key={index}
-            />
-          ))}
-        </div>
+        <SpatialGridLayer
+          onMarkerClick={onMarkerClick}
+          gridZoom={getGridZoomRange()}
+          key={layerID}
+        />
+        /*
+        <SpatialBinsLayer
+          onMarkerClick={onMarkerClick}
+          mapBounds={mapBounds}
+          gridZoom={getGridZoomRange()}
+          key={layerID}
+        />
+
+        <IfcbSpatialLayer
+          onMarkerClick={onMarkerClick}
+          key={layerID}
+          gridSquares={gridSquares}
+        />*/
       );
       //return <IfcbMarkers onMarkerClick={onMarkerClick} key={layerID} />;
     } else {
       return;
-    }
-  };
-
-  const layerGrid = {
-    id: "grid-layer",
-    type: "fill",
-    source: "grid-src",
-    paint: {
-      "fill-color": "orange",
-      "fill-opacity": 0.5,
-      "fill-outline-color": "#fc4e2a"
-    },
-    layout: {
-      visibility: "visible"
     }
   };
 
@@ -216,42 +265,22 @@ export default function HabMap() {
             {...viewport}
             mapboxApiAccessToken={MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mapbox/light-v10"
-            onViewportChange={viewport => {
+            onViewportChange={(viewport, interactionState, oldViewState) => {
+              //console.log(interactionState);
+              //console.log(viewport);
+              //console.log(oldViewState);
               setViewport(viewport);
-              console.log(viewport.zoom);
-              const currentZoomRange = getGridZoomRange();
-              console.log(currentZoomRange);
-              if (
-                viewport.zoom > currentZoomRange.maxZoom ||
-                viewport.zoom < currentZoomRange.minZoom
-              ) {
-                console.log("UPDATE GRID");
-                const newRange = gridZoomRange.map(item => {
-                  if (
-                    viewport.zoom < item.maxZoom &&
-                    viewport.zoom > item.minZoom
-                  ) {
-                    item.isActive = true;
-                  } else {
-                    item.isActive = false;
-                  }
-                  return item;
-                });
-                console.log(newRange);
-                setGridZoomRange(newRange);
-              }
+              //onMapTransitionEnd();
             }}
             onClick={event => onMapClick(event)}
-            onLoad={() => onMapLoad()}
+            onLoad={onMapLoad}
             interactiveLayerIds={interactiveLayerIds}
             preserveDrawingBuffer={true}
+            //onTransitionEnd={onMapTransitionEnd}
             ref={mapRef}
           >
             <React.Fragment>
               {visibleLayerIds.reverse().map(layer => renderMarkerLayer(layer))}
-              <Source id="grid-src" type="geojson" data={gridJson}>
-                <Layer {...layerGrid} key="grid-layer" />
-              </Source>
             </React.Fragment>
 
             <div style={navStyle}>

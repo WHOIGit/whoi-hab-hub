@@ -43,7 +43,7 @@ export default function StationsMarkers({ onMarkerClick }) {
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor
+          smoothing_factor: 6
         });
       return filterURL;
     }

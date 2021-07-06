@@ -11,7 +11,10 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@turf/bbox-polygon": "^6.4.0",
     "@turf/boolean-intersects": "^6.4.0",
+    "@turf/centroid": "^6.4.0",
+    "@turf/points-within-polygon": "^6.4.0",
     "@turf/square-grid": "^6.4.0",
     "axios": "^0.21.1",
     "date-fns": "^2.16.1",
@@ -27,6 +30,7 @@
     "react-map-gl": "^5.2.9",
     "react-redux": "^7.2.3",
     "react-scripts": "4.0.3",
+    "uuid": "^8.3.2",
     "web-vitals": "^0.2.4"
   },
   "scripts": {

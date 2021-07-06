@@ -24,13 +24,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function IfcbSpatialMarkers({
-  onMarkerClick,
-  mapBounds,
-  gridSquare
-}) {
-  console.log(gridSquare);
-
+export default function IfcbSpatialMarkers({ onMarkerClick, gridSquare }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);
@@ -48,7 +42,6 @@ export default function IfcbSpatialMarkers({
     function getFetchUrl() {
       const baseURL = API_URL + "api/v1/spatial-cell-concentration/";
       const coords = turfMeta.coordAll(gridSquare);
-      console.log(coords);
       // build API URL to get set Date Filter
       const filterURL =
         baseURL +
@@ -58,21 +51,20 @@ export default function IfcbSpatialMarkers({
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor,
+          smoothing_factor: 6,
           bbox_sw: coords[0],
           bbox_ne: coords[2]
         });
+
       return filterURL;
     }
 
     function fetchResults() {
       const url = getFetchUrl();
-      console.log(url);
       fetch(url)
         .then(res => res.json())
         .then(
           result => {
-            console.log(result);
             setIsLoaded(true);
             setResults(result);
           },
