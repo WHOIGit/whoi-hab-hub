@@ -1,7 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import GA4React from "ga-4-react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import App from "./app/App";
+import Login from "./app/Login";
 
 // Redux
 import store from "./app/store";
@@ -22,7 +24,16 @@ const ga4react = new GA4React(GA_UID);
   ReactDOM.render(
     <Provider store={store}>
       <React.StrictMode>
-        <App />
+        <Router>
+          <Switch>
+            <Route path="/login">
+              <Login />
+            </Route>
+            <Route path="/">
+              <App />
+            </Route>
+          </Switch>
+        </Router>
       </React.StrictMode>
     </Provider>,
     document.getElementById("root")

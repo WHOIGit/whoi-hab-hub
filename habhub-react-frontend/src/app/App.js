@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { Container } from "@material-ui/core";
+
 // Import our stuff
 import Header from "./Header";
 import HabMap from "../features/hab-map/HabMap";
