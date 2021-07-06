@@ -1,7 +1,5 @@
-import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
-const API_URL = process.env.REACT_APP_API_URL;
+import axiosInstance from "../../app/apiAxios";
 
 const initialState = {
   species: [],
@@ -65,8 +63,8 @@ const initialSpecies = [
 export const fetchHabSpecies = createAsyncThunk(
   "habSpecies/fetchHabSpecies",
   async () => {
-    const url = API_URL + "api/v1/core/target-species/";
-    const response = await axios.get(url);
+    const endpoint = "api/v1/core/target-species/";
+    const response = await axiosInstance.get(endpoint);
     return response.data;
   }
 );
