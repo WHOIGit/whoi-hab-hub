@@ -39,7 +39,7 @@ export default function StationsMarkers({ onMarkerClick }) {
           smoothing_factor: dateFilter.smoothingFactor
         });
         const res = await axiosInstance.get("api/v1/stations/", { params });
-        console.log(res);
+        console.log(res.request.responseURL);
         setIsLoaded(true);
         setResults(res.data);
       } catch (error) {

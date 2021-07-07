@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
-// eslint-disable-next-line no-unused-vars
-const AWS_BUCKET_URL = process.env.REACT_APP_AWS_BUCKET_URL;
+import axiosInstance from "../../../app/apiAxios";
 
 const useStyles = makeStyles(theme => ({
   placeholder: {
@@ -38,22 +37,18 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
 
   useEffect(() => {
     console.log(metaDataUrl);
-    fetch(metaDataUrl)
-      .then(res => res.json())
-      .then(
-        result => {
-          console.log(result);
-          setIsLoaded(true);
-          setPointImgData(result);
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        error => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      );
+    async function fetchResults() {
+      try {
+        const res = await axiosInstance.get(metaDataUrl);
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setPointImgData(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
+    }
+    fetchResults();
   }, [metaDataUrl]);
 
   return (
