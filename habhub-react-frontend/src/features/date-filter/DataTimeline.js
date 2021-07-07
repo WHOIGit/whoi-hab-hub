@@ -63,16 +63,7 @@ function DataTimeline({
   useEffect(() => {
     async function fetchResults() {
       try {
-        const params = new URLSearchParams({
-          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
-          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
-          seasonal: dateFilter.seasonal,
-          exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor
-        });
-        const res = await axiosInstance.get("api/v1/core/data-density/", {
-          params
-        });
+        const res = await axiosInstance.get("api/v1/core/data-density/");
         console.log(res.request.responseURL);
         setIsLoaded(true);
         setResults(res.data);
@@ -92,7 +83,7 @@ function DataTimeline({
           Date.parse(item.timestamp),
           parseFloat(item.densityPercentage)
         ]);
-        console.log(dataArray);
+
         const timeSeries = {
           name: key,
           data: dataArray
