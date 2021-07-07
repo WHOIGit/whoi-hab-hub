@@ -5,12 +5,10 @@ import { Source, Layer } from "react-map-gl";
 import { format, parseISO } from "date-fns";
 import { CircularProgress } from "@material-ui/core";
 
+import axiosInstance from "../../app/apiAxios";
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
-
-// eslint-disable-next-line no-undef
-const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles(theme => ({
@@ -34,42 +32,26 @@ function IfcbMarkers({ onMarkerClick }) {
   const [circleRadius, setCircleRadius] = useState(12);
 
   useEffect(() => {
-    const getFetchUrl = () => {
-      let baseURL = API_URL + "api/v1/ifcb-datasets/";
-      // build API URL to get set Date Filter
-      const filterURL =
-        baseURL +
-        "?" +
-        new URLSearchParams({
+    async function fetchResults() {
+      try {
+        const params = new URLSearchParams({
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor
         });
-      return filterURL;
-    };
-
-    const fetchResults = () => {
-      const url = getFetchUrl();
-      console.log(url);
-      fetch(url)
-        .then(res => res.json())
-        .then(
-          result => {
-            console.log(result);
-            setIsLoaded(true);
-            setResults(result);
-          },
-          // Note: it"s important to handle errors here
-          // instead of a catch() block so that we don"t swallow
-          // exceptions from actual bugs in components.
-          error => {
-            setIsLoaded(true);
-            setError(error);
-          }
-        );
-    };
+        const res = await axiosInstance.get("api/v1/ifcb-datasets/", {
+          params
+        });
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setResults(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
+    }
     fetchResults();
   }, [dateFilter]);
 

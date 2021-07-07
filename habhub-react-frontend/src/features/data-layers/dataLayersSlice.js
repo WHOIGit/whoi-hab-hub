@@ -1,7 +1,6 @@
-import axios from "axios";
+import axiosInstance from "../../app/apiAxios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const API_URL = process.env.REACT_APP_API_URL;
 // list of dataLayer IDs that have an available floating Legend window pane
 // need to check it against the active layers in the API results
 const legendLayerIds = ["stations-layer", "ifcb-layer"];
@@ -18,8 +17,8 @@ const initialState = {
 export const fetchLayers = createAsyncThunk(
   "dataLayers/fetchLayers",
   async () => {
-    const url = API_URL + "api/v1/core/data-layers/";
-    const response = await axios.get(url);
+    const endpoint = "api/v1/core/data-layers/";
+    const response = await axiosInstance.get(endpoint);
     return response.data;
   }
 );
