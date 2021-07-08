@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -8,6 +10,8 @@ import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import { useHistory } from "react-router-dom";
+import { loginUser, userSelector, clearState } from "./userSlice";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -15,10 +19,6 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center"
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
   },
   form: {
     width: "100%", // Fix IE 11 issue.
@@ -29,15 +29,70 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function SignIn() {
+export default function Login() {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const { isFetching, isSuccess, isError, errorMessage } = useSelector(
+    userSelector
+  );
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = event => {
     event.preventDefault();
     console.log(username, password);
+    const payload = {
+      username: username,
+      password: password
+    };
+    dispatch(loginUser(payload));
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearState());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isError) {
+      console.log(errorMessage);
+      //toast.error(errorMessage);
+      dispatch(clearState());
+    }
+    if (isSuccess) {
+      dispatch(clearState());
+      history.push("/");
+    }
+  }, [isError, isSuccess]);
+
+  /*
+  function handleSubmit(event) {
+    console.log(username, password);
+    event.preventDefault();
+
+    async function getToken() {
+      try {
+        const response = await axiosInstance.post("api/v1/token/obtain/", {
+          username: username,
+          password: password
+        });
+        axiosInstance.defaults.headers["Authorization"] =
+          "JWT " + response.data.access;
+        localStorage.setItem("access_token", response.data.access);
+        localStorage.setItem("refresh_token", response.data.refresh);
+        console.log(response.data);
+        return response;
+      } catch (error) {
+        console.log(error);
+        return error;
+      }
+    }
+
+    getToken();
+  }
+  */
 
   return (
     <Container component="main" maxWidth="xs">
