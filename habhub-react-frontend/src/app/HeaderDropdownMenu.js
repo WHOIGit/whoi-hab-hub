@@ -4,47 +4,56 @@ import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuIcon from "@material-ui/icons/Menu";
+import { useHistory } from "react-router-dom";
 
 import logoNehab from "../images/logo-nehab.png";
 import logoNehabon from "../images/logo-nehabon.png";
 import logoPhytoArm from "../images/logo-phytoarm.png";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     color: theme.palette.secondary.dark,
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(2)
   },
   menuImg: {
-    width: "200px",
+    width: "200px"
   },
   menuImg2: {
-    width: "170px",
-  },
+    width: "170px"
+  }
 }));
 
 const StyledMenu = withStyles({
   paper: {
-    border: "1px solid #d3d4d5",
-  },
-})((props) => (
+    border: "1px solid #d3d4d5"
+  }
+})(props => (
   <Menu
     elevation={0}
     getContentAnchorEl={null}
     anchorOrigin={{
       vertical: "bottom",
-      horizontal: "center",
+      horizontal: "center"
     }}
     transformOrigin={{
       vertical: "top",
-      horizontal: "center",
+      horizontal: "center"
     }}
     {...props}
   />
 ));
 
 export default function HeaderDropdownMenu() {
+  const history = useHistory();
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  function handleLogout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+
+    history.push("/login");
+  }
 
   function handleClick(event) {
     setAnchorEl(event.currentTarget);
@@ -73,6 +82,7 @@ export default function HeaderDropdownMenu() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
+        <MenuItem onClick={handleLogout}>Logout</MenuItem>
         <MenuItem>Network Sites</MenuItem>
         <MenuItem onClick={handleClose}>
           <a
