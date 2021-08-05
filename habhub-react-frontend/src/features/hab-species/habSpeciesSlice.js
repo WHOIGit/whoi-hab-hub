@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../app/apiAxios";
+import { colorShade } from "../../app/utils/colorUtils";
 
 const initialState = {
   species: [],
@@ -84,6 +85,13 @@ export const habSpeciesSlice = createSlice({
       state.species.forEach(element => {
         if (element.id == action.payload.species.id) {
           element.primaryColor = action.payload.primaryColor;
+          element.colorGradient = [
+            colorShade(action.payload.primaryColor, 120),
+            colorShade(action.payload.primaryColor, 80),
+            action.payload.primaryColor,
+            colorShade(action.payload.primaryColor, -40),
+            colorShade(action.payload.primaryColor, -80)
+          ];
         }
       });
     }
