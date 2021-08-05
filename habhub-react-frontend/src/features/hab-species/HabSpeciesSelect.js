@@ -5,17 +5,19 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Typography,
-  Box
+  Typography
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
-import { changeSpeciesVisibility } from "./habSpeciesSlice";
-import HabSpeciesColorChip from "./HabSpeciesColorChip";
+import { changeSpeciesVisibility, changeSpeciesColor } from "./habSpeciesSlice";
+import { ColorPicker } from "material-ui-color";
 
 const useStyles = makeStyles(() => ({
   formControl: {
     width: "100%"
+  },
+  colorPickerBtn: {
+    display: "inline-block"
   }
 }));
 
@@ -53,15 +55,22 @@ export default function HabSpeciesForm() {
                   color="textSecondary"
                   component="span"
                 >
-                  <em>{species.displayName}</em> / {species.syndrome}
-                  <Box component="span" m={1}>
-                    <HabSpeciesColorChip
-                      species={species}
-                      chipWidth={12}
-                      chipHeight={12}
-                      chipType="primary"
+                  {" "}
+                  <div className={classes.colorPickerBtn}>
+                    <ColorPicker
+                      value={species.primaryColor}
+                      hideTextfield
+                      onChange={event =>
+                        dispatch(
+                          changeSpeciesColor({
+                            primaryColor: "#" + event.hex,
+                            species: species
+                          })
+                        )
+                      }
                     />
-                  </Box>
+                  </div>
+                  <em>{species.displayName}</em> / {species.syndrome}
                 </Typography>
               }
             />

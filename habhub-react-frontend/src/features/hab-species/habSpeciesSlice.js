@@ -79,6 +79,13 @@ export const habSpeciesSlice = createSlice({
           element.visibility = action.payload.checked;
         }
       });
+    },
+    changeSpeciesColor: (state, action) => {
+      state.species.forEach(element => {
+        if (element.id == action.payload.species.id) {
+          element.primaryColor = action.payload.primaryColor;
+        }
+      });
     }
   },
   extraReducers: {
@@ -101,7 +108,10 @@ export const habSpeciesSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeSpeciesVisibility } = habSpeciesSlice.actions;
+export const {
+  changeSpeciesVisibility,
+  changeSpeciesColor
+} = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;
 

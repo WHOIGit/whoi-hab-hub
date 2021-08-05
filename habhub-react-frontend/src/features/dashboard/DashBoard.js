@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
     right: 0,
     width: "448px",
     background: "none",
-    zIndex: 2000,
+    zIndex: 1200,
     height: "100vh",
     overflowY: "scroll",
     transition: "all 0.3s"
