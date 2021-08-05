@@ -4,6 +4,7 @@ import {
   FormControl,
   FormGroup,
   FormControlLabel,
+  FormHelperText,
   Checkbox,
   Typography
 } from "@material-ui/core";
@@ -14,7 +15,9 @@ import { ColorPicker } from "material-ui-color";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%"
+    width: "100%",
+    maxHeight: "340px",
+    overflowY: "scroll"
   },
   colorPickerBtn: {
     display: "inline-block"
@@ -25,10 +28,27 @@ export default function HabSpeciesForm() {
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dispatch = useDispatch();
   const classes = useStyles();
+  const error = habSpecies.filter(item => item.visibility).length > 6;
+  const limitReached = habSpecies.filter(item => item.visibility).length >= 6;
+
+  const handleSpeciesSelect = (event, species) => {
+    dispatch(
+      changeSpeciesVisibility({
+        checked: event.target.checked,
+        species: species
+      })
+    );
+  };
 
   return (
-    <FormControl component="fieldset" className={classes.formControl}>
+    <FormControl
+      required
+      error={error}
+      component="fieldset"
+      className={classes.formControl}
+    >
       <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
+      <FormHelperText>Pick up to six</FormHelperText>
       <FormGroup>
         {habSpecies.map(species => {
           return (
@@ -38,15 +58,9 @@ export default function HabSpeciesForm() {
                 <Checkbox
                   color="primary"
                   checked={species.visibility}
-                  onChange={event =>
-                    dispatch(
-                      changeSpeciesVisibility({
-                        checked: event.target.checked,
-                        species: species
-                      })
-                    )
-                  }
+                  onChange={event => handleSpeciesSelect(event, species)}
                   name={species.speciesName}
+                  disabled={limitReached && !species.visibility}
                 />
               }
               label={

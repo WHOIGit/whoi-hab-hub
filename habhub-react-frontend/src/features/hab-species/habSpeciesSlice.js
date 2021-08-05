@@ -81,6 +81,13 @@ export const habSpeciesSlice = createSlice({
         }
       });
     },
+    changeSpeciesActiveOption: (state, action) => {
+      state.species.forEach(element => {
+        if (element.id == action.payload.species.id) {
+          element.isActive = action.payload.checked;
+        }
+      });
+    },
     changeSpeciesColor: (state, action) => {
       state.species.forEach(element => {
         if (element.id == action.payload.species.id) {
@@ -104,8 +111,12 @@ export const habSpeciesSlice = createSlice({
       state.status = "succeeded";
       // Add any fetched layers to the array
       state.species = state.species.concat(action.payload);
-      state.species.forEach(element => {
-        element.visibility = true;
+      state.species.forEach((element, index) => {
+        if (index < 6) {
+          element.visibility = true;
+        } else {
+          element.visibility = false;
+        }
       });
     },
     [fetchHabSpecies.rejected]: (state, action) => {
@@ -118,7 +129,8 @@ export const habSpeciesSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const {
   changeSpeciesVisibility,
-  changeSpeciesColor
+  changeSpeciesColor,
+  changeSpeciesActiveOption
 } = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;
@@ -130,6 +142,10 @@ export const selectAllSpecies = state => state.habSpecies.species;
 // return only the currently visible layers
 export const selectVisibleSpecies = state =>
   state.habSpecies.species.filter(item => item.visibility);
+
+// return only the Species that are currently selectable to be visible on the map
+export const selectActiveSpecies = state =>
+  state.habSpecies.species.filter(item => item.isActive);
 
 // get species by syndrome
 export const selectSpeciesBySyndrome = (state, syndrome) =>

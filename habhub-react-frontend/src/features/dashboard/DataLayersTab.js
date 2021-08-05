@@ -9,6 +9,7 @@ import MaxMeanSelect from "../data-layers/MaxMeanSelect";
 
 const useStyles = makeStyles(theme => ({
   divider: {
+    marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1)
   },
   listItem: {
