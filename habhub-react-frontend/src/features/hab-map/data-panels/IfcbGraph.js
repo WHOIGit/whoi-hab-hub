@@ -10,7 +10,7 @@ import Serieslabel from "highcharts/modules/series-label";
 import HighchartsReact from "highcharts-react-official";
 // Local imports
 import IfcbMetaData from "./IfcbMetaData";
-import { selectAllSpecies } from "../../hab-species/habSpeciesSlice";
+import { selectVisibleSpecies } from "../../hab-species/habSpeciesSlice";
 
 Exporting(Highcharts);
 ExportData(Highcharts);
@@ -34,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 
 // eslint-disable-next-line no-unused-vars
 function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
-  const habSpecies = useSelector(selectAllSpecies);
+  const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
   const chartRef = useRef();
   // Local state

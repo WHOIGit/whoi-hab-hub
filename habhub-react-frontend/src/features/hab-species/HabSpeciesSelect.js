@@ -12,6 +12,7 @@ import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
 import { changeSpeciesVisibility, changeSpeciesColor } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
+import { palette } from "../../config.js";
 
 const useStyles = makeStyles(() => ({
   formControl: {
@@ -72,8 +73,10 @@ export default function HabSpeciesForm() {
                   {" "}
                   <div className={classes.colorPickerBtn}>
                     <ColorPicker
+                      palette={palette}
                       value={species.primaryColor}
                       hideTextfield
+                      disableAlpha
                       onChange={event =>
                         dispatch(
                           changeSpeciesColor({
