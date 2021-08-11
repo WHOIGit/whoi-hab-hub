@@ -3,8 +3,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/styles";
 import { Divider, List, ListItem } from "@material-ui/core";
 
-import DataLayersSelect from "../data-layers/DataLayersSelect";
-import MaxMeanSelect from "../data-layers/MaxMeanSelect";
+import HabSpeciesSelect from "../hab-species/HabSpeciesSelect";
 
 const useStyles = makeStyles(theme => ({
   divider: {
@@ -16,19 +15,14 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function DataLayersTab() {
+export default function HabSpeciesTab() {
   // Set const variables
   const classes = useStyles();
 
   return (
     <List>
-      <Divider variant="middle" component="li" className={classes.divider} />
-      <ListItem>
-        <DataLayersSelect />
-      </ListItem>
-      <Divider variant="middle" component="li" className={classes.divider} />
-      <ListItem>
-        <MaxMeanSelect />
+      <ListItem className={classes.listItem}>
+        <HabSpeciesSelect />
       </ListItem>
     </List>
   );

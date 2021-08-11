@@ -10,7 +10,11 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
-import { changeSpeciesVisibility, changeSpeciesColor } from "./habSpeciesSlice";
+import {
+  changeSpeciesVisibility,
+  changeSpeciesColor,
+  selectSpeciesByEnvironment
+} from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
 import { palette } from "../../config.js";
 
@@ -27,6 +31,10 @@ const useStyles = makeStyles(() => ({
 
 export default function HabSpeciesForm() {
   const habSpecies = useSelector(state => state.habSpecies.species);
+  const marineSpecies = useSelector(state =>
+    selectSpeciesByEnvironment(state, "Freshwater")
+  );
+  console.log(marineSpecies);
   const dispatch = useDispatch();
   const classes = useStyles();
   const error = habSpecies.filter(item => item.visibility).length > 6;

@@ -150,3 +150,9 @@ export const selectActiveSpecies = state =>
 // get species by syndrome
 export const selectSpeciesBySyndrome = (state, syndrome) =>
   state.habSpecies.species.filter(item => item.syndrome === syndrome);
+
+// get species by enviroment
+export const selectSpeciesByEnvironment = (state, environment) =>
+  state.habSpecies.species.filter(
+    item => item.speciesEnvironment === environment
+  );
