@@ -11,6 +11,13 @@ class TargetSpecies(models.Model):
     # Model to configure Target HAB species for HABhub to monitor
     # Used for all data layers
 
+    SALTWATER = 'Saltwater'
+    FRESHWATER = 'Freshwater'
+    ENVIRONMENT_CHOICES = [
+        (SALTWATER, 'Saltwater'),
+        (FRESHWATER, 'Freshwater'),
+    ]
+
     # species_id needs to match the Autoclass files in the IFCB Dashboard
     species_id = models.CharField(max_length=100, unique=True, db_index=True,
                                   help_text='Needs to match the species ID used in the Autoclass files from the IFCB Dashboard')
@@ -19,6 +26,11 @@ class TargetSpecies(models.Model):
     primary_color = ColorField(default='#FF0000')
     color_gradient = ArrayField(
         models.CharField(max_length=7), null=True, blank=True, default=None
+    )
+    species_environment = models.CharField(
+        max_length=20,
+        choices=ENVIRONMENT_CHOICES,
+        default=SALTWATER,
     )
 
     class Meta:
