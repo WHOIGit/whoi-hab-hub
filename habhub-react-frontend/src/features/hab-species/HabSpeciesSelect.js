@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import {
   FormLabel,
@@ -15,26 +16,21 @@ import {
   changeSpeciesColor,
   selectSpeciesByEnvironment
 } from "./habSpeciesSlice";
-import { ColorPicker } from "material-ui-color";
+import HabSpeciesSelectByEnv from "./HabSpeciesSelectByEnv";
 import { palette } from "../../config.js";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%",
-    maxHeight: "340px",
-    overflowY: "scroll"
+    width: "100%"
   },
   colorPickerBtn: {
     display: "inline-block"
   }
 }));
 
-export default function HabSpeciesForm() {
+export default function HabSpeciesSelect() {
   const habSpecies = useSelector(state => state.habSpecies.species);
-  const marineSpecies = useSelector(state =>
-    selectSpeciesByEnvironment(state, "Freshwater")
-  );
-  console.log(marineSpecies);
+  const habEnvironments = useSelector(state => state.habSpecies.enviroments);
   const dispatch = useDispatch();
   const classes = useStyles();
   const error = habSpecies.filter(item => item.visibility).length > 6;
@@ -50,58 +46,26 @@ export default function HabSpeciesForm() {
   };
 
   return (
-    <FormControl
-      required
-      error={error}
-      component="fieldset"
-      className={classes.formControl}
-    >
-      <FormLabel component="legend">HAB Species/Syndrome</FormLabel>
-      <FormHelperText>Pick up to six</FormHelperText>
-      <FormGroup>
-        {habSpecies.map(species => {
-          return (
-            <FormControlLabel
-              key={species.id}
-              control={
-                <Checkbox
-                  color="primary"
-                  checked={species.visibility}
-                  onChange={event => handleSpeciesSelect(event, species)}
-                  name={species.speciesName}
-                  disabled={limitReached && !species.visibility}
-                />
-              }
-              label={
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  component="span"
-                >
-                  {" "}
-                  <div className={classes.colorPickerBtn}>
-                    <ColorPicker
-                      palette={palette}
-                      value={species.primaryColor}
-                      hideTextfield
-                      disableAlpha
-                      onChange={event =>
-                        dispatch(
-                          changeSpeciesColor({
-                            primaryColor: "#" + event.hex,
-                            species: species
-                          })
-                        )
-                      }
-                    />
-                  </div>
-                  <em>{species.displayName}</em> / {species.syndrome}
-                </Typography>
-              }
+    <div>
+      <Typography variant="subtitle1" display="block" gutterBottom>
+        HAB Species/Syndrome
+      </Typography>
+
+      <FormControl
+        required
+        error={error}
+        component="fieldset"
+        className={classes.formControl}
+      >
+        {habEnvironments.map(item => (
+          <>
+            <HabSpeciesSelectByEnv
+              environment={item}
+              limitReached={limitReached}
             />
-          );
-        })}
-      </FormGroup>
-    </FormControl>
+          </>
+        ))}
+      </FormControl>
+    </div>
   );
 }

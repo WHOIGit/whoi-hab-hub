@@ -4,6 +4,7 @@ import { colorShade } from "../../app/utils/colorUtils";
 
 const initialState = {
   species: [],
+  enviroments: ["Saltwater", "Freshwater"],
   status: "idle",
   error: null
 };
