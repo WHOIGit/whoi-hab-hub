@@ -19,12 +19,16 @@ import {
 import HabSpeciesSelectByEnv from "./HabSpeciesSelectByEnv";
 import { palette } from "../../config.js";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   formControl: {
-    width: "100%"
+    width: "100%",
+    marginTop: theme.spacing(2)
   },
   colorPickerBtn: {
     display: "inline-block"
+  },
+  infoText: {
+    width: "95%"
   }
 }));
 
@@ -49,6 +53,16 @@ export default function HabSpeciesSelect() {
     <div>
       <Typography variant="subtitle1" display="block" gutterBottom>
         HAB Species/Syndrome
+      </Typography>
+
+      <Typography
+        variant="body2"
+        display="block"
+        gutterBottom
+        className={classes.infoText}
+      >
+        Choose up to six species to display on the map at one time. Click on the
+        color box to change color palette.
       </Typography>
 
       <FormControl

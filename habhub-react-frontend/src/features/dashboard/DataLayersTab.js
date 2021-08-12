@@ -22,7 +22,6 @@ export default function DataLayersTab() {
 
   return (
     <List>
-      <Divider variant="middle" component="li" className={classes.divider} />
       <ListItem>
         <DataLayersSelect />
       </ListItem>
