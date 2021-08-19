@@ -4,6 +4,11 @@ import axiosInstance from "../../app/apiAxios";
 import { colorShade } from "../../app/utils/colorUtils";
 import { ENVIRONMENTS } from "../../config";
 
+let INITIAL_SPECIES_LIST = null;
+if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {
+  INITIAL_SPECIES_LIST = process.env.REACT_APP_INITIAL_SPECIES_LIST.split(",");
+}
+
 const initialState = {
   species: [],
   enviroments: ENVIRONMENTS,
@@ -115,10 +120,18 @@ export const habSpeciesSlice = createSlice({
       // Add any fetched layers to the array
       state.species = state.species.concat(action.payload);
       state.species.forEach((element, index) => {
-        if (index < 6) {
-          element.visibility = true;
+        // check if env variable to set initial species list exists.
+        // if not, use first 6
+        if (INITIAL_SPECIES_LIST) {
+          if (INITIAL_SPECIES_LIST.includes(element.id)) {
+            element.visibility = true;
+          }
         } else {
-          element.visibility = false;
+          if (index < 6) {
+            element.visibility = true;
+          } else {
+            element.visibility = false;
+          }
         }
       });
     },

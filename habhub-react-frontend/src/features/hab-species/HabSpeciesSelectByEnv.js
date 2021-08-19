@@ -46,6 +46,10 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
     );
   };
 
+  const handleClick = (event, species) => {
+    console.log("CLICK");
+  };
+
   return (
     <>
       <FormLabel component="legend">{environment}</FormLabel>
@@ -59,6 +63,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                   color="primary"
                   checked={species.visibility}
                   onChange={event => handleSpeciesSelect(event, species)}
+                  onClick={event => handleClick(event, species)}
                   name={species.speciesName}
                   disabled={limitReached && !species.visibility}
                 />

@@ -60,8 +60,8 @@ export default function HabSpeciesSelect() {
         gutterBottom
         className={classes.infoText}
       >
-        Choose up to six species to display on the map at one time. Click on the
-        color box to change color palette.
+        Choose up to <strong>6 species</strong> to display on the map at one
+        time. Click on the color box to change color palette.
       </Typography>
 
       <FormControl
