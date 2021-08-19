@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// local
 import axiosInstance from "../../app/apiAxios";
 import { colorShade } from "../../app/utils/colorUtils";
+import { ENVIRONMENTS } from "../../config";
 
 const initialState = {
   species: [],
-  enviroments: ["Saltwater", "Freshwater"],
+  enviroments: ENVIRONMENTS,
   status: "idle",
   error: null
 };

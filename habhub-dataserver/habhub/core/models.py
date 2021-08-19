@@ -11,10 +11,10 @@ class TargetSpecies(models.Model):
     # Model to configure Target HAB species for HABhub to monitor
     # Used for all data layers
 
-    SALTWATER = 'Saltwater'
+    MARINE = 'Marine'
     FRESHWATER = 'Freshwater'
     ENVIRONMENT_CHOICES = [
-        (SALTWATER, 'Saltwater'),
+        (MARINE, 'Marine'),
         (FRESHWATER, 'Freshwater'),
     ]
 
@@ -30,7 +30,7 @@ class TargetSpecies(models.Model):
     species_environment = models.CharField(
         max_length=20,
         choices=ENVIRONMENT_CHOICES,
-        default=SALTWATER,
+        default=MARINE,
     )
 
     class Meta:

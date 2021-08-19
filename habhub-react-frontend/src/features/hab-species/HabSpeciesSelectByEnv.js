@@ -16,7 +16,7 @@ import {
   selectSpeciesByEnvironment
 } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
-import { palette } from "../../config.js";
+import { PALETTE } from "../../config.js";
 
 const useStyles = makeStyles(theme => ({
   formGroup: {
@@ -72,7 +72,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                   {" "}
                   <div className={classes.colorPickerBtn}>
                     <ColorPicker
-                      palette={palette}
+                      palette={PALETTE}
                       value={species.primaryColor}
                       hideTextfield
                       disableAlpha

@@ -17,7 +17,6 @@ import {
   selectSpeciesByEnvironment
 } from "./habSpeciesSlice";
 import HabSpeciesSelectByEnv from "./HabSpeciesSelectByEnv";
-import { palette } from "../../config.js";
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -52,7 +51,7 @@ export default function HabSpeciesSelect() {
   return (
     <div>
       <Typography variant="subtitle1" display="block" gutterBottom>
-        HAB Species/Syndrome
+        Algal Species/Syndrome
       </Typography>
 
       <Typography

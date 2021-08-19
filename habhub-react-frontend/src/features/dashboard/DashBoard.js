@@ -136,7 +136,7 @@ export default function Dashboard({
             >
               <Tab
                 icon={<Ballot />}
-                label="HAB Species"
+                label="Select Species"
                 classes={{
                   root: classes.tabRoot
                 }}

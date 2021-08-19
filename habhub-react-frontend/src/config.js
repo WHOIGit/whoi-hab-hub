@@ -1,5 +1,5 @@
-// define color palette for the speciec color picker options
-export const palette = {
+// define color palette for the species color picker options
+export const PALETTE = {
   red: "#ff0000",
   blue: "#0000ff",
   green: "#00ff00",
@@ -14,3 +14,6 @@ export const palette = {
   pink: "pink",
   darkblue: "darkblue"
 };
+
+// Match available species environment options in API Target Species
+export const ENVIRONMENTS = ["Marine", "Freshwater"];
