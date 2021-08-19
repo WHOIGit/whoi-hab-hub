@@ -13,7 +13,10 @@ store.dispatch(fetchLayers());
 store.dispatch(fetchHabSpecies());
 
 // Google Analytics setup
-const GA_UID = process.env.REACT_APP_GA_UID;
+let GA_UID = null;
+if (process.env.REACT_APP_GA_UID) {
+  //GA_UID = process.env.REACT_APP_GA_UID;
+}
 const ga4react = new GA4React(GA_UID);
 
 (async () => {
