@@ -120,15 +120,74 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 print(e)
 
 
-"""
-Function to make API request for Autoclass CSV file, calculate abundance of target species
-Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
-"""
+def _get_single_ifcb_bin(dataset_obj, bin_pid):
+    """
+    Function to make API request for single IFCB bin by dataset
+    Args: 'dataset_obj' - Dataset object, 'bin_pid' - Bin PID string
+    """
+    csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
+    # check if Bin already exists in DB
+    try:
+        bin = Bin.objects.get(pid=bin_pid)
+        return bin
+    except:
+        bin = None
+        pass
+
+    response = requests.get(csv_url)
+    print(response.status_code, response.url)
+    if response.status_code == 200:
+        lines = (line.decode('utf-8') for line in response.iter_lines())
+
+        for row in csv.DictReader(lines):
+            if bin_pid == row['pid']:
+
+                print(row['pid'])
+                sample_time = datetime.datetime.strptime(row['sample_time'], "%Y-%m-%d %H:%M:%S%z")
+
+                geom = None
+                if row['longitude'] and row['latitude']:
+                    geom = Point(float(row['longitude']), float(row['latitude']))
+
+                depth = None
+                if row['depth']:
+                    depth = row['depth']
+
+                ml_analyzed = None
+                if row['ml_analyzed'] and float(row['ml_analyzed']) > 0:
+                    ml_analyzed = row['ml_analyzed']
+
+                try:
+                    bin = Bin.objects.create(
+                        pid=row['pid'],
+                        dataset=dataset_obj,
+                        geom=geom,
+                        sample_time=row['sample_time'],
+                        ifcb=row['ifcb'],
+                        ml_analyzed=ml_analyzed,
+                        depth=depth,
+                        cruise=row['cruise'],
+                        cast=row['cast'],
+                        niskin=row['niskin'],
+                        sample_type=row['sample_type'],
+                        n_images=row['n_images'],
+                        skip=row['skip'],
+                    )
+                    print(F"row saved - {bin.pid}")
+                except Exception as e:
+                    print(e)
+                    bin = None
+            return bin
 
 
 def _get_ifcb_autoclass_file(bin_obj):
+    """
+    Function to make API request for Autoclass CSV file, calculate abundance of target species
+    Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
+    """
     bin_url = F'{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}'
-    csv_url = F'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
+    class_scores_url = F'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv'
+    features_url = F'{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv'
     ml_analyzed = bin_obj.ml_analyzed
 
     target_list = TargetSpecies.objects.values_list('species_id', flat=True)
@@ -140,11 +199,21 @@ def _get_ifcb_autoclass_file(bin_obj):
         dict = {'species': species, 'image_count': 0, 'cell_concentration': 0, 'image_numbers': []}
         data.append(dict)
 
+    # get the autoclass CSV to calculate cell concentrations. This is requiried.
     try:
-        response = requests.get(csv_url, timeout=1)
+        response = requests.get(class_scores_url, timeout=1)
     except Exception as e:
         print(e)
         return data
+
+    # get the features csv to calculate Biovolumes
+    try:
+        response_features = requests.get(features_url, timeout=1)
+        print("FEATURE CSV LOADED")
+    except Exception as e:
+        print(e)
+        response_features = None
+        pass
 
     print(response.status_code)
     if response.status_code == 200:
@@ -166,6 +235,20 @@ def _get_ifcb_autoclass_file(bin_obj):
             try:
                 # calculate cell concentrations
                 row['cell_concentration'] = int(round((row['image_count'] / ml_analyzed) * 1000))
+                # calculate Biovolume
+                if response_features and response_features.status_code == 200:
+                    # need to reduce image_number string to last 5 numbers, then strip zeroes
+                    image_numbers = row['image_numbers']
+
+                    for index, value in enumerate(image_numbers):
+                        image_numbers[index] = value[-5:].lstrip("0")
+                    print(image_numbers)
+
+                    lines = (line.decode('utf-8') for line in response_features.iter_lines())
+                    for row in csv.DictReader(lines):
+
+                        if row['roi_number'] in image_numbers:
+                            print("MATCH")
                 # remove duplications from species_found list
                 species_found = list(set(species_found))
             except Exception as e:
@@ -173,7 +256,7 @@ def _get_ifcb_autoclass_file(bin_obj):
 
         # update Bin record
         print("save to DB")
-        bin_obj.cell_concentration_data = data
-        bin_obj.species_found = species_found
-        bin_obj.save()
+        #bin_obj.cell_concentration_data = data
+        #bin_obj.species_found = species_found
+        #bin_obj.save()
     return data

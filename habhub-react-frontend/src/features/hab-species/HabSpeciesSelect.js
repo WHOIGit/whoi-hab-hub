@@ -73,6 +73,7 @@ export default function HabSpeciesSelect() {
         {habEnvironments.map(item => (
           <>
             <HabSpeciesSelectByEnv
+              key={item}
               environment={item}
               limitReached={limitReached}
             />
