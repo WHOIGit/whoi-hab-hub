@@ -4,6 +4,7 @@ import datetime
 import concurrent.futures
 import os
 import environ
+import decimal
 from io import BytesIO
 
 from django.conf import settings
@@ -196,17 +197,17 @@ def _get_ifcb_autoclass_file(bin_obj):
     # set up data structure to store results
     data = []
     for species in target_list:
-        dict = {'species': species, 'image_count': 0, 'cell_concentration': 0, 'image_numbers': []}
+        dict = {'species': species, 'image_count': 0, 'cell_concentration': 0, 'biovolume': 0, 'image_numbers': []}
         data.append(dict)
 
-    # get the autoclass CSV to calculate cell concentrations. This is requiried.
+    # get the autoclass CSV to calculate cell concentrations. This is required
     try:
         response = requests.get(class_scores_url, timeout=1)
     except Exception as e:
         print(e)
         return data
 
-    # get the features csv to calculate Biovolumes
+    # get the features csv to calculate Biovolumes. Continue if unavailable
     try:
         response_features = requests.get(features_url, timeout=1)
         print("FEATURE CSV LOADED")
@@ -231,32 +232,44 @@ def _get_ifcb_autoclass_file(bin_obj):
                 item['image_count'] += 1
                 item['image_numbers'].append(image_number)
 
-        for row in data:
+        for item in data:
             try:
                 # calculate cell concentrations
-                row['cell_concentration'] = int(round((row['image_count'] / ml_analyzed) * 1000))
+                # number of positive hits (image_count) / mL analyed.
+                # multiply by 1000 to convert to per L
+                item['cell_concentration'] = int(round((item['image_count'] / ml_analyzed) * 1000))
                 # calculate Biovolume
+                # There are ~2.77 pixels per micron so to convert voxel biovolume
+                # to cubic microns divide values by 2.77^3 or 21.254
+                ####
+                # Calculate the sum of biovolumes / volume analyzed by class.
+                # So, e.g. sum of all biovolumes from images identified as cylindrospermopsis (or any other class)
+                # divided by the volume analyzed (some number of mL between 0 and 5).
                 if response_features and response_features.status_code == 200:
                     # need to reduce image_number string to last 5 numbers, then strip zeroes
-                    image_numbers = row['image_numbers']
-
-                    for index, value in enumerate(image_numbers):
-                        image_numbers[index] = value[-5:].lstrip("0")
-                    print(image_numbers)
+                    image_ids = item['image_numbers']
+                    biovolume_total = 0
+                    image_ids = [img[-5:].lstrip("0") for img in image_ids]
 
                     lines = (line.decode('utf-8') for line in response_features.iter_lines())
                     for row in csv.DictReader(lines):
 
-                        if row['roi_number'] in image_numbers:
-                            print("MATCH")
+                        if row['roi_number'] in image_ids:
+                            # convert to cubic microns
+                            biovolume = float(row['Biovolume']) / 21.254
+                            biovolume_total = biovolume_total + biovolume
+
+                    biovolume_final = int(round((biovolume_total / float(ml_analyzed)) * 1000))
+                    item['biovolume'] = biovolume_final
                 # remove duplications from species_found list
                 species_found = list(set(species_found))
             except Exception as e:
                 print(e)
+                pass
 
         # update Bin record
         print("save to DB")
-        #bin_obj.cell_concentration_data = data
-        #bin_obj.species_found = species_found
-        #bin_obj.save()
+        bin_obj.cell_concentration_data = data
+        bin_obj.species_found = species_found
+        bin_obj.save()
     return data
