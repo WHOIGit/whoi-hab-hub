@@ -123,7 +123,13 @@ export default function HabMap() {
     } else if (layerID === "closures-layer") {
       return <ClosuresLayer key={layerID} />;
     } else if (layerID === "ifcb-layer") {
-      return <IfcbMarkers onMarkerClick={onMarkerClick} key={layerID} />;
+      return (
+        <IfcbMarkers
+          onMarkerClick={onMarkerClick}
+          metricName="cell_concentration"
+          key={layerID}
+        />
+      );
     } else {
       return;
     }

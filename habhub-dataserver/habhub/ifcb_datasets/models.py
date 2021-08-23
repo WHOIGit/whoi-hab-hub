@@ -27,12 +27,12 @@ class Dataset(models.Model):
     def get_max_mean_values(self):
         target_list = TargetSpecies.objects.values_list('species_id', flat=True)
         # set up data structure to store results
-        concentration_values = []
+        data_values = []
         max_mean_values = []
 
         for species in target_list:
-            concentration_dict = {'species': species, 'values': []}
-            concentration_values.append(concentration_dict)
+            concentration_dict = {'species': species, 'values_cell_concentration': [], 'values_biovolume': []}
+            data_values.append(concentration_dict)
 
         if self.bins.exists():
             bins_qs = self.bins.all()
@@ -40,23 +40,38 @@ class Dataset(models.Model):
                 if bin.cell_concentration_data:
                     for datapoint in bin.cell_concentration_data:
                         item = next(
-                            (item for item in concentration_values if item['species'] == datapoint['species']), None)
+                            (item for item in data_values if item['species'] == datapoint['species']), None)
 
-                        if item is not None:
-                            item['values'].append(int(datapoint['cell_concentration']))
+                        if item:
+                            try:
+                                item['values_cell_concentration'].append(int(datapoint['cell_concentration']))
+                            except:
+                                pass
 
-            for item in concentration_values:
-                if item['values']:
-                    max_value = max(item['values'])
-                    mean_value = mean(item['values'])
-                else:
-                    max_value = 0
-                    mean_value = 0
+                            try:
+                                item['values_biovolume'].append(int(datapoint['biovolume']))
+                            except:
+                                pass
 
+
+            for item in data_values:
+                data_list = []
+                cell_concentrations = {'metric_name': 'cell_concentration', 'max_value': 0, 'mean_value': 0, 'units': 'cells/L'}
+                biovolumes = {'metric_name': 'biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
+
+                if item['values_cell_concentration']:
+                    cell_concentrations['max_value'] = max(item['values_cell_concentration'])
+                    cell_concentrations['mean_value'] = mean(item['values_cell_concentration'])
+
+                if item['values_biovolume']:
+                    biovolumes['max_value'] = max(item['values_biovolume'])
+                    biovolumes['mean_value'] = mean(item['values_biovolume'])
+
+                data_list.append(cell_concentrations)
+                data_list.append(biovolumes)
                 data_dict = {
                     'species': item['species'],
-                    'max_value': max_value,
-                    'mean_value': mean_value,
+                    'data': data_list
                 }
                 max_mean_values.append(data_dict)
 

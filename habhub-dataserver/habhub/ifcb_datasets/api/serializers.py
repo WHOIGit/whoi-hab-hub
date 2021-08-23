@@ -33,7 +33,6 @@ class DatasetDetailSerializer(DatasetListSerializer):
                     self.fields.pop('timeseries_data')
 
     def get_datapoints(self, obj):
-        bins_qs = obj.bins.all()
         concentration_timeseries = list()
 
         # set up data structure to store results
@@ -41,7 +40,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
             dict = {'species': species.species_id, 'species_display': species.display_name, 'data': [], }
             concentration_timeseries.append(dict)
 
-        for bin in bins_qs:
+        for bin in obj.bins.all():
             date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
             for datapoint in bin.cell_concentration_data:
