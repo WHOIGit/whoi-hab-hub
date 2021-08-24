@@ -33,7 +33,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
                     self.fields.pop('timeseries_data')
 
     def get_datapoints(self, obj):
-        concentration_timeseries = list()
+        concentration_timeseries = []
 
         # set up data structure to store results
         for species in TargetSpecies.objects.all():
@@ -46,11 +46,24 @@ class DatasetDetailSerializer(DatasetListSerializer):
             for datapoint in bin.cell_concentration_data:
                 index = next((index for (index, data) in enumerate(concentration_timeseries)
                              if data['species'] == datapoint['species']), None)
+
                 if index is not None:
+                    cell_concentration = 0
+                    biovolume = 0
+
+                    if 'cell_concentration' in datapoint:
+                        cell_concentration = int(datapoint['cell_concentration'])
+
+                    if 'biovolume' in datapoint:
+                        biovolume = int(datapoint['biovolume'])
+
                     data_dict = {
                         'sample_time': date_str,
-                        'cell_concentration': int(datapoint['cell_concentration']),
                         'bin_pid': bin.pid,
+                        'data': [
+                            {'metric_name': 'cell_concentration', 'value': cell_concentration},
+                            {'metric_name': 'biovolume', 'value': biovolume}
+                        ]
                     }
                     concentration_timeseries[index]['data'].append(data_dict)
 
