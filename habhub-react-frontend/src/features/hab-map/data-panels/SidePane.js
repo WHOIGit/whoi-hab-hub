@@ -46,12 +46,14 @@ export default function SidePane({
   featureID,
   dataLayer,
   yAxisScale,
-  onPaneClose
+  onPaneClose,
+  metricName
 }) {
   const habSpecies = useSelector(selectAllSpecies);
   const classes = useStyles();
   const [expandPane, setExpandPane] = useState(false);
   const [visibleResults, setVisibleResults] = useState([]);
+  console.log(metricName);
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
@@ -129,6 +131,7 @@ export default function SidePane({
         {dataLayer === "ifcb-layer" && visibleResults && (
           <IfcbGraph
             visibleResults={visibleResults}
+            metricName={metricName}
             chartExpanded={expandPane}
             yAxisScale={yAxisScale}
           />

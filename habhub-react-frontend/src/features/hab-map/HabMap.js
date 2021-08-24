@@ -150,6 +150,7 @@ export default function HabMap() {
                 dataLayer={feature.layer}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
+                metricName="cell_concentration"
               />
             ))}
           </div>

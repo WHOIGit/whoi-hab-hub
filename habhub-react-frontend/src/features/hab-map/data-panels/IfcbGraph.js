@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 // eslint-disable-next-line no-unused-vars
-function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
+function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
   const chartRef = useRef();
@@ -41,10 +41,11 @@ function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
   const [chartOptions, setChartOptions] = useState({});
   const [metaDataUrl, setMetaDataUrl] = useState(null);
   const [openMetaData, setOpenMetaData] = useState(false);
-  console.log(visibleResults);
 
   useEffect(() => {
-    const chartData = visibleResults.map(item => handleChartDataFormat(item));
+    const chartData = visibleResults.map(item =>
+      handleChartDataFormat(item, metricName)
+    );
 
     const newChartOptions = {
       chart: {
@@ -131,7 +132,7 @@ function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
       series: chartData
     };
     setChartOptions(newChartOptions);
-  }, [visibleResults]);
+  }, [visibleResults, metricName]);
 
   useEffect(() => {
     if (chartExpanded) {
@@ -158,16 +159,21 @@ function IfcbGraph({ visibleResults, chartExpanded, yAxisScale }) {
     }
   }, [yAxisScale]);
 */
-  function handleChartDataFormat(dataObj) {
-    console.log(dataObj);
-    console.log(habSpecies);
+  function handleChartDataFormat(dataObj, metricName) {
+    // set up data arrays for Highcharts format.
+    // match the value displayed to the metricName
     const dataArray = dataObj.data
-      .map(item => [Date.parse(item.sampleTime), item.cellConcentration])
+      .map(item => {
+        const sampleTime = Date.parse(item.sampleTime);
+        const metricValue = item.metrics.find(
+          metric => metric.metricName === metricName
+        ).value;
+        return [sampleTime, metricValue];
+      })
       .sort();
 
     const seriesColor = habSpecies.find(item => item.id === dataObj.species);
 
-    console.log(seriesColor);
     const timeSeries = {
       color: seriesColor.primaryColor,
       name: dataObj.speciesDisplay,

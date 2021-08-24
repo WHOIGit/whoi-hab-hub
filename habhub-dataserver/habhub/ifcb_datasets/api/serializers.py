@@ -60,7 +60,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
                     data_dict = {
                         'sample_time': date_str,
                         'bin_pid': bin.pid,
-                        'data': [
+                        'metrics': [
                             {'metric_name': 'cell_concentration', 'value': cell_concentration},
                             {'metric_name': 'biovolume', 'value': biovolume}
                         ]
