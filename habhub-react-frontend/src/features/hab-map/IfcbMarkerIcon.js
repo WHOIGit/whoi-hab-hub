@@ -11,7 +11,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
+const IfcbMarkerIcon = ({
+  feature,
+  layerID,
+  speciesValues,
+  onMarkerClick,
+  metricName
+}) => {
   const [offsetLeft, setOffsetLeft] = useState(-32);
   const [offsetTop, setOffsetTop] = useState(-25);
   const classes = useStyles();
@@ -150,7 +156,7 @@ const IfcbMarkerIcon = ({ feature, layerID, speciesValues, onMarkerClick }) => {
     >
       <div
         className={classes.button}
-        onClick={event => onMarkerClick(event, feature, layerID)}
+        onClick={event => onMarkerClick(event, feature, layerID, metricName)}
       >
         <div>
           <svg width={maxSquareSize * 3} height={maxSquareSize * 2}>

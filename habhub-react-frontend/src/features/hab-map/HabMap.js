@@ -102,13 +102,14 @@ export default function HabMap() {
       feature !== undefined &&
       interactiveLayerIds.includes(feature.layer.id)
     ) {
-      feature.layer = feature.layer.id;
+      feature.layerID = feature.layer.id;
       setFeatures([feature, ...features]);
     }
   };
 
-  const onMarkerClick = (event, feature, layerID) => {
-    feature.layer = layerID;
+  const onMarkerClick = (event, feature, layerID, metricName) => {
+    feature.layerID = layerID;
+    feature.metricName = metricName;
     setFeatures([feature, ...features]);
   };
 
@@ -118,15 +119,29 @@ export default function HabMap() {
   };
 
   const renderMarkerLayer = layerID => {
-    if (layerID === "stations-layer") {
-      return <StationsMarkers onMarkerClick={onMarkerClick} key={layerID} />;
-    } else if (layerID === "closures-layer") {
+    if (layerID === "stations_layer") {
+      return (
+        <StationsMarkers
+          onMarkerClick={onMarkerClick}
+          metricName="Shellfish Toxicity"
+          key={layerID}
+        />
+      );
+    } else if (layerID === "closures_layer") {
       return <ClosuresLayer key={layerID} />;
-    } else if (layerID === "ifcb-layer") {
+    } else if (layerID === "ifcb_layer") {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}
-          metricName="cell_concentration"
+          metricName="Cell Concentration"
+          key={layerID}
+        />
+      );
+    } else if (layerID === "ifcb_biovolume_layer") {
+      return (
+        <IfcbMarkers
+          onMarkerClick={onMarkerClick}
+          metricName="Biovolume"
           key={layerID}
         />
       );
@@ -147,10 +162,10 @@ export default function HabMap() {
               <DataPanel
                 key={feature.id}
                 featureID={feature.id}
-                dataLayer={feature.layer}
+                dataLayer={feature.layerID}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
-                metricName="cell_concentration"
+                metricName="Cell Concentration"
               />
             ))}
           </div>

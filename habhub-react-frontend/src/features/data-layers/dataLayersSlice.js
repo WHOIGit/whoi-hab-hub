@@ -3,8 +3,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // list of dataLayer IDs that have an available floating Legend window pane
 // need to check it against the active layers in the API results
-const legendLayerIds = ["stations-layer", "ifcb-layer"];
-const interactiveLayerIds = ["closures-layer"];
+const legendLayerIds = ["stations_layer", "ifcb_layer"];
+const interactiveLayerIds = ["closures_layer"];
 
 const initialState = {
   layers: [],
@@ -29,7 +29,7 @@ export const dataLayersSlice = createSlice({
   reducers: {
     changeLayerVisibility: (state, action) => {
       state.layers.forEach(element => {
-        if (element.id == action.payload.layerID) {
+        if (element.id === action.payload.layerID) {
           element.visibility = action.payload.checked;
         }
       });
@@ -39,7 +39,7 @@ export const dataLayersSlice = createSlice({
     },
     changeLegendVisibility: (state, action) => {
       state.layers.forEach(element => {
-        if (element.id == action.payload.layerID) {
+        if (element.id === action.payload.layerID) {
           element.legendVisibility = action.payload.legendVisibility;
         }
       });
@@ -54,7 +54,14 @@ export const dataLayersSlice = createSlice({
       // Add any fetched layers to the array
       state.layers = state.layers.concat(action.payload);
       state.layers.forEach(element => {
-        element.visibility = true;
+        // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
+        // default to ifcb-layer (cell_concentration) as initial active layer
+        if (element.id === "ifcb_biovolume_layer") {
+          element.visibility = false;
+        } else {
+          element.visibility = true;
+        }
+
         if (legendLayerIds.includes(element.id)) {
           element.legendVisibility = true;
         }

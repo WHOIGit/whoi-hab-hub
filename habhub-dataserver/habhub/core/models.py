@@ -65,3 +65,17 @@ class DataLayer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Metric(models.Model):
+    # Metrics available for different data layers
+    metric_id = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
+    units = models.CharField(max_length=100, blank=True)
+    data_layer = models.ForeignKey(DataLayer, related_name='metrics', on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

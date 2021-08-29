@@ -61,8 +61,8 @@ class DatasetDetailSerializer(DatasetListSerializer):
                         'sample_time': date_str,
                         'bin_pid': bin.pid,
                         'metrics': [
-                            {'metric_name': 'cell_concentration', 'value': cell_concentration},
-                            {'metric_name': 'biovolume', 'value': biovolume}
+                            {'metric_name': 'Cell Concentration', 'value': cell_concentration, 'units': 'cells/L'},
+                            {'metric_name': 'Biovolume', 'value': biovolume, 'units': 'cubic microns/L'}
                         ]
                     }
                     concentration_timeseries[index]['data'].append(data_dict)

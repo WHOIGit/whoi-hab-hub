@@ -158,7 +158,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
       });
     }
   }, [yAxisScale]);
-*/
+  */
   function handleChartDataFormat(dataObj, metricName) {
     // set up data arrays for Highcharts format.
     // match the value displayed to the metricName

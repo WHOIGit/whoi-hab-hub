@@ -6,7 +6,7 @@ from .models import TargetSpecies, DataLayer
 
 
 class DataLayerAdmin(admin.ModelAdmin):
-    readonly_fields = ('layer_id',)
+    pass
 
 
 class TargetSpeciesAdmin(admin.ModelAdmin):

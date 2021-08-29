@@ -56,8 +56,8 @@ class Dataset(models.Model):
 
             for item in data_values:
                 data_list = []
-                cell_concentrations = {'metric_name': 'cell_concentration', 'max_value': 0, 'mean_value': 0, 'units': 'cells/L'}
-                biovolumes = {'metric_name': 'biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
+                cell_concentrations = {'metric_name': 'Cell Concentration', 'max_value': 0, 'mean_value': 0, 'units': 'cells/L'}
+                biovolumes = {'metric_name': 'Biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
 
                 if item['values_cell_concentration']:
                     cell_concentrations['max_value'] = max(item['values_cell_concentration'])

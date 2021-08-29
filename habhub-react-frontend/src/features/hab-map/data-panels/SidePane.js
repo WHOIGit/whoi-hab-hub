@@ -53,11 +53,10 @@ export default function SidePane({
   const classes = useStyles();
   const [expandPane, setExpandPane] = useState(false);
   const [visibleResults, setVisibleResults] = useState([]);
-  console.log(metricName);
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    if (dataLayer === "ifcb-layer") {
+    if (dataLayer === "ifcb_layer") {
       const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
         .filter(species => species.visibility)
@@ -77,19 +76,19 @@ export default function SidePane({
   let title;
   let subTitle;
 
-  if (dataLayer === "stations-layer") {
+  if (dataLayer === "stations_layer") {
     title = `Station Toxicity Data: ${results.properties.stationLocation}`;
     subTitle = `
       Station Name: ${results.properties.station_name} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer === "ifcb-layer") {
+  } else if (dataLayer === "ifcb_layer") {
     title = `IFCB Data: ${results.properties.name}`;
     subTitle = `
       ${results.properties.location} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer === "closures-layer") {
+  } else if (dataLayer === "closures_layer") {
     title = `Shellfish Closure: ${results.properties.name}`;
     subTitle = `
       State: ${results.properties.state} |
@@ -121,14 +120,14 @@ export default function SidePane({
       />
 
       <CardContent className={expandPane ? classes.expandContent : ""}>
-        {dataLayer === "stations-layer" && (
+        {dataLayer === "stations_layer" && (
           <StationsGraph
             results={results}
             chartExpanded={expandPane}
             yAxisScale={yAxisScale}
           />
         )}
-        {dataLayer === "ifcb-layer" && visibleResults && (
+        {dataLayer === "ifcb_layer" && visibleResults && (
           <IfcbGraph
             visibleResults={visibleResults}
             metricName={metricName}
@@ -136,7 +135,7 @@ export default function SidePane({
             yAxisScale={yAxisScale}
           />
         )}
-        {dataLayer === "closures-layer" && <ClosuresList results={results} />}
+        {dataLayer === "closures_layer" && <ClosuresList results={results} />}
       </CardContent>
     </Card>
   );

@@ -40,7 +40,7 @@ export default function DataPanel({
     // Need to check different properties to see whether the API result has data for time frame
     function hasData(result, dataLayer) {
       console.log(result);
-      if (dataLayer === "stations-layer" || dataLayer === "ifcb-layer") {
+      if (dataLayer === "stations_layer" || dataLayer === "ifcb_layer") {
         result.properties.maxMeanValues.length
           ? setHasData(true)
           : setHasData(false);
@@ -51,13 +51,13 @@ export default function DataPanel({
       try {
         let endpoint;
         let smoothingFactor = dateFilter.smoothingFactor;
-        if (dataLayer === "stations-layer") {
+        if (dataLayer === "stations_layer") {
           endpoint = `api/v1/stations/${featureID}/`;
           // Force smoothing_factor to be ignored for Station graphs
           smoothingFactor = 1;
-        } else if (dataLayer === "ifcb-layer") {
+        } else if (dataLayer === "ifcb_layer") {
           endpoint = `api/v1/ifcb-datasets/${featureID}/`;
-        } else if (dataLayer === "closures-layer") {
+        } else if (dataLayer === "closures_layer") {
           endpoint = `api/v1/closures/${featureID}/`;
         }
 

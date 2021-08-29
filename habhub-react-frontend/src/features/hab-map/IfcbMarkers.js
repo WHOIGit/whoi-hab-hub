@@ -23,7 +23,7 @@ function IfcbMarkers({ onMarkerClick, metricName }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
-  const layerID = "ifcb-layer";
+  const layerID = "ifcb_layer";
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -107,6 +107,7 @@ function IfcbMarkers({ onMarkerClick, metricName }) {
             layerID={layerID}
             speciesValues={speciesValues}
             onMarkerClick={onMarkerClick}
+            metricName={metricName}
             key={feature.id}
           />
         );
