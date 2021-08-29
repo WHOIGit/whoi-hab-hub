@@ -16,7 +16,7 @@ DATA_LAYERS = (
 # METRICS constant = default Data Layer Metrics
 CELL_CONCENTRATION = 'cell_concentration'
 BIOVOLUME = 'biovolume'
-SHELLFISH_TOXICITY = 'SHELLFISH_TOXICITY'
+SHELLFISH_TOXICITY = 'shellfish_toxicity'
 
 METRICS = (
     (CELL_CONCENTRATION, 'Cell Concentration', 'cells/L', IFCB_LAYER),

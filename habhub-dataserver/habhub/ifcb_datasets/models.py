@@ -6,8 +6,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
-from habhub.core.models import TargetSpecies
-
+from habhub.core.models import TargetSpecies, DataLayer, Metric
+from habhub.core.constants import IFCB_LAYER
 # IFCB dataset models
 
 
@@ -24,8 +24,16 @@ class Dataset(models.Model):
     def __str__(self):
         return F'{self.name} - {self.location}'
 
+    def get_data_layer_metrics(self):
+        metrics = Metric.objects.filter(data_layer__belongs_to_app=DataLayer.IFCB_DATASETS)
+        return metrics
+
     def get_max_mean_values(self):
         target_list = TargetSpecies.objects.values_list('species_id', flat=True)
+        metrics = self.get_data_layer_metrics()
+        for metric in metrics:
+            print(metric)
+
         # set up data structure to store results
         data_values = []
         max_mean_values = []
@@ -79,21 +87,6 @@ class Dataset(models.Model):
 
 
 class Bin(models.Model):
-    ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'
-    DINOPHYSIS_ACUMINATA = 'Dinophysis_acuminata'
-    DINOPHYSIS_NORVEGICA = 'Dinophysis_norvegica'
-    KARENIA = 'Karenia'
-    MARGALEFIDINIUM = 'Margalefidinium'
-    PSEUDO_NITZSCHIA = 'Pseudo-nitzschia'
-    TARGET_SPECIES = (
-        (ALEXANDRIUM_CATENELLA, 'Alexandrium catenella'),
-        (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
-        (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
-        (KARENIA, 'Karenia'),
-        (MARGALEFIDINIUM, 'Margalefidinium polykrikoides'),
-        (PSEUDO_NITZSCHIA, 'Pseudo nitzschia'),
-    )
-
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True, db_index=True)
     geom = models.PointField(srid=4326, null=True, blank=True)

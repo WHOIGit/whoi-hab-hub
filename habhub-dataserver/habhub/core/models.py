@@ -6,7 +6,6 @@ from colorfield.fields import ColorField
 
 from .utils import linear_gradient
 
-
 class TargetSpecies(models.Model):
     # Model to configure Target HAB species for HABhub to monitor
     # Used for all data layers
@@ -56,8 +55,20 @@ class TargetSpecies(models.Model):
 
 class DataLayer(models.Model):
     # Model to configure which Data Layers are active for the frontend client
+
+    # Possible local "habhub" Django apps that layer can belong to
+    IFCB_DATASETS = 'ifcb_datasets'
+    STATIONS = 'stations'
+    CLOSURES = 'closures'
+    APP_CHOICES = [
+        (IFCB_DATASETS, 'Ifcb_Datasets'),
+        (STATIONS, 'Stations'),
+        (CLOSURES, 'Closures'),
+    ]
+
     layer_id = models.CharField(max_length=100, unique=True, db_index=True)
     name = models.CharField(max_length=100, blank=True, db_index=True)
+    belongs_to_app = models.CharField(max_length=100, db_index=True, choices=APP_CHOICES, default=IFCB_DATASETS)
     is_active = models.BooleanField(default=True)
 
     class Meta:
