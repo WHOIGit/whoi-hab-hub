@@ -1,10 +1,12 @@
 import axiosInstance from "../../app/apiAxios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// local
+import { DATA_LAYERS } from "../../Constants";
 
 // list of dataLayer IDs that have an available floating Legend window pane
 // need to check it against the active layers in the API results
-const legendLayerIds = ["stations_layer", "ifcb_layer"];
-const interactiveLayerIds = ["closures_layer"];
+const legendLayerIds = [DATA_LAYERS.stationsLayer, DATA_LAYERS.ifcbLayer];
+const interactiveLayerIds = [DATA_LAYERS.closuresLayer];
 
 const initialState = {
   layers: [],
@@ -56,7 +58,7 @@ export const dataLayersSlice = createSlice({
       state.layers.forEach(element => {
         // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
         // default to ifcb-layer (cell_concentration) as initial active layer
-        if (element.id === "ifcb_biovolume_layer") {
+        if (element.id === DATA_LAYERS.ifcbBiovolumeLayer) {
           element.visibility = false;
         } else {
           element.visibility = true;

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // local
 import axiosInstance from "../../app/apiAxios";
 import { colorShade } from "../../app/utils/colorUtils";
-import { ENVIRONMENTS } from "../../config";
+import { ENVIRONMENTS } from "../../Constants";
 
 let INITIAL_SPECIES_LIST = null;
 if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {

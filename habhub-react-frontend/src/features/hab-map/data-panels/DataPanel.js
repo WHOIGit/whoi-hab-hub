@@ -3,8 +3,10 @@ import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 import { format, parseISO } from "date-fns";
+// local
 import SidePane from "./SidePane";
 import axiosInstance from "../../../app/apiAxios";
+import { DATA_LAYERS } from "../../../Constants";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,7 +42,7 @@ export default function DataPanel({
     // Need to check different properties to see whether the API result has data for time frame
     function hasData(result, dataLayer) {
       console.log(result);
-      if (dataLayer === "stations_layer" || dataLayer === "ifcb_layer") {
+      if (dataLayer !== DATA_LAYERS.closuresLayer) {
         result.properties.maxMeanValues.length
           ? setHasData(true)
           : setHasData(false);
@@ -51,13 +53,16 @@ export default function DataPanel({
       try {
         let endpoint;
         let smoothingFactor = dateFilter.smoothingFactor;
-        if (dataLayer === "stations_layer") {
+        if (dataLayer === DATA_LAYERS.stationsLayer) {
           endpoint = `api/v1/stations/${featureID}/`;
           // Force smoothing_factor to be ignored for Station graphs
           smoothingFactor = 1;
-        } else if (dataLayer === "ifcb_layer") {
+        } else if (
+          dataLayer === DATA_LAYERS.ifcbLayer ||
+          dataLayer === DATA_LAYERS.ifcbBiovolumeLayer
+        ) {
           endpoint = `api/v1/ifcb-datasets/${featureID}/`;
-        } else if (dataLayer === "closures_layer") {
+        } else if (dataLayer === DATA_LAYERS.closuresLayer) {
           endpoint = `api/v1/closures/${featureID}/`;
         }
 

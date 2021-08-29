@@ -16,7 +16,7 @@ import {
   selectSpeciesByEnvironment
 } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
-import { PALETTE } from "../../config.js";
+import { PALETTE } from "../../Constants";
 
 const useStyles = makeStyles(theme => ({
   formGroup: {

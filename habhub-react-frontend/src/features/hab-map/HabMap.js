@@ -6,7 +6,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
-// Import our stuff
+// local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
@@ -17,6 +17,7 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
+import { DATA_LAYERS } from "../../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
@@ -119,29 +120,32 @@ export default function HabMap() {
   };
 
   const renderMarkerLayer = layerID => {
-    if (layerID === "stations_layer") {
+    if (layerID === DATA_LAYERS.stationsLayer) {
       return (
         <StationsMarkers
           onMarkerClick={onMarkerClick}
           metricName="Shellfish Toxicity"
+          layerID={layerID}
           key={layerID}
         />
       );
-    } else if (layerID === "closures_layer") {
-      return <ClosuresLayer key={layerID} />;
-    } else if (layerID === "ifcb_layer") {
+    } else if (layerID === DATA_LAYERS.closuresLayer) {
+      return <ClosuresLayer layerID={layerID} key={layerID} />;
+    } else if (layerID === DATA_LAYERS.ifcbLayer) {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}
           metricName="Cell Concentration"
+          layerID={layerID}
           key={layerID}
         />
       );
-    } else if (layerID === "ifcb_biovolume_layer") {
+    } else if (layerID === DATA_LAYERS.ifcbBiovolumeLayer) {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}
           metricName="Biovolume"
+          layerID={layerID}
           key={layerID}
         />
       );
@@ -165,7 +169,7 @@ export default function HabMap() {
                 dataLayer={feature.layerID}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
-                metricName="Cell Concentration"
+                metricName={feature.metricName}
               />
             ))}
           </div>

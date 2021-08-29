@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ClosuresLayer() {
+export default function ClosuresLayer({ layerID }) {
   const dateFilter = useSelector(state => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -76,7 +76,7 @@ export default function ClosuresLayer() {
 
   // Set default layer styles
   const layerClosures = {
-    id: "closures-layer",
+    id: layerID,
     type: "fill",
     source: "closures-src",
     paint: {

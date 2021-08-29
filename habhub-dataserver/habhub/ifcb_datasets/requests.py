@@ -210,7 +210,6 @@ def _get_ifcb_autoclass_file(bin_obj):
     # get the features csv to calculate Biovolumes. Continue if unavailable
     try:
         response_features = requests.get(features_url, timeout=1)
-        print("FEATURE CSV LOADED")
     except Exception as e:
         print(e)
         response_features = None
@@ -246,11 +245,12 @@ def _get_ifcb_autoclass_file(bin_obj):
                 # So, e.g. sum of all biovolumes from images identified as cylindrospermopsis (or any other class)
                 # divided by the volume analyzed (some number of mL between 0 and 5).
                 if response_features and response_features.status_code == 200:
+                    print("FEATURE CSV LOADED", response_features.status_code)
                     # need to reduce image_number string to last 5 numbers, then strip zeroes
                     image_ids = item['image_numbers']
                     biovolume_total = 0
                     image_ids = [img[-5:].lstrip("0") for img in image_ids]
-
+                    print(image_ids)
                     lines = (line.decode('utf-8') for line in response_features.iter_lines())
                     for row in csv.DictReader(lines):
 

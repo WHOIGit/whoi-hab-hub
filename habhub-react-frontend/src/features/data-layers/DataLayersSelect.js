@@ -13,6 +13,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { changeLayerVisibility } from "./dataLayersSlice";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
+// local
+import { DATA_LAYERS } from "../../Constants";
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -43,20 +45,23 @@ export default function HabSpeciesForm() {
   const handleCheckboxChange = (event, dataLayer) => {
     // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
 
-    if (dataLayer.id === "ifcb_layer" && event.target.checked) {
+    if (dataLayer.id === DATA_LAYERS.ifcbLayer && event.target.checked) {
       dispatch(
         changeLayerVisibility({
           checked: false,
-          layerID: "ifcb_biovolume_layer"
+          layerID: DATA_LAYERS.ifcbBiovolumeLayer
         })
       );
     }
 
-    if (dataLayer.id === "ifcb_biovolume_layer" && event.target.checked) {
+    if (
+      dataLayer.id === DATA_LAYERS.ifcbBiovolumeLayer &&
+      event.target.checked
+    ) {
       dispatch(
         changeLayerVisibility({
           checked: false,
-          layerID: "ifcb_layer"
+          layerID: DATA_LAYERS.ifcbLayer
         })
       );
     }
