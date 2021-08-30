@@ -39,7 +39,10 @@ class Dataset(models.Model):
         max_mean_values = []
 
         for species in target_list:
-            concentration_dict = {'species': species, 'values_cell_concentration': [], 'values_biovolume': []}
+            concentration_dict = {
+                'species': species,
+                'metrics': [{'metric_id': metric.metric_id, 'name': metric.name, 'units': metric.units,'values': []} for metric in metrics]
+            }
             data_values.append(concentration_dict)
 
         if self.bins.exists():
@@ -51,32 +54,30 @@ class Dataset(models.Model):
                             (item for item in data_values if item['species'] == datapoint['species']), None)
 
                         if item:
-                            try:
-                                item['values_cell_concentration'].append(int(datapoint['cell_concentration']))
-                            except:
-                                pass
+                            for metric in metrics:
+                                metric_item = next(
+                                    (metric_item for metric_item in item['metrics'] if metric_item['metric_id'] == metric.metric_id), None
+                                )
 
-                            try:
-                                item['values_biovolume'].append(int(datapoint['biovolume']))
-                            except:
-                                pass
-
+                                try:
+                                    metric_item['values'].append(int(datapoint[metric.metric_id]))
+                                except:
+                                    pass
 
             for item in data_values:
+                print(item)
                 data_list = []
-                cell_concentrations = {'metric_name': 'Cell Concentration', 'max_value': 0, 'mean_value': 0, 'units': 'cells/L'}
-                biovolumes = {'metric_name': 'Biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
 
-                if item['values_cell_concentration']:
-                    cell_concentrations['max_value'] = max(item['values_cell_concentration'])
-                    cell_concentrations['mean_value'] = mean(item['values_cell_concentration'])
+                #biovolumes = {'metric_name': 'Biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
 
-                if item['values_biovolume']:
-                    biovolumes['max_value'] = max(item['values_biovolume'])
-                    biovolumes['mean_value'] = mean(item['values_biovolume'])
+                for metric_item in item['metrics']:
+                    metric_data = {'metric_name': metric_item['name'], 'max_value': 0, 'mean_value': 0, 'units': metric_item['units']}
+                    if metric_item['values']:
+                        metric_data['max_value'] = max(metric_item['values'])
+                        metric_data['mean_value'] = mean(metric_item['values'])
 
-                data_list.append(cell_concentrations)
-                data_list.append(biovolumes)
+                    data_list.append(metric_data)
+                #data_list.append(biovolumes)
                 data_dict = {
                     'species': item['species'],
                     'data': data_list
