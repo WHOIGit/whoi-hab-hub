@@ -86,7 +86,7 @@ export default function DataPanel({
       }
     }
     fetchResults();
-  }, [featureID, dataLayer, dateFilter]);
+  }, [featureID, dataLayer, dateFilter, metricName]);
 
   return (
     <div>

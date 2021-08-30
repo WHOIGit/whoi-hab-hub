@@ -71,7 +71,7 @@ export default function HabMap() {
 
   useEffect(() => {
     const newFeatures = features.filter(feature =>
-      visibleLayerIds.includes(feature.layer)
+      visibleLayerIds.includes(feature.layerID)
     );
     setFeatures(newFeatures);
 

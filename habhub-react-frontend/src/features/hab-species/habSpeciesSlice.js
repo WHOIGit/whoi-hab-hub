@@ -125,6 +125,8 @@ export const habSpeciesSlice = createSlice({
         if (INITIAL_SPECIES_LIST) {
           if (INITIAL_SPECIES_LIST.includes(element.id)) {
             element.visibility = true;
+          } else {
+            element.visibility = false;
           }
         } else {
           if (index < 6) {

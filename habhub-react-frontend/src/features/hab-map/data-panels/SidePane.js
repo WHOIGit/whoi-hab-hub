@@ -68,7 +68,7 @@ export default function SidePane({
       );
       setVisibleResults(filteredData);
     }
-  }, [results, habSpecies]);
+  }, [results, habSpecies, metricName]);
 
   function onExpandPanel() {
     setExpandPane(!expandPane);
