@@ -34,7 +34,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
 
     def get_datapoints(self, obj):
         concentration_timeseries = []
-
+        metrics = obj.get_data_layer_metrics()
         # set up data structure to store results
         for species in TargetSpecies.objects.all():
             dict = {'species': species.species_id, 'species_display': species.display_name, 'data': [], }
@@ -47,24 +47,22 @@ class DatasetDetailSerializer(DatasetListSerializer):
                 index = next((index for (index, data) in enumerate(concentration_timeseries)
                              if data['species'] == datapoint['species']), None)
 
-                if index is not None:
-                    cell_concentration = 0
-                    biovolume = 0
-
-                    if 'cell_concentration' in datapoint:
-                        cell_concentration = int(datapoint['cell_concentration'])
-
-                    if 'biovolume' in datapoint:
-                        biovolume = int(datapoint['biovolume'])
-
+                if index:
                     data_dict = {
                         'sample_time': date_str,
                         'bin_pid': bin.pid,
-                        'metrics': [
-                            {'metric_name': 'Cell Concentration', 'value': cell_concentration, 'units': 'cells/L'},
-                            {'metric_name': 'Biovolume', 'value': biovolume, 'units': 'cubic microns/L'}
-                        ]
+                        'metrics': []
                     }
+
+                    for metric in metrics:
+                        metric_value = 0
+
+                        if metric.metric_id in datapoint:
+                            metric_value = int(datapoint[metric.metric_id])
+
+                        metric_obj = {'metric_name': metric.name, 'value': metric_value, 'units': metric.units}
+                        data_dict['metrics'].append(metric_obj)
+
                     concentration_timeseries[index]['data'].append(data_dict)
 
         return concentration_timeseries
