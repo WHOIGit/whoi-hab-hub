@@ -4,22 +4,17 @@ import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuIcon from "@material-ui/icons/Menu";
-import { useHistory } from "react-router-dom";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
-import logoNehab from "../images/logo-nehab.png";
-import logoNehabon from "../images/logo-nehabon.png";
-import logoPhytoArm from "../images/logo-phytoarm.png";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
   root: {
     color: theme.palette.secondary.dark,
     marginRight: theme.spacing(2)
   },
-  menuImg: {
-    width: "200px"
-  },
-  menuImg2: {
-    width: "170px"
+  menuIcon: {
+    marginRight: theme.spacing(1.5)
   }
 }));
 
@@ -82,42 +77,9 @@ export default function HeaderDropdownMenu() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleLogout}>Logout</MenuItem>
-        <MenuItem>Network Sites</MenuItem>
-        <MenuItem onClick={handleClose}>
-          <a
-            href="https://northeasthab.whoi.edu/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src={logoNehab}
-              alt="NeHAB Logo"
-              className={classes.menuImg2}
-            />
-          </a>
-        </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <a
-            href="https://northeasthab.whoi.edu/bloom-monitoring/habon-ne/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src={logoNehabon}
-              alt="NeHABON Logo"
-              className={classes.menuImg}
-            />
-          </a>
-        </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <a href="#">
-            <img
-              src={logoPhytoArm}
-              alt="PhytoArm Logo"
-              className={classes.menuImg}
-            />
-          </a>
+        <MenuItem onClick={handleLogout}>
+          <ExitToAppIcon className={classes.menuIcon} />
+          Logout
         </MenuItem>
       </StyledMenu>
     </React.Fragment>
