@@ -24,9 +24,8 @@ export default function StationsMarkerIcon({ maxMeanValue }) {
   // set colors to use for the gradient from Species
   const activeSpecies = habSpecies.filter(
     item => item.id === "Alexandrium_catenella"
-  );
-  const colors = activeSpecies[0].colorGradient;
-  //const colors = species[0].colorGradient;
+  )[0];
+  const colors = activeSpecies.colorGradient;
 
   function setGradientColor(value) {
     let gradient = colors[4];
@@ -54,7 +53,8 @@ export default function StationsMarkerIcon({ maxMeanValue }) {
         <polygon
           points="50 0, 100 50, 50 100, 0 50"
           fill={setGradientColor(maxMeanValue)}
-          className={classes.triangle}
+          style={{ stroke: activeSpecies.primaryColor, strokeWidth: 2 }}
+          //className={classes.triangle}
         />
         {/*<text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">{value}</text>*/}
       </svg>

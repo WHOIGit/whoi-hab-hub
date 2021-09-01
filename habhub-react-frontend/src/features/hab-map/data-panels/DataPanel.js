@@ -3,8 +3,10 @@ import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 import { format, parseISO } from "date-fns";
+// local
 import SidePane from "./SidePane";
 import axiosInstance from "../../../app/apiAxios";
+import { DATA_LAYERS } from "../../../Constants";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -25,7 +27,8 @@ export default function DataPanel({
   featureID,
   dataLayer,
   yAxisScale,
-  onPaneClose
+  onPaneClose,
+  metricName
 }) {
   const dateFilter = useSelector(state => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
@@ -39,7 +42,7 @@ export default function DataPanel({
     // Need to check different properties to see whether the API result has data for time frame
     function hasData(result, dataLayer) {
       console.log(result);
-      if (dataLayer === "stations-layer" || dataLayer === "ifcb-layer") {
+      if (dataLayer !== DATA_LAYERS.closuresLayer) {
         result.properties.maxMeanValues.length
           ? setHasData(true)
           : setHasData(false);
@@ -50,13 +53,16 @@ export default function DataPanel({
       try {
         let endpoint;
         let smoothingFactor = dateFilter.smoothingFactor;
-        if (dataLayer === "stations-layer") {
+        if (dataLayer === DATA_LAYERS.stationsLayer) {
           endpoint = `api/v1/stations/${featureID}/`;
           // Force smoothing_factor to be ignored for Station graphs
           smoothingFactor = 1;
-        } else if (dataLayer === "ifcb-layer") {
+        } else if (
+          dataLayer === DATA_LAYERS.ifcbLayer ||
+          dataLayer === DATA_LAYERS.ifcbBiovolumeLayer
+        ) {
           endpoint = `api/v1/ifcb-datasets/${featureID}/`;
-        } else if (dataLayer === "closures-layer") {
+        } else if (dataLayer === DATA_LAYERS.closuresLayer) {
           endpoint = `api/v1/closures/${featureID}/`;
         }
 
@@ -80,7 +86,7 @@ export default function DataPanel({
       }
     }
     fetchResults();
-  }, [featureID, dataLayer, dateFilter]);
+  }, [featureID, dataLayer, dateFilter, metricName]);
 
   return (
     <div>
@@ -99,6 +105,7 @@ export default function DataPanel({
           dataLayer={dataLayer}
           yAxisScale={yAxisScale}
           onPaneClose={onPaneClose}
+          metricName={metricName}
         />
       )}
     </div>

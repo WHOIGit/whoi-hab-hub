@@ -33,26 +33,36 @@ class DatasetDetailSerializer(DatasetListSerializer):
                     self.fields.pop('timeseries_data')
 
     def get_datapoints(self, obj):
-        bins_qs = obj.bins.all()
-        concentration_timeseries = list()
-
+        concentration_timeseries = []
+        metrics = obj.get_data_layer_metrics()
         # set up data structure to store results
         for species in TargetSpecies.objects.all():
             dict = {'species': species.species_id, 'species_display': species.display_name, 'data': [], }
             concentration_timeseries.append(dict)
 
-        for bin in bins_qs:
+        for bin in obj.bins.all():
             date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
             for datapoint in bin.cell_concentration_data:
                 index = next((index for (index, data) in enumerate(concentration_timeseries)
                              if data['species'] == datapoint['species']), None)
-                if index is not None:
+
+                if index:
                     data_dict = {
                         'sample_time': date_str,
-                        'cell_concentration': int(datapoint['cell_concentration']),
                         'bin_pid': bin.pid,
+                        'metrics': []
                     }
+
+                    for metric in metrics:
+                        metric_value = 0
+
+                        if metric.metric_id in datapoint:
+                            metric_value = int(datapoint[metric.metric_id])
+
+                        metric_obj = {'metric_name': metric.name, 'value': metric_value, 'units': metric.units}
+                        data_dict['metrics'].append(metric_obj)
+
                     concentration_timeseries[index]['data'].append(data_dict)
 
         return concentration_timeseries

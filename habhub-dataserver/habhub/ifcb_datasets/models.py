@@ -6,8 +6,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
-from habhub.core.models import TargetSpecies
-
+from habhub.core.models import TargetSpecies, DataLayer, Metric
+from habhub.core.constants import IFCB_LAYER
 # IFCB dataset models
 
 
@@ -24,15 +24,26 @@ class Dataset(models.Model):
     def __str__(self):
         return F'{self.name} - {self.location}'
 
+    def get_data_layer_metrics(self):
+        metrics = Metric.objects.filter(data_layer__belongs_to_app=DataLayer.IFCB_DATASETS)
+        return metrics
+
     def get_max_mean_values(self):
         target_list = TargetSpecies.objects.values_list('species_id', flat=True)
+        metrics = self.get_data_layer_metrics()
+        for metric in metrics:
+            print(metric)
+
         # set up data structure to store results
-        concentration_values = []
+        data_values = []
         max_mean_values = []
 
         for species in target_list:
-            concentration_dict = {'species': species, 'values': []}
-            concentration_values.append(concentration_dict)
+            concentration_dict = {
+                'species': species,
+                'metrics': [{'metric_id': metric.metric_id, 'name': metric.name, 'units': metric.units,'values': []} for metric in metrics]
+            }
+            data_values.append(concentration_dict)
 
         if self.bins.exists():
             bins_qs = self.bins.all()
@@ -40,23 +51,36 @@ class Dataset(models.Model):
                 if bin.cell_concentration_data:
                     for datapoint in bin.cell_concentration_data:
                         item = next(
-                            (item for item in concentration_values if item['species'] == datapoint['species']), None)
+                            (item for item in data_values if item['species'] == datapoint['species']), None)
 
-                        if item is not None:
-                            item['values'].append(int(datapoint['cell_concentration']))
+                        if item:
+                            for metric in metrics:
+                                metric_item = next(
+                                    (metric_item for metric_item in item['metrics'] if metric_item['metric_id'] == metric.metric_id), None
+                                )
 
-            for item in concentration_values:
-                if item['values']:
-                    max_value = max(item['values'])
-                    mean_value = mean(item['values'])
-                else:
-                    max_value = 0
-                    mean_value = 0
+                                try:
+                                    metric_item['values'].append(int(datapoint[metric.metric_id]))
+                                except:
+                                    pass
 
+            for item in data_values:
+                print(item)
+                data_list = []
+
+                #biovolumes = {'metric_name': 'Biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
+
+                for metric_item in item['metrics']:
+                    metric_data = {'metric_name': metric_item['name'], 'max_value': 0, 'mean_value': 0, 'units': metric_item['units']}
+                    if metric_item['values']:
+                        metric_data['max_value'] = max(metric_item['values'])
+                        metric_data['mean_value'] = mean(metric_item['values'])
+
+                    data_list.append(metric_data)
+                #data_list.append(biovolumes)
                 data_dict = {
                     'species': item['species'],
-                    'max_value': max_value,
-                    'mean_value': mean_value,
+                    'data': data_list
                 }
                 max_mean_values.append(data_dict)
 
@@ -64,21 +88,6 @@ class Dataset(models.Model):
 
 
 class Bin(models.Model):
-    ALEXANDRIUM_CATENELLA = 'Alexandrium_catenella'
-    DINOPHYSIS_ACUMINATA = 'Dinophysis_acuminata'
-    DINOPHYSIS_NORVEGICA = 'Dinophysis_norvegica'
-    KARENIA = 'Karenia'
-    MARGALEFIDINIUM = 'Margalefidinium'
-    PSEUDO_NITZSCHIA = 'Pseudo-nitzschia'
-    TARGET_SPECIES = (
-        (ALEXANDRIUM_CATENELLA, 'Alexandrium catenella'),
-        (DINOPHYSIS_ACUMINATA, 'Dinophysis acuminata'),
-        (DINOPHYSIS_NORVEGICA, 'Dinophysis norvegica'),
-        (KARENIA, 'Karenia'),
-        (MARGALEFIDINIUM, 'Margalefidinium polykrikoides'),
-        (PSEUDO_NITZSCHIA, 'Pseudo nitzschia'),
-    )
-
     # the primary ID from the IFCB dashboard
     pid = models.CharField(max_length=100, unique=True, db_index=True)
     geom = models.PointField(srid=4326, null=True, blank=True)

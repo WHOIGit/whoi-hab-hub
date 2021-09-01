@@ -19,11 +19,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function IfcbMarkers({ onMarkerClick }) {
+function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
-  const layerID = "ifcb-layer";
+
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -80,13 +80,17 @@ function IfcbMarkers({ onMarkerClick }) {
     // create new Array with Visible Species/Values
     if (feature.properties.maxMeanValues.length) {
       const speciesValues = visibleSpecies.map(item => {
-        const maxMeanItem = feature.properties.maxMeanValues.filter(
+        const speciesItem = feature.properties.maxMeanValues.find(
           data => item.id === data.species
         );
-        let value = maxMeanItem[0].maxValue;
+
+        const maxMeanItem = speciesItem.data.find(
+          data => data.metricName === metricName
+        );
+        let value = maxMeanItem.maxValue;
 
         if (showMaxMean === "mean") {
-          value = maxMeanItem[0].meanValue;
+          value = maxMeanItem.meanValue;
         }
 
         return {
@@ -103,6 +107,7 @@ function IfcbMarkers({ onMarkerClick }) {
             layerID={layerID}
             speciesValues={speciesValues}
             onMarkerClick={onMarkerClick}
+            metricName={metricName}
             key={feature.id}
           />
         );

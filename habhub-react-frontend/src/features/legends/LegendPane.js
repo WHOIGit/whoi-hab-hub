@@ -32,9 +32,9 @@ export default function LegendPane({ dataLayer }) {
 
   let title;
 
-  if (dataLayer === "ifcb-layer") {
+  if (dataLayer === "ifcb_layer") {
     title = "Cell Concentration";
-  } else if (dataLayer === "stations-layer") {
+  } else if (dataLayer === "stations_layer") {
     title = "Shellfish Toxicity";
   }
 
@@ -70,9 +70,9 @@ export default function LegendPane({ dataLayer }) {
       />
 
       <CardContent>
-        {dataLayer === "ifcb-layer" && <LegendCellConcentration />}
+        {dataLayer === "ifcb_layer" && <LegendCellConcentration />}
 
-        {dataLayer === "stations-layer" && <LegendToxicity />}
+        {dataLayer === "stations_layer" && <LegendToxicity />}
       </CardContent>
     </Card>
   );

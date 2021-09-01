@@ -13,6 +13,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { changeLayerVisibility } from "./dataLayersSlice";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
+// local
+import { DATA_LAYERS } from "../../Constants";
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -40,6 +42,38 @@ export default function HabSpeciesForm() {
   const dispatch = useDispatch();
   const classes = useStyles();
 
+  const handleCheckboxChange = (event, dataLayer) => {
+    // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
+
+    if (dataLayer.id === DATA_LAYERS.ifcbLayer && event.target.checked) {
+      dispatch(
+        changeLayerVisibility({
+          checked: false,
+          layerID: DATA_LAYERS.ifcbBiovolumeLayer
+        })
+      );
+    }
+
+    if (
+      dataLayer.id === DATA_LAYERS.ifcbBiovolumeLayer &&
+      event.target.checked
+    ) {
+      dispatch(
+        changeLayerVisibility({
+          checked: false,
+          layerID: DATA_LAYERS.ifcbLayer
+        })
+      );
+    }
+
+    dispatch(
+      changeLayerVisibility({
+        checked: event.target.checked,
+        layerID: dataLayer.id
+      })
+    );
+  };
+
   const renderLayerControl = dataLayer => {
     return (
       <FormControlLabel
@@ -52,14 +86,7 @@ export default function HabSpeciesForm() {
           <Checkbox
             color="primary"
             checked={dataLayer.visibility}
-            onChange={event =>
-              dispatch(
-                changeLayerVisibility({
-                  checked: event.target.checked,
-                  layerID: dataLayer.id
-                })
-              )
-            }
+            onChange={event => handleCheckboxChange(event, dataLayer)}
             name={dataLayer.name}
           />
         }
@@ -76,7 +103,7 @@ export default function HabSpeciesForm() {
             </Grid>
             <Grid item xs={1}>
               <div>
-                {dataLayer.id === "stations-layer" && (
+                {dataLayer.id === "stations_layer" && (
                   <img
                     src={DiamondMarker}
                     alt="Station Toxicity Legend Icon"
@@ -84,7 +111,7 @@ export default function HabSpeciesForm() {
                   />
                 )}
 
-                {dataLayer.id === "ifcb-layer" && (
+                {dataLayer.id.includes("ifcb") && (
                   <img
                     src={CircleMarker}
                     alt="IFCB Legend Icon"
@@ -92,7 +119,7 @@ export default function HabSpeciesForm() {
                   />
                 )}
 
-                {dataLayer.id === "closures-layer" && (
+                {dataLayer.id === "closures_layer" && (
                   <img
                     src="images/icon-shellfish-closure.png"
                     alt="Closures Legend Icon"

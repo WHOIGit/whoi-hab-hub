@@ -71,6 +71,7 @@ def create_data_layers(apps, schema_editor):
     # default Data Layers
     DATA_LAYERS = (
         ('ifcb-layer', 'IFCB Cell Concentration'),
+        ('ifcb-biovolume-layer', 'IFCB Biovolume'),
         ('stations-layer', 'Shellfish Toxicity'),
         ('closures-layer', 'Shellfish Bed Closures'),
     )

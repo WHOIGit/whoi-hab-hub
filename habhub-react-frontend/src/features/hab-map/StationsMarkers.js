@@ -16,12 +16,16 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function StationsMarkers({ onMarkerClick }) {
+export default function StationsMarkers({
+  onMarkerClick,
+  metricName,
+  layerID
+}) {
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   const classes = useStyles();
-  const layerID = "stations-layer";
+
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
@@ -75,7 +79,9 @@ export default function StationsMarkers({ onMarkerClick }) {
         >
           <div
             className={classes.button}
-            onClick={event => onMarkerClick(event, feature, layerID)}
+            onClick={event =>
+              onMarkerClick(event, feature, layerID, metricName)
+            }
           >
             <StationsMarkerIcon maxMeanValue={maxMeanValue} />
           </div>

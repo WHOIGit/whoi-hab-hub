@@ -352,7 +352,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 CELERY_BEAT_SCHEDULE = {
     "get_ifcb_dashboard_data_task": {
         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
-        "schedule": crontab(minute=0, hour="*/1"),
+        "schedule": crontab(minute="*/25"),
     },
 }
 

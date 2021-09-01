@@ -3,11 +3,12 @@ import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/styles";
 import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
 import { Close, OpenWith, Minimize } from "@material-ui/icons";
-
+// local
 import StationsGraph from "./StationsGraph";
 import IfcbGraph from "./IfcbGraph";
 import ClosuresList from "./ClosuresList";
 import { selectAllSpecies } from "../../hab-species/habSpeciesSlice";
+import { DATA_LAYERS } from "../../../Constants";
 
 const expandWidth = window.outerWidth - 420;
 const useStyles = makeStyles(theme => ({
@@ -46,7 +47,8 @@ export default function SidePane({
   featureID,
   dataLayer,
   yAxisScale,
-  onPaneClose
+  onPaneClose,
+  metricName
 }) {
   const habSpecies = useSelector(selectAllSpecies);
   const classes = useStyles();
@@ -55,7 +57,7 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    if (dataLayer === "ifcb-layer") {
+    if (dataLayer === DATA_LAYERS.ifcbLayer) {
       const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
         .filter(species => species.visibility)
@@ -66,7 +68,7 @@ export default function SidePane({
       );
       setVisibleResults(filteredData);
     }
-  }, [results, habSpecies]);
+  }, [results, habSpecies, metricName]);
 
   function onExpandPanel() {
     setExpandPane(!expandPane);
@@ -75,19 +77,19 @@ export default function SidePane({
   let title;
   let subTitle;
 
-  if (dataLayer === "stations-layer") {
+  if (dataLayer === DATA_LAYERS.stationsLayer) {
     title = `Station Toxicity Data: ${results.properties.stationLocation}`;
     subTitle = `
       Station Name: ${results.properties.station_name} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer === "ifcb-layer") {
+  } else if (dataLayer.includes("ifcb")) {
     title = `IFCB Data: ${results.properties.name}`;
     subTitle = `
       ${results.properties.location} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer === "closures-layer") {
+  } else if (dataLayer === DATA_LAYERS.closuresLayer) {
     title = `Shellfish Closure: ${results.properties.name}`;
     subTitle = `
       State: ${results.properties.state} |
@@ -119,21 +121,24 @@ export default function SidePane({
       />
 
       <CardContent className={expandPane ? classes.expandContent : ""}>
-        {dataLayer === "stations-layer" && (
+        {dataLayer === DATA_LAYERS.stationsLayer && (
           <StationsGraph
             results={results}
             chartExpanded={expandPane}
             yAxisScale={yAxisScale}
           />
         )}
-        {dataLayer === "ifcb-layer" && visibleResults && (
+        {dataLayer.includes("ifcb") && visibleResults && (
           <IfcbGraph
             visibleResults={visibleResults}
+            metricName={metricName}
             chartExpanded={expandPane}
             yAxisScale={yAxisScale}
           />
         )}
-        {dataLayer === "closures-layer" && <ClosuresList results={results} />}
+        {dataLayer === DATA_LAYERS.closuresLayer && (
+          <ClosuresList results={results} />
+        )}
       </CardContent>
     </Card>
   );
