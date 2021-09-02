@@ -1,4 +1,6 @@
+import datetime
 from statistics import mean
+
 from django.contrib.gis.db import models
 from django.db.models import F
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
@@ -8,6 +10,7 @@ from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
 from habhub.core.constants import IFCB_LAYER
+from .requests import _get_ifcb_autoclass_file
 # IFCB dataset models
 
 
@@ -85,6 +88,24 @@ class Dataset(models.Model):
                 max_mean_values.append(data_dict)
 
         return max_mean_values
+
+    def ingest_ifcb_data_range(self, start_date, end_date):
+        if start_date:
+            start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
+        else:
+            return "Start Date missing"
+
+        if end_date:
+            end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()
+        else:
+            end_date_obj = timezone.now()
+
+
+        bins_qs = self.bins.filter(sample_time__range=(start_date_obj, end_date_obj))
+        for bin in bins_qs:
+            _get_ifcb_autoclass_file(bin)
+
+        return "IFCB Bin date range ingested"
 
 
 class Bin(models.Model):
