@@ -57,7 +57,7 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    if (dataLayer === DATA_LAYERS.ifcbLayer) {
+    if (dataLayer.includes("ifcb")) {
       const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
         .filter(species => species.visibility)
