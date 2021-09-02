@@ -162,6 +162,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   function handleChartDataFormat(dataObj, metricName) {
     // set up data arrays for Highcharts format.
     // match the value displayed to the metricName
+    console.log(dataObj);
     const dataArray = dataObj.data
       .map(item => {
         const sampleTime = Date.parse(item.sampleTime);
