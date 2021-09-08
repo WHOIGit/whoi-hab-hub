@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
 from habhub.core.constants import IFCB_LAYER
-from .requests import _get_ifcb_autoclass_file
+from .api_requests import _get_ifcb_autoclass_file
 # IFCB dataset models
 
 
