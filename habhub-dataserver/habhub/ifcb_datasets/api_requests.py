@@ -12,7 +12,6 @@ from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point
 
-from .models import *
 from habhub.core.models import TargetSpecies
 
 env = environ.Env()
@@ -65,6 +64,8 @@ def _get_ifcb_bins_dataset(dataset_obj):
     Function to make API request for all IFCB bins by dataset
     Args: 'dataset_obj' - Dataset object
     """
+    from .models import Bin
+
     # get the most recent Bin
     try:
         latest_bin = dataset_obj.bins.latest()
@@ -126,6 +127,8 @@ def _get_single_ifcb_bin(dataset_obj, bin_pid):
     Function to make API request for single IFCB bin by dataset
     Args: 'dataset_obj' - Dataset object, 'bin_pid' - Bin PID string
     """
+    from .models import Bin
+    
     csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
     # check if Bin already exists in DB
     try:

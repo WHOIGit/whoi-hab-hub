@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from .requests import run_species_classifed_import
+from .api_requests import run_species_classifed_import
 from .models import Dataset
 
 
