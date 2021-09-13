@@ -6,11 +6,10 @@ import { format, parseISO } from "date-fns";
 import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerSquaresGrid from "./IfcbMarkerSquaresGrid";
+import axiosInstance from "../../app/apiAxios";
+import IfcbMarkerIcon from "./IfcbMarkerIcon";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
-
-// eslint-disable-next-line no-undef
-const API_URL = process.env.REACT_APP_API_URL;
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles(theme => ({
@@ -31,11 +30,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function IfcbMarkers({ onMarkerClick }) {
+function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
-  const layerID = "ifcb-layer";
+
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -43,70 +42,70 @@ export default function IfcbMarkers({ onMarkerClick }) {
   const [results, setResults] = useState();
 
   useEffect(() => {
-    const getFetchUrl = () => {
-      let baseURL = API_URL + "api/v1/ifcb-datasets/";
-      // build API URL to get set Date Filter
-      const filterURL =
-        baseURL +
-        "?" +
-        new URLSearchParams({
+    async function fetchResults() {
+      try {
+        const params = new URLSearchParams({
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor
         });
-      return filterURL;
-    };
-
-    const fetchResults = () => {
-      const url = getFetchUrl();
-      console.log(url);
-      fetch(url)
-        .then(res => res.json())
-        .then(
-          result => {
-            console.log(result);
-            setIsLoaded(true);
-            setResults(result);
-          },
-          // Note: it"s important to handle errors here
-          // instead of a catch() block so that we don"t swallow
-          // exceptions from actual bugs in components.
-          error => {
-            setIsLoaded(true);
-            setError(error);
-          }
-        );
-    };
+        const res = await axiosInstance.get("api/v1/ifcb-datasets/", {
+          params
+        });
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setResults(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
+    }
     fetchResults();
   }, [dateFilter]);
 
   const renderSquaresGrid = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
-    if (!feature.properties.maxMeanValues.length) {
-      return null;
-    }
-    const speciesValues = visibleSpecies.map(item => {
-      const maxMeanItem = feature.properties.maxMeanValues.filter(
-        data => item.id === data.species
-      );
-      let value = maxMeanItem[0].maxValue;
+    if (feature.properties.maxMeanValues.length) {
+      const speciesValues = visibleSpecies.map(item => {
+        const speciesItem = feature.properties.maxMeanValues.find(
+          data => item.id === data.species
+        );
 
-      if (showMaxMean === "mean") {
-        value = maxMeanItem[0].meanValue;
+        const maxMeanItem = speciesItem.data.find(
+          data => data.metricName === metricName
+        );
+        let value = maxMeanItem.maxValue;
+
+        if (showMaxMean === "mean") {
+          value = maxMeanItem.meanValue;
+        }
+
+        return {
+          species: item.id,
+          value: value,
+          color: item.primaryColor
+        };
+      });
+      //.sort((a, b) => (a.value < b.value ? 1 : -1));
+
+      if (speciesValues.length) {
+        return (
+          <IfcbMarkerIcon
+            feature={feature}
+            layerID={layerID}
+            speciesValues={speciesValues}
+            onMarkerClick={onMarkerClick}
+            metricName={metricName}
+            key={feature.id}
+          />
+        );
+      } else {
+        return;
       }
-
-      return {
-        species: item.id,
-        value: value,
-        color: item.primaryColor
-      };
-    });
-    //.sort((a, b) => (a.value < b.value ? 1 : -1));
-
-    if (!speciesValues.length) {
-      return null;
+    } else {
+      return;
     }
     return (
       <IfcbMarkerSquaresGrid

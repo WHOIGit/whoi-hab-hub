@@ -6,10 +6,16 @@ from colorfield.fields import ColorField
 
 from .utils import linear_gradient
 
-
 class TargetSpecies(models.Model):
     # Model to configure Target HAB species for HABhub to monitor
     # Used for all data layers
+
+    MARINE = 'Marine'
+    FRESHWATER = 'Freshwater'
+    ENVIRONMENT_CHOICES = [
+        (MARINE, 'Marine'),
+        (FRESHWATER, 'Freshwater'),
+    ]
 
     # species_id needs to match the Autoclass files in the IFCB Dashboard
     species_id = models.CharField(max_length=100, unique=True, db_index=True,
@@ -19,6 +25,11 @@ class TargetSpecies(models.Model):
     primary_color = ColorField(default='#FF0000')
     color_gradient = ArrayField(
         models.CharField(max_length=7), null=True, blank=True, default=None
+    )
+    species_environment = models.CharField(
+        max_length=20,
+        choices=ENVIRONMENT_CHOICES,
+        default=MARINE,
     )
 
     class Meta:
@@ -33,7 +44,6 @@ class TargetSpecies(models.Model):
         dark_shade = Color(self.primary_color)
         dark_shade.luminance = .35
         color_gradient = linear_gradient(self.primary_color, "#FFFFFF", 5)
-        print(color_gradient)
         # remove white
         color_gradient.pop()
         # add dark_shade
@@ -45,9 +55,35 @@ class TargetSpecies(models.Model):
 
 class DataLayer(models.Model):
     # Model to configure which Data Layers are active for the frontend client
+
+    # Possible local "habhub" Django apps that layer can belong to
+    IFCB_DATASETS = 'ifcb_datasets'
+    STATIONS = 'stations'
+    CLOSURES = 'closures'
+    APP_CHOICES = [
+        (IFCB_DATASETS, 'Ifcb_Datasets'),
+        (STATIONS, 'Stations'),
+        (CLOSURES, 'Closures'),
+    ]
+
     layer_id = models.CharField(max_length=100, unique=True, db_index=True)
     name = models.CharField(max_length=100, blank=True, db_index=True)
+    belongs_to_app = models.CharField(max_length=100, db_index=True, choices=APP_CHOICES, default=IFCB_DATASETS)
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Metric(models.Model):
+    # Metrics available for different data layers
+    metric_id = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
+    units = models.CharField(max_length=100, blank=True)
+    data_layer = models.ForeignKey(DataLayer, related_name='metrics', on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['name']

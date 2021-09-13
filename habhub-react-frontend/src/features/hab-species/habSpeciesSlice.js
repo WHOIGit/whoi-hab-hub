@@ -1,10 +1,17 @@
-import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// local
+import axiosInstance from "../../app/apiAxios";
+import { colorShade } from "../../app/utils/colorUtils";
+import { ENVIRONMENTS } from "../../Constants";
 
-const API_URL = process.env.REACT_APP_API_URL;
+let INITIAL_SPECIES_LIST = null;
+if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {
+  INITIAL_SPECIES_LIST = process.env.REACT_APP_INITIAL_SPECIES_LIST.split(",");
+}
 
 const initialState = {
   species: [],
+  enviroments: ENVIRONMENTS,
   status: "idle",
   error: null
 };
@@ -65,8 +72,8 @@ const initialSpecies = [
 export const fetchHabSpecies = createAsyncThunk(
   "habSpecies/fetchHabSpecies",
   async () => {
-    const url = API_URL + "api/v1/core/target-species/";
-    const response = await axios.get(url);
+    const endpoint = "api/v1/core/target-species/";
+    const response = await axiosInstance.get(endpoint);
     return response.data;
   }
 );
@@ -81,6 +88,27 @@ export const habSpeciesSlice = createSlice({
           element.visibility = action.payload.checked;
         }
       });
+    },
+    changeSpeciesActiveOption: (state, action) => {
+      state.species.forEach(element => {
+        if (element.id == action.payload.species.id) {
+          element.isActive = action.payload.checked;
+        }
+      });
+    },
+    changeSpeciesColor: (state, action) => {
+      state.species.forEach(element => {
+        if (element.id == action.payload.species.id) {
+          element.primaryColor = action.payload.primaryColor;
+          element.colorGradient = [
+            colorShade(action.payload.primaryColor, 120),
+            colorShade(action.payload.primaryColor, 80),
+            action.payload.primaryColor,
+            colorShade(action.payload.primaryColor, -40),
+            colorShade(action.payload.primaryColor, -80)
+          ];
+        }
+      });
     }
   },
   extraReducers: {
@@ -91,8 +119,22 @@ export const habSpeciesSlice = createSlice({
       state.status = "succeeded";
       // Add any fetched layers to the array
       state.species = state.species.concat(action.payload);
-      state.species.forEach(element => {
-        element.visibility = true;
+      state.species.forEach((element, index) => {
+        // check if env variable to set initial species list exists.
+        // if not, use first 6
+        if (INITIAL_SPECIES_LIST) {
+          if (INITIAL_SPECIES_LIST.includes(element.id)) {
+            element.visibility = true;
+          } else {
+            element.visibility = false;
+          }
+        } else {
+          if (index < 6) {
+            element.visibility = true;
+          } else {
+            element.visibility = false;
+          }
+        }
       });
     },
     [fetchHabSpecies.rejected]: (state, action) => {
@@ -103,7 +145,11 @@ export const habSpeciesSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeSpeciesVisibility } = habSpeciesSlice.actions;
+export const {
+  changeSpeciesVisibility,
+  changeSpeciesColor,
+  changeSpeciesActiveOption
+} = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;
 
@@ -115,6 +161,16 @@ export const selectAllSpecies = state => state.habSpecies.species;
 export const selectVisibleSpecies = state =>
   state.habSpecies.species.filter(item => item.visibility);
 
+// return only the Species that are currently selectable to be visible on the map
+export const selectActiveSpecies = state =>
+  state.habSpecies.species.filter(item => item.isActive);
+
 // get species by syndrome
 export const selectSpeciesBySyndrome = (state, syndrome) =>
   state.habSpecies.species.filter(item => item.syndrome === syndrome);
+
+// get species by enviroment
+export const selectSpeciesByEnvironment = (state, environment) =>
+  state.habSpecies.species.filter(
+    item => item.speciesEnvironment === environment
+  );

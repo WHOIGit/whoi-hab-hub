@@ -8,8 +8,7 @@ import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 import { changeDateRange } from "./dateFilterSlice";
 
-// eslint-disable-next-line no-undef
-const API_URL = process.env.REACT_APP_API_URL;
+import axiosInstance from "../../app/apiAxios";
 
 const widthWithDashboard = window.outerWidth - 400;
 const widthFull = window.outerWidth - 116;
@@ -62,23 +61,16 @@ function DataTimeline({
   const classes = useStyles();
 
   useEffect(() => {
-    function fetchResults() {
-      const url = `${API_URL}api/v1/core/data-density/`;
-      fetch(url)
-        .then(res => res.json())
-        .then(
-          result => {
-            setIsLoaded(true);
-            setResults(result);
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          error => {
-            setIsLoaded(true);
-            setError(error);
-          }
-        );
+    async function fetchResults() {
+      try {
+        const res = await axiosInstance.get("api/v1/core/data-density/");
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setResults(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
     }
     fetchResults();
   }, [dataLayers]);

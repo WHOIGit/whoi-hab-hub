@@ -11,7 +11,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
 import { makeStyles } from "@material-ui/styles";
-// Import our stuff
+// local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
@@ -26,6 +26,7 @@ import {
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
 import { changeActiveGridSquares, changeGridZoom } from "./spatialGridSlice";
+import { DATA_LAYERS } from "../../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
@@ -91,7 +92,7 @@ export default function HabMap() {
 
   useEffect(() => {
     const newFeatures = features.filter(feature =>
-      visibleLayerIds.includes(feature.layer)
+      visibleLayerIds.includes(feature.layerID)
     );
     setFeatures(newFeatures);
 
@@ -188,7 +189,7 @@ export default function HabMap() {
       feature !== undefined &&
       interactiveLayerIds.includes(feature.layer.id)
     ) {
-      feature.layer = feature.layer.id;
+      feature.layerID = feature.layer.id;
       setFeatures([feature, ...features]);
     }
   };
@@ -199,8 +200,10 @@ export default function HabMap() {
     //handleMapBoundsUpdates(viewport);
   };
 
-  const onMarkerClick = (event, feature, layerID) => {
-    feature.layer = layerID;
+  const onMarkerClick = (event, feature, layerID, metricName) => {
+    feature.layerID = layerID;
+    feature.metricName = metricName;
+
     setFeatures([feature, ...features]);
   };
 
@@ -210,32 +213,41 @@ export default function HabMap() {
   };
 
   const renderMarkerLayer = layerID => {
-    if (layerID === "stations-layer") {
-      return <StationsMarkers onMarkerClick={onMarkerClick} key={layerID} />;
-    } else if (layerID === "closures-layer") {
-      return <ClosuresLayer key={layerID} />;
-    } else if (layerID === "ifcb-layer") {
+    if (layerID === DATA_LAYERS.stationsLayer) {
       return (
+        <StationsMarkers
+          onMarkerClick={onMarkerClick}
+          metricName="Shellfish Toxicity"
+          layerID={layerID}
+          key={layerID}
+        />
+      );
+    } else if (layerID === DATA_LAYERS.closuresLayer) {
+      return <ClosuresLayer layerID={layerID} key={layerID} />;
+    } else if (layerID === DATA_LAYERS.ifcbLayer) {
+      return (
+        /*
+        <IfcbMarkers
+          onMarkerClick={onMarkerClick}
+          metricName="Cell Concentration"
+          layerID={layerID}
+          key={layerID}
+        />*/
         <SpatialGridLayer
           onMarkerClick={onMarkerClick}
           gridZoom={getGridZoomRange()}
           key={layerID}
         />
-        /*
-        <SpatialBinsLayer
+      );
+    } else if (layerID === DATA_LAYERS.ifcbBiovolumeLayer) {
+      return (
+        <IfcbMarkers
           onMarkerClick={onMarkerClick}
-          mapBounds={mapBounds}
-          gridZoom={getGridZoomRange()}
+          metricName="Biovolume"
+          layerID={layerID}
           key={layerID}
         />
-
-        <IfcbSpatialLayer
-          onMarkerClick={onMarkerClick}
-          key={layerID}
-          gridSquares={gridSquares}
-        />*/
       );
-      //return <IfcbMarkers onMarkerClick={onMarkerClick} key={layerID} />;
     } else {
       return;
     }
@@ -253,9 +265,10 @@ export default function HabMap() {
               <DataPanel
                 key={feature.id}
                 featureID={feature.id}
-                dataLayer={feature.layer}
+                dataLayer={feature.layerID}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
+                metricName={feature.metricName}
               />
             ))}
           </div>

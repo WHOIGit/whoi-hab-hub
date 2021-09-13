@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/styles";
 import { Typography, Box, Tabs, Tab } from "@material-ui/core";
-import { Stars, Layers, List, Explore } from "@material-ui/icons";
+import { Stars, Layers, List, Explore, Ballot } from "@material-ui/icons";
 import DataLayersTab from "./DataLayersTab";
+import HabSpeciesTab from "./HabSpeciesTab";
 import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
@@ -15,7 +16,7 @@ const useStyles = makeStyles(theme => ({
     right: 0,
     width: "448px",
     background: "none",
-    zIndex: 2000,
+    zIndex: 1200,
     height: "100vh",
     overflowY: "scroll",
     transition: "all 0.3s"
@@ -134,6 +135,13 @@ export default function Dashboard({
               }}
             >
               <Tab
+                icon={<Ballot />}
+                label="Algal Species"
+                classes={{
+                  root: classes.tabRoot
+                }}
+              />
+              <Tab
                 icon={<Layers />}
                 label="Data Layers"
                 classes={{
@@ -165,18 +173,21 @@ export default function Dashboard({
           </div>
 
           <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
-            <DataLayersTab />
+            <HabSpeciesTab />
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
+            <DataLayersTab />
+          </TabPanel>
+          <TabPanel value={tabValue} index={2} className={classes.tabPanelRoot}>
             <LegendTab
               visibleLegends={visibleLegends}
               setVisibleLegends={setVisibleLegends}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} className={classes.tabPanelRoot}>
+          <TabPanel value={tabValue} index={3} className={classes.tabPanelRoot}>
             <LinksTab />
           </TabPanel>
-          <TabPanel value={tabValue} index={3} className={classes.tabPanelRoot}>
+          <TabPanel value={tabValue} index={4} className={classes.tabPanelRoot}>
             <PartnersTab />
           </TabPanel>
         </>

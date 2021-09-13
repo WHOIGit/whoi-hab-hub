@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from .requests import run_species_classifed_import
+from .api_requests import run_species_classifed_import
 from .models import Dataset
 
 
@@ -9,7 +9,7 @@ def hello():
     print('Howdy')
 
 
-@shared_task(time_limit=300, soft_time_limit=300)
+@shared_task(time_limit=3000, soft_time_limit=3000)
 def get_ifcb_dashboard_data():
     sets = Dataset.objects.all()
     print(sets)

@@ -1,12 +1,16 @@
 from django.contrib import admin
 
-from .models import TargetSpecies, DataLayer
+from .models import TargetSpecies, DataLayer, Metric
 
 # Register models here.
 
 
 class DataLayerAdmin(admin.ModelAdmin):
-    readonly_fields = ('layer_id',)
+    pass
+
+
+class MetricAdmin(admin.ModelAdmin):
+    pass
 
 
 class TargetSpeciesAdmin(admin.ModelAdmin):
@@ -15,3 +19,4 @@ class TargetSpeciesAdmin(admin.ModelAdmin):
 
 admin.site.register(TargetSpecies, TargetSpeciesAdmin)
 admin.site.register(DataLayer, DataLayerAdmin)
+admin.site.register(Metric, MetricAdmin)

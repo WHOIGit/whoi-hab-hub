@@ -113,21 +113,21 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
         active_layers = DataLayer.objects.filter(is_active=True)
         querylist = []
-        
+
         for layer in active_layers:
-            if layer.layer_id == 'ifcb-layer':
+            if layer.layer_id == 'ifcb_layer':
                 querylist.append({
                     'queryset': bin_query,
                     'serializer_class': BinSerializer,
                     'label': 'IFCB Cell Concentrations',
                 })
-            elif layer.layer_id == 'stations-layer':
+            elif layer.layer_id == 'stations_layer':
                 querylist.append({
                     'queryset': datapoint_query,
                     'serializer_class': DatapointSerializer,
                     'label': 'Shellfish Station Toxicity',
                 })
-            elif layer.layer_id == 'closures-layer':
+            elif layer.layer_id == 'closures_layer':
                 querylist.append({
                     'queryset': closure_query,
                     'serializer_class': ClosureNoticeSerializer,

@@ -5,8 +5,7 @@ import { format, parseISO } from "date-fns";
 import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 
-// eslint-disable-next-line no-undef
-const API_URL = process.env.REACT_APP_API_URL;
+import axiosInstance from "../../app/apiAxios";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles(theme => ({
@@ -17,7 +16,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ClosuresLayer() {
+export default function ClosuresLayer({ layerID }) {
   const dateFilter = useSelector(state => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -26,46 +25,27 @@ export default function ClosuresLayer() {
   const [results, setResults] = useState();
   const [labels, setLabels] = useState();
 
-  // Get Closure data from API
   useEffect(() => {
-    function getFetchUrl() {
-      let baseURL = API_URL + "api/v1/closures/";
-      let filterURL = "";
-      // build API URL to get set Date Filter
-      filterURL =
-        baseURL +
-        "?" +
-        new URLSearchParams({
+    async function fetchResults() {
+      try {
+        const params = new URLSearchParams({
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
-          exclude_month_range: dateFilter.exclude_month_range
+          exclude_month_range: dateFilter.excludeMonthRange,
+          smoothing_factor: dateFilter.smoothingFactor
         });
-      return filterURL;
+        const res = await axiosInstance.get("api/v1/closures/", {
+          params
+        });
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setResults(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
     }
-
-    function fetchResults() {
-      const url = getFetchUrl();
-      console.log(url);
-      setIsLoaded(false);
-
-      fetch(url)
-        .then(res => res.json())
-        .then(
-          result => {
-            setIsLoaded(true);
-            setResults(result);
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          error => {
-            setIsLoaded(true);
-            setError(error);
-          }
-        );
-    }
-    // Get the API data
     fetchResults();
   }, [dateFilter]);
 
@@ -96,7 +76,7 @@ export default function ClosuresLayer() {
 
   // Set default layer styles
   const layerClosures = {
-    id: "closures-layer",
+    id: layerID,
     type: "fill",
     source: "closures-src",
     paint: {
