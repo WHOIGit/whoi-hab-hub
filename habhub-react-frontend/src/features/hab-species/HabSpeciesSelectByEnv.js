@@ -36,7 +36,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
   const speciesList = useSelector(state =>
     selectSpeciesByEnvironment(state, environment)
   );
-
+  console.log(speciesList);
   const handleSpeciesSelect = (event, species) => {
     dispatch(
       changeSpeciesVisibility({
@@ -46,6 +46,9 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
     );
   };
 
+  if (!speciesList.length) {
+    return null;
+  }
   return (
     <>
       <FormLabel component="legend">{environment}</FormLabel>
