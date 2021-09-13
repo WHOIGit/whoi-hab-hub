@@ -25,6 +25,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function IfcbSpatialMarkers({ onMarkerClick, gridSquare }) {
+  console.log(gridSquare);
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);

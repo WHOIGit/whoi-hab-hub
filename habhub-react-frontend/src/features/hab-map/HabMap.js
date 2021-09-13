@@ -25,7 +25,11 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds
 } from "../data-layers/dataLayersSlice";
-import { changeActiveGridSquares, changeGridZoom } from "./spatialGridSlice";
+import {
+  changeActiveGridSquares,
+  changeGridZoom,
+  selectActiveGridSquaresByZoom
+} from "./spatialGridSlice";
 import { DATA_LAYERS } from "../../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
@@ -62,7 +66,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function HabMap() {
   //const gridSquares = useSelector(state => state.spatialGrid.gridSquares);
-  //const gridSquares = useSelector(selectActiveGridSquares);
+  const gridSquares = useSelector(selectActiveGridSquaresByZoom);
 
   const classes = useStyles();
   const [viewport, setViewport] = useState({
@@ -232,10 +236,18 @@ export default function HabMap() {
           metricName="Cell Concentration"
           layerID={layerID}
           key={layerID}
-        />*/
+        />
+        <IfcbSpatialLayer
+          onMarkerClick={onMarkerClick}
+          gridSquares={gridSquares}
+          key={layerID}
+        />
+
+        */
         <SpatialGridLayer
           onMarkerClick={onMarkerClick}
           gridZoom={getGridZoomRange()}
+          layerID={layerID}
           key={layerID}
         />
       );

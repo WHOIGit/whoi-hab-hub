@@ -7,6 +7,7 @@ import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerSquaresGrid from "./IfcbMarkerSquaresGrid";
 import axiosInstance from "../../app/apiAxios";
+// eslint-disable-next-line no-unused-vars
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
@@ -30,7 +31,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
+export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector(state => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
@@ -92,7 +93,7 @@ function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
 
       if (speciesValues.length) {
         return (
-          <IfcbMarkerIcon
+          <IfcbMarkerSquaresGrid
             feature={feature}
             layerID={layerID}
             speciesValues={speciesValues}
@@ -107,15 +108,6 @@ function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
     } else {
       return;
     }
-    return (
-      <IfcbMarkerSquaresGrid
-        feature={feature}
-        layerID={layerID}
-        speciesValues={speciesValues}
-        onMarkerClick={onMarkerClick}
-        key={feature.id}
-      />
-    );
   };
 
   const renderCircleMarker = feature => {

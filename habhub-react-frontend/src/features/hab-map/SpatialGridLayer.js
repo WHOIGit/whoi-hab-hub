@@ -3,11 +3,16 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Source, Layer } from "react-map-gl";
 import { format, parseISO } from "date-fns";
-//import IfcbSpatialMarkers from "./IfcbSpatialMarkers";
+import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
+import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
+import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
 const API_URL = process.env.REACT_APP_API_URL;
 
-export default function SpatialGridLayer({ onMarkerClick, gridZoom }) {
+export default function SpatialGridLayer({ onMarkerClick, gridZoom, layerID }) {
+  const visibleSpecies = useSelector(selectVisibleSpecies);
+  const habSpecies = useSelector(state => state.habSpecies.species);
   const dateFilter = useSelector(state => state.dateFilter);
+  const showMaxMean = useSelector(selectMaxMeanOption);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
@@ -71,14 +76,51 @@ export default function SpatialGridLayer({ onMarkerClick, gridZoom }) {
     fetchResults();
   }, [dateFilter]);
 
+  function renderIconGrid(feature, showMaxMean) {
+    // create new Array with Visible Species/Values
+    if (!feature.properties.maxMeanValues.length) {
+      return null;
+    }
+
+    const speciesValues = visibleSpecies.map(item => {
+      const maxMeanItem = feature.properties.maxMeanValues.filter(
+        data => item.id === data.species
+      );
+      let value = maxMeanItem[0].maxValue;
+
+      if (showMaxMean === "mean") {
+        value = maxMeanItem[0].meanValue;
+      }
+
+      return {
+        species: item.id,
+        value: value,
+        color: item.primaryColor
+      };
+    });
+    //.sort((a, b) => (a.value < b.value ? 1 : -1));
+
+    if (!speciesValues.length) {
+      return null;
+    }
+
+    return (
+      <IfcbSpatialMarkerGrid
+        feature={feature}
+        layerID={layerID}
+        speciesValues={speciesValues}
+        onMarkerClick={onMarkerClick}
+        key={feature.id}
+      />
+    );
+  }
+
   if (results == null) {
     return null;
   }
   return (
     <div>
-      <Source id="grid-src" type="geojson" data={results}>
-        <Layer {...layerGrid} key="grid-layer" />
-      </Source>
+      {results.features.map(feature => renderIconGrid(feature, showMaxMean))}
     </div>
   );
 }
