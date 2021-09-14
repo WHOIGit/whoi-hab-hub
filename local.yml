@@ -23,7 +23,7 @@ services:
       dockerfile: ./compose/local/django/Dockerfile
     image: habhub_local_django
     depends_on:
-      - postgres
+      - postgres_habhub
     volumes:
       - ./habhub-dataserver:/app
     env_file:
@@ -51,7 +51,7 @@ services:
     image: habhub_local_celeryworker
     depends_on:
       - redis
-      - postgres
+      - postgres_habhub
     ports: []
     command: /start-celeryworker
 
@@ -60,7 +60,7 @@ services:
     image: habhub_local_celerybeat
     depends_on:
       - redis
-      - postgres
+      - postgres_habhub
     ports: []
     command: /start-celerybeat
 
