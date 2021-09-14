@@ -80,7 +80,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
 
     csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
 
-    response = requests.get(csv_url, params=params)
+    response = requests.get(csv_url, params=params, verify=False)
     print(response.status_code, response.url)
     if response.status_code == 200:
         lines = (line.decode('utf-8') for line in response.iter_lines())
@@ -128,7 +128,7 @@ def _get_single_ifcb_bin(dataset_obj, bin_pid):
     Args: 'dataset_obj' - Dataset object, 'bin_pid' - Bin PID string
     """
     from .models import Bin
-    
+
     csv_url = F'{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}'
     # check if Bin already exists in DB
     try:

@@ -30,7 +30,7 @@ services:
       - ./habhub-dataserver/.envs/.local/.django
       - ./habhub-dataserver/.envs/.local/.postgres
     ports:
-      - "8000:8000"
+      - "8888:8000"
     command: /start
 
   postgres:
