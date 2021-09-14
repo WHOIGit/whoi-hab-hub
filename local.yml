@@ -67,3 +67,8 @@ services:
   redis:
     image: redis:6.0
     restart: unless-stopped
+
+networks:
+  default:
+    external:
+      name: ifcbdb_nginx_network
