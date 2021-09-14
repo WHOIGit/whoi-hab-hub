@@ -33,7 +33,7 @@ services:
       - "8888:8000"
     command: /start
 
-  postgres:
+  postgres_habhub:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
