@@ -84,6 +84,8 @@ function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
           data => item.id === data.species
         );
 
+        console.log(speciesItem);
+        console.log(metricName);
         const maxMeanItem = speciesItem.data.find(
           data => data.metricName === metricName
         );
