@@ -21,7 +21,7 @@ IFCB_DASHBOARD_URL = env(
 )
 
 IFCB_DASHBOARD_BROWSER_URL = env(
-    "IFCB_DASHBOARD_BROWSER_URL", default="http://localhost"
+    "IFCB_DASHBOARD_BROWSER_URL", default="http://localhost:8000"
 )
 
 ######### AJAX Views to return geoJSON for maps #############
