@@ -174,7 +174,6 @@ class BinAjaxGetImagesBySpecies(View):
 
         images = []
         # AJAX is sending display name
-        TARGET_SPECIES = Bin.TARGET_SPECIES
         target_list = TargetSpecies.objects.all()
         species = next((item for item in target_list if item.display_name == species), False)
         print(species)
