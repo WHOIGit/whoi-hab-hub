@@ -50,7 +50,7 @@ services:
     <<: *django
     image: habhub_local_celeryworker
     depends_on:
-      - redis
+      - redis_habhub
       - postgres_habhub
     ports: []
     command: /start-celeryworker
@@ -59,7 +59,7 @@ services:
     <<: *django
     image: habhub_local_celerybeat
     depends_on:
-      - redis
+      - redis_habhub
       - postgres_habhub
     ports: []
     command: /start-celerybeat
