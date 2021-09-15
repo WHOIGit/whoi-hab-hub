@@ -15,8 +15,6 @@ services:
       - /usr/src/app/node_modules #<- Use anonymous volume to keep node_modules directory
     ports:
       - "3000:3000"
-    networks:
-      - ifcbdb_nginx_network
     command: npm start
 
   django: &django
@@ -33,8 +31,6 @@ services:
       - ./habhub-dataserver/.envs/.local/.postgres
     ports:
       - "8888:8000"
-    networks:
-      - ifcbdb_nginx_network
     command: /start
 
   postgres_habhub:
@@ -47,8 +43,6 @@ services:
       - local_postgres_data_backups:/backups
     ports:
       - "5432:5432"
-    networks:
-      - ifcbdb_nginx_network
     env_file:
       - ./habhub-dataserver/.envs/.local/.postgres
 
@@ -59,8 +53,6 @@ services:
       - redis
       - postgres_habhub
     ports: []
-    networks:
-      - ifcbdb_nginx_network
     command: /start-celeryworker
 
   celerybeat:
@@ -70,15 +62,11 @@ services:
       - redis
       - postgres_habhub
     ports: []
-    networks:
-      - ifcbdb_nginx_network
     command: /start-celerybeat
 
   redis_habhub:
     image: redis:6.0
     restart: unless-stopped
-    networks:
-      - ifcbdb_nginx_network
 
 networks:
   default:
