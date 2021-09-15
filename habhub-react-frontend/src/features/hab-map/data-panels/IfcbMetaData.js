@@ -4,6 +4,8 @@ import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
 import axiosInstance from "../../../app/apiAxios";
 
+const DASHBOARD_URL = process.env.REACT_APP_IFCB_DASHBOARD_URL;
+
 const useStyles = makeStyles(theme => ({
   placeholder: {
     textAlign: "center"
@@ -75,7 +77,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
                 <Button
                   size="small"
                   color="primary"
-                  href={`https://habon-ifcb.whoi.edu/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
+                  href={`${DASHBOARD_URL}/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
                   target="_blank"
                 >
                   IFCB Dashboard source link
