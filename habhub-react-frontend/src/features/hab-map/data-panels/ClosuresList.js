@@ -32,7 +32,7 @@ export default function ClosuresList({ results }) {
         >
           <Grid item xs={9}>
             <Typography variant="subtitle1" display="block" gutterBottom>
-              Closure Date: {closure.effective_date}
+              Closure Date: {closure.effectiveDate}
             </Typography>
             <Typography
               variant="body2"
@@ -40,17 +40,13 @@ export default function ClosuresList({ results }) {
               color="textSecondary"
               gutterBottom
             >
-              Causative Species: <em>{closure.causative_organism}</em>
+              Causative Species: <em>{closure.causativeOrganism}</em>
             </Typography>
           </Grid>
           <Grid item xs={3}>
-            {closure.document_link && (
+            {closure.documentLink && (
               <Box align="center">
-                <a
-                  href={closure.document_link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={closure.documentLink} target="_blank" rel="noreferrer">
                   <DescriptionIcon fontSize="large" />
                 </a>
                 <Typography
