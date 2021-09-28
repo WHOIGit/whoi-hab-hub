@@ -44,7 +44,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   const [openMetaData, setOpenMetaData] = useState(false);
 
   useEffect(() => {
-    const chartData = visibleResults.map(item =>
+    const chartData = visibleResults.map((item) =>
       handleChartDataFormat(item, metricName)
     );
 
@@ -169,17 +169,13 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
     // match the value displayed to the metricName
     console.log(dataObj);
     const dataArray = dataObj.data
-<<<<<<< HEAD
-      .map(item => {
+      .map((item) => {
         const sampleTime = Date.parse(item.sampleTime);
         const metricValue = item.metrics.find(
-          metric => metric.metricName === metricName
+          (metric) => metric.metricName === metricName
         ).value;
         return [sampleTime, metricValue];
       })
-=======
-      .map((item) => [Date.parse(item.sampleTime), item.cellConcentration])
->>>>>>> main
       .sort();
 
     const seriesColor = habSpecies.find((item) => item.id === dataObj.species);
