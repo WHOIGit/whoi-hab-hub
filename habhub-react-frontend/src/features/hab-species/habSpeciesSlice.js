@@ -5,6 +5,7 @@ import { colorShade } from "../../app/utils/colorUtils";
 import { ENVIRONMENTS } from "../../Constants";
 
 let INITIAL_SPECIES_LIST = null;
+// eslint-disable-next-line no-undef
 if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {
   INITIAL_SPECIES_LIST = process.env.REACT_APP_INITIAL_SPECIES_LIST.split(",");
 }
@@ -13,7 +14,7 @@ const initialState = {
   species: [],
   enviroments: ENVIRONMENTS,
   status: "idle",
-  error: null
+  error: null,
 };
 
 /*
@@ -83,21 +84,21 @@ export const habSpeciesSlice = createSlice({
   initialState: initialState,
   reducers: {
     changeSpeciesVisibility: (state, action) => {
-      state.species.forEach(element => {
+      state.species.forEach((element) => {
         if (element.id == action.payload.species.id) {
           element.visibility = action.payload.checked;
         }
       });
     },
     changeSpeciesActiveOption: (state, action) => {
-      state.species.forEach(element => {
+      state.species.forEach((element) => {
         if (element.id == action.payload.species.id) {
           element.isActive = action.payload.checked;
         }
       });
     },
     changeSpeciesColor: (state, action) => {
-      state.species.forEach(element => {
+      state.species.forEach((element) => {
         if (element.id == action.payload.species.id) {
           element.primaryColor = action.payload.primaryColor;
           element.colorGradient = [
@@ -105,14 +106,14 @@ export const habSpeciesSlice = createSlice({
             colorShade(action.payload.primaryColor, 80),
             action.payload.primaryColor,
             colorShade(action.payload.primaryColor, -40),
-            colorShade(action.payload.primaryColor, -80)
+            colorShade(action.payload.primaryColor, -80),
           ];
         }
       });
-    }
+    },
   },
   extraReducers: {
-    [fetchHabSpecies.pending]: state => {
+    [fetchHabSpecies.pending]: (state) => {
       state.status = "loading";
     },
     [fetchHabSpecies.fulfilled]: (state, action) => {
@@ -140,37 +141,37 @@ export const habSpeciesSlice = createSlice({
     [fetchHabSpecies.rejected]: (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
-    }
-  }
+    },
+  },
 });
 
 // Action creators are generated for each case reducer function
 export const {
   changeSpeciesVisibility,
   changeSpeciesColor,
-  changeSpeciesActiveOption
+  changeSpeciesActiveOption,
 } = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;
 
 // Selector functions
 // return all species
-export const selectAllSpecies = state => state.habSpecies.species;
+export const selectAllSpecies = (state) => state.habSpecies.species;
 
 // return only the currently visible layers
-export const selectVisibleSpecies = state =>
-  state.habSpecies.species.filter(item => item.visibility);
+export const selectVisibleSpecies = (state) =>
+  state.habSpecies.species.filter((item) => item.visibility);
 
 // return only the Species that are currently selectable to be visible on the map
-export const selectActiveSpecies = state =>
-  state.habSpecies.species.filter(item => item.isActive);
+export const selectActiveSpecies = (state) =>
+  state.habSpecies.species.filter((item) => item.isActive);
 
 // get species by syndrome
 export const selectSpeciesBySyndrome = (state, syndrome) =>
-  state.habSpecies.species.filter(item => item.syndrome === syndrome);
+  state.habSpecies.species.filter((item) => item.syndrome === syndrome);
 
 // get species by enviroment
 export const selectSpeciesByEnvironment = (state, environment) =>
   state.habSpecies.species.filter(
-    item => item.speciesEnvironment === environment
+    (item) => item.speciesEnvironment === environment
   );

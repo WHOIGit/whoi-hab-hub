@@ -6,23 +6,28 @@ from colorfield.fields import ColorField
 
 from .utils import linear_gradient
 
+
 class TargetSpecies(models.Model):
     # Model to configure Target HAB species for HABhub to monitor
     # Used for all data layers
 
-    MARINE = 'Marine'
-    FRESHWATER = 'Freshwater'
+    MARINE = "Marine"
+    FRESHWATER = "Freshwater"
     ENVIRONMENT_CHOICES = [
-        (MARINE, 'Marine'),
-        (FRESHWATER, 'Freshwater'),
+        (MARINE, "Marine"),
+        (FRESHWATER, "Freshwater"),
     ]
 
     # species_id needs to match the Autoclass files in the IFCB Dashboard
-    species_id = models.CharField(max_length=100, unique=True, db_index=True,
-                                  help_text='Needs to match the species ID used in the Autoclass files from the IFCB Dashboard')
+    species_id = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text="Needs to match the species ID used in the Autoclass files from the IFCB Dashboard",
+    )
     display_name = models.CharField(max_length=100, db_index=True)
     syndrome = models.CharField(max_length=100, blank=True)
-    primary_color = ColorField(default='#FF0000')
+    primary_color = ColorField(default="#FF0000")
     color_gradient = ArrayField(
         models.CharField(max_length=7), null=True, blank=True, default=None
     )
@@ -33,8 +38,8 @@ class TargetSpecies(models.Model):
     )
 
     class Meta:
-        ordering = ['species_id']
-        verbose_name_plural = 'Target Species'
+        ordering = ["species_id"]
+        verbose_name_plural = "Target Species"
 
     def __str__(self):
         return self.display_name
@@ -42,7 +47,7 @@ class TargetSpecies(models.Model):
     def save(self, *args, **kwargs):
         # Custom save method to create color gradient based on primary_color
         dark_shade = Color(self.primary_color)
-        dark_shade.luminance = .35
+        dark_shade.luminance = 0.35
         color_gradient = linear_gradient(self.primary_color, "#FFFFFF", 5)
         # remove white
         color_gradient.pop()
@@ -57,22 +62,24 @@ class DataLayer(models.Model):
     # Model to configure which Data Layers are active for the frontend client
 
     # Possible local "habhub" Django apps that layer can belong to
-    IFCB_DATASETS = 'ifcb_datasets'
-    STATIONS = 'stations'
-    CLOSURES = 'closures'
+    IFCB_DATASETS = "ifcb_datasets"
+    STATIONS = "stations"
+    CLOSURES = "closures"
     APP_CHOICES = [
-        (IFCB_DATASETS, 'Ifcb_Datasets'),
-        (STATIONS, 'Stations'),
-        (CLOSURES, 'Closures'),
+        (IFCB_DATASETS, "Ifcb_Datasets"),
+        (STATIONS, "Stations"),
+        (CLOSURES, "Closures"),
     ]
 
     layer_id = models.CharField(max_length=100, unique=True, db_index=True)
     name = models.CharField(max_length=100, blank=True, db_index=True)
-    belongs_to_app = models.CharField(max_length=100, db_index=True, choices=APP_CHOICES, default=IFCB_DATASETS)
+    belongs_to_app = models.CharField(
+        max_length=100, db_index=True, choices=APP_CHOICES, default=IFCB_DATASETS
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -83,10 +90,12 @@ class Metric(models.Model):
     metric_id = models.CharField(max_length=100, db_index=True)
     name = models.CharField(max_length=100, db_index=True)
     units = models.CharField(max_length=100, blank=True)
-    data_layer = models.ForeignKey(DataLayer, related_name='metrics', on_delete=models.CASCADE)
+    data_layer = models.ForeignKey(
+        DataLayer, related_name="metrics", on_delete=models.CASCADE
+    )
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
