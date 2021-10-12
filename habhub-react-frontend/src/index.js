@@ -17,7 +17,7 @@ const GA_UID = process.env.REACT_APP_GA_UID;
 const ga4react = new GA4React(GA_UID);
 
 (async () => {
-  await ga4react.initialize();
+  await ga4react.initialize().catch((err) => {});
 
   ReactDOM.render(
     <Provider store={store}>
