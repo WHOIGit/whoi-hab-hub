@@ -5,7 +5,7 @@ import { createSlice } from "@reduxjs/toolkit";
 let defaultStartDate = sub(new Date(), {
   years: 1,
   months: 0,
-  days: 0
+  days: 0,
 }).toISOString();
 
 if (
@@ -16,7 +16,7 @@ if (
   defaultStartDate = sub(new Date(), {
     years: process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS,
     months: process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS,
-    days: process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS
+    days: process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS,
   }).toISOString();
 }
 
@@ -26,17 +26,15 @@ const initialState = {
   endDate: new Date().toISOString(),
   seasonal: false,
   excludeMonthRange: false,
-  smoothingFactor: 4
+  smoothingFactor: 8,
 };
 
 function handleSmoothingFactor(startDate, endDate) {
   // calculate the date range length to determine a smoothing factor to pass API
   const dateRange = differenceInDays(parseISO(endDate), parseISO(startDate));
-  let newFactor = 4;
+  let newFactor = 8;
 
-  if (dateRange < 90) {
-    newFactor = 1;
-  } else if (dateRange < 180) {
+  if (dateRange < 180) {
     newFactor = 2;
   } else if (dateRange < 240) {
     newFactor = 3;
@@ -66,12 +64,12 @@ export const dateFilterSlice = createSlice({
             smoothingFactor: handleSmoothingFactor(
               payload.startDate,
               payload.endDate
-            )
-          }
+            ),
+          },
         };
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 // Action creators are generated for each case reducer function
