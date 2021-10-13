@@ -6,10 +6,14 @@ from rest_framework_csv.renderers import CSVRenderer
 from django_filters import rest_framework as filters
 from django.db import models
 from django.utils.timezone import make_aware
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.db.models import Prefetch, F, Count, Q
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
+
+CACHE_TTL = 60 * 60
 
 
 class StationCSVRenderer(CSVRenderer):
@@ -22,6 +26,10 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("station_name", "station_location")
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (CSVRenderer,)
+
+    @method_decorator(cache_page(CACHE_TTL))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
         queryset = Station.objects.exclude(datapoints__isnull=True)

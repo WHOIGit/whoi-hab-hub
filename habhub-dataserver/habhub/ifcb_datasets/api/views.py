@@ -4,17 +4,25 @@ from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.utils import timezone
 from django.utils.timezone import make_aware
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.db import models
 from django.db.models import Prefetch, F, Q
 
 from ..models import Dataset, Bin
 from .serializers import DatasetListSerializer, DatasetDetailSerializer
 
+CACHE_TTL = 60 * 60
+
 
 class DatasetViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DatasetListSerializer
     detail_serializer_class = DatasetDetailSerializer
     filter_backends = (filters.DjangoFilterBackend,)
+
+    @method_decorator(cache_page(CACHE_TTL))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
         queryset = Dataset.objects.defer("bins")
