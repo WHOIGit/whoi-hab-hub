@@ -6,7 +6,7 @@ from rest_framework_csv.renderers import CSVRenderer
 from django_filters import rest_framework as filters
 from django.db import models
 from django.utils.timezone import make_aware
-from django.db.models import Prefetch, F, Avg, Max, Q
+from django.db.models import Prefetch, F, Count, Q
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -24,7 +24,7 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (CSVRenderer,)
 
     def get_queryset(self):
-        queryset = Station.objects.all()
+        queryset = Station.objects.exclude(datapoints__isnull=True)
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
