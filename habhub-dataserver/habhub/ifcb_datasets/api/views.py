@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.utils.timezone import make_aware
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.db import models
 from django.db.models import Prefetch, F, Q
 from django.contrib.gis.db.models import Extent
@@ -15,6 +17,8 @@ from .serializers import (
     BinSerializer, SpatialGridSerializer
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
+
+CACHE_TTL = 60 * 60
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
@@ -30,6 +34,10 @@ class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
 class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = DatasetListSerializer
     detail_serializer_class = DatasetDetailSerializer
+
+    @method_decorator(cache_page(CACHE_TTL))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
         queryset = Dataset.objects.filter(fixed_location=True).defer("bins")

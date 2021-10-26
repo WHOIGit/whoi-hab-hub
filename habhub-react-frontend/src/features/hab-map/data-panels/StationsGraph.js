@@ -5,6 +5,9 @@ import Exporting from "highcharts/modules/exporting";
 import ExportData from "highcharts/modules/export-data";
 import Serieslabel from "highcharts/modules/series-label";
 import HighchartsReact from "highcharts-react-official";
+// need to add this extra window variable declaration
+// Highcharts has internal references that rely on it being defined on the window
+window.Highcharts = Highcharts;
 
 Exporting(Highcharts);
 ExportData(Highcharts);
@@ -13,12 +16,12 @@ Serieslabel(Highcharts);
 const expandWidth = window.outerWidth - 430;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   chartContainer: {},
   chartContainerExpand: {
     width: expandWidth,
-    height: "100%"
-  }
+    height: "100%",
+  },
 }));
 
 // eslint-disable-next-line no-unused-vars
@@ -30,29 +33,29 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
   useEffect(() => {
     const data = results.properties.timeseriesData;
     const chartData = data
-      .map(item => [Date.parse(item.date), item.measurement])
+      .map((item) => [Date.parse(item.date), item.measurement])
       .sort();
 
     const chartOptions = {
       chart: {
         type: "spline",
-        zoomType: "x"
+        zoomType: "x",
       },
       title: {
-        text: null
+        text: null,
       },
       subtitle: {
         text:
           document.ontouchstart === undefined
             ? "Click and drag in the plot area to zoom in"
-            : "Pinch the chart to zoom in"
+            : "Pinch the chart to zoom in",
       },
       xAxis: {
-        type: "datetime"
+        type: "datetime",
       },
       yAxis: {
         title: {
-          text: "Shellfish meat toxicity"
+          text: "Shellfish meat toxicity",
         },
         min: 0,
         softMax: 150,
@@ -63,13 +66,13 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
             dashStyle: "shortdash",
             width: 2,
             label: {
-              text: "Closure threshold"
-            }
-          }
-        ]
+              text: "Closure threshold",
+            },
+          },
+        ],
       },
       plotOptions: {
-        series: { threshold: 100 }
+        series: { threshold: 100 },
       },
       exporting: {
         buttons: {
@@ -82,17 +85,17 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
               "downloadPDF",
               "downloadSVG",
               "separator",
-              "downloadCSV"
-            ]
-          }
-        }
+              "downloadCSV",
+            ],
+          },
+        },
       },
       series: [
         {
           name: "Shellfish meat toxicity",
-          data: chartData
-        }
-      ]
+          data: chartData,
+        },
+      ],
     };
     setChartOptions(chartOptions);
   }, [results]);

@@ -13,6 +13,9 @@ import HighchartsReact from "highcharts-react-official";
 import IfcbMetaData from "./IfcbMetaData";
 import { selectVisibleSpecies } from "../../hab-species/habSpeciesSlice";
 
+// need to add this extra window variable declaration
+// Highcharts has internal references that rely on it being defined on the window
+window.Highcharts = Highcharts;
 Exporting(Highcharts);
 ExportData(Highcharts);
 Serieslabel(Highcharts);
