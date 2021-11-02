@@ -7,10 +7,12 @@ from django.contrib.gis.geos import Polygon
 
 from ..models import Bin
 
+
 class BinFiltersMixin:
     """
     custom mixin to handle all filtering by query_params for IFCB Bins
     """
+
     def handle_query_param_filters(self, queryset):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
@@ -84,12 +86,10 @@ class BinFiltersMixin:
                         sample_time__range=(dr["start_date"], dr["end_date"])
                     )  # 'or' the Q objects together
             else:
-                date_q_filters |= Q(
-                    sample_time__range=([start_date_obj, end_date_obj])
-                )
+                date_q_filters |= Q(sample_time__range=([start_date_obj, end_date_obj]))
 
-        queryset = (queryset
-            .filter(date_q_filters)
+        queryset = (
+            queryset.filter(date_q_filters)
             .annotate(smoothing=F("id") % smoothing_factor)
             .filter(smoothing=0)
         )
@@ -108,6 +108,7 @@ class DatasetFiltersMixin:
     """
     custom mixin to handle all filtering by query_params for IFCB Datasets
     """
+
     def handle_query_param_filters(self, queryset, is_fixed_location=True):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
@@ -137,7 +138,7 @@ class DatasetFiltersMixin:
 
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()
-        #geo_q_filters = Q()
+        # geo_q_filters = Q()
         # add Geographic filter is this is SPATIAL dataset
         """
         if not is_fixed_location:
@@ -188,16 +189,12 @@ class DatasetFiltersMixin:
                         sample_time__range=(dr["start_date"], dr["end_date"])
                     )  # 'or' the Q objects together
             else:
-                date_q_filters |= Q(
-                    sample_time__range=([start_date_obj, end_date_obj])
-                )
+                date_q_filters |= Q(sample_time__range=([start_date_obj, end_date_obj]))
 
         queryset = queryset.prefetch_related(
             Prefetch(
                 "bins",
-                queryset=Bin.objects.filter(
-                    cell_concentration_data__isnull=False
-                )
+                queryset=Bin.objects.filter(cell_concentration_data__isnull=False)
                 .filter(date_q_filters)
                 .annotate(smoothing=F("id") % smoothing_factor)
                 .filter(smoothing=0),

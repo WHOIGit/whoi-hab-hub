@@ -1,72 +1,119 @@
+from django.db.models.expressions import ExpressionWrapper
 import s2sphere
 from statistics import mean
 from collections import OrderedDict
 
 from rest_framework import serializers
-from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
+from rest_framework_gis.serializers import (
+    GeoFeatureModelSerializer,
+    GeometrySerializerMethodField,
+)
+from django.db.models import (
+    Count,
+    Value,
+    CharField,
+    F,
+    OuterRef,
+    Subquery,
+    Max,
+    Window,
+    Avg,
+    IntegerField,
+)
+from django.db.models.functions import Cast
+from django.contrib.gis.db.models import PointField
 from rest_framework_gis.fields import GeometryField
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
+from django.contrib.gis.db.models.functions import SnapToGrid
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 from ..models import Dataset, Bin
 from habhub.core.models import TargetSpecies
 
 
 class BinSerializer(GeoFeatureModelSerializer):
-
     class Meta:
         model = Bin
-        geo_field = 'geom'
-        fields = ['pid', 'geom', 'dataset', 'sample_time', 'species_found', 'cell_concentration_data', ]
+        geo_field = "geom"
+        fields = [
+            "pid",
+            "geom",
+            "dataset",
+            "sample_time",
+            "species_found",
+            "cell_concentration_data",
+        ]
 
 
 class DatasetListSerializer(GeoFeatureModelSerializer):
-    max_mean_values = serializers.SerializerMethodField('get_max_mean_values')
+    max_mean_values = serializers.SerializerMethodField("get_max_mean_values")
 
     class Meta:
         model = Dataset
-        geo_field = 'geom'
-        fields = ['id', 'name', 'location', 'dashboard_id_name', 'geom', 'max_mean_values', ]
+        geo_field = "geom"
+        fields = [
+            "id",
+            "name",
+            "location",
+            "dashboard_id_name",
+            "geom",
+            "max_mean_values",
+        ]
 
     def get_max_mean_values(self, obj):
         return obj.get_max_mean_values()
 
 
 class DatasetDetailSerializer(DatasetListSerializer):
-    timeseries_data = serializers.SerializerMethodField('get_datapoints')
+    timeseries_data = serializers.SerializerMethodField("get_datapoints")
 
     class Meta(DatasetListSerializer.Meta):
-        fields = DatasetListSerializer.Meta.fields + ['timeseries_data', ]
+        fields = DatasetListSerializer.Meta.fields + [
+            "timeseries_data",
+        ]
 
     def __init__(self, *args, **kwargs):
         super(DatasetDetailSerializer, self).__init__(*args, **kwargs)
 
-        if 'context' in kwargs:
-            if 'request' in kwargs['context']:
-                exclude_dataseries = kwargs['context']['request'].query_params.get('exclude_dataseries', None)
+        if "context" in kwargs:
+            if "request" in kwargs["context"]:
+                exclude_dataseries = kwargs["context"]["request"].query_params.get(
+                    "exclude_dataseries", None
+                )
                 if exclude_dataseries:
-                    self.fields.pop('timeseries_data')
+                    self.fields.pop("timeseries_data")
 
     def get_datapoints(self, obj):
         concentration_timeseries = []
         metrics = obj.get_data_layer_metrics()
         # set up data structure to store results
         for species in TargetSpecies.objects.all():
-            dict = {'species': species.species_id, 'species_display': species.display_name, 'data': [], }
+            dict = {
+                "species": species.species_id,
+                "species_display": species.display_name,
+                "data": [],
+            }
             concentration_timeseries.append(dict)
 
         for bin in obj.bins.all():
-            date_str = bin.sample_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+            date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
             for datapoint in bin.cell_concentration_data:
-                index = next((index for (index, data) in enumerate(concentration_timeseries)
-                             if data['species'] == datapoint['species']), None)
+                index = next(
+                    (
+                        index
+                        for (index, data) in enumerate(concentration_timeseries)
+                        if data["species"] == datapoint["species"]
+                    ),
+                    None,
+                )
 
                 if index:
                     data_dict = {
-                        'sample_time': date_str,
-                        'bin_pid': bin.pid,
-                        'metrics': []
+                        "sample_time": date_str,
+                        "bin_pid": bin.pid,
+                        "metrics": [],
                     }
 
                     for metric in metrics:
@@ -75,21 +122,25 @@ class DatasetDetailSerializer(DatasetListSerializer):
                         if metric.metric_id in datapoint:
                             metric_value = int(datapoint[metric.metric_id])
 
-                        metric_obj = {'metric_name': metric.name, 'value': metric_value, 'units': metric.units}
-                        data_dict['metrics'].append(metric_obj)
+                        metric_obj = {
+                            "metric_name": metric.name,
+                            "value": metric_value,
+                            "units": metric.units,
+                        }
+                        data_dict["metrics"].append(metric_obj)
 
-                    concentration_timeseries[index]['data'].append(data_dict)
+                    concentration_timeseries[index]["data"].append(data_dict)
 
         return concentration_timeseries
 
 
 class SpatialDatasetSerializer(serializers.ModelSerializer):
-    #bbox = GeometrySerializerMethodField()
-    features = serializers.SerializerMethodField('get_grid_center_points')
+    # bbox = GeometrySerializerMethodField()
+    features = serializers.SerializerMethodField("get_grid_center_points")
 
     class Meta:
         model = Dataset
-        fields = ['id', 'name', 'location', 'dashboard_id_name', 'features' ]
+        fields = ["id", "name", "location", "dashboard_id_name", "features"]
 
     def to_representation(self, instance):
         data = super(SpatialDatasetSerializer, self).to_representation(instance)
@@ -100,7 +151,7 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         res["type"] = "FeatureCollection"
         # add metadata attribute, optional for GeoJSON
         metadata = OrderedDict()
-        for k,v in data.items():
+        for k, v in data.items():
             if k != "features":
                 metadata[k] = data[k]
         res["metadata"] = metadata
@@ -123,17 +174,23 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
         if not obj.bins.exists():
             return features
 
-        bins = obj.bins.filter(cell_concentration_data__isnull=False, geom_s2_token__isnull=False).exclude(geom=zero_pt)
+        bins = obj.bins.filter(
+            cell_concentration_data__isnull=False, geom_s2_token__isnull=False
+        ).exclude(geom=zero_pt)
         # Extent returns (ne, sw) points of box
-        bbbox_extent = bins.aggregate(Extent('geom'))
+        bbbox_extent = bins.aggregate(Extent("geom"))
         print(bbbox_extent)
-        #bin_tokens = bins.values_list('geom_s2_token', flat=True)
+        # bin_tokens = bins.values_list('geom_s2_token', flat=True)
         # S2 functions to get even grid of polygons to cover bounding box
         r = s2sphere.RegionCoverer()
-        r.min_level=7
-        r.max_level=7
-        p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
-        p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
+        r.min_level = 7
+        r.max_level = 7
+        p1 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][1], bbbox_extent["geom__extent"][0]
+        )
+        p2 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][3], bbbox_extent["geom__extent"][2]
+        )
         print(p1)
         print(p2)
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
@@ -166,7 +223,10 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
             token = cellid.to_token()
             # Builds GEOS polygons out of cell vertices
             # use these polygons to query PostGIS
-            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            vertices = [
+                s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v))
+                for v in range(4)
+            ]
             poly_points = []
             for v in vertices:
                 # get just lat/long coords from S2 LatLng
@@ -203,8 +263,8 @@ class SpatialDatasetSerializer(serializers.ModelSerializer):
 
 
 class SpatialBinSerializer(serializers.Serializer):
-    #bbox = GeometrySerializerMethodField()
-    features = serializers.SerializerMethodField('get_grid_center_points')
+    # bbox = GeometrySerializerMethodField()
+    features = serializers.SerializerMethodField("get_grid_center_points")
 
     def to_representation(self, instance):
         data = super(SpatialBinSerializer, self).to_representation(instance)
@@ -215,7 +275,7 @@ class SpatialBinSerializer(serializers.Serializer):
         res["type"] = "FeatureCollection"
         # add metadata attribute, optional for GeoJSON
         metadata = OrderedDict()
-        for k,v in data.items():
+        for k, v in data.items():
             if k != "features":
                 metadata[k] = data[k]
         res["metadata"] = metadata
@@ -239,15 +299,19 @@ class SpatialBinSerializer(serializers.Serializer):
             return features
 
         # Extent returns (ne, sw) points of box
-        bbbox_extent = obj.aggregate(Extent('geom'))
+        bbbox_extent = obj.aggregate(Extent("geom"))
         print(bbbox_extent)
-        #bin_tokens = bins.values_list('geom_s2_token', flat=True)
+        # bin_tokens = bins.values_list('geom_s2_token', flat=True)
         # S2 functions to get even grid of polygons to cover bounding box
         r = s2sphere.RegionCoverer()
-        r.min_level=7
-        r.max_level=7
-        p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
-        p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
+        r.min_level = 7
+        r.max_level = 7
+        p1 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][1], bbbox_extent["geom__extent"][0]
+        )
+        p2 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][3], bbbox_extent["geom__extent"][2]
+        )
         print(p1)
         print(p2)
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
@@ -280,7 +344,10 @@ class SpatialBinSerializer(serializers.Serializer):
             token = cellid.to_token()
             # Builds GEOS polygons out of cell vertices
             # use these polygons to query PostGIS
-            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            vertices = [
+                s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v))
+                for v in range(4)
+            ]
             poly_points = []
             for v in vertices:
                 # get just lat/long coords from S2 LatLng
@@ -317,36 +384,42 @@ class SpatialBinSerializer(serializers.Serializer):
 
     def get_max_mean_values(self, queryset):
         bins_qs = queryset
-        target_list = TargetSpecies.objects.values_list('species_id', flat=True)
+        target_list = TargetSpecies.objects.values_list("species_id", flat=True)
         # set up data structure to store results
         concentration_values = []
         max_mean_values = []
 
         for species in target_list:
-            concentration_dict = {'species': species, 'values': []}
+            concentration_dict = {"species": species, "values": []}
             concentration_values.append(concentration_dict)
 
         for bin in bins_qs:
             if bin.cell_concentration_data:
                 for datapoint in bin.cell_concentration_data:
                     item = next(
-                        (item for item in concentration_values if item['species'] == datapoint['species']), None)
+                        (
+                            item
+                            for item in concentration_values
+                            if item["species"] == datapoint["species"]
+                        ),
+                        None,
+                    )
 
                     if item is not None:
-                        item['values'].append(int(datapoint['cell_concentration']))
+                        item["values"].append(int(datapoint["cell_concentration"]))
 
         for item in concentration_values:
-            if item['values']:
-                max_value = max(item['values'])
-                mean_value = mean(item['values'])
+            if item["values"]:
+                max_value = max(item["values"])
+                mean_value = mean(item["values"])
             else:
                 max_value = 0
                 mean_value = 0
 
             data_dict = {
-                'species': item['species'],
-                'max_value': max_value,
-                'mean_value': mean_value,
+                "species": item["species"],
+                "max_value": max_value,
+                "mean_value": mean_value,
             }
             max_mean_values.append(data_dict)
 
@@ -354,17 +427,15 @@ class SpatialBinSerializer(serializers.Serializer):
 
 
 class BoundingBoxSerializer(serializers.Serializer):
-    #max_bounding_box = GeometrySerializerMethodField()
-    bounding_box = serializers.ListField(
-        child=serializers.FloatField()
-    )
+    # max_bounding_box = GeometrySerializerMethodField()
+    bounding_box = serializers.ListField(child=serializers.FloatField())
 
     def get_max_bounding_box(self, obj):
         return obj
 
 
 class SpatialGridSerializer(serializers.Serializer):
-    features = serializers.SerializerMethodField('get_grid_center_points')
+    features = serializers.SerializerMethodField("get_grid_center_points")
 
     def to_representation(self, instance):
         data = super(SpatialGridSerializer, self).to_representation(instance)
@@ -375,7 +446,7 @@ class SpatialGridSerializer(serializers.Serializer):
         res["type"] = "FeatureCollection"
         # add metadata attribute, optional for GeoJSON
         metadata = OrderedDict()
-        for k,v in data.items():
+        for k, v in data.items():
             if k != "features":
                 metadata[k] = data[k]
         res["metadata"] = metadata
@@ -393,7 +464,7 @@ class SpatialGridSerializer(serializers.Serializer):
     def get_grid_center_points(self, obj):
         # run aggregate funtion on Bin queryset to get bounding box coords
         features = []
-        grid_level = self.context['request'].query_params.get("grid_level", None)
+        grid_level = self.context["request"].query_params.get("grid_level", None)
 
         if grid_level:
             grid_level = int(grid_level)
@@ -404,15 +475,19 @@ class SpatialGridSerializer(serializers.Serializer):
             return features
 
         # Extent returns (ne, sw) points of box
-        bbbox_extent = obj.aggregate(Extent('geom'))
+        bbbox_extent = obj.aggregate(Extent("geom"))
         print(bbbox_extent)
-        #bin_tokens = bins.values_list('geom_s2_token', flat=True)
+        # bin_tokens = bins.values_list('geom_s2_token', flat=True)
         # S2 functions to get even grid of polygons to cover bounding box
         r = s2sphere.RegionCoverer()
-        r.min_level=grid_level
-        r.max_level=grid_level
-        p1 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][1], bbbox_extent['geom__extent'][0])
-        p2 = s2sphere.LatLng.from_degrees(bbbox_extent['geom__extent'][3], bbbox_extent['geom__extent'][2])
+        r.min_level = grid_level
+        r.max_level = grid_level
+        p1 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][1], bbbox_extent["geom__extent"][0]
+        )
+        p2 = s2sphere.LatLng.from_degrees(
+            bbbox_extent["geom__extent"][3], bbbox_extent["geom__extent"][2]
+        )
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
 
         """
@@ -442,7 +517,10 @@ class SpatialGridSerializer(serializers.Serializer):
             token = cellid.to_token()
             # Builds GEOS polygons out of cell vertices
             # use these polygons to query PostGIS
-            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            vertices = [
+                s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v))
+                for v in range(4)
+            ]
             poly_points = []
             for v in vertices:
                 # get just lat/long coords from S2 LatLng
@@ -476,9 +554,9 @@ class SpatialGridSerializer(serializers.Serializer):
                 #
                 features.append(feature)
 
-        grid_level=8
-        r.min_level=grid_level
-        r.max_level=grid_level
+        grid_level = 8
+        r.min_level = grid_level
+        r.max_level = grid_level
         covering = r.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
         # prepare OrderedDict geojson structure
         for cellid in covering:
@@ -487,7 +565,10 @@ class SpatialGridSerializer(serializers.Serializer):
             token = cellid.to_token()
             # Builds GEOS polygons out of cell vertices
             # use these polygons to query PostGIS
-            vertices = [s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v)) for v in range(4)]
+            vertices = [
+                s2sphere.LatLng.from_point(s2sphere.Cell(cellid).get_vertex(v))
+                for v in range(4)
+            ]
             poly_points = []
             for v in vertices:
                 # get just lat/long coords from S2 LatLng
@@ -524,37 +605,89 @@ class SpatialGridSerializer(serializers.Serializer):
         return features
 
     def get_max_mean_values(self, queryset):
-        target_list = TargetSpecies.objects.values_list('species_id', flat=True)
+        target_list = TargetSpecies.objects.values_list("species_id", flat=True)
         # set up data structure to store results
         concentration_values = []
         max_mean_values = []
 
         for species in target_list:
-            concentration_dict = {'species': species, 'values': []}
+            concentration_dict = {"species": species, "values": []}
             concentration_values.append(concentration_dict)
 
         for bin in queryset:
             if bin.cell_concentration_data:
                 for datapoint in bin.cell_concentration_data:
                     item = next(
-                        (item for item in concentration_values if item['species'] == datapoint['species']), None)
+                        (
+                            item
+                            for item in concentration_values
+                            if item["species"] == datapoint["species"]
+                        ),
+                        None,
+                    )
 
                     if item is not None:
-                        item['values'].append(int(datapoint['cell_concentration']))
+                        item["values"].append(int(datapoint["cell_concentration"]))
 
         for item in concentration_values:
-            if item['values']:
-                max_value = max(item['values'])
-                mean_value = mean(item['values'])
+            if item["values"]:
+                max_value = max(item["values"])
+                mean_value = mean(item["values"])
             else:
                 max_value = 0
                 mean_value = 0
 
             data_dict = {
-                'species': item['species'],
-                'max_value': max_value,
-                'mean_value': mean_value,
+                "species": item["species"],
+                "max_value": max_value,
+                "mean_value": mean_value,
             }
             max_mean_values.append(data_dict)
 
         return max_mean_values
+
+
+class BinSpatialGridSerializer(serializers.Serializer):
+    features = serializers.SerializerMethodField("get_grid_center_points")
+
+    def to_representation(self, instance):
+        data = super(BinSpatialGridSerializer, self).to_representation(instance)
+        # must be "FeatureCollection" according to GeoJSON spec
+        res = OrderedDict()
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        res["type"] = "FeatureCollection"
+        # add metadata attribute, optional for GeoJSON
+        metadata = OrderedDict()
+        for k, v in data.items():
+            if k != "features":
+                metadata[k] = data[k]
+        res["metadata"] = metadata
+        # required features attribute
+        # MUST be present in output according to GeoJSON spec
+        res["features"] = data["features"]
+        return res
+
+    def get_grid_center_points(self, obj):
+        features = []
+
+        if not obj.exists():
+            return features
+
+        geo_field = GeometryField()
+        grid_qs = obj.add_grid_metrics_data()
+
+        for item in grid_qs:
+            print(item)
+            feature = OrderedDict()
+            # required type attribute
+            # must be "Feature" according to GeoJSON spec
+            feature["type"] = "Feature"
+            # required geometry attribute
+            # MUST be present in output according to GeoJSON spec
+            geo_field = GeometryField()
+            feature["geometry"] = geo_field.to_representation(item["grid"])
+            features.append(feature)
+
+        print(grid_qs.count())
+        return features

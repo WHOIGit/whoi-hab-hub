@@ -5,7 +5,7 @@ import MapGL, {
   NavigationControl,
   ScaleControl,
   Source,
-  Layer
+  Layer,
 } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -16,19 +16,19 @@ import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import IfcbSpatialLayer from "./IfcbSpatialLayer";
-import SpatialBinsLayer from "./SpatialBinsLayer";
+import SpatialGridBinsLayer from "./SpatialGridBinsLayer";
 import SpatialGridLayer from "./SpatialGridLayer";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
 import CurrentDateChip from "../date-filter/CurrentDateChip";
 import {
   selectInteractiveLayerIds,
-  selectVisibleLayerIds
+  selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
 import {
   changeActiveGridSquares,
   changeGridZoom,
-  selectActiveGridSquaresByZoom
+  selectActiveGridSquaresByZoom,
 } from "./spatialGridSlice";
 import { DATA_LAYERS } from "../../Constants";
 
@@ -41,18 +41,18 @@ const navStyle = {
   position: "absolute",
   bottom: 72,
   left: 0,
-  padding: "10px"
+  padding: "10px",
 };
 
 const scaleControlStyle = {
   position: "absolute",
   bottom: 36,
   left: 0,
-  padding: "10px"
+  padding: "10px",
 };
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   dataPanelContainer: {
     background: "none",
     position: "absolute",
@@ -60,8 +60,8 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     zIndex: 3000,
     maxHeight: "100vh",
-    overflowY: "scroll"
-  }
+    overflowY: "scroll",
+  },
 }));
 
 export default function HabMap() {
@@ -74,7 +74,7 @@ export default function HabMap() {
     longitude: MAP_LONGITUDE,
     zoom: MAP_ZOOM,
     width: "100%",
-    height: "100vh"
+    height: "100vh",
   });
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
@@ -87,7 +87,7 @@ export default function HabMap() {
     { gridLength: 40, maxZoom: 8, minZoom: 7, isActive: false },
     { gridLength: 70, maxZoom: 7, minZoom: 6, isActive: true },
     { gridLength: 150, maxZoom: 6, minZoom: 5, isActive: false },
-    { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false }
+    { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false },
   ]);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
@@ -95,7 +95,7 @@ export default function HabMap() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const newFeatures = features.filter(feature =>
+    const newFeatures = features.filter((feature) =>
       visibleLayerIds.includes(feature.layerID)
     );
     setFeatures(newFeatures);
@@ -115,18 +115,18 @@ export default function HabMap() {
     if (mapBounds !== null) {
       // trigger Redux dispatch function to fetch active grid squaresdata
       const payload = {
-        mapBounds: mapBounds
+        mapBounds: mapBounds,
       };
       dispatch(changeActiveGridSquares(payload));
     }
   }, [mapBounds]);
 
   const getGridZoomRange = () => {
-    const zoom = gridZoomRange.filter(item => item.isActive)[0];
+    const zoom = gridZoomRange.filter((item) => item.isActive)[0];
     return zoom;
   };
 
-  const handleMapBoundsUpdates = viewport => {
+  const handleMapBoundsUpdates = (viewport) => {
     // Get the map viewport bounds, set state to load spatial data
     if (mapRef.current !== undefined) {
       const mapObj = mapRef.current.getMap();
@@ -135,13 +135,13 @@ export default function HabMap() {
         bounds._sw.lng,
         bounds._sw.lat,
         bounds._ne.lng,
-        bounds._ne.lat
+        bounds._ne.lat,
       ];
       setMapBounds(bbox);
     }
   };
 
-  const handleZoomUpdates = viewport => {
+  const handleZoomUpdates = (viewport) => {
     // set the zoom levels for Spatial Grid
     console.log(viewport.zoom);
     const currentZoomRange = getGridZoomRange();
@@ -151,7 +151,7 @@ export default function HabMap() {
       viewport.zoom < currentZoomRange.minZoom
     ) {
       console.log("UPDATE GRID");
-      const newRange = gridZoomRange.map(item => {
+      const newRange = gridZoomRange.map((item) => {
         if (viewport.zoom < item.maxZoom && viewport.zoom > item.minZoom) {
           item.isActive = true;
         } else {
@@ -174,18 +174,18 @@ export default function HabMap() {
   const onMapLoad = () => {
     const mapObj = mapRef.current.getMap();
     // Load the custom icon image from the 'public' directory for the Closures Layer
-    mapObj.loadImage("images/icon-shellfish-closure.png", function(
-      error,
-      image
-    ) {
-      if (error) throw error;
-      mapObj.addImage("icon-shellfish-closure", image);
-    });
+    mapObj.loadImage(
+      "images/icon-shellfish-closure.png",
+      function (error, image) {
+        if (error) throw error;
+        mapObj.addImage("icon-shellfish-closure", image);
+      }
+    );
     // set the initial bbox/zoom levels for Spatial Grid
     handleMapBoundsUpdates(viewport);
   };
 
-  const onMapClick = event => {
+  const onMapClick = (event) => {
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
 
@@ -211,12 +211,12 @@ export default function HabMap() {
     setFeatures([feature, ...features]);
   };
 
-  const onPaneClose = featureID => {
-    const newFeatures = features.filter(feature => feature.id !== featureID);
+  const onPaneClose = (featureID) => {
+    const newFeatures = features.filter((feature) => feature.id !== featureID);
     setFeatures(newFeatures);
   };
 
-  const renderMarkerLayer = layerID => {
+  const renderMarkerLayer = (layerID) => {
     if (layerID === DATA_LAYERS.stationsLayer) {
       return (
         <StationsMarkers
@@ -243,8 +243,15 @@ export default function HabMap() {
           key={layerID}
         />
 
-        */
+        
         <SpatialGridLayer
+          onMarkerClick={onMarkerClick}
+          gridZoom={getGridZoomRange()}
+          layerID={layerID}
+          key={layerID}
+        />
+        */
+        <SpatialGridBinsLayer
           onMarkerClick={onMarkerClick}
           gridZoom={getGridZoomRange()}
           layerID={layerID}
@@ -273,7 +280,7 @@ export default function HabMap() {
         </div>
         {features && (
           <div className={classes.dataPanelContainer}>
-            {features.map(feature => (
+            {features.map((feature) => (
               <DataPanel
                 key={feature.id}
                 featureID={feature.id}
@@ -297,7 +304,7 @@ export default function HabMap() {
               setViewport(viewport);
               //onMapTransitionEnd();
             }}
-            onClick={event => onMapClick(event)}
+            onClick={(event) => onMapClick(event)}
             onLoad={onMapLoad}
             interactiveLayerIds={interactiveLayerIds}
             preserveDrawingBuffer={true}
@@ -305,7 +312,9 @@ export default function HabMap() {
             ref={mapRef}
           >
             <React.Fragment>
-              {visibleLayerIds.reverse().map(layer => renderMarkerLayer(layer))}
+              {visibleLayerIds
+                .reverse()
+                .map((layer) => renderMarkerLayer(layer))}
             </React.Fragment>
 
             <div style={navStyle}>

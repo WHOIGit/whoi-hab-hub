@@ -13,8 +13,14 @@ from django.contrib.gis.db.models import Extent
 
 from ..models import Dataset, Bin
 from .serializers import (
-    DatasetListSerializer, DatasetDetailSerializer, SpatialDatasetSerializer, SpatialBinSerializer, BoundingBoxSerializer,
-    BinSerializer, SpatialGridSerializer
+    DatasetListSerializer,
+    DatasetDetailSerializer,
+    SpatialDatasetSerializer,
+    SpatialBinSerializer,
+    BoundingBoxSerializer,
+    BinSerializer,
+    SpatialGridSerializer,
+    BinSpatialGridSerializer,
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
@@ -69,18 +75,18 @@ class SpatialBinViewSet(BinFiltersMixin, viewsets.ViewSet):
     def list(self, request):
         queryset = Bin.objects.filter(cell_concentration_data__isnull=False)
         queryset = self.handle_query_param_filters(queryset)
-        serializer = SpatialBinSerializer(queryset, context={'request': request})
+        serializer = SpatialBinSerializer(queryset, context={"request": request})
         return Response(serializer.data)
 
     @action(detail=False, url_path="max-bounding-box")
     def max_bounding_box(self, request):
         # Get the maximum size bounding box that can be returned from queryset
         # Extent returns (ne, sw) points of box
-        bbbox_extent = Bin.objects.all().aggregate(Extent('geom'))
+        bbbox_extent = Bin.objects.all().aggregate(Extent("geom"))
         print(bbbox_extent)
         bounding_box = bbbox_extent["geom__extent"]
         data = {"bounding_box": bounding_box}
-        #poly = Polygon.from_bbox(bbox)
+        # poly = Polygon.from_bbox(bbox)
         serializer = BoundingBoxSerializer(data)
         return Response(serializer.data)
 
@@ -89,5 +95,15 @@ class SpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
     def list(self, request):
         queryset = Bin.objects.filter(cell_concentration_data__isnull=False)
         queryset = self.handle_query_param_filters(queryset)
-        serializer = SpatialGridSerializer(queryset, context={'request': request})
+        serializer = SpatialGridSerializer(queryset, context={"request": request})
+        return Response(serializer.data)
+
+
+class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
+    def list(self, request):
+        queryset = Bin.objects.filter(
+            cell_concentration_data__isnull=False, geom__isnull=False
+        )
+        queryset = self.handle_query_param_filters(queryset)
+        serializer = BinSpatialGridSerializer(queryset, context={"request": request})
         return Response(serializer.data)
