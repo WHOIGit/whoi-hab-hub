@@ -19,7 +19,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.gis.db.models.functions import SnapToGrid
 
-from habhub.core.models import TargetSpecies, Metric
+from habhub.core.models import TargetSpecies, Metric, DataLayer
 from habhub.core.constants import IFCB_LAYER
 
 
@@ -29,9 +29,10 @@ class BinQuerySet(models.QuerySet):
         # then annotate aggregated data values for all Bins in each square (max, mean) for each species.
         # Use the Window function to partition data by each grid square
         target_count = TargetSpecies.objects.all().count()
-        metrics = Metric.objects.filter(data_layer__layer_id=IFCB_LAYER).values(
-            "metric_id"
-        )
+        metrics = Metric.objects.filter(
+            data_layer__belongs_to_app=DataLayer.IFCB_DATASETS
+        ).values("metric_id")
+
         index_list = [*range(0, target_count, 1)]
         field_list = ["grid"]
 
