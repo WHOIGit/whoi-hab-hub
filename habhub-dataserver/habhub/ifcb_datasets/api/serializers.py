@@ -688,7 +688,7 @@ class BinSpatialGridSerializer(serializers.Serializer):
         )
         max_mean_values = []
 
-        # set up initial data structure for data
+        # set up initial data structure
         for species in target_list:
             data_dict = {"species": species, "data": []}
             for metric in metrics:
@@ -702,12 +702,13 @@ class BinSpatialGridSerializer(serializers.Serializer):
                 data_dict["data"].append(metric_data)
             max_mean_values.append(data_dict)
 
+        # regroup the query results by species is using index numbers
         data_by_index = []
         for i in index_list:
             list_item = {"species": None, "data": []}
             for key, val in square.items():
                 if str(i) in key:
-                    # get the species ID for the index, else add it to the data list
+                    # get the species ID for the index, else add it to the data list as it's a metric
                     if "species" in key:
                         list_item["species"] = val
                     else:
@@ -722,18 +723,11 @@ class BinSpatialGridSerializer(serializers.Serializer):
             )
             if res:
                 for metric in item["data"]:
-                    r = next(
-                        (
-                            d
-                            for d in res["data"]
-                            if metric["metric_id"] in list(d.keys())[0]
-                        ),
-                        None,
-                    )
-
                     for d in res["data"]:
                         if metric["metric_id"] in list(d.keys())[0]:
                             if "max" in list(d.keys())[0]:
                                 metric["max_value"] = list(d.values())[0]
+                            elif "mean" in list(d.keys())[0]:
+                                metric["mean_value"] = list(d.values())[0]
 
         return max_mean_values

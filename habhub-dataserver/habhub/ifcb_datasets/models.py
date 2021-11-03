@@ -2,15 +2,11 @@ import datetime
 from statistics import mean
 
 from django.contrib.gis.db import models
-from django.db.models import F
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.postgres.fields import ArrayField, JSONField
-from django.contrib.postgres.search import SearchVector
 from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
 from habhub.core.constants import IFCB_LAYER
-from .api_requests import _get_ifcb_autoclass_file
 from .managers import BinQuerySet
 
 # IFCB dataset models
@@ -62,10 +58,8 @@ class Dataset(models.Model):
             data_values.append(concentration_dict)
 
         if self.bins.exists():
-            if queryset:
-                bins_qs = queryset
-            else:
-                bins_qs = self.bins.all()
+
+            bins_qs = self.bins.all()
 
             for bin in bins_qs:
                 if bin.cell_concentration_data:

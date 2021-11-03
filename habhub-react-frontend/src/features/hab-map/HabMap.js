@@ -17,7 +17,7 @@ import StationsMarkers from "./StationsMarkers";
 import IfcbMarkers from "./IfcbMarkers";
 import IfcbSpatialLayer from "./IfcbSpatialLayer";
 import SpatialGridBinsLayer from "./SpatialGridBinsLayer";
-import SpatialGridLayer from "./SpatialGridLayer";
+import SpatialGridMarkers from "./SpatialGridMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
 import CurrentDateChip from "../date-filter/CurrentDateChip";
@@ -64,9 +64,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const initialGridZoomArray = [
+  { gridLength: 15, maxZoom: 100, minZoom: 8, isActive: false },
+  { gridLength: 40, maxZoom: 8, minZoom: 7, isActive: false },
+  { gridLength: 70, maxZoom: 7, minZoom: 6, isActive: true },
+  { gridLength: 150, maxZoom: 6, minZoom: 5, isActive: false },
+  { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false },
+];
+
 export default function HabMap() {
   //const gridSquares = useSelector(state => state.spatialGrid.gridSquares);
-  const gridSquares = useSelector(selectActiveGridSquaresByZoom);
+  //const gridSquares = useSelector(selectActiveGridSquaresByZoom);
 
   const classes = useStyles();
   const [viewport, setViewport] = useState({
@@ -82,13 +90,7 @@ export default function HabMap() {
   const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
   const [features, setFeatures] = useState([]);
   const [mapBounds, setMapBounds] = useState(null);
-  const [gridZoomRange, setGridZoomRange] = useState([
-    { gridLength: 15, maxZoom: 100, minZoom: 8, isActive: false },
-    { gridLength: 40, maxZoom: 8, minZoom: 7, isActive: false },
-    { gridLength: 70, maxZoom: 7, minZoom: 6, isActive: true },
-    { gridLength: 150, maxZoom: 6, minZoom: 5, isActive: false },
-    { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false },
-  ]);
+  const [gridZoomRange, setGridZoomRange] = useState(initialGridZoomArray);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
@@ -108,6 +110,7 @@ export default function HabMap() {
     */
   }, [visibleLayerIds]);
 
+  /*
   useEffect(() => {
     // effect to set the active grid squares based on map Bounds
     console.log(mapBounds);
@@ -120,6 +123,7 @@ export default function HabMap() {
       dispatch(changeActiveGridSquares(payload));
     }
   }, [mapBounds]);
+  */
 
   const getGridZoomRange = () => {
     const zoom = gridZoomRange.filter((item) => item.isActive)[0];
@@ -237,23 +241,20 @@ export default function HabMap() {
           layerID={layerID}
           key={layerID}
         />
-        <IfcbSpatialLayer
-          onMarkerClick={onMarkerClick}
-          gridSquares={gridSquares}
-          key={layerID}
-        />
-
         
-        <SpatialGridLayer
+       <SpatialGridBinsLayer
           onMarkerClick={onMarkerClick}
           gridZoom={getGridZoomRange()}
+          metricName="Cell Concentration"
           layerID={layerID}
           key={layerID}
         />
         */
-        <SpatialGridBinsLayer
+
+        <SpatialGridMarkers
           onMarkerClick={onMarkerClick}
           gridZoom={getGridZoomRange()}
+          metricName="Cell Concentration"
           layerID={layerID}
           key={layerID}
         />
@@ -299,10 +300,10 @@ export default function HabMap() {
             mapStyle="mapbox://styles/mapbox/light-v10"
             onViewportChange={(viewport, interactionState, oldViewState) => {
               //console.log(interactionState);
-              //console.log(viewport);
+              console.log(viewport);
               //console.log(oldViewState);
               setViewport(viewport);
-              //onMapTransitionEnd();
+              onMapTransitionEnd();
             }}
             onClick={(event) => onMapClick(event)}
             onLoad={onMapLoad}

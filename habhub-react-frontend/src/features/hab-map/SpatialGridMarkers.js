@@ -6,12 +6,17 @@ import { format, parseISO } from "date-fns";
 import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
-const API_URL = process.env.REACT_APP_API_URL;
+import axiosInstance from "../../app/apiAxios";
 
-export default function SpatialGridLayer({ onMarkerClick, gridZoom, layerID }) {
+export default function SpatialGridMarkers({
+  onMarkerClick,
+  gridZoom,
+  metricName,
+  layerID,
+}) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
-  const habSpecies = useSelector(state => state.habSpecies.species);
-  const dateFilter = useSelector(state => state.dateFilter);
+  const habSpecies = useSelector((state) => state.habSpecies.species);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -19,59 +24,26 @@ export default function SpatialGridLayer({ onMarkerClick, gridZoom, layerID }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
 
-  const layerGrid = {
-    id: "grid-layer",
-    type: "circle",
-    source: "grid-src",
-    paint: {
-      "circle-radius": 3,
-      "circle-color": "#223b53",
-      "circle-stroke-color": "white",
-      "circle-stroke-width": 1,
-      "circle-opacity": 0.5
-    },
-    layout: {
-      visibility: "visible"
-    }
-  };
-
   useEffect(() => {
-    function getFetchUrl() {
-      const baseURL = API_URL + "api/v1/spatial-grids/";
-      // build API URL to get set Date Filter
-      const filterURL =
-        baseURL +
-        "?" +
-        new URLSearchParams({
+    async function fetchResults() {
+      try {
+        const params = new URLSearchParams({
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: 8,
-          grid_level: 7
+          smoothing_factor: dateFilter.smoothingFactor,
         });
-      return filterURL;
-    }
-
-    function fetchResults() {
-      const url = getFetchUrl();
-      console.log(url);
-      fetch(url)
-        .then(res => res.json())
-        .then(
-          result => {
-            console.log(result);
-            setIsLoaded(true);
-            setResults(result);
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          error => {
-            setIsLoaded(true);
-            setError(error);
-          }
-        );
+        const res = await axiosInstance.get("api/v1/ifcb-spatial-grid/", {
+          params,
+        });
+        console.log(res.request.responseURL);
+        setIsLoaded(true);
+        setResults(res.data);
+      } catch (error) {
+        setIsLoaded(true);
+        setError(error);
+      }
     }
     fetchResults();
   }, [dateFilter]);
@@ -82,20 +54,24 @@ export default function SpatialGridLayer({ onMarkerClick, gridZoom, layerID }) {
       return null;
     }
 
-    const speciesValues = visibleSpecies.map(item => {
-      const maxMeanItem = feature.properties.maxMeanValues.filter(
-        data => item.id === data.species
+    const speciesValues = visibleSpecies.map((item) => {
+      const speciesItem = feature.properties.maxMeanValues.find(
+        (data) => item.id === data.species
       );
-      let value = maxMeanItem[0].maxValue;
+
+      const maxMeanItem = speciesItem.data.find(
+        (data) => data.metricName === metricName
+      );
+      let value = maxMeanItem.maxValue;
 
       if (showMaxMean === "mean") {
-        value = maxMeanItem[0].meanValue;
+        value = maxMeanItem.meanValue;
       }
 
       return {
         species: item.id,
         value: value,
-        color: item.primaryColor
+        color: item.primaryColor,
       };
     });
     //.sort((a, b) => (a.value < b.value ? 1 : -1));
@@ -120,7 +96,7 @@ export default function SpatialGridLayer({ onMarkerClick, gridZoom, layerID }) {
   }
   return (
     <div>
-      {results.features.map(feature => renderIconGrid(feature, showMaxMean))}
+      {results.features.map((feature) => renderIconGrid(feature, showMaxMean))}
     </div>
   );
 }
