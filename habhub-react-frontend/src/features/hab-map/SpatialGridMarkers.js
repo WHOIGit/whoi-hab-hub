@@ -33,6 +33,7 @@ export default function SpatialGridMarkers({
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor,
+          grid_level: 0.8,
         });
         const res = await axiosInstance.get("api/v1/ifcb-spatial-grid/", {
           params,

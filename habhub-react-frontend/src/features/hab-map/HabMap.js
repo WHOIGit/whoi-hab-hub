@@ -65,11 +65,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const initialGridZoomArray = [
-  { gridLength: 15, maxZoom: 100, minZoom: 8, isActive: false },
-  { gridLength: 40, maxZoom: 8, minZoom: 7, isActive: false },
-  { gridLength: 70, maxZoom: 7, minZoom: 6, isActive: true },
-  { gridLength: 150, maxZoom: 6, minZoom: 5, isActive: false },
-  { gridLength: 240, maxZoom: 5, minZoom: 0, isActive: false },
+  // gridLength refers to the PostGIS SnapToGrid function length arg
+  { gridLength: 0.1, maxZoom: 100, minZoom: 8, isActive: false },
+  { gridLength: 0.3, maxZoom: 8, minZoom: 7, isActive: false },
+  { gridLength: 0.5, maxZoom: 7, minZoom: 6, isActive: true },
+  { gridLength: 0.8, maxZoom: 6, minZoom: 5, isActive: false },
+  { gridLength: 1.0, maxZoom: 5, minZoom: 0, isActive: false },
 ];
 
 export default function HabMap() {

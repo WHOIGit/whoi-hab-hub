@@ -21,7 +21,7 @@ from habhub.core.constants import IFCB_LAYER
 
 
 class BinQuerySet(models.QuerySet):
-    def add_grid_metrics_data(self):
+    def add_grid_metrics_data(self, grid_level=0.5):
         # custom query to collect all Bins by square spatial grid,
         # then annotate aggregated data values for all Bins in each square (max, mean) for each species.
         # Use the Window function to partition data by each grid square
@@ -33,7 +33,7 @@ class BinQuerySet(models.QuerySet):
         index_list = [*range(0, target_count, 1)]
         field_list = ["grid"]
 
-        grid_qs = self.annotate(grid=SnapToGrid("geom", 0.4))
+        grid_qs = self.annotate(grid=SnapToGrid("geom", grid_level))
 
         for i in index_list:
             for metric in metrics:

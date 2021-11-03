@@ -655,12 +655,19 @@ class BinSpatialGridSerializer(serializers.Serializer):
 
     def get_grid_center_points(self, obj):
         features = []
+        grid_level = self.context["request"].query_params.get("grid_level", 0.5)
+
+        try:
+            grid_level = float(grid_level)
+        except ValueError as e:
+            grid_level = 0.4
 
         if not obj.exists():
             return features
 
         geo_field = GeometryField()
-        grid_qs = obj.add_grid_metrics_data()
+        # use custom queryset to build geospatial grid data
+        grid_qs = obj.add_grid_metrics_data(grid_level)
 
         for square in grid_qs:
             feature = OrderedDict()
