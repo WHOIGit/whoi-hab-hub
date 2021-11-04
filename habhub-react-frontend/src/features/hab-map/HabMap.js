@@ -126,8 +126,8 @@ export default function HabMap() {
   }, [mapBounds]);
   */
 
-  const getGridZoomRange = () => {
-    const zoom = gridZoomRange.filter((item) => item.isActive)[0];
+  const getGridZoomLength = () => {
+    const zoom = gridZoomRange.find((item) => item.isActive).gridLength;
     return zoom;
   };
 
@@ -148,9 +148,9 @@ export default function HabMap() {
 
   const handleZoomUpdates = (viewport) => {
     // set the zoom levels for Spatial Grid
-    console.log(viewport.zoom);
-    const currentZoomRange = getGridZoomRange();
-    console.log(currentZoomRange);
+    //console.log(viewport.zoom);
+    const currentZoomRange = gridZoomRange.find((item) => item.isActive);
+    //console.log(currentZoomRange);
     if (
       viewport.zoom > currentZoomRange.maxZoom ||
       viewport.zoom < currentZoomRange.minZoom
@@ -204,7 +204,6 @@ export default function HabMap() {
   };
 
   const onMapTransitionEnd = () => {
-    console.log("END TRANSIT");
     handleZoomUpdates(viewport);
     //handleMapBoundsUpdates(viewport);
   };
@@ -221,6 +220,7 @@ export default function HabMap() {
     setFeatures(newFeatures);
   };
 
+  // useCallback here, visibleLayerIds,gridZoomRange  as deps.?
   const renderMarkerLayer = (layerID) => {
     if (layerID === DATA_LAYERS.stationsLayer) {
       return (
@@ -254,7 +254,7 @@ export default function HabMap() {
 
         <SpatialGridMarkers
           onMarkerClick={onMarkerClick}
-          gridZoom={getGridZoomRange()}
+          gridLength={getGridZoomLength()}
           metricName="Cell Concentration"
           layerID={layerID}
           key={layerID}
@@ -301,16 +301,15 @@ export default function HabMap() {
             mapStyle="mapbox://styles/mapbox/light-v10"
             onViewportChange={(viewport, interactionState, oldViewState) => {
               //console.log(interactionState);
-              console.log(viewport);
               //console.log(oldViewState);
               setViewport(viewport);
-              onMapTransitionEnd();
+              //onMapTransitionEnd();
             }}
             onClick={(event) => onMapClick(event)}
             onLoad={onMapLoad}
             interactiveLayerIds={interactiveLayerIds}
             preserveDrawingBuffer={true}
-            //onTransitionEnd={onMapTransitionEnd}
+            onTransitionEnd={onMapTransitionEnd}
             ref={mapRef}
           >
             <React.Fragment>

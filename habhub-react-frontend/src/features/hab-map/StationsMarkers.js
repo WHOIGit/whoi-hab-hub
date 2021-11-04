@@ -8,21 +8,21 @@ import StationsMarkerIcon from "./StationsMarkerIcon";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   button: {
     background: "none",
     border: "none",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 }));
 
 export default function StationsMarkers({
   onMarkerClick,
   metricName,
-  layerID
+  layerID,
 }) {
-  const habSpecies = useSelector(state => state.habSpecies.species);
-  const dateFilter = useSelector(state => state.dateFilter);
+  const habSpecies = useSelector((state) => state.habSpecies.species);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   const classes = useStyles();
 
@@ -40,7 +40,7 @@ export default function StationsMarkers({
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: 6
+          smoothing_factor: 6,
         });
         const res = await axiosInstance.get("api/v1/stations/", { params });
         console.log(res.request.responseURL);
@@ -56,7 +56,7 @@ export default function StationsMarkers({
 
   function renderMarker(feature) {
     const visibleSpecies = habSpecies.filter(
-      species =>
+      (species) =>
         species.visibility && feature.properties.habSpecies.includes(species.id)
     );
 
@@ -79,7 +79,7 @@ export default function StationsMarkers({
         >
           <div
             className={classes.button}
-            onClick={event =>
+            onClick={(event) =>
               onMarkerClick(event, feature, layerID, metricName)
             }
           >
@@ -94,7 +94,7 @@ export default function StationsMarkers({
 
   return (
     <div>
-      {results && results.features.map(feature => renderMarker(feature))}
+      {results && results.features.map((feature) => renderMarker(feature))}
     </div>
   );
 }

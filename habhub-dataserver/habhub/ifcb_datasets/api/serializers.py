@@ -654,13 +654,16 @@ class BinSpatialGridSerializer(serializers.Serializer):
         return res
 
     def get_grid_center_points(self, obj):
+        default_grid_level = 0.5
         features = []
-        grid_level = self.context["request"].query_params.get("grid_level", 0.5)
+        grid_level = self.context["request"].query_params.get(
+            "grid_level", default_grid_level
+        )
 
         try:
             grid_level = float(grid_level)
         except ValueError as e:
-            grid_level = 0.4
+            grid_level = default_grid_level
 
         if not obj.exists():
             return features

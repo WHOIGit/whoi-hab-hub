@@ -13,11 +13,11 @@ import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   placeholder: {
     position: "absolute",
     left: "50%",
-    top: "40%"
+    top: "40%",
   },
   circleMarker: {
     cursor: "pointer",
@@ -27,13 +27,14 @@ const useStyles = makeStyles(theme => ({
     borderColor: "#1976d2",
     borderWidth: "2px",
     borderStyle: "solid",
-    backgroundColor: "#90caf9"
-  }
+    backgroundColor: "#90caf9",
+  },
 }));
 
 export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
+  console.log(layerID);
   const visibleSpecies = useSelector(selectVisibleSpecies);
-  const dateFilter = useSelector(state => state.dateFilter);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
 
   const classes = useStyles();
@@ -50,10 +51,10 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor
+          smoothing_factor: dateFilter.smoothingFactor,
         });
         const res = await axiosInstance.get("api/v1/ifcb-datasets/", {
-          params
+          params,
         });
         console.log(res.request.responseURL);
         setIsLoaded(true);
@@ -69,13 +70,13 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
   const renderSquaresGrid = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values
     if (feature.properties.maxMeanValues.length) {
-      const speciesValues = visibleSpecies.map(item => {
+      const speciesValues = visibleSpecies.map((item) => {
         const speciesItem = feature.properties.maxMeanValues.find(
-          data => item.id === data.species
+          (data) => item.id === data.species
         );
 
         const maxMeanItem = speciesItem.data.find(
-          data => data.metricName === metricName
+          (data) => data.metricName === metricName
         );
         let value = maxMeanItem.maxValue;
 
@@ -86,7 +87,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
         return {
           species: item.id,
           value: value,
-          color: item.primaryColor
+          color: item.primaryColor,
         };
       });
       //.sort((a, b) => (a.value < b.value ? 1 : -1));
@@ -110,7 +111,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
     }
   };
 
-  const renderCircleMarker = feature => {
+  const renderCircleMarker = (feature) => {
     return (
       <Marker
         key={feature.id}
@@ -122,7 +123,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
       >
         <div
           className={classes.circleMarker}
-          onClick={event => onMarkerClick(event, feature, layerID)}
+          onClick={(event) => onMarkerClick(event, feature, layerID)}
         ></div>
       </Marker>
     );
@@ -138,10 +139,10 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
 
       {results && (
         <div>
-          {results.features.map(feature =>
+          {results.features.map((feature) =>
             renderSquaresGrid(feature, showMaxMean)
           )}
-          {results.features.map(feature => renderCircleMarker(feature))}
+          {results.features.map((feature) => renderCircleMarker(feature))}
         </div>
       )}
     </div>

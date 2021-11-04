@@ -10,7 +10,7 @@ import axiosInstance from "../../app/apiAxios";
 
 export default function SpatialGridMarkers({
   onMarkerClick,
-  gridZoom,
+  gridLength,
   metricName,
   layerID,
 }) {
@@ -25,6 +25,7 @@ export default function SpatialGridMarkers({
   const [results, setResults] = useState();
 
   useEffect(() => {
+    console.log(gridLength);
     async function fetchResults() {
       try {
         const params = new URLSearchParams({
@@ -33,7 +34,7 @@ export default function SpatialGridMarkers({
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor,
-          grid_level: 0.8,
+          grid_level: gridLength,
         });
         const res = await axiosInstance.get("api/v1/ifcb-spatial-grid/", {
           params,
@@ -47,7 +48,7 @@ export default function SpatialGridMarkers({
       }
     }
     fetchResults();
-  }, [dateFilter]);
+  }, [dateFilter, gridLength]);
 
   function renderIconGrid(feature, showMaxMean) {
     // create new Array with Visible Species/Values
