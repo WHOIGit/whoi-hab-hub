@@ -232,7 +232,7 @@ export default function HabMap() {
       );
     } else if (layerID === DATA_LAYERS.closuresLayer) {
       return <ClosuresLayer layerID={layerID} key={layerID} />;
-    } else if (layerID === DATA_LAYERS.cellConcentrationLayer) {
+    } else if (layerID === DATA_LAYERS.cellConcentrationSpatialGridLayer) {
       return (
         /*
         <IfcbMarkers

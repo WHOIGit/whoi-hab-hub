@@ -8,6 +8,7 @@ import { DATA_LAYERS } from "../../Constants";
 const legendLayerIds = [
   DATA_LAYERS.stationsLayer,
   DATA_LAYERS.cellConcentrationLayer,
+  DATA_LAYERS.cellConcentrationSpatialGridLayer,
 ];
 const interactiveLayerIds = [DATA_LAYERS.closuresLayer];
 
@@ -61,7 +62,10 @@ export const dataLayersSlice = createSlice({
       state.layers.forEach((element) => {
         // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
         // default to ifcb-layer (cell_concentration) as initial active layer
-        if (element.id === DATA_LAYERS.biovolumeLayer) {
+        if (
+          element.id === DATA_LAYERS.biovolumeLayer ||
+          element.id === DATA_LAYERS.biovolumeSpatialGridLayer
+        ) {
           element.visibility = false;
         } else {
           element.visibility = true;

@@ -1,7 +1,9 @@
 // Date Layer IDs to match with Redux store
 export const DATA_LAYERS = {
   biovolumeLayer: "biovolume_layer",
+  biovolumeSpatialGridLayer: "biovolume_spatialgrid_layer",
   cellConcentrationLayer: "cell_concentration_layer",
+  cellConcentrationSpatialGridLayer: "cell_concentration_spatialgrid_layer",
   stationsLayer: "stations_layer",
   closuresLayer: "closures_layer",
 };

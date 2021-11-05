@@ -2,13 +2,17 @@
 
 # DATA_LAYERS constant = default Data Layers
 CELL_CONCENTRATION_LAYER = "cell_concentration_layer"
+CELL_CONCENTRATION_SPATIALGRID_LAYER = "cell_concentration_spatialgrid_layer"
 BIOVOLUME_LAYER = "biovolume_layer"
+BIOVOLUME_SPATIALGRID_LAYER = "biovolume_spatialgrid_layer"
 STATIONS_LAYER = "stations_layer"
 CLOSURES_LAYER = "closures_layer"
 
 DATA_LAYERS = (
     (CELL_CONCENTRATION_LAYER, "Cell Concentration (Fixed Locations)"),
+    (CELL_CONCENTRATION_SPATIALGRID_LAYER, "Cell Concentration (Spatial Grid)"),
     (BIOVOLUME_LAYER, "Biovolume (Fixed Locations)"),
+    (BIOVOLUME_SPATIALGRID_LAYER, "Biovolume (Spatial Grid)"),
     (STATIONS_LAYER, "Shellfish Toxicity"),
     (CLOSURES_LAYER, "Shellfish Bed Closures"),
 )
@@ -19,9 +23,24 @@ BIOVOLUME = "biovolume"
 SHELLFISH_TOXICITY = "shellfish_toxicity"
 
 METRICS = (
-    (CELL_CONCENTRATION, "Cell Concentration", "cells/L", CELL_CONCENTRATION_LAYER),
-    (BIOVOLUME, "Biovolume", "cubic microns/L", BIOVOLUME_LAYER),
-    (SHELLFISH_TOXICITY, "Shellfish Toxicity", "micrograms/100 g meat", STATIONS_LAYER),
+    (
+        CELL_CONCENTRATION,
+        "Cell Concentration",
+        "cells/L",
+        [CELL_CONCENTRATION_LAYER, CELL_CONCENTRATION_SPATIALGRID_LAYER],
+    ),
+    (
+        BIOVOLUME,
+        "Biovolume",
+        "cubic microns/L",
+        [BIOVOLUME_LAYER, BIOVOLUME_SPATIALGRID_LAYER],
+    ),
+    (
+        SHELLFISH_TOXICITY,
+        "Shellfish Toxicity",
+        "micrograms/100 g meat",
+        [STATIONS_LAYER],
+    ),
 )
 
 # TARGET_SPECIES constant of HAB species we're monitoring

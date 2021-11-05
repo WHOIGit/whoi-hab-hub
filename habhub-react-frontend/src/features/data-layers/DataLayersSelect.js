@@ -44,7 +44,7 @@ export default function HabSpeciesForm() {
 
   const handleCheckboxChange = (event, dataLayer) => {
     // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
-
+    /*
     if (
       dataLayer.id === DATA_LAYERS.cellConcentrationLayer &&
       event.target.checked
@@ -65,7 +65,7 @@ export default function HabSpeciesForm() {
         })
       );
     }
-
+    */
     dispatch(
       changeLayerVisibility({
         checked: event.target.checked,
@@ -103,7 +103,7 @@ export default function HabSpeciesForm() {
             </Grid>
             <Grid item xs={1}>
               <div>
-                {dataLayer.id === "stations_layer" && (
+                {dataLayer.id === DATA_LAYERS.stationsLayer && (
                   <img
                     src={DiamondMarker}
                     alt="Station Toxicity Legend Icon"
@@ -111,15 +111,23 @@ export default function HabSpeciesForm() {
                   />
                 )}
 
-                {dataLayer.id.includes("ifcb") && (
+                {dataLayer.id === DATA_LAYERS.cellConcentrationLayer && (
                   <img
                     src={CircleMarker}
-                    alt="IFCB Legend Icon"
+                    alt="Cell Concentration Legend Icon"
                     className={classes.layerIcon}
                   />
                 )}
 
-                {dataLayer.id === "closures_layer" && (
+                {dataLayer.id === DATA_LAYERS.biovolumeLayer && (
+                  <img
+                    src={CircleMarker}
+                    alt="Biovolume Legend Icon"
+                    className={classes.layerIcon}
+                  />
+                )}
+
+                {dataLayer.id === DATA_LAYERS.closuresLayer && (
                   <img
                     src="images/icon-shellfish-closure.png"
                     alt="Closures Legend Icon"

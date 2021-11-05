@@ -693,8 +693,8 @@ class BinSpatialGridSerializer(serializers.Serializer):
         target_list = TargetSpecies.objects.values_list("species_id", flat=True)
         index_list = [*range(0, target_list.count(), 1)]
         metrics = Metric.objects.filter(
-            data_layer__belongs_to_app=DataLayer.IFCB_DATASETS
-        )
+            data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
+        ).distinct()
         max_mean_values = []
 
         # set up initial data structure

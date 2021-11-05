@@ -29,8 +29,8 @@ class Dataset(models.Model):
 
     def get_data_layer_metrics(self):
         metrics = Metric.objects.filter(
-            data_layer__belongs_to_app=DataLayer.IFCB_DATASETS
-        )
+            data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
+        ).distinct()
         return metrics
 
     def get_max_mean_values(self):

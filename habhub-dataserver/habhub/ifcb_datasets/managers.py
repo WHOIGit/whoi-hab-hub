@@ -25,9 +25,11 @@ class BinQuerySet(models.QuerySet):
         # then annotate aggregated data values for all Bins in each square (max, mean) for each species.
         # Use the Window function to partition data by each grid square
         target_count = TargetSpecies.objects.all().count()
-        metrics = Metric.objects.filter(
-            data_layer__belongs_to_app=DataLayer.IFCB_DATASETS
-        ).values("metric_id")
+        metrics = (
+            Metric.objects.filter(data_layers__belongs_to_app=DataLayer.IFCB_DATASETS)
+            .values("metric_id")
+            .distinct()
+        )
 
         index_list = [*range(0, target_count, 1)]
         field_list = ["grid"]

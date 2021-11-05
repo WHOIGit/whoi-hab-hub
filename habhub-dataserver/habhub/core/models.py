@@ -90,9 +90,7 @@ class Metric(models.Model):
     metric_id = models.CharField(max_length=100, db_index=True)
     name = models.CharField(max_length=100, db_index=True)
     units = models.CharField(max_length=100, blank=True)
-    data_layer = models.ForeignKey(
-        DataLayer, related_name="metrics", on_delete=models.CASCADE
-    )
+    data_layers = models.ManyToManyField(DataLayer, related_name="metrics")
 
     class Meta:
         ordering = ["name"]
