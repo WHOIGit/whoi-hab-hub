@@ -17,7 +17,6 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.gis.db.models.functions import SnapToGrid
 
 from habhub.core.models import TargetSpecies, Metric, DataLayer
-from habhub.core.constants import IFCB_LAYER
 
 
 class BinQuerySet(models.QuerySet):

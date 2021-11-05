@@ -6,7 +6,6 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
-from habhub.core.constants import IFCB_LAYER
 from .managers import BinQuerySet
 
 # IFCB dataset models
@@ -88,7 +87,7 @@ class Dataset(models.Model):
                                     metric_item["values"].append(
                                         int(datapoint[metric.metric_id])
                                     )
-                                except:
+                                except Exception as e:
                                     pass
 
             for item in data_values:

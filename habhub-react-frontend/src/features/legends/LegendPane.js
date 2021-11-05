@@ -6,24 +6,25 @@ import { Close } from "@material-ui/icons";
 import LegendCellConcentration from "./LegendCellConcentration";
 import LegendToxicity from "./LegendToxicity";
 import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
+import { DATA_LAYERS } from "../../Constants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
     transition: "all 0.3s",
-    zIndex: 2000
+    zIndex: 2000,
   },
   rootWider: {
-    width: 300
+    width: 300,
   },
   rootHeader: {
-    paddingBottom: 0
+    paddingBottom: 0,
   },
   title: {
     color: theme.palette.primary.main,
-    fontSize: "1.1rem"
-  }
+    fontSize: "1.1rem",
+  },
 }));
 
 export default function LegendPane({ dataLayer }) {
@@ -32,9 +33,9 @@ export default function LegendPane({ dataLayer }) {
 
   let title;
 
-  if (dataLayer === "ifcb_layer") {
+  if (dataLayer === DATA_LAYERS.cellConcentrationLayer) {
     title = "Cell Concentration";
-  } else if (dataLayer === "stations_layer") {
+  } else if (dataLayer === DATA_LAYERS.stationsLayer) {
     title = "Shellfish Toxicity";
   }
 
@@ -47,7 +48,7 @@ export default function LegendPane({ dataLayer }) {
       <CardHeader
         classes={{
           root: classes.rootHeader,
-          title: classes.title
+          title: classes.title,
         }}
         action={
           <React.Fragment>
@@ -56,7 +57,7 @@ export default function LegendPane({ dataLayer }) {
                 dispatch(
                   changeLegendVisibility({
                     layerID: dataLayer,
-                    legendVisibility: false
+                    legendVisibility: false,
                   })
                 )
               }
@@ -70,9 +71,11 @@ export default function LegendPane({ dataLayer }) {
       />
 
       <CardContent>
-        {dataLayer === "ifcb_layer" && <LegendCellConcentration />}
+        {dataLayer === DATA_LAYERS.cellConcentrationLayer && (
+          <LegendCellConcentration />
+        )}
 
-        {dataLayer === "stations_layer" && <LegendToxicity />}
+        {dataLayer === DATA_LAYERS.stationsLayer && <LegendToxicity />}
       </CardContent>
     </Card>
   );

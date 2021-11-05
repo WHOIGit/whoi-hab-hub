@@ -8,7 +8,7 @@ import SidePane from "./SidePane";
 import axiosInstance from "../../../app/apiAxios";
 import { DATA_LAYERS } from "../../../Constants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     margin: theme.spacing(1),
@@ -16,11 +16,11 @@ const useStyles = makeStyles(theme => ({
     height: 300,
     backgroundColor: "white",
     alignItems: "center",
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   placeholder: {
-    margin: "0 auto"
-  }
+    margin: "0 auto",
+  },
 }));
 
 export default function DataPanel({
@@ -28,9 +28,9 @@ export default function DataPanel({
   dataLayer,
   yAxisScale,
   onPaneClose,
-  metricName
+  metricName,
 }) {
-  const dateFilter = useSelector(state => state.dateFilter);
+  const dateFilter = useSelector((state) => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -58,8 +58,8 @@ export default function DataPanel({
           // Force smoothing_factor to be ignored for Station graphs
           smoothingFactor = 1;
         } else if (
-          dataLayer === DATA_LAYERS.ifcbLayer ||
-          dataLayer === DATA_LAYERS.ifcbBiovolumeLayer
+          dataLayer === DATA_LAYERS.cellConcentrationLayer ||
+          dataLayer === DATA_LAYERS.biovolumeLayer
         ) {
           endpoint = `api/v1/ifcb-datasets/${featureID}/`;
         } else if (dataLayer === DATA_LAYERS.closuresLayer) {
@@ -71,10 +71,10 @@ export default function DataPanel({
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: smoothingFactor
+          smoothing_factor: smoothingFactor,
         });
         const res = await axiosInstance.get(endpoint, {
-          params
+          params,
         });
         console.log(res.request.responseURL);
         setIsLoaded(true);

@@ -211,7 +211,6 @@ export default function HabMap() {
   const onMarkerClick = (event, feature, layerID, metricName) => {
     feature.layerID = layerID;
     feature.metricName = metricName;
-
     setFeatures([feature, ...features]);
   };
 
@@ -233,7 +232,7 @@ export default function HabMap() {
       );
     } else if (layerID === DATA_LAYERS.closuresLayer) {
       return <ClosuresLayer layerID={layerID} key={layerID} />;
-    } else if (layerID === DATA_LAYERS.ifcbLayer) {
+    } else if (layerID === DATA_LAYERS.cellConcentrationLayer) {
       return (
         /*
         <IfcbMarkers
@@ -242,25 +241,26 @@ export default function HabMap() {
           layerID={layerID}
           key={layerID}
         />
-        
-       <SpatialGridBinsLayer
-          onMarkerClick={onMarkerClick}
-          gridZoom={getGridZoomRange()}
-          metricName="Cell Concentration"
-          layerID={layerID}
-          key={layerID}
-        />
+        <SpatialGridBinsLayer
+            onMarkerClick={onMarkerClick}
+            gridZoom={getGridZoomLength()}
+            metricName="Cell Concentration"
+            layerID={layerID}
+            key={layerID}
+          />
+       
         */
-
-        <SpatialGridMarkers
-          onMarkerClick={onMarkerClick}
-          gridLength={getGridZoomLength()}
-          metricName="Cell Concentration"
-          layerID={layerID}
-          key={layerID}
-        />
+        <>
+          <SpatialGridMarkers
+            onMarkerClick={onMarkerClick}
+            gridLength={getGridZoomLength()}
+            metricName="Cell Concentration"
+            layerID={layerID}
+            key={layerID}
+          />
+        </>
       );
-    } else if (layerID === DATA_LAYERS.ifcbBiovolumeLayer) {
+    } else if (layerID === DATA_LAYERS.biovolumeLayer) {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}

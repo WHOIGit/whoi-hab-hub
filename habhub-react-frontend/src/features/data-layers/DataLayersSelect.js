@@ -6,7 +6,7 @@ import {
   FormControlLabel,
   Checkbox,
   Typography,
-  Grid
+  Grid,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
@@ -16,52 +16,52 @@ import CircleMarker from "../../images/circle.svg";
 // local
 import { DATA_LAYERS } from "../../Constants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
-    width: "100%"
+    width: "100%",
   },
   checkBoxes: {
-    ...theme.typography.body2
+    ...theme.typography.body2,
   },
   label: {
-    width: "100%"
+    width: "100%",
   },
   labelText: {
-    paddingTop: "5px"
+    paddingTop: "5px",
   },
   layerIcon: {
-    width: "25px"
+    width: "25px",
   },
   closureIcon: {
-    backgroundColor: "#f2b036"
-  }
+    backgroundColor: "#f2b036",
+  },
 }));
 
 export default function HabSpeciesForm() {
-  const dataLayers = useSelector(state => state.dataLayers.layers);
+  const dataLayers = useSelector((state) => state.dataLayers.layers);
   const dispatch = useDispatch();
   const classes = useStyles();
 
   const handleCheckboxChange = (event, dataLayer) => {
     // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
 
-    if (dataLayer.id === DATA_LAYERS.ifcbLayer && event.target.checked) {
-      dispatch(
-        changeLayerVisibility({
-          checked: false,
-          layerID: DATA_LAYERS.ifcbBiovolumeLayer
-        })
-      );
-    }
-
     if (
-      dataLayer.id === DATA_LAYERS.ifcbBiovolumeLayer &&
+      dataLayer.id === DATA_LAYERS.cellConcentrationLayer &&
       event.target.checked
     ) {
       dispatch(
         changeLayerVisibility({
           checked: false,
-          layerID: DATA_LAYERS.ifcbLayer
+          layerID: DATA_LAYERS.biovolumeLayer,
+        })
+      );
+    }
+
+    if (dataLayer.id === DATA_LAYERS.biovolumeLayer && event.target.checked) {
+      dispatch(
+        changeLayerVisibility({
+          checked: false,
+          layerID: DATA_LAYERS.cellConcentrationLayer,
         })
       );
     }
@@ -69,24 +69,24 @@ export default function HabSpeciesForm() {
     dispatch(
       changeLayerVisibility({
         checked: event.target.checked,
-        layerID: dataLayer.id
+        layerID: dataLayer.id,
       })
     );
   };
 
-  const renderLayerControl = dataLayer => {
+  const renderLayerControl = (dataLayer) => {
     return (
       <FormControlLabel
         classes={{
           root: classes.checkBoxes, // class name, e.g. `classes-nesting-root-x`
-          label: classes.label // class name, e.g. `classes-nesting-label-x`
+          label: classes.label, // class name, e.g. `classes-nesting-label-x`
         }}
         key={dataLayer.id}
         control={
           <Checkbox
             color="primary"
             checked={dataLayer.visibility}
-            onChange={event => handleCheckboxChange(event, dataLayer)}
+            onChange={(event) => handleCheckboxChange(event, dataLayer)}
             name={dataLayer.name}
           />
         }
@@ -138,7 +138,7 @@ export default function HabSpeciesForm() {
     <FormControl component="fieldset" className={classes.formControl}>
       <FormLabel component="legend">Data Layers</FormLabel>
       <FormGroup>
-        {dataLayers.map(layer => renderLayerControl(layer))}
+        {dataLayers.map((layer) => renderLayerControl(layer))}
       </FormGroup>
     </FormControl>
   );

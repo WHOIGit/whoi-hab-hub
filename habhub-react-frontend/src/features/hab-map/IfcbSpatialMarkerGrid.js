@@ -8,24 +8,24 @@ const useStyles = makeStyles(() => ({
   button: {
     background: "none",
     border: "none",
-    cursor: "pointer"
+    cursor: "pointer",
   },
   squaresGrid: {
     display: "flex",
     flexWrap: "wrap",
-    alignItems: "baseline"
+    alignItems: "baseline",
   },
   gridBreak: {
     flexBasis: "100%",
-    height: 0
-  }
+    height: 0,
+  },
 }));
 
 export default function IfcbSpatialMarkerGrid({
   feature,
   layerID,
   speciesValues,
-  onMarkerClick
+  onMarkerClick,
 }) {
   const classes = useStyles();
   // set some constants for square sizes
@@ -121,10 +121,12 @@ export default function IfcbSpatialMarkerGrid({
       latitude={feature.geometry.coordinates[1]}
       longitude={feature.geometry.coordinates[0]}
       captureClick={true}
+      offsetLeft={-20}
+      offsetTop={-20}
     >
       <div
         className={classes.button}
-        onClick={event => onMarkerClick(event, feature, layerID)}
+        onClick={(event) => onMarkerClick(event, feature, layerID)}
       >
         <div className={classes.squaresGrid}>
           {speciesValues.map((item, index) => renderSquare(item, index))}
