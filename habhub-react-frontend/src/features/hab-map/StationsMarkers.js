@@ -16,11 +16,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StationsMarkers({
-  onMarkerClick,
-  metricName,
-  layerID,
-}) {
+export default function StationsMarkers({ onMarkerClick, metricID, layerID }) {
   const habSpecies = useSelector((state) => state.habSpecies.species);
   const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
@@ -80,7 +76,7 @@ export default function StationsMarkers({
           <div
             className={classes.button}
             onClick={(event) =>
-              onMarkerClick(event, feature, layerID, metricName)
+              onMarkerClick(event, feature, layerID, metricID)
             }
           >
             <StationsMarkerIcon maxMeanValue={maxMeanValue} />

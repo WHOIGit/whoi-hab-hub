@@ -94,10 +94,9 @@ class Dataset(models.Model):
                 print(item)
                 data_list = []
 
-                # biovolumes = {'metric_name': 'Biovolume', 'max_value': 0, 'mean_value': 0, 'units': 'cubic microns/L'}
-
                 for metric_item in item["metrics"]:
                     metric_data = {
+                        "metric_id": metric_item["metric_id"],
                         "metric_name": metric_item["name"],
                         "max_value": 0,
                         "mean_value": 0,
@@ -149,19 +148,6 @@ class Bin(models.Model):
 
     def __str__(self):
         return self.pid
-
-    # Custom save method to add S2 token for each lat/lng Point
-    def save(self, *args, **kwargs):
-        # s2 cell level of ~1.27 km^2 to represent lat/lng of Bins
-        cell_level = 13
-        try:
-            ll = s2sphere.LatLng.from_degrees(self.geom.coords[1], self.geom.coords[0])
-            cellid = s2sphere.CellId.from_lat_lng(ll).parent(cell_level)
-            token = cellid.to_token()
-            self.geom_s2_token = token
-        except Exception as e:
-            pass
-        super(Bin, self).save(*args, **kwargs)
 
     def get_concentration_units(self):
         return "cells/L"

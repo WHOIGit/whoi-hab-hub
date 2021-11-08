@@ -31,8 +31,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
-  console.log(layerID);
+export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
+  console.log(metricID);
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
@@ -76,7 +76,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
         );
 
         const maxMeanItem = speciesItem.data.find(
-          (data) => data.metricName === metricName
+          (data) => data.metricId === metricID
         );
         let value = maxMeanItem.maxValue;
 
@@ -99,7 +99,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
             layerID={layerID}
             speciesValues={speciesValues}
             onMarkerClick={onMarkerClick}
-            metricName={metricName}
+            metricID={metricID}
             key={feature.id}
           />
         );
@@ -123,7 +123,7 @@ export default function IfcbMarkers({ onMarkerClick, metricName, layerID }) {
       >
         <div
           className={classes.circleMarker}
-          onClick={(event) => onMarkerClick(event, feature, layerID)}
+          onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
         ></div>
       </Marker>
     );

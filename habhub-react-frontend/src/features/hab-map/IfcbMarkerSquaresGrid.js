@@ -8,24 +8,25 @@ const useStyles = makeStyles(() => ({
   button: {
     background: "none",
     border: "none",
-    cursor: "pointer"
+    cursor: "pointer",
   },
   squaresGrid: {
     display: "flex",
     flexWrap: "wrap",
-    alignItems: "baseline"
+    alignItems: "baseline",
   },
   gridBreak: {
     flexBasis: "100%",
-    height: 0
-  }
+    height: 0,
+  },
 }));
 
 export default function IfcbMarkerSquaresGrid({
   feature,
   layerID,
   speciesValues,
-  onMarkerClick
+  onMarkerClick,
+  metricID,
 }) {
   const [offsetLeft, setOffsetLeft] = useState(15);
   const [offsetTop, setOffsetTop] = useState(-10);
@@ -130,7 +131,7 @@ export default function IfcbMarkerSquaresGrid({
     >
       <div
         className={classes.button}
-        onClick={event => onMarkerClick(event, feature, layerID)}
+        onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
       >
         <div className={classes.squaresGrid}>
           {speciesValues.map((item, index) => renderSquare(item, index))}

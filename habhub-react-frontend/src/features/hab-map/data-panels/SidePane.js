@@ -8,24 +8,24 @@ import StationsGraph from "./StationsGraph";
 import IfcbGraph from "./IfcbGraph";
 import ClosuresList from "./ClosuresList";
 import { selectAllSpecies } from "../../hab-species/habSpeciesSlice";
-import { DATA_LAYERS } from "../../../Constants";
+import { DATA_LAYERS, METRIC_IDS } from "../../../Constants";
 
 const expandWidth = window.outerWidth - 420;
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
     width: 600,
-    transition: "all 0.3s"
+    transition: "all 0.3s",
   },
   media: {
-    height: 140
+    height: 140,
   },
   title: {
     color: theme.palette.primary.main,
-    fontSize: "1.2rem"
+    fontSize: "1.2rem",
   },
   header: {
-    color: theme.palette.primary.main
+    color: theme.palette.primary.main,
   },
   expand: {
     position: "fixed",
@@ -34,12 +34,12 @@ const useStyles = makeStyles(theme => ({
     width: expandWidth,
     height: "95vh",
     zIndex: 3000,
-    overflowY: "scroll"
+    overflowY: "scroll",
   },
   expandContent: {
     width: expandWidth,
-    height: "80%"
-  }
+    height: "80%",
+  },
 }));
 
 export default function SidePane({
@@ -48,7 +48,7 @@ export default function SidePane({
   dataLayer,
   yAxisScale,
   onPaneClose,
-  metricName
+  metricID,
 }) {
   const habSpecies = useSelector(selectAllSpecies);
   const classes = useStyles();
@@ -57,18 +57,21 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    if (dataLayer.includes("ifcb")) {
+    console.log(metricID);
+
+    if (metricID && metricID !== METRIC_IDS.shellfishToxicity) {
+      console.log(metricID);
       const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
-        .filter(species => species.visibility)
-        .map(species => species.id);
+        .filter((species) => species.visibility)
+        .map((species) => species.id);
 
-      const filteredData = data.filter(item =>
+      const filteredData = data.filter((item) =>
         visibleSpecies.includes(item.species)
       );
       setVisibleResults(filteredData);
     }
-  }, [results, habSpecies, metricName]);
+  }, [results, habSpecies, metricID]);
 
   function onExpandPanel() {
     setExpandPane(!expandPane);
@@ -83,17 +86,17 @@ export default function SidePane({
       Station Name: ${results.properties.station_name} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer.includes("ifcb")) {
-    title = `IFCB Data: ${results.properties.name}`;
-    subTitle = `
-      ${results.properties.location} |
-      Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
-    `;
   } else if (dataLayer === DATA_LAYERS.closuresLayer) {
     title = `Shellfish Closure: ${results.properties.name}`;
     subTitle = `
       State: ${results.properties.state} |
       ${results.properties.areaDescription}
+    `;
+  } else {
+    title = `IFCB Data: ${results.properties.name}`;
+    subTitle = `
+      ${results.properties.location} |
+      Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
   }
 
@@ -101,7 +104,7 @@ export default function SidePane({
     <Card className={`${expandPane ? classes.expand : ""} ${classes.root}`}>
       <CardHeader
         classes={{
-          title: classes.title // class name, e.g. `classes-nesting-label-x`
+          title: classes.title, // class name, e.g. `classes-nesting-label-x`
         }}
         action={
           <React.Fragment>
@@ -128,14 +131,16 @@ export default function SidePane({
             yAxisScale={yAxisScale}
           />
         )}
-        {dataLayer.includes("ifcb") && visibleResults && (
-          <IfcbGraph
-            visibleResults={visibleResults}
-            metricName={metricName}
-            chartExpanded={expandPane}
-            yAxisScale={yAxisScale}
-          />
-        )}
+        {metricID &&
+          metricID !== METRIC_IDS.shellfishToxicity &&
+          visibleResults && (
+            <IfcbGraph
+              visibleResults={visibleResults}
+              metricID={metricID}
+              chartExpanded={expandPane}
+              yAxisScale={yAxisScale}
+            />
+          )}
         {dataLayer === DATA_LAYERS.closuresLayer && (
           <ClosuresList results={results} />
         )}

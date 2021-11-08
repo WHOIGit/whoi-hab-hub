@@ -11,7 +11,7 @@ import axiosInstance from "../../app/apiAxios";
 export default function SpatialGridMarkers({
   onMarkerClick,
   gridLength,
-  metricName,
+  metricID,
   layerID,
 }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
@@ -62,7 +62,7 @@ export default function SpatialGridMarkers({
       );
 
       const maxMeanItem = speciesItem.data.find(
-        (data) => data.metricName === metricName
+        (data) => data.metricId === metricID
       );
       let value = maxMeanItem.maxValue;
 

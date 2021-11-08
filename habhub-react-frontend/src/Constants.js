@@ -8,6 +8,12 @@ export const DATA_LAYERS = {
   closuresLayer: "closures_layer",
 };
 
+export const METRIC_IDS = {
+  biovolume: "biovolume",
+  cellConcentration: "cell_concentration",
+  shellfishToxicity: "shellfish_toxicity",
+};
+
 // define color palette for the species color picker options
 export const PALETTE = {
   red: "#ff0000",

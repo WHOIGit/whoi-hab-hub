@@ -28,8 +28,9 @@ export default function DataPanel({
   dataLayer,
   yAxisScale,
   onPaneClose,
-  metricName,
+  metricID,
 }) {
+  console.log(metricID);
   const dateFilter = useSelector((state) => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -86,7 +87,7 @@ export default function DataPanel({
       }
     }
     fetchResults();
-  }, [featureID, dataLayer, dateFilter, metricName]);
+  }, [featureID, dataLayer, dateFilter, metricID]);
 
   return (
     <div>
@@ -105,7 +106,7 @@ export default function DataPanel({
           dataLayer={dataLayer}
           yAxisScale={yAxisScale}
           onPaneClose={onPaneClose}
-          metricName={metricName}
+          metricID={metricID}
         />
       )}
     </div>

@@ -107,6 +107,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
                             metric_value = int(datapoint[metric.metric_id])
 
                         metric_obj = {
+                            "metric_id": metric.metric_id,
                             "metric_name": metric.name,
                             "value": metric_value,
                             "units": metric.units,

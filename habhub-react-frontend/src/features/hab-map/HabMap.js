@@ -25,12 +25,7 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
-import {
-  changeActiveGridSquares,
-  changeGridZoom,
-  selectActiveGridSquaresByZoom,
-} from "./spatialGridSlice";
-import { DATA_LAYERS } from "../../Constants";
+import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
@@ -208,9 +203,10 @@ export default function HabMap() {
     //handleMapBoundsUpdates(viewport);
   };
 
-  const onMarkerClick = (event, feature, layerID, metricName) => {
+  const onMarkerClick = (event, feature, layerID, metricID) => {
+    console.log(metricID);
     feature.layerID = layerID;
-    feature.metricName = metricName;
+    feature.metricID = metricID;
     setFeatures([feature, ...features]);
   };
 
@@ -225,7 +221,7 @@ export default function HabMap() {
       return (
         <StationsMarkers
           onMarkerClick={onMarkerClick}
-          metricName="Shellfish Toxicity"
+          metricID={METRIC_IDS.shellfishToxicity}
           layerID={layerID}
           key={layerID}
         />
@@ -234,37 +230,28 @@ export default function HabMap() {
       return <ClosuresLayer layerID={layerID} key={layerID} />;
     } else if (layerID === DATA_LAYERS.cellConcentrationSpatialGridLayer) {
       return (
-        /*
-        <IfcbMarkers
+        <SpatialGridMarkers
           onMarkerClick={onMarkerClick}
-          metricName="Cell Concentration"
+          gridLength={getGridZoomLength()}
+          metricID={METRIC_IDS.cellConcentration}
           layerID={layerID}
           key={layerID}
         />
-        <SpatialGridBinsLayer
-            onMarkerClick={onMarkerClick}
-            gridZoom={getGridZoomLength()}
-            metricName="Cell Concentration"
-            layerID={layerID}
-            key={layerID}
-          />
-       
-        */
-        <>
-          <SpatialGridMarkers
-            onMarkerClick={onMarkerClick}
-            gridLength={getGridZoomLength()}
-            metricName="Cell Concentration"
-            layerID={layerID}
-            key={layerID}
-          />
-        </>
+      );
+    } else if (layerID === DATA_LAYERS.cellConcentrationLayer) {
+      return (
+        <IfcbMarkers
+          onMarkerClick={onMarkerClick}
+          metricID={METRIC_IDS.cellConcentration}
+          layerID={layerID}
+          key={layerID}
+        />
       );
     } else if (layerID === DATA_LAYERS.biovolumeLayer) {
       return (
         <IfcbMarkers
           onMarkerClick={onMarkerClick}
-          metricName="Biovolume"
+          metricID={METRIC_IDS.biovolume}
           layerID={layerID}
           key={layerID}
         />
@@ -289,7 +276,7 @@ export default function HabMap() {
                 dataLayer={feature.layerID}
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
-                metricName={feature.metricName}
+                metricID={feature.metricID}
               />
             ))}
           </div>

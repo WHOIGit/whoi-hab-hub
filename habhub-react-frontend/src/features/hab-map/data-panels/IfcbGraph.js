@@ -37,7 +37,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 // eslint-disable-next-line no-unused-vars
-function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
+function IfcbGraph({ visibleResults, metricID, chartExpanded, yAxisScale }) {
+  console.log(visibleResults, metricID);
   const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
   const chartRef = useRef();
@@ -48,7 +49,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
 
   useEffect(() => {
     const chartData = visibleResults.map((item) =>
-      handleChartDataFormat(item, metricName)
+      handleChartDataFormat(item, metricID)
     );
 
     const newChartOptions = {
@@ -140,7 +141,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
       series: chartData,
     };
     setChartOptions(newChartOptions);
-  }, [visibleResults, metricName]);
+  }, [visibleResults, metricID]);
 
   useEffect(() => {
     if (chartExpanded) {
@@ -167,15 +168,15 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
     }
   }, [yAxisScale]);
   */
-  function handleChartDataFormat(dataObj, metricName) {
-    // set up data arrays for Highcharts format.
-    // match the value displayed to the metricName
+  function handleChartDataFormat(dataObj, metricID) {
+    // set up data arrays for Highcharts format
+    // match the value displayed to the metricID
     console.log(dataObj);
     const dataArray = dataObj.data
       .map((item) => {
         const sampleTime = Date.parse(item.sampleTime);
         const metricValue = item.metrics.find(
-          (metric) => metric.metricName === metricName
+          (metric) => metric.metricId === metricID
         ).value;
         return [sampleTime, metricValue];
       })

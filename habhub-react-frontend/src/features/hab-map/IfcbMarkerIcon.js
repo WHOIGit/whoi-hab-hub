@@ -3,12 +3,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   button: {
     background: "none",
     border: "none",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 }));
 
 const IfcbMarkerIcon = ({
@@ -16,7 +16,7 @@ const IfcbMarkerIcon = ({
   layerID,
   speciesValues,
   onMarkerClick,
-  metricName
+  metricID,
 }) => {
   const [offsetLeft, setOffsetLeft] = useState(-32);
   const [offsetTop, setOffsetTop] = useState(-25);
@@ -50,7 +50,7 @@ const IfcbMarkerIcon = ({
     // Max 3 items across, so get the 3 highest values
     const maxWidthArr = sortedValues.slice(-3);
     // Sum values
-    const maxWidth = maxWidthArr.reduce(function(a, b) {
+    const maxWidth = maxWidthArr.reduce(function (a, b) {
       return a + getSquareSize(b, maxSquareSize);
     }, 0);
     const offsetLeft = (maxWidth / 2) * -1 - defaultOffsetCorrection;
@@ -156,7 +156,7 @@ const IfcbMarkerIcon = ({
     >
       <div
         className={classes.button}
-        onClick={event => onMarkerClick(event, feature, layerID, metricName)}
+        onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
       >
         <div>
           <svg width={maxSquareSize * 3} height={maxSquareSize * 2}>
