@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Source, Layer } from "react-map-gl";
 import { format, parseISO } from "date-fns";
+// local imports
 import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
@@ -23,9 +24,9 @@ export default function SpatialGridMarkers({
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const [selectedGridSquares, setSelectedGridSquares] = useState(null);
 
   useEffect(() => {
-    console.log(gridLength);
     async function fetchResults() {
       try {
         const params = new URLSearchParams({
@@ -83,13 +84,15 @@ export default function SpatialGridMarkers({
     }
 
     return (
-      <IfcbSpatialMarkerGrid
-        feature={feature}
-        layerID={layerID}
-        speciesValues={speciesValues}
-        onMarkerClick={onMarkerClick}
-        key={feature.id}
-      />
+      <div className="gridSquare">
+        <IfcbSpatialMarkerGrid
+          feature={feature}
+          layerID={layerID}
+          speciesValues={speciesValues}
+          onMarkerClick={onMarkerClick}
+          key={feature.id}
+        />
+      </div>
     );
   }
 

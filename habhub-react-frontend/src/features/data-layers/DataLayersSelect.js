@@ -43,8 +43,8 @@ export default function HabSpeciesForm() {
   const classes = useStyles();
 
   const handleCheckboxChange = (event, dataLayer) => {
-    // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
-    /*
+    // only one of cell concentration-layer/biovolume-layer can be active at one time
+
     if (
       dataLayer.id === DATA_LAYERS.cellConcentrationLayer &&
       event.target.checked
@@ -57,6 +57,18 @@ export default function HabSpeciesForm() {
       );
     }
 
+    if (
+      dataLayer.id === DATA_LAYERS.cellConcentrationSpatialGridLayer &&
+      event.target.checked
+    ) {
+      dispatch(
+        changeLayerVisibility({
+          checked: false,
+          layerID: DATA_LAYERS.biovolumeSpatialGridLayer,
+        })
+      );
+    }
+
     if (dataLayer.id === DATA_LAYERS.biovolumeLayer && event.target.checked) {
       dispatch(
         changeLayerVisibility({
@@ -65,7 +77,19 @@ export default function HabSpeciesForm() {
         })
       );
     }
-    */
+
+    if (
+      dataLayer.id === DATA_LAYERS.biovolumeSpatialGridLayer &&
+      event.target.checked
+    ) {
+      dispatch(
+        changeLayerVisibility({
+          checked: false,
+          layerID: DATA_LAYERS.cellConcentrationSpatialGridLayer,
+        })
+      );
+    }
+
     dispatch(
       changeLayerVisibility({
         checked: event.target.checked,

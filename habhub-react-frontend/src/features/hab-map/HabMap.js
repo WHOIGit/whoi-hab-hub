@@ -14,9 +14,7 @@ import { makeStyles } from "@material-ui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
-import IfcbMarkers from "./IfcbMarkers";
-import IfcbSpatialLayer from "./IfcbSpatialLayer";
-import SpatialGridBinsLayer from "./SpatialGridBinsLayer";
+import FixedLocationMarkers from "./FixedLocationMarkers";
 import SpatialGridMarkers from "./SpatialGridMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
@@ -240,7 +238,7 @@ export default function HabMap() {
       );
     } else if (layerID === DATA_LAYERS.cellConcentrationLayer) {
       return (
-        <IfcbMarkers
+        <FixedLocationMarkers
           onMarkerClick={onMarkerClick}
           metricID={METRIC_IDS.cellConcentration}
           layerID={layerID}
@@ -249,7 +247,7 @@ export default function HabMap() {
       );
     } else if (layerID === DATA_LAYERS.biovolumeLayer) {
       return (
-        <IfcbMarkers
+        <FixedLocationMarkers
           onMarkerClick={onMarkerClick}
           metricID={METRIC_IDS.biovolume}
           layerID={layerID}

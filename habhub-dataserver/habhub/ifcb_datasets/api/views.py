@@ -1,4 +1,4 @@
-import datetime
+import environ
 
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
@@ -24,7 +24,9 @@ from .serializers import (
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
-CACHE_TTL = 60 * 60
+env = environ.Env()
+
+CACHE_TTL = env("CACHE_TTL", default=60 * 60)
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):

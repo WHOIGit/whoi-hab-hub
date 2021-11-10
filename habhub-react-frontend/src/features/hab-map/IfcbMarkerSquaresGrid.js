@@ -131,7 +131,7 @@ export default function IfcbMarkerSquaresGrid({
     >
       <div
         className={classes.button}
-        onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
+        //onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
       >
         <div className={classes.squaresGrid}>
           {speciesValues.map((item, index) => renderSquare(item, index))}
