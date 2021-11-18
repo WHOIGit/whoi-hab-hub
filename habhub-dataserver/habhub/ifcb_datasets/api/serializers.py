@@ -684,6 +684,7 @@ class BinSpatialGridSerializer(serializers.Serializer):
             # set GeoJSON properties
             properties = OrderedDict()
             properties["max_mean_values"] = self.format_max_mean(square)
+            properties["geohash"] = square["geohash"]
             feature["properties"] = properties
             features.append(feature)
 
@@ -741,3 +742,82 @@ class BinSpatialGridSerializer(serializers.Serializer):
                                 metric["mean_value"] = list(d.values())[0]
 
         return max_mean_values
+
+
+class BinSpatialGridDetailSerializer(serializers.Serializer):
+    geohash = serializers.SerializerMethodField("get_geohash")
+    timeseries_data = serializers.SerializerMethodField("get_timeseries_data")
+
+    def get_geohash(self, obj):
+        return self.context["geohash"]
+
+    def get_timeseries_data(self, obj):
+        timeseries_data = []
+        geohash = self.context["geohash"]
+        default_grid_level = 0.5
+        grid_level = self.context["request"].query_params.get(
+            "grid_level", default_grid_level
+        )
+
+        try:
+            grid_level = float(grid_level)
+        except ValueError as e:
+            grid_level = default_grid_level
+
+        if not obj.exists():
+            return timeseries_data
+
+        # use custom queryset to build geospatial grid data,
+        # get all Bins that match the Geohash of the requested center point
+        grid_qs = obj.add_single_grid_metrics_data(geohash, grid_level)
+
+        # set up data structure to store results
+        metrics = Metric.objects.filter(
+            data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
+        ).distinct()
+
+        for species in TargetSpecies.objects.all():
+            dict = {
+                "species": species.species_id,
+                "species_display": species.display_name,
+                "data": [],
+            }
+            timeseries_data.append(dict)
+
+        for bin in grid_qs.all():
+            date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            for datapoint in bin.cell_concentration_data:
+                index = next(
+                    (
+                        index
+                        for (index, data) in enumerate(timeseries_data)
+                        if data["species"] == datapoint["species"]
+                    ),
+                    None,
+                )
+
+                if index:
+                    data_dict = {
+                        "sample_time": date_str,
+                        "bin_pid": bin.pid,
+                        "metrics": [],
+                    }
+
+                    for metric in metrics:
+                        metric_value = 0
+
+                        if metric.metric_id in datapoint:
+                            metric_value = int(datapoint[metric.metric_id])
+
+                        metric_obj = {
+                            "metric_id": metric.metric_id,
+                            "metric_name": metric.name,
+                            "value": metric_value,
+                            "units": metric.units,
+                        }
+                        data_dict["metrics"].append(metric_obj)
+
+                    timeseries_data[index]["data"].append(data_dict)
+
+        return timeseries_data

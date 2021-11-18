@@ -202,6 +202,7 @@ export default function HabMap() {
   };
 
   const onMarkerClick = (event, feature, layerID, metricID) => {
+    console.log(event);
     console.log(metricID);
     feature.layerID = layerID;
     feature.metricID = metricID;

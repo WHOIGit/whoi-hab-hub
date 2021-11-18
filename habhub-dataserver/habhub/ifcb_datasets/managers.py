@@ -14,7 +14,7 @@ from django.contrib.gis.db.models import Extent
 from django.apps import apps
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.contrib.gis.db.models.functions import SnapToGrid
+from django.contrib.gis.db.models.functions import GeoHash, SnapToGrid
 
 from habhub.core.models import TargetSpecies, Metric, DataLayer
 
@@ -32,9 +32,11 @@ class BinQuerySet(models.QuerySet):
         )
 
         index_list = [*range(0, target_count, 1)]
-        field_list = ["grid"]
+        field_list = ["grid", "geohash"]
 
         grid_qs = self.annotate(grid=SnapToGrid("geom", grid_level))
+        # add a Geohash anotation to server as unique IDfor API response/requests
+        grid_qs = grid_qs.annotate(geohash=GeoHash("grid", 5))
 
         for i in index_list:
             for metric in metrics:
@@ -79,6 +81,28 @@ class BinQuerySet(models.QuerySet):
                 )
 
         grid_qs = grid_qs.values(*field_list).distinct("grid").order_by("grid")
+        return grid_qs
+
+    def add_single_grid_metrics_data(
+        self,
+        geohash,
+        grid_level=0.5,
+    ):
+        # custom query to collect all Bins by single square spatial grid,
+        # grid is ID'ed by unique Geohash created in the "add_grid_metrics_data" method
+        target_count = TargetSpecies.objects.all().count()
+        metrics = (
+            Metric.objects.filter(data_layers__belongs_to_app=DataLayer.IFCB_DATASETS)
+            .values("metric_id")
+            .distinct()
+        )
+        grid_qs = self.annotate(grid=SnapToGrid("geom", grid_level))
+
+        # add a Geohash anotation to server as unique IDfor API response/requests,
+        # then filter by the geohash from API request
+        grid_qs = grid_qs.annotate(geohash=GeoHash("grid", 5)).filter(geohash=geohash)
+        print(grid_qs.count())
+
         return grid_qs
 
 

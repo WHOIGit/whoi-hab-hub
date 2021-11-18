@@ -1,6 +1,6 @@
 import environ
 
-from rest_framework import generics, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -21,6 +21,7 @@ from .serializers import (
     BinSerializer,
     SpatialGridSerializer,
     BinSpatialGridSerializer,
+    BinSpatialGridDetailSerializer,
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
@@ -102,9 +103,10 @@ class SpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
 
 
 class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
-    @method_decorator(cache_page(CACHE_TTL))
+
+    """@method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)"""
 
     def list(self, request):
         queryset = Bin.objects.filter(
@@ -112,4 +114,17 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
         )
         queryset = self.handle_query_param_filters(queryset)
         serializer = BinSpatialGridSerializer(queryset, context={"request": request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        # use the unique Geohash for the pk lookup
+        print(pk)
+        queryset = Bin.objects.filter(
+            cell_concentration_data__isnull=False, geom__isnull=False
+        )
+        queryset = self.handle_query_param_filters(queryset)
+
+        serializer = BinSpatialGridDetailSerializer(
+            queryset, context={"request": request, "geohash": pk}
+        )
         return Response(serializer.data)
