@@ -31,7 +31,7 @@ export default function DataPanel({
   metricID,
   gridLength,
 }) {
-  console.log(metricID);
+  console.log(gridLength);
   const dateFilter = useSelector((state) => state.dateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);

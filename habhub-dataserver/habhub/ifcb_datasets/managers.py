@@ -101,7 +101,6 @@ class BinQuerySet(models.QuerySet):
         # add a Geohash anotation to server as unique IDfor API response/requests,
         # then filter by the geohash from API request
         grid_qs = grid_qs.annotate(geohash=GeoHash("grid", 5)).filter(geohash=geohash)
-        print(grid_qs.count())
 
         return grid_qs
 
