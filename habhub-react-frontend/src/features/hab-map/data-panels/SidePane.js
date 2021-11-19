@@ -57,10 +57,9 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    console.log(metricID);
+    console.log(results);
 
     if (metricID && metricID !== METRIC_IDS.shellfishToxicity) {
-      console.log(metricID);
       const data = results.properties.timeseriesData;
       const visibleSpecies = habSpecies
         .filter((species) => species.visibility)
@@ -92,6 +91,12 @@ export default function SidePane({
       State: ${results.properties.state} |
       ${results.properties.areaDescription}
     `;
+  } else if (
+    dataLayer === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
+    dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
+  ) {
+    title = `Title`;
+    subTitle = `Subtitle`;
   } else {
     title = `IFCB Data: ${results.properties.name}`;
     subTitle = `
@@ -139,6 +144,7 @@ export default function SidePane({
               metricID={metricID}
               chartExpanded={expandPane}
               yAxisScale={yAxisScale}
+              dataLayer={dataLayer}
             />
           )}
         {dataLayer === DATA_LAYERS.closuresLayer && (

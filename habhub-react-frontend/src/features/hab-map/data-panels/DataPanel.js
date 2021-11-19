@@ -29,6 +29,7 @@ export default function DataPanel({
   yAxisScale,
   onPaneClose,
   metricID,
+  gridLength,
 }) {
   console.log(metricID);
   const dateFilter = useSelector((state) => state.dateFilter);
@@ -63,6 +64,11 @@ export default function DataPanel({
           dataLayer === DATA_LAYERS.biovolumeLayer
         ) {
           endpoint = `api/v1/ifcb-datasets/${featureID}/`;
+        } else if (
+          dataLayer === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
+          dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
+        ) {
+          endpoint = `api/v1/ifcb-spatial-grid/${featureID}/`;
         } else if (dataLayer === DATA_LAYERS.closuresLayer) {
           endpoint = `api/v1/closures/${featureID}/`;
         }
@@ -73,6 +79,7 @@ export default function DataPanel({
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: smoothingFactor,
+          grid_level: gridLength,
         });
         const res = await axiosInstance.get(endpoint, {
           params,

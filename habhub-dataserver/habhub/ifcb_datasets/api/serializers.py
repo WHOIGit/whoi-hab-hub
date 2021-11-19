@@ -677,6 +677,8 @@ class BinSpatialGridSerializer(serializers.Serializer):
             # required type attribute
             # must be "Feature" according to GeoJSON spec
             feature["type"] = "Feature"
+            # set id to be unique geohash
+            feature["id"] = square["geohash"]
             # required geometry attribute
             # MUST be present in output according to GeoJSON spec
             geo_field = GeometryField()
@@ -684,7 +686,6 @@ class BinSpatialGridSerializer(serializers.Serializer):
             # set GeoJSON properties
             properties = OrderedDict()
             properties["max_mean_values"] = self.format_max_mean(square)
-            properties["geohash"] = square["geohash"]
             feature["properties"] = properties
             features.append(feature)
 
@@ -746,12 +747,33 @@ class BinSpatialGridSerializer(serializers.Serializer):
 
 class BinSpatialGridDetailSerializer(serializers.Serializer):
     geohash = serializers.SerializerMethodField("get_geohash")
-    timeseries_data = serializers.SerializerMethodField("get_timeseries_data")
+    properties = serializers.SerializerMethodField("get_properties")
+
+    def to_representation(self, instance):
+        # format response to GeoJSON
+        data = super(BinSpatialGridDetailSerializer, self).to_representation(instance)
+        # must be "FeatureCollection" according to GeoJSON spec
+        res = OrderedDict()
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        res["type"] = "Feature"
+        # set id to be unique geohash
+        res["id"] = data["geohash"]
+        # required features attribute
+        # MUST be present in output according to GeoJSON spec
+        # required geometry attribute
+        geo_field = GeometryField()
+        res["geometry"] = geo_field.to_representation(data["properties"]["geometry"])
+        # set GeoJSON properties
+        properties = OrderedDict()
+        properties["timeseries_data"] = data["properties"]["timeseries_data"]
+        res["properties"] = properties
+        return res
 
     def get_geohash(self, obj):
         return self.context["geohash"]
 
-    def get_timeseries_data(self, obj):
+    def get_properties(self, obj):
         timeseries_data = []
         geohash = self.context["geohash"]
         default_grid_level = 0.5
@@ -770,7 +792,8 @@ class BinSpatialGridDetailSerializer(serializers.Serializer):
         # use custom queryset to build geospatial grid data,
         # get all Bins that match the Geohash of the requested center point
         grid_qs = obj.add_single_grid_metrics_data(geohash, grid_level)
-
+        # get the lat/long Point object from query results
+        geometry = grid_qs.first().grid
         # set up data structure to store results
         metrics = Metric.objects.filter(
             data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
@@ -820,4 +843,4 @@ class BinSpatialGridDetailSerializer(serializers.Serializer):
 
                     timeseries_data[index]["data"].append(data_dict)
 
-        return timeseries_data
+        return {"timeseries_data": timeseries_data, "geometry": geometry}

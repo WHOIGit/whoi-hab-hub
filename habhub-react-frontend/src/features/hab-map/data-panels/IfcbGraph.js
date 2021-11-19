@@ -12,7 +12,7 @@ import HighchartsReact from "highcharts-react-official";
 // Local imports
 import IfcbMetaData from "./IfcbMetaData";
 import { selectVisibleSpecies } from "../../hab-species/habSpeciesSlice";
-
+import { DATA_LAYERS } from "../../../Constants";
 // need to add this extra window variable declaration
 // Highcharts has internal references that rely on it being defined on the window
 window.Highcharts = Highcharts;
@@ -36,8 +36,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-// eslint-disable-next-line no-unused-vars
-function IfcbGraph({ visibleResults, metricID, chartExpanded, yAxisScale }) {
+function IfcbGraph({
+  visibleResults,
+  metricID,
+  chartExpanded,
+  // eslint-disable-next-line no-unused-vars
+  yAxisScale,
+  dataLayer,
+}) {
   console.log(visibleResults, metricID);
   const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
@@ -51,10 +57,17 @@ function IfcbGraph({ visibleResults, metricID, chartExpanded, yAxisScale }) {
     const chartData = visibleResults.map((item) =>
       handleChartDataFormat(item, metricID)
     );
-
+    // set chart type based on spatial or fixed Data Layer
+    let chartType = "spline";
+    if (
+      dataLayer === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
+      dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
+    ) {
+      chartType = "scatter";
+    }
     const newChartOptions = {
       chart: {
-        type: "spline",
+        type: chartType,
         zoomType: "x",
       },
       title: {
@@ -141,7 +154,7 @@ function IfcbGraph({ visibleResults, metricID, chartExpanded, yAxisScale }) {
       series: chartData,
     };
     setChartOptions(newChartOptions);
-  }, [visibleResults, metricID]);
+  }, [visibleResults, metricID, dataLayer]);
 
   useEffect(() => {
     if (chartExpanded) {

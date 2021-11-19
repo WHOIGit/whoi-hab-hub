@@ -26,6 +26,7 @@ export default function IfcbSpatialMarkerGrid({
   layerID,
   speciesValues,
   onMarkerClick,
+  metricID,
 }) {
   const classes = useStyles();
   // set some constants for square sizes
@@ -117,7 +118,7 @@ export default function IfcbSpatialMarkerGrid({
 
   return (
     <Marker
-      key={feature.s2Token}
+      key={feature.properties.geohash}
       latitude={feature.geometry.coordinates[1]}
       longitude={feature.geometry.coordinates[0]}
       captureClick={true}
@@ -126,7 +127,7 @@ export default function IfcbSpatialMarkerGrid({
     >
       <div
         className={classes.button}
-        onClick={(event) => onMarkerClick(event, feature, layerID)}
+        onClick={(event) => onMarkerClick(event, feature, layerID, metricID)}
       >
         <div className={classes.squaresGrid}>
           {speciesValues.map((item, index) => renderSquare(item, index))}

@@ -202,7 +202,6 @@ export default function HabMap() {
   };
 
   const onMarkerClick = (event, feature, layerID, metricID) => {
-    console.log(event);
     console.log(metricID);
     feature.layerID = layerID;
     feature.metricID = metricID;
@@ -276,6 +275,7 @@ export default function HabMap() {
                 yAxisScale={yAxisScale}
                 onPaneClose={onPaneClose}
                 metricID={feature.metricID}
+                gridLength={getGridZoomLength()}
               />
             ))}
           </div>

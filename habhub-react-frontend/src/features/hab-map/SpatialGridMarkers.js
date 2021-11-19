@@ -24,7 +24,7 @@ export default function SpatialGridMarkers({
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-
+  console.log(results);
   useEffect(() => {
     async function fetchResults() {
       try {
@@ -89,7 +89,8 @@ export default function SpatialGridMarkers({
           layerID={layerID}
           speciesValues={speciesValues}
           onMarkerClick={onMarkerClick}
-          key={feature.id}
+          metricID={metricID}
+          key={feature.properties.geohash}
         />
       </div>
     );
