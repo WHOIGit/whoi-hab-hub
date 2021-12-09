@@ -88,6 +88,26 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} processed.")
 
 
+def reset_ifcb_data():
+    """
+    recreate all IFCB data for all Bins in all Datasets
+    this operation may take a long time
+    """
+    from .models import Dataset
+
+    datasets = Dataset.objects.all()
+    for dataset in datasets:
+        # update DB with any new Bins, then delete all existing IFCB data and get new data
+        _get_ifcb_bins_dataset(dataset)
+        bins = dataset.bins.all()
+        for b in bins:
+            print("Start autoclass processing...")
+            _get_ifcb_autoclass_file(b)
+            print(f"{b} processed.")
+
+    print("Complete Bin import.")
+
+
 def _get_ifcb_bins_dataset(dataset_obj):
     """
     Function to make API request for all IFCB bins by dataset
