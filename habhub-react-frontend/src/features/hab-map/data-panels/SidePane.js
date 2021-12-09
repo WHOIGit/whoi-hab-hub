@@ -95,8 +95,10 @@ export default function SidePane({
     dataLayer === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
     dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
   ) {
-    title = `Title`;
-    subTitle = `Subtitle`;
+    // calculate approx grid area. 1 degicmal degree = 111 km
+    // let gridArea = Math.pow(gridLength * 111, 2);
+    title = `Grid Center Point | Lat: ${results.geometry.coordinates[1]}, Long: ${results.geometry.coordinates[0]}`;
+    //subTitle = `Grid Area (km<sup>2</sup): ${gridArea}`;
   } else {
     title = `IFCB Data: ${results.properties.name}`;
     subTitle = `

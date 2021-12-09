@@ -217,6 +217,9 @@ def _get_ifcb_autoclass_file(bin_obj):
             row.pop("pid", None)
             # get the item with the highest value, return species name in key
             species = max(row, key=lambda key: float(row[key]))
+            # get the value for that species
+            max_val = row[species]
+            print(max_val)
             if species in target_list:
                 species_found.append(species)
                 # increment the abundance count by 1 if species matches a TargetSpecies

@@ -137,7 +137,7 @@ class Bin(models.Model):
     species_found = ArrayField(
         models.CharField(max_length=500), null=True, blank=True, default=None
     )
-    # Units are cells/L : cell_concentration = (image_numbers / bin.ml_analyzed) * 1000
+    # cell_concentration: cells/L (image_numbers / bin.ml_analyzed) * 1000
     cell_concentration_data = JSONField(null=True)
 
     objects = BinQuerySet.as_manager()
@@ -164,3 +164,15 @@ class Bin(models.Model):
             )
             return item
         return None
+
+
+class AutoclassScore(models.Model):
+    # the primary ID from the IFCB dashboard, also denotes the image file name
+    pid = models.CharField(max_length=100, unique=True, db_index=True)
+    score = models.DecimalField(max_digits=7, decimal_places=6)
+    species = models.ForeignKey(
+        TargetSpecies, related_name="autoclass_scores", on_delete=models.CASCADE
+    )
+    bin = models.ForeignKey(
+        Bin, related_name="autoclass_scores", on_delete=models.CASCADE
+    )

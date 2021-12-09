@@ -298,14 +298,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Django Import Export settings
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
-# Leaflet default settings
-LEAFLET_CONFIG = {
-    "DEFAULT_CENTER": (42.651, -69.222),
-    "DEFAULT_ZOOM": 8,
-    "MIN_ZOOM": 3,
-    "MAX_ZOOM": 18,
-}
-
 # Celery Settings
 if USE_TZ:
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-timezone
