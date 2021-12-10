@@ -97,15 +97,17 @@ def reset_ifcb_data():
 
     datasets = Dataset.objects.all()
     for dataset in datasets:
+        print(f"DATASET: {dataset}")
         # update DB with any new Bins, then delete all existing IFCB data and get new data
         _get_ifcb_bins_dataset(dataset)
         bins = dataset.bins.all()
         for b in bins:
+            print()
             print("Start autoclass processing...")
             _get_ifcb_autoclass_file(b)
             print(f"{b} processed.")
 
-    print("Complete Bin import.")
+    print("Complete all imports.")
 
 
 def _get_ifcb_bins_dataset(dataset_obj):
@@ -199,7 +201,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     ml_analyzed = bin_obj.ml_analyzed
 
     target_list = TargetSpecies.objects.values_list("species_id", flat=True)
-    print(bin_url, bin_obj)
+    print(f"DASHBOARD URL requested: {bin_url}")
     species_found = []
     # set up data structure to store results
     data = []
@@ -228,7 +230,12 @@ def _get_ifcb_autoclass_file(bin_obj):
         response_features = None
         pass
 
-    print(response.status_code)
+    # debug print if we features.csv exists:
+    if response_features and response_features.status_code == 200:
+        print(f"FEATURES URL: {features_url}")
+    else:
+        print(f"NO FEATURES CSV FOUND: 404 - {features_url}")
+
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
         for row in csv.DictReader(lines):
@@ -239,7 +246,7 @@ def _get_ifcb_autoclass_file(bin_obj):
             species = max(row, key=lambda key: float(row[key]))
             # get the value for that species
             max_val = row[species]
-            print(max_val)
+            # print(max_val)
             if species in target_list:
                 species_found.append(species)
                 # increment the abundance count by 1 if species matches a TargetSpecies
@@ -270,7 +277,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                     image_ids = item["image_numbers"]
                     biovolume_total = 0
                     image_ids = [img[-5:].lstrip("0") for img in image_ids]
-                    print(image_ids)
+                    # print(image_ids)
                     lines = (
                         line.decode("utf-8") for line in response_features.iter_lines()
                     )
@@ -292,7 +299,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                 pass
 
         # update Bin record
-        print("save to DB")
+        print(f"Data for {bin_obj}: {data}")
         bin_obj.cell_concentration_data = data
         bin_obj.species_found = species_found
         bin_obj.save()
