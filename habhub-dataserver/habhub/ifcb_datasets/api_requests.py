@@ -10,7 +10,7 @@ from io import BytesIO
 from django.conf import settings
 from django.shortcuts import render
 from django.core.files.storage import default_storage
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 
 from habhub.core.models import TargetSpecies
 
@@ -19,13 +19,40 @@ env = environ.Env()
 IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
 IFCB_DASHBOARD_THROTTLE_RATE = env("IFCB_DASHBOARD_THROTTLE_RATE", default=50)
 
+
+def valid_lonlat(lon: float, lat: float):
+    """
+    This validates a lat and lon point can be located
+    in the bounds of the WGS84 CRS, after wrapping the
+    longitude value within [-180, 180)
+
+    :param lon: a longitude value
+    :param lat: a latitude value
+    :return: (lon, lat) if valid, None otherwise
+    """
+    # ignore points that are set to 0,0
+    if lon == 0 and lat == 0:
+        return None
+
+    # Put the longitude in the range of [0,360):
+    lon %= 360
+    # Put the longitude in the range of [-180,180):
+    if lon >= 180:
+        lon -= 360
+    lon_lat_point = Point(lon, lat)
+    bbox = (-180.0, -90.0, 180.0, 90.0)
+    lon_lat_bounds = Polygon.from_bbox(bbox)
+    # return lon_lat_bounds.intersects(lon_lat_point)
+    # would not provide any corrected values
+
+    if lon_lat_bounds.intersects(lon_lat_point):
+        return lon, lat
+    else:
+        return None
+
+
 # Functions to access IFCB Dashboard
 # -------------------------------
-
-"""
-Function to run import of Bins/Autoclass/Image data from IFCB dashboard
-Args: 'dataset_obj' - Dataset object
-"""
 
 """
 def run_species_classifed_import(dataset_obj):
@@ -45,6 +72,10 @@ def run_species_classifed_import(dataset_obj):
 
 
 def run_species_classifed_import(dataset_obj):
+    """
+    Function to run import of Bins/Autoclass/Image data from IFCB dashboard
+    Args: 'dataset_obj' - Dataset object
+    """
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
     print("Complete Bin import.")
@@ -66,15 +97,17 @@ def reset_ifcb_data():
 
     datasets = Dataset.objects.all()
     for dataset in datasets:
+        print(f"DATASET: {dataset}")
         # update DB with any new Bins, then delete all existing IFCB data and get new data
         _get_ifcb_bins_dataset(dataset)
         bins = dataset.bins.all()
         for b in bins:
+            print()
             print("Start autoclass processing...")
             _get_ifcb_autoclass_file(b)
             print(f"{b} processed.")
 
-    print("Complete Bin import.")
+    print("Complete all imports.")
 
 
 def _get_ifcb_bins_dataset(dataset_obj):
@@ -99,22 +132,34 @@ def _get_ifcb_bins_dataset(dataset_obj):
     csv_url = (
         f"{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}"
     )
-    proxies = {"http": None, "https": None}
 
-    response = requests.get(csv_url, params=params, verify=False, proxies=proxies)
+    response = requests.get(csv_url, params=params)
     print(response.status_code, response.url)
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
 
         for row in csv.DictReader(lines):
             print(row["pid"])
+            # check for valid long/lat. Skip row if no valid geo data
+            if row["longitude"] and row["latitude"]:
+                lon = float(row["longitude"])
+                lat = float(row["latitude"])
+                lon_lat = valid_lonlat(lon, lat)
+
+                if lon_lat is None:
+                    print("invalid long/lat")
+                    continue
+                else:
+                    lon, lat = lon_lat
+
+                geom = Point(lon, lat)
+            else:
+                print("no long/lat")
+                continue
+
             sample_time = datetime.datetime.strptime(
                 row["sample_time"], "%Y-%m-%d %H:%M:%S%z"
             )
-
-            geom = None
-            if row["longitude"] and row["latitude"]:
-                geom = Point(float(row["longitude"]), float(row["latitude"]))
 
             depth = None
             if row["depth"]:
@@ -145,72 +190,6 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 print(e)
 
 
-def _get_single_ifcb_bin(dataset_obj, bin_pid):
-    """
-    Function to make API request for single IFCB bin by dataset
-    Args: 'dataset_obj' - Dataset object, 'bin_pid' - Bin PID string
-    """
-    from .models import Bin
-
-    csv_url = (
-        f"{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}"
-    )
-    # check if Bin already exists in DB
-    try:
-        bin = Bin.objects.get(pid=bin_pid)
-        return bin
-    except:
-        bin = None
-        pass
-
-    response = requests.get(csv_url)
-    print(response.status_code, response.url)
-    if response.status_code == 200:
-        lines = (line.decode("utf-8") for line in response.iter_lines())
-
-        for row in csv.DictReader(lines):
-            if bin_pid == row["pid"]:
-
-                print(row["pid"])
-                sample_time = datetime.datetime.strptime(
-                    row["sample_time"], "%Y-%m-%d %H:%M:%S%z"
-                )
-
-                geom = None
-                if row["longitude"] and row["latitude"]:
-                    geom = Point(float(row["longitude"]), float(row["latitude"]))
-
-                depth = None
-                if row["depth"]:
-                    depth = row["depth"]
-
-                ml_analyzed = None
-                if row["ml_analyzed"] and float(row["ml_analyzed"]) > 0:
-                    ml_analyzed = row["ml_analyzed"]
-
-                try:
-                    bin = Bin.objects.create(
-                        pid=row["pid"],
-                        dataset=dataset_obj,
-                        geom=geom,
-                        sample_time=row["sample_time"],
-                        ifcb=row["ifcb"],
-                        ml_analyzed=ml_analyzed,
-                        depth=depth,
-                        cruise=row["cruise"],
-                        cast=row["cast"],
-                        niskin=row["niskin"],
-                        sample_type=row["sample_type"],
-                        n_images=row["n_images"],
-                        skip=row["skip"],
-                    )
-                    print(f"row saved - {bin.pid}")
-                except Exception as e:
-                    print(e)
-                    bin = None
-            return bin
-
-
 def _get_ifcb_autoclass_file(bin_obj):
     """
     Function to make API request for Autoclass CSV file, calculate abundance of target species
@@ -222,7 +201,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     ml_analyzed = bin_obj.ml_analyzed
 
     target_list = TargetSpecies.objects.values_list("species_id", flat=True)
-    print(bin_url, bin_obj)
+    print(f"DASHBOARD URL requested: {bin_url}")
     species_found = []
     # set up data structure to store results
     data = []
@@ -251,7 +230,12 @@ def _get_ifcb_autoclass_file(bin_obj):
         response_features = None
         pass
 
-    print(response.status_code)
+    # debug print if we features.csv exists:
+    if response_features and response_features.status_code == 200:
+        print(f"FEATURES URL: {features_url}")
+    else:
+        print(f"NO FEATURES CSV FOUND: 404 - {features_url}")
+
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
         for row in csv.DictReader(lines):
@@ -260,6 +244,9 @@ def _get_ifcb_autoclass_file(bin_obj):
             row.pop("pid", None)
             # get the item with the highest value, return species name in key
             species = max(row, key=lambda key: float(row[key]))
+            # get the value for that species
+            max_val = row[species]
+            # print(max_val)
             if species in target_list:
                 species_found.append(species)
                 # increment the abundance count by 1 if species matches a TargetSpecies
@@ -290,7 +277,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                     image_ids = item["image_numbers"]
                     biovolume_total = 0
                     image_ids = [img[-5:].lstrip("0") for img in image_ids]
-                    print(image_ids)
+                    # print(image_ids)
                     lines = (
                         line.decode("utf-8") for line in response_features.iter_lines()
                     )
@@ -312,7 +299,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                 pass
 
         # update Bin record
-        print("save to DB")
+        print(f"Data for {bin_obj}: {data}")
         bin_obj.cell_concentration_data = data
         bin_obj.species_found = species_found
         bin_obj.save()
