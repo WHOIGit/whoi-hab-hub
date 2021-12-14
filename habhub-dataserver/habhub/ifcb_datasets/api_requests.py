@@ -218,7 +218,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     # get the autoclass CSV to calculate cell concentrations. This is required
     try:
         response = requests.get(class_scores_url, timeout=1)
-        print(response.status_code, response.reason, response.url)
+        print(response.status_code, response.url)
     except Exception as e:
         print(e)
         return data
@@ -273,7 +273,6 @@ def _get_ifcb_autoclass_file(bin_obj):
                 # So, e.g. sum of all biovolumes from images identified as cylindrospermopsis (or any other class)
                 # divided by the volume analyzed (some number of mL between 0 and 5).
                 if response_features and response_features.status_code == 200:
-                    print("FEATURE CSV LOADED", response_features.status_code)
                     # need to reduce image_number string to last 5 numbers, then strip zeroes
                     image_ids = item["image_numbers"]
                     biovolume_total = 0
