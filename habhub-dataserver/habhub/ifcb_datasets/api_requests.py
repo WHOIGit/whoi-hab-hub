@@ -218,7 +218,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     # get the autoclass CSV to calculate cell concentrations. This is required
     try:
         response = requests.get(class_scores_url, timeout=1)
-        print(response.status_code, response.reason)
+        print(response.status_code, response.reason, response.url, response.json())
     except Exception as e:
         print(e)
         return data
