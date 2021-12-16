@@ -11,13 +11,13 @@ const axiosInstance = axios.create({
       ? "JWT " + localStorage.getItem("access_token")
       : null,
     "Content-Type": "application/json",
-    accept: "application/json"
-  }
+    accept: "application/json",
+  },
 });
 
 axiosInstance.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     const originalRequest = error.config;
 
     // If auth error is from the refresh view, send to login page and return error
@@ -42,12 +42,11 @@ axiosInstance.interceptors.response.use(
 
         // exp date in token is expressed in seconds, while now() returns milliseconds:
         const now = Math.ceil(Date.now() / 1000);
-        console.log(tokenParts.exp);
 
         if (tokenParts.exp > now) {
           return axiosInstance
             .post("api/v1/token/refresh/", { refresh: refreshToken })
-            .then(response => {
+            .then((response) => {
               localStorage.setItem("access_token", response.data.access);
               localStorage.setItem("refresh_token", response.data.refresh);
 
@@ -58,7 +57,7 @@ axiosInstance.interceptors.response.use(
 
               return axiosInstance(originalRequest);
             })
-            .catch(err => {
+            .catch((err) => {
               console.log(err);
             });
         } else {

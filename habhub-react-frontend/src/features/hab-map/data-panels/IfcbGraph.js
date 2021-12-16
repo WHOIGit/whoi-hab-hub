@@ -21,15 +21,15 @@ const API_URL = process.env.REACT_APP_API_URL;
 const expandWidth = window.outerWidth - 430;
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   chartContainer: {},
   chartContainerExpand: {
     width: expandWidth,
-    height: "100%"
+    height: "100%",
   },
   metaDataCloseBtn: {
-    textAlign: "right"
-  }
+    textAlign: "right",
+  },
 }));
 
 // eslint-disable-next-line no-unused-vars
@@ -42,59 +42,72 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   const [metaDataUrl, setMetaDataUrl] = useState(null);
   const [openMetaData, setOpenMetaData] = useState(false);
 
+  // set default chart values
+  let metricUnit = "cells/L";
+  let yAxisOptions = {
+    title: {
+      text: `${metricName} (${metricUnit})`,
+    },
+    type: "linear",
+    min: 0,
+  };
+
+  if (metricName === "Biovolume") {
+    metricUnit = "µm^3 L^-1";
+    // update chart to be log y-axis
+    yAxisOptions.title.text = `${metricName} (${metricUnit})`;
+    yAxisOptions.type = "logarithmic";
+    yAxisOptions.min = 100;
+    yAxisOptions.minorTickInterval = 1;
+  }
+
   useEffect(() => {
-    const chartData = visibleResults.map(item =>
+    const chartData = visibleResults.map((item) =>
       handleChartDataFormat(item, metricName)
     );
 
     const newChartOptions = {
       chart: {
         type: "spline",
-        zoomType: "x"
+        zoomType: "x",
       },
       title: {
-        text: null
+        text: null,
       },
       subtitle: {
         text:
           document.ontouchstart === undefined
             ? "Click and drag in the plot area to zoom in"
-            : "Pinch the chart to zoom in"
+            : "Pinch the chart to zoom in",
       },
       xAxis: {
-        type: "datetime"
+        type: "datetime",
       },
-      yAxis: {
-        title: {
-          text: "Cell concentration (cells/L)"
-        },
-        type: "linear",
-        min: 0
-      },
+      yAxis: { ...yAxisOptions },
       legend: {
         itemStyle: {
-          fontStyle: "italic"
-        }
+          fontStyle: "italic",
+        },
       },
       tooltip: {
-        formatter: function() {
+        formatter: function () {
           // eslint-disable-next-line no-unused-vars
           const [y_value, pointData] = highChartsGetMetaData(this);
           const sampleTime = new Date(this.x).toISOString().split("T")[0];
           const tooltip = `
                 ${sampleTime}<br>
-                <i>${this.series.name}</i>: ${y_value} cells/L<br>
+                <i>${this.series.name}</i>: ${y_value} ${metricUnit}<br>
                 Click to see IFCB images<br>
             `;
           return tooltip;
-        }
+        },
       },
       plotOptions: {
         series: {
           cursor: "pointer",
           point: {
             events: {
-              click: function() {
+              click: function () {
                 // eslint-disable-next-line no-unused-vars
                 const [y_value, pointData] = highChartsGetMetaData(this);
                 console.log(this.series.name, pointData);
@@ -104,14 +117,14 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
                   new URLSearchParams({
                     species: this.series.name,
                     bin_pid: pointData.binPid,
-                    format: "json"
+                    format: "json",
                   });
                 setMetaDataUrl(url);
                 setOpenMetaData(true);
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
       exporting: {
         buttons: {
@@ -124,12 +137,12 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
               "downloadPDF",
               "downloadSVG",
               "separator",
-              "downloadCSV"
-            ]
-          }
-        }
+              "downloadCSV",
+            ],
+          },
+        },
       },
-      series: chartData
+      series: chartData,
     };
     setChartOptions(newChartOptions);
   }, [visibleResults, metricName]);
@@ -143,42 +156,61 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   }, [chartExpanded]);
   /*
   useEffect(() => {
-    if (yAxisScale==='linear') {
+    if (yAxisScale === "linear") {
       console.log(chartRef.current.chart);
       chartRef.current.chart.yAxis[0].update({
-        type: 'linear',
+        type: "linear",
         min: 0,
       });
-    } else {
+    } else if (yAxisScale === "log") {
       console.log(chartRef.current.chart);
       chartRef.current.chart.yAxis[0].update({
-        type: 'logarithmic',
+        type: "logarithmic",
         minorTickInterval: 1,
         min: 100,
       });
     }
   }, [yAxisScale]);
   */
+  useEffect(() => {
+    console.log(metricName);
+    if (metricName === "Cell Concentration") {
+      console.log(chartRef.current.chart);
+      chartRef.current.chart.yAxis[0].update({
+        type: "linear",
+        min: 0,
+      });
+    } else if (metricName === "Biovolume") {
+      console.log(chartRef.current.chart);
+      chartRef.current.chart.yAxis[0].update({
+        type: "logarithmic",
+        minorTickInterval: 1,
+        min: 100,
+      });
+      console.log(chartRef.current.chart);
+    }
+  }, []);
+
   function handleChartDataFormat(dataObj, metricName) {
     // set up data arrays for Highcharts format.
     // match the value displayed to the metricName
     console.log(dataObj);
     const dataArray = dataObj.data
-      .map(item => {
+      .map((item) => {
         const sampleTime = Date.parse(item.sampleTime);
         const metricValue = item.metrics.find(
-          metric => metric.metricName === metricName
+          (metric) => metric.metricName === metricName
         ).value;
         return [sampleTime, metricValue];
       })
       .sort();
 
-    const seriesColor = habSpecies.find(item => item.id === dataObj.species);
+    const seriesColor = habSpecies.find((item) => item.id === dataObj.species);
 
     const timeSeries = {
       color: seriesColor.primaryColor,
       name: dataObj.speciesDisplay,
-      data: dataArray
+      data: dataArray,
     };
     return timeSeries;
   }
@@ -186,11 +218,11 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   function highChartsGetMetaData(point) {
     // Get the original data structure with metadata for this point by matching timestamps
     const timeSeries = visibleResults.find(
-      series => series.speciesDisplay === point.series.name
+      (series) => series.speciesDisplay === point.series.name
     );
     console.log(timeSeries);
     const pointData = timeSeries.data.find(
-      row => Date.parse(row.sampleTime) === point.x
+      (row) => Date.parse(row.sampleTime) === point.x
     );
     console.log(pointData);
 
