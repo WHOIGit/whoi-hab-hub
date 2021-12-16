@@ -53,12 +53,12 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
   };
 
   if (metricName === "Biovolume") {
-    metricUnit = "µm^3 L^-1";
+    metricUnit = "&#x03BC;m&#xB3;  L^&#x207b;&#xB9;";
     // update chart to be log y-axis
     yAxisOptions.title.text = `${metricName} (${metricUnit})`;
     yAxisOptions.type = "logarithmic";
     yAxisOptions.min = 100;
-    yAxisOptions.minorTickInterval = 1;
+    yAxisOptions.minorTickInterval = 100;
   }
 
   useEffect(() => {
@@ -110,7 +110,6 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
               click: function () {
                 // eslint-disable-next-line no-unused-vars
                 const [y_value, pointData] = highChartsGetMetaData(this);
-                console.log(this.series.name, pointData);
                 // build API URL to get BIN images
                 const url =
                   `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` +
@@ -154,42 +153,6 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
       chartRef.current.chart.setSize(550, 300);
     }
   }, [chartExpanded]);
-  /*
-  useEffect(() => {
-    if (yAxisScale === "linear") {
-      console.log(chartRef.current.chart);
-      chartRef.current.chart.yAxis[0].update({
-        type: "linear",
-        min: 0,
-      });
-    } else if (yAxisScale === "log") {
-      console.log(chartRef.current.chart);
-      chartRef.current.chart.yAxis[0].update({
-        type: "logarithmic",
-        minorTickInterval: 1,
-        min: 100,
-      });
-    }
-  }, [yAxisScale]);
-  */
-  useEffect(() => {
-    console.log(metricName);
-    if (metricName === "Cell Concentration") {
-      console.log(chartRef.current.chart);
-      chartRef.current.chart.yAxis[0].update({
-        type: "linear",
-        min: 0,
-      });
-    } else if (metricName === "Biovolume") {
-      console.log(chartRef.current.chart);
-      chartRef.current.chart.yAxis[0].update({
-        type: "logarithmic",
-        minorTickInterval: 1,
-        min: 100,
-      });
-      console.log(chartRef.current.chart);
-    }
-  }, []);
 
   function handleChartDataFormat(dataObj, metricName) {
     // set up data arrays for Highcharts format.
@@ -233,6 +196,7 @@ function IfcbGraph({ visibleResults, metricName, chartExpanded, yAxisScale }) {
     return [y_value, pointData];
   }
 
+  console.log(chartRef.current?.chart);
   return (
     <React.Fragment>
       <HighchartsReact
