@@ -1,11 +1,12 @@
 from colour import Color
 from decimal import Decimal
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import MinValueValidator
 from django.contrib.postgres.fields import ArrayField
 from colorfield.fields import ColorField
 
 from .utils import linear_gradient
+from habhub.ifcb_datasets.tasks import reset_ifcb_dashboard_data
 
 
 class TargetSpecies(models.Model):
@@ -62,7 +63,19 @@ class TargetSpecies(models.Model):
         color_gradient.insert(0, dark_shade.hex)
         color_gradient.reverse()
         self.color_gradient = color_gradient
+
+        # Need to check if autoclass_threshold value has changed
+        # if yes, IFCB metric data needs to be reset
+        threshold_changed = False
+        if self.pk is not None:
+            orig = TargetSpecies.objects.get(pk=self.pk)
+            if orig.autoclass_threshold != self.autoclass_threshold:
+                threshold_changed = True
+
         super(TargetSpecies, self).save(*args, **kwargs)
+        # trigger celery task to recalculate IFCB data
+        if threshold_changed:
+            transaction.on_commit(lambda: reset_ifcb_dashboard_data.delay())
 
 
 class DataLayer(models.Model):

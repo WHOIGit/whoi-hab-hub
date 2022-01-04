@@ -12,8 +12,6 @@ from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point, Polygon
 
-from habhub.core.models import TargetSpecies
-
 env = environ.Env()
 
 IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
@@ -85,6 +83,8 @@ def run_species_classifed_import(dataset_obj):
     for bin in bins:
         print("Start autoclass processing...")
         _get_ifcb_autoclass_file(bin)
+        print("Start calculating metrics from scores..")
+        _calculate_metrics(bin)
         print(f"{bin} processed.")
 
 
@@ -101,11 +101,12 @@ def reset_ifcb_data():
         # update DB with any new Bins, then delete all existing IFCB data and get new data
         _get_ifcb_bins_dataset(dataset)
         bins = dataset.bins.all()
-        for b in bins:
-            print()
+        for bin in bins:
             print("Start autoclass processing...")
-            _get_ifcb_autoclass_file(b)
-            print(f"{b} processed.")
+            _get_ifcb_autoclass_file(bin)
+            print("Start calculating metrics from scores..")
+            _calculate_metrics(bin)
+            print(f"{bin} processed.")
 
     print("Complete all imports.")
 
@@ -195,50 +196,21 @@ def _get_ifcb_autoclass_file(bin_obj):
     Function to make API request for Autoclass CSV file, calculate abundance of target species
     Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
     """
+    from habhub.core.models import TargetSpecies
     from .models import AutoclassScore
 
     bin_url = f"{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}"
     class_scores_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
-    features_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
-    ml_analyzed = bin_obj.ml_analyzed
 
     target_list = TargetSpecies.objects.values_list("species_id", flat=True)
     print(f"DASHBOARD URL requested: {bin_url}")
-    species_found = []
-    # set up data structure to store results
-    data = []
-    for species in target_list:
-        dict = {
-            "species": species,
-            "image_count": 0,
-            "cell_concentration": 0,
-            "biovolume": 0,
-            "image_numbers": [],
-        }
-        data.append(dict)
 
     # get the autoclass CSV to calculate cell concentrations. This is required
     try:
         response = requests.get(class_scores_url, timeout=1)
     except Exception as e:
         print(e)
-        return data
-
-    # get the features csv to calculate Biovolumes. Continue if unavailable
-    try:
-        response_features = requests.get(features_url, timeout=1)
-    except Exception as e:
-        print(e)
-        response_features = None
-        pass
-
-    # debug print if we features.csv exists:
-    if response_features and response_features.status_code == 200:
-        print(f"FEATURES URL: {features_url}")
-    else:
-        print(
-            f"NO FEATURES CSV FOUND: {response_features.status_code} - {features_url}"
-        )
+        return
 
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
@@ -252,64 +224,88 @@ def _get_ifcb_autoclass_file(bin_obj):
             if species in target_list:
                 # get the value for that species
                 max_val = row[species]
-                species_found.append(species)
                 species_obj = TargetSpecies.objects.get(species_id=species)
                 # create autoclass score object for this Bin/Species
-                autoclass_score = AutoclassScore.objects.create(
-                    pid=image_number, score=max_val, species=species_obj, bin=bin_obj
+                autoclass_score, created = AutoclassScore.objects.update_or_create(
+                    pid=image_number,
+                    defaults={"score": max_val, "species": species_obj, "bin": bin_obj},
                 )
-                # increment the abundance count by 1 if species matches a TargetSpecies
-                item = next(
-                    (item for item in data if item["species"] == species), False
+                print(autoclass_score)
+
+
+def _calculate_metrics(bin_obj):
+    from habhub.core.models import TargetSpecies
+
+    features_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
+    ml_analyzed = bin_obj.ml_analyzed
+    target_list = TargetSpecies.objects.all()
+
+    # get the features csv to calculate Biovolumes. Continue if unavailable
+    try:
+        response_features = requests.get(features_url, timeout=1)
+    except Exception as e:
+        print(e)
+        response_features = None
+        pass
+
+    # set up data structure to store results
+    data = []
+    for species in target_list:
+        item_dict = {
+            "species": species.species_id,
+            "image_count": 0,
+            "cell_concentration": 0,
+            "biovolume": 0,
+            "image_numbers": [],
+        }
+
+        scores = bin_obj.autoclass_scores.filter(species=species).filter(
+            score__gte=species.autoclass_threshold
+        )
+
+        print(scores.count())
+        if scores.exists():
+            # calculate cell concentrations
+            # number of positive hits (score_count) / mL analyed.
+            # multiply by 1000 to convert to per L
+            item_dict["cell_concentration"] = int(
+                round((scores.count() / ml_analyzed) * 1000)
+            )
+            for score in scores:
+                item_dict["image_numbers"].append(score.pid)
+
+            # calculate Biovolume
+            # There are ~2.77 pixels per micron so to convert voxel biovolume
+            # to cubic microns divide values by 2.77^3 or 21.254
+            ####
+            # Calculate the sum of biovolumes / volume analyzed by class.
+            # So, e.g. sum of all biovolumes from images identified as cylindrospermopsis (or any other class)
+            # divided by the volume analyzed (some number of mL between 0 and 5).
+            if response_features and response_features.status_code == 200:
+                print("FEATURE CSV LOADED", response_features.status_code)
+                # need to reduce image_number string to last 5 numbers, then strip zeroes
+                image_ids = item_dict["image_numbers"]
+                biovolume_total = 0
+                image_ids = [img[-5:].lstrip("0") for img in image_ids]
+                # print(image_ids)
+                lines = (
+                    line.decode("utf-8") for line in response_features.iter_lines()
                 )
-                item["image_count"] += 1
-                item["image_numbers"].append(image_number)
+                for row in csv.DictReader(lines):
 
-        for item in data:
-            try:
-                # calculate cell concentrations
-                # number of positive hits (image_count) / mL analyed.
-                # multiply by 1000 to convert to per L
-                item["cell_concentration"] = int(
-                    round((item["image_count"] / ml_analyzed) * 1000)
+                    if row["roi_number"] in image_ids:
+                        # convert to cubic microns
+                        biovolume = float(row["Biovolume"]) / 21.254
+                        biovolume_total = biovolume_total + biovolume
+
+                biovolume_final = int(
+                    round((biovolume_total / float(ml_analyzed)) * 1000)
                 )
-                # calculate Biovolume
-                # There are ~2.77 pixels per micron so to convert voxel biovolume
-                # to cubic microns divide values by 2.77^3 or 21.254
-                ####
-                # Calculate the sum of biovolumes / volume analyzed by class.
-                # So, e.g. sum of all biovolumes from images identified as cylindrospermopsis (or any other class)
-                # divided by the volume analyzed (some number of mL between 0 and 5).
-                if response_features and response_features.status_code == 200:
-                    print("FEATURE CSV LOADED", response_features.status_code)
-                    # need to reduce image_number string to last 5 numbers, then strip zeroes
-                    image_ids = item["image_numbers"]
-                    biovolume_total = 0
-                    image_ids = [img[-5:].lstrip("0") for img in image_ids]
-                    # print(image_ids)
-                    lines = (
-                        line.decode("utf-8") for line in response_features.iter_lines()
-                    )
-                    for row in csv.DictReader(lines):
+                item_dict["biovolume"] = biovolume_final
 
-                        if row["roi_number"] in image_ids:
-                            # convert to cubic microns
-                            biovolume = float(row["Biovolume"]) / 21.254
-                            biovolume_total = biovolume_total + biovolume
+        data.append(item_dict)
 
-                    biovolume_final = int(
-                        round((biovolume_total / float(ml_analyzed)) * 1000)
-                    )
-                    item["biovolume"] = biovolume_final
-                # remove duplications from species_found list
-                species_found = list(set(species_found))
-            except Exception as e:
-                print(e)
-                pass
-
-        # update Bin record
-        print(f"Data for {bin_obj}: {data}")
-        bin_obj.cell_concentration_data = data
-        bin_obj.species_found = species_found
-        bin_obj.save()
-    return data
+    # update Bin record
+    print(f"Data for {bin_obj}: {data}")
+    bin_obj.cell_concentration_data = data
+    bin_obj.save()
