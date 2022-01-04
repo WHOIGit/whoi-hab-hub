@@ -195,6 +195,8 @@ def _get_ifcb_autoclass_file(bin_obj):
     Function to make API request for Autoclass CSV file, calculate abundance of target species
     Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
     """
+    from .models import AutoclassScore
+
     bin_url = f"{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}"
     class_scores_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
     features_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
@@ -234,7 +236,9 @@ def _get_ifcb_autoclass_file(bin_obj):
     if response_features and response_features.status_code == 200:
         print(f"FEATURES URL: {features_url}")
     else:
-        print(f"NO FEATURES CSV FOUND: 404 - {features_url}")
+        print(
+            f"NO FEATURES CSV FOUND: {response_features.status_code} - {features_url}"
+        )
 
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
@@ -244,11 +248,16 @@ def _get_ifcb_autoclass_file(bin_obj):
             row.pop("pid", None)
             # get the item with the highest value, return species name in key
             species = max(row, key=lambda key: float(row[key]))
-            # get the value for that species
-            max_val = row[species]
-            # print(max_val)
+
             if species in target_list:
+                # get the value for that species
+                max_val = row[species]
                 species_found.append(species)
+                species_obj = TargetSpecies.objects.get(species_id=species)
+                # create autoclass score object for this Bin/Species
+                autoclass_score = AutoclassScore.objects.create(
+                    pid=image_number, score=max_val, species=species_obj, bin=bin_obj
+                )
                 # increment the abundance count by 1 if species matches a TargetSpecies
                 item = next(
                     (item for item in data if item["species"] == species), False

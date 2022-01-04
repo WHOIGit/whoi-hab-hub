@@ -1,6 +1,7 @@
 from colour import Color
-
+from decimal import Decimal
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.contrib.postgres.fields import ArrayField
 from colorfield.fields import ColorField
 
@@ -35,6 +36,12 @@ class TargetSpecies(models.Model):
         max_length=20,
         choices=ENVIRONMENT_CHOICES,
         default=MARINE,
+    )
+    autoclass_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))],
     )
 
     class Meta:
