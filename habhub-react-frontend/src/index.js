@@ -17,6 +17,7 @@ const GA_UID = process.env.REACT_APP_GA_UID;
 const ga4react = new GA4React(GA_UID);
 
 (async () => {
+  // eslint-disable-next-line no-unused-vars
   await ga4react.initialize().catch((err) => {});
 
   ReactDOM.render(
