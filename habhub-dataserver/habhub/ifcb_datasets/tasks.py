@@ -1,6 +1,10 @@
 from celery import shared_task
 
-from .api_requests import run_species_classifed_import, reset_ifcb_data
+from .api_requests import (
+    run_species_classifed_import,
+    reset_ifcb_data,
+    _calculate_metrics,
+)
 
 
 @shared_task(time_limit=3000, soft_time_limit=3000)
@@ -15,5 +19,14 @@ def get_ifcb_dashboard_data():
 
 
 @shared_task(time_limit=20000, soft_time_limit=20000)
-def reset_ifcb_dashboard_data():
+def reset_ifcb_dataset_data():
     reset_ifcb_data()
+
+
+@shared_task(time_limit=20000, soft_time_limit=20000)
+def recalculate_metrics():
+    from .models import Bin
+
+    bins = Bin.objects.all()
+    for bin in bins:
+        _calculate_metrics(bin)

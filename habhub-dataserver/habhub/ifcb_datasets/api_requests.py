@@ -88,27 +88,37 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} processed.")
 
 
-def reset_ifcb_data():
+def reset_ifcb_data(dataset_obj=None):
     """
-    recreate all IFCB data for all Bins in all Datasets
+    recreate all IFCB data for all Bins in all Datasets or single Dataset
     this operation may take a long time
     """
     from .models import Dataset
 
-    datasets = Dataset.objects.all()
-    for dataset in datasets:
-        print(f"DATASET: {dataset}")
+    if not dataset_obj:
+        datasets = Dataset.objects.all()
+        for dataset in datasets:
+            print(f"DATASET: {dataset}")
+            # update DB with any new Bins, then delete all existing IFCB data and get new data
+            _get_ifcb_bins_dataset(dataset)
+            bins = dataset.bins.all()
+            for bin in bins:
+                print("Start autoclass processing...")
+                _get_ifcb_autoclass_file(bin)
+                print("Start calculating metrics from scores..")
+                _calculate_metrics(bin)
+                print(f"{bin} processed.")
+    else:
         # update DB with any new Bins, then delete all existing IFCB data and get new data
-        _get_ifcb_bins_dataset(dataset)
-        bins = dataset.bins.all()
+        _get_ifcb_bins_dataset(dataset_obj)
+        bins = dataset_obj.bins.all()
         for bin in bins:
             print("Start autoclass processing...")
             _get_ifcb_autoclass_file(bin)
             print("Start calculating metrics from scores..")
             _calculate_metrics(bin)
             print(f"{bin} processed.")
-
-    print("Complete all imports.")
+    print("Complete data ingestion.")
 
 
 def _get_ifcb_bins_dataset(dataset_obj):

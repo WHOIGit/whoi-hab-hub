@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 from colorfield.fields import ColorField
 
 from .utils import linear_gradient
-from habhub.ifcb_datasets.tasks import reset_ifcb_dashboard_data
+from habhub.ifcb_datasets.tasks import recalculate_metrics
 
 
 class TargetSpecies(models.Model):
@@ -75,7 +75,7 @@ class TargetSpecies(models.Model):
         super(TargetSpecies, self).save(*args, **kwargs)
         # trigger celery task to recalculate IFCB data
         if threshold_changed:
-            transaction.on_commit(lambda: reset_ifcb_dashboard_data.delay())
+            transaction.on_commit(lambda: recalculate_metrics.delay())
 
 
 class DataLayer(models.Model):
