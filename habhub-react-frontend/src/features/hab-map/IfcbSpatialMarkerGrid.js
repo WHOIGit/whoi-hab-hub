@@ -28,6 +28,7 @@ export default function IfcbSpatialMarkerGrid({
   onMarkerClick,
   metricID,
 }) {
+  console.log(speciesValues);
   const classes = useStyles();
   // set some constants for square sizes
   const maxSquareSize = 30;

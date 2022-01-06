@@ -98,7 +98,6 @@ class BinFiltersMixin:
             bbox_sw = bbox_sw.split(",")
             bbox_ne = bbox_ne.split(",")
             poly_bbox = Polygon.from_bbox(bbox_sw + bbox_ne)
-            print(poly_bbox)
             queryset = queryset.filter(geom__within=poly_bbox)
 
         return queryset
@@ -120,7 +119,7 @@ class DatasetFiltersMixin:
         smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
-        print(bbox_sw)
+
         try:
             earliest_bin = Bin.objects.earliest()
         except Bin.DoesNotExist:

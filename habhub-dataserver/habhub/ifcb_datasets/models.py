@@ -91,7 +91,6 @@ class Dataset(models.Model):
                                     pass
 
             for item in data_values:
-                print(item)
                 data_list = []
 
                 for metric_item in item["metrics"]:

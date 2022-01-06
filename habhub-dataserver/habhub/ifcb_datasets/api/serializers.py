@@ -82,37 +82,30 @@ class DatasetDetailSerializer(DatasetListSerializer):
             date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
             for datapoint in bin.cell_concentration_data:
-                index = next(
-                    (
-                        index
-                        for (index, data) in enumerate(concentration_timeseries)
-                        if data["species"] == datapoint["species"]
-                    ),
-                    None,
-                )
 
-                if index:
-                    data_dict = {
-                        "sample_time": date_str,
-                        "bin_pid": bin.pid,
-                        "metrics": [],
-                    }
-
-                    for metric in metrics:
-                        metric_value = 0
-
-                        if metric.metric_id in datapoint:
-                            metric_value = int(datapoint[metric.metric_id])
-
-                        metric_obj = {
-                            "metric_id": metric.metric_id,
-                            "metric_name": metric.name,
-                            "value": metric_value,
-                            "units": metric.units,
+                for (index, data) in enumerate(concentration_timeseries):
+                    if data["species"] == datapoint["species"]:
+                        data_dict = {
+                            "sample_time": date_str,
+                            "bin_pid": bin.pid,
+                            "metrics": [],
                         }
-                        data_dict["metrics"].append(metric_obj)
 
-                    concentration_timeseries[index]["data"].append(data_dict)
+                        for metric in metrics:
+                            metric_value = 0
+
+                            if metric.metric_id in datapoint:
+                                metric_value = int(datapoint[metric.metric_id])
+
+                            metric_obj = {
+                                "metric_id": metric.metric_id,
+                                "metric_name": metric.name,
+                                "value": metric_value,
+                                "units": metric.units,
+                            }
+                            data_dict["metrics"].append(metric_obj)
+
+                        concentration_timeseries[index]["data"].append(data_dict)
 
         return concentration_timeseries
 
@@ -177,7 +170,6 @@ class BinSpatialGridSerializer(serializers.Serializer):
         return features
 
     def format_max_mean(self, square):
-        # print(square)
         target_list = TargetSpecies.objects.values_list("species_id", flat=True)
         index_list = [*range(0, target_list.count(), 1)]
         metrics = Metric.objects.filter(
@@ -296,36 +288,28 @@ class BinSpatialGridDetailSerializer(serializers.Serializer):
             date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
             for datapoint in bin.cell_concentration_data:
-                index = next(
-                    (
-                        index
-                        for (index, data) in enumerate(timeseries_data)
-                        if data["species"] == datapoint["species"]
-                    ),
-                    None,
-                )
-
-                if index:
-                    data_dict = {
-                        "sample_time": date_str,
-                        "bin_pid": bin.pid,
-                        "metrics": [],
-                    }
-
-                    for metric in metrics:
-                        metric_value = 0
-
-                        if metric.metric_id in datapoint:
-                            metric_value = int(datapoint[metric.metric_id])
-
-                        metric_obj = {
-                            "metric_id": metric.metric_id,
-                            "metric_name": metric.name,
-                            "value": metric_value,
-                            "units": metric.units,
+                for (index, data) in enumerate(timeseries_data):
+                    if data["species"] == datapoint["species"]:
+                        data_dict = {
+                            "sample_time": date_str,
+                            "bin_pid": bin.pid,
+                            "metrics": [],
                         }
-                        data_dict["metrics"].append(metric_obj)
 
-                    timeseries_data[index]["data"].append(data_dict)
+                        for metric in metrics:
+                            metric_value = 0
+
+                            if metric.metric_id in datapoint:
+                                metric_value = int(datapoint[metric.metric_id])
+
+                            metric_obj = {
+                                "metric_id": metric.metric_id,
+                                "metric_name": metric.name,
+                                "value": metric_value,
+                                "units": metric.units,
+                            }
+                            data_dict["metrics"].append(metric_obj)
+
+                        timeseries_data[index]["data"].append(data_dict)
 
         return {"timeseries_data": timeseries_data, "geometry": geometry}

@@ -75,7 +75,7 @@ class TargetSpecies(models.Model):
         super(TargetSpecies, self).save(*args, **kwargs)
         # trigger celery task to recalculate IFCB data
         if threshold_changed:
-            transaction.on_commit(lambda: recalculate_metrics.delay())
+            transaction.on_commit(lambda: recalculate_metrics.delay(self.species_id))
 
 
 class DataLayer(models.Model):

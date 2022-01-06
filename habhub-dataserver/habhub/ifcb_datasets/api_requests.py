@@ -240,7 +240,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                     pid=image_number,
                     defaults={"score": max_val, "species": species_obj, "bin": bin_obj},
                 )
-                print(autoclass_score)
+                print(autoclass_score.score)
 
 
 def _calculate_metrics(bin_obj):
@@ -260,6 +260,8 @@ def _calculate_metrics(bin_obj):
 
     # set up data structure to store results
     data = []
+    species_found = []
+
     for species in target_list:
         item_dict = {
             "species": species.species_id,
@@ -269,6 +271,14 @@ def _calculate_metrics(bin_obj):
             "image_numbers": [],
         }
 
+        # check if species was found regardless of threshold value,
+        # save on bin_obj for easier lookups
+        is_species_found = bin_obj.autoclass_scores.filter(species=species).exists()
+
+        if is_species_found:
+            species_found.append(species.species_id)
+
+        # now find all scores that are greater than/equal to threshold value
         scores = bin_obj.autoclass_scores.filter(species=species).filter(
             score__gte=species.autoclass_threshold
         )
@@ -316,6 +326,7 @@ def _calculate_metrics(bin_obj):
         data.append(item_dict)
 
     # update Bin record
-    print(f"Data for {bin_obj}: {data}")
+    print(f"Data for {bin_obj}: {data}, {species_found}")
+    bin_obj.species_found = species_found
     bin_obj.cell_concentration_data = data
     bin_obj.save()

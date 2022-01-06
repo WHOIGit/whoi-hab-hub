@@ -24,9 +24,13 @@ def reset_ifcb_dataset_data():
 
 
 @shared_task(time_limit=20000, soft_time_limit=20000)
-def recalculate_metrics():
+def recalculate_metrics(species_id=None):
     from .models import Bin
 
-    bins = Bin.objects.all()
+    if species_id:
+        bins = Bin.objects.filter(species_found__contains=[species_id])
+    else:
+        bins = Bin.objects.all()
+
     for bin in bins:
         _calculate_metrics(bin)
