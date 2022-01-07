@@ -83,6 +83,7 @@ THIRD_PARTY_APPS = [
     "drf_multiple_model",
     "rest_framework_csv",
     "colorfield",
+    "django_celery_results",
 ]
 LOCAL_APPS = [
     "habhub.users.apps.UsersAppConfig",
@@ -305,7 +306,7 @@ if USE_TZ:
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_backend
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = "django-db"
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-accept_content
 CELERY_ACCEPT_CONTENT = ["json"]
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-task_serializer
@@ -318,6 +319,7 @@ CELERY_TASK_TIME_LIMIT = 5 * 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
 # TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_CACHE_BACKEND = "django-cache"
 
 # Celery Beat Periodic Tasks
 CELERY_BEAT_SCHEDULE = {
