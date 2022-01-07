@@ -3,8 +3,10 @@ from decimal import Decimal
 from django.db import models, transaction
 from django.core.validators import MinValueValidator
 from django.contrib.postgres.fields import ArrayField
+from django.core.cache import cache
 from colorfield.fields import ColorField
 
+from config import celery_app
 from .utils import linear_gradient
 from habhub.ifcb_datasets.tasks import recalculate_metrics
 
@@ -75,6 +77,18 @@ class TargetSpecies(models.Model):
         super(TargetSpecies, self).save(*args, **kwargs)
         # trigger celery task to recalculate IFCB data
         if threshold_changed:
+            # search cache for any current tasks that are running for this species
+            # revoke tasks to avoid endless queue
+            cache_key = (
+                f"habhub.ifcb_datasets.tasks.recalculate_metrics-{self.species_id}"
+            )
+            task_id = cache.get(cache_key)
+            print("CACHE FOUND TASK ID: ", task_id)
+            if task_id:
+                print("REVOKING TASK: ", task_id)
+                celery_app.control.revoke(task_id=task_id, terminate=True)
+                cache.delete(cache_key)
+
             transaction.on_commit(lambda: recalculate_metrics.delay(self.species_id))
 
 
