@@ -99,7 +99,7 @@ def reset_ifcb_data(dataset_obj=None):
         datasets = Dataset.objects.all()
         for dataset in datasets:
             print(f"DATASET: {dataset}")
-            # update DB with any new Bins, then delete all existing IFCB data and get new data
+            # update DB with any new Bins, then replace all existing IFCB data
             _get_ifcb_bins_dataset(dataset)
             bins = dataset.bins.all()
             for bin in bins:
@@ -109,7 +109,7 @@ def reset_ifcb_data(dataset_obj=None):
                 _calculate_metrics(bin)
                 print(f"{bin} processed.")
     else:
-        # update DB with any new Bins, then delete all existing IFCB data and get new data
+        # update DB with any new Bins, then replace all existing IFCB data
         _get_ifcb_bins_dataset(dataset_obj)
         bins = dataset_obj.bins.all()
         for bin in bins:
