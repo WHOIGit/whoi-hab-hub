@@ -26,9 +26,6 @@ import {
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
-const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
-const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
 
 const navStyle = {
   position: "absolute",
@@ -66,18 +63,8 @@ const initialGridZoomArray = [
   { gridLength: 1.0, maxZoom: 5, minZoom: 0, isActive: false },
 ];
 
-export default function HabMap() {
-  //const gridSquares = useSelector(state => state.spatialGrid.gridSquares);
-  //const gridSquares = useSelector(selectActiveGridSquaresByZoom);
-
+export default function HabMap({ viewport, setViewport }) {
   const classes = useStyles();
-  const [viewport, setViewport] = useState({
-    latitude: MAP_LATITUDE,
-    longitude: MAP_LONGITUDE,
-    zoom: MAP_ZOOM,
-    width: "100%",
-    height: "100vh",
-  });
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   // only refers to map layer that use the Mapbox Layer/Source properties

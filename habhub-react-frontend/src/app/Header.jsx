@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 
-import HeaderDropdownMenu from "./HeaderDropdownMenu.js";
+import HeaderDropdownMenu from "./HeaderDropdownMenu";
 import logo from "../images/logo-habhub.png";
 
 const useStyles = makeStyles((theme) => ({

@@ -1,8 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GA4React from "ga-4-react";
 import App from "./app/App";
-
+import Home from "./routes/home";
+import Bookmark from "./routes/bookmark";
 // Redux
 import store from "./app/store";
 import { Provider } from "react-redux";
@@ -28,6 +30,14 @@ const ga4react = new GA4React(GA_UID);
   ReactDOM.render(
     <Provider store={store}>
       <React.StrictMode>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />}>
+              <Route index element={<Home />} />
+              <Route path="bookmark" element={<Bookmark />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
         <App />
       </React.StrictMode>
     </Provider>,

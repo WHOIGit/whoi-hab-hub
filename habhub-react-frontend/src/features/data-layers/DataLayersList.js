@@ -3,6 +3,7 @@ import { Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector } from "react-redux";
 
+import { DATA_LAYERS } from "../../Constants";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import SquareMarker from "../../images/square-orange.svg";
@@ -10,28 +11,31 @@ import ClosureIcon from "../../images/icon-shellfish-closure.png";
 
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%"
+    width: "100%",
   },
   layerIcon: {
-    width: "25px"
-  }
+    width: "25px",
+  },
 }));
 
 export default function DataLayersList() {
-  const dataLayers = useSelector(state => state.dataLayers.layers);
+  const dataLayers = useSelector((state) => state.dataLayers.layers);
   const classes = useStyles();
 
-  const renderLayerGrid = dataLayer => {
+  const renderLayerGrid = (dataLayer) => {
     let imgSrc;
-    if (dataLayer.id === "stations-layer") {
+    if (dataLayer.id === DATA_LAYERS.stationsLayer) {
       imgSrc = DiamondMarker;
-    } else if (dataLayer.id === "ifcb-layer") {
+    } else if (
+      dataLayer.id === DATA_LAYERS.cellConcentrationLayer ||
+      dataLayer.id === DATA_LAYERS.biovolumeLayer
+    ) {
       imgSrc = CircleMarker;
-    } else if (dataLayer.id === "closures-layer") {
+    } else if (dataLayer.id === DATA_LAYERS.closuresLayer) {
       imgSrc = ClosureIcon;
     }
     return (
-      <>
+      <div key={dataLayer.id}>
         <Grid item xs={2}>
           <div>
             <img
@@ -72,13 +76,13 @@ export default function DataLayersList() {
             </Grid>
           </>
         )}
-      </>
+      </div>
     );
   };
 
   return (
     <Grid container spacing={0}>
-      {dataLayers.map(layer => renderLayerGrid(layer))}
+      {dataLayers.map((layer) => renderLayerGrid(layer))}
     </Grid>
   );
 }
