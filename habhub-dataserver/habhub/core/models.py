@@ -131,3 +131,22 @@ class Metric(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class MapBookmark(models.Model):
+    # data model to hold saved query variables to allow users to create bookmarkable links
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    species = ArrayField(models.CharField(max_length=50))
+    data_layers = ArrayField(models.CharField(max_length=50))
+    latitude = models.DecimalField(max_digits=8, decimal_places=5)
+    longitude = models.DecimalField(max_digits=8, decimal_places=5)
+    zoom = models.DecimalField(max_digits=7, decimal_places=5)
+    seasonal = models.BooleanField(default=False)
+    exclude_month_range = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return

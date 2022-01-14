@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models import Count, Max, F, ExpressionWrapper, FloatField, Subquery
 from django.db.models.functions import TruncMonth, Cast
 
-from ..models import TargetSpecies, DataLayer
+from ..models import TargetSpecies, DataLayer, MapBookmark
 from habhub.core.constants import (
     CELL_CONCENTRATION_LAYER,
     STATIONS_LAYER,
@@ -22,6 +22,7 @@ from .serializers import (
     ClosureNoticeSerializer,
     TargetSpeciesSerializer,
     DataLayerSerializer,
+    MapBookmarkSerializer
 )
 
 
@@ -36,6 +37,11 @@ class DataLayerViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = DataLayer.objects.filter(is_active=True)
         return queryset
+
+
+class MapBookmarkViewSet(viewsets.ModelViewSet):
+    serializer_class = MapBookmarkSerializer
+    queryset = MapBookmark.objects.all()
 
 
 class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
