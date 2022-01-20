@@ -149,4 +149,4 @@ class MapBookmark(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return
+        return f"ID: {self.id}"

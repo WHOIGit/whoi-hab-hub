@@ -1,6 +1,13 @@
 import { sub, differenceInDays, parseISO } from "date-fns";
 import { createSlice } from "@reduxjs/toolkit";
 
+// Set small initial start date to avoid async data loading confusion
+let initialStartDate = sub(new Date(), {
+  years: 0,
+  months: 0,
+  days: 1,
+}).toISOString();
+
 // Get user set startDate from .env, set default if unavailable
 let defaultStartDate = sub(new Date(), {
   years: 1,
@@ -8,6 +15,7 @@ let defaultStartDate = sub(new Date(), {
   days: 0,
 }).toISOString();
 
+// Get user set startDate from .env if available
 if (
   process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS &&
   process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS &&
@@ -22,7 +30,7 @@ if (
 
 const initialState = {
   defaultStartDate: defaultStartDate,
-  startDate: defaultStartDate,
+  startDate: initialStartDate,
   endDate: new Date().toISOString(),
   seasonal: false,
   excludeMonthRange: false,
@@ -46,6 +54,9 @@ export const dateFilterSlice = createSlice({
   name: "dateFilter",
   initialState: initialState,
   reducers: {
+    changeDefaultStartDate: (state, action) => {
+      state.defaultStartDate = action.payload.startDate;
+    },
     changeDateRange: {
       reducer(state, action) {
         state.startDate = action.payload.startDate;
@@ -73,6 +84,7 @@ export const dateFilterSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeDateRange } = dateFilterSlice.actions;
+export const { changeDateRange, changeDefaultStartDate } =
+  dateFilterSlice.actions;
 
 export default dateFilterSlice.reducer;

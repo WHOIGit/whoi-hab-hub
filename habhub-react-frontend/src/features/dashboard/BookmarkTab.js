@@ -16,6 +16,7 @@ import {
 import { Link, FileCopy } from "@material-ui/icons";
 import { parseISO, format } from "date-fns";
 // local imports
+import axiosInstance from "../../app/apiAxios";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
 import { selectVisibleLayers } from "../data-layers/dataLayersSlice";
 
@@ -52,16 +53,43 @@ export default function BookmarkTab({ viewport }) {
   let visibleLayers = useSelector(selectVisibleLayers);
   let [bookmarks, setBookmarks] = useState([]);
   let [tooltipText, setTooltipText] = useState(defaultTooltipText);
+  // eslint-disable-next-line no-unused-vars
+  let [error, setError] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  let [isLoaded, setIsLoaded] = useState(false);
 
-  function handleBookmarkCreate() {
-    console.log(viewport, window.location.hostname);
-    let longUrl = `${window.location.protocol}//${window.location.hostname}/bookmark/`;
-    let shortUrl = `${window.location.protocol}//${window.location.hostname}/bookmark/`;
-    setBookmarks([shortUrl, ...bookmarks]);
+  async function handleBookmarkCreate() {
+    let params = {
+      startDate: dateFilter.startDate,
+      endDate: dateFilter.endDate,
+      species: visibleSpecies.map((item) => item.id),
+      dataLayers: visibleLayers.map((item) => item.id),
+      latitude: viewport.latitude,
+      longitude: viewport.longitude,
+      zoom: viewport.zoom,
+      seasonal: dateFilter.seasonal.toString(),
+      excludeMonthRange: dateFilter.excludeMonthRange.toString(),
+    };
+
+    console.log(params);
+    try {
+      let res = await axiosInstance.post("api/v1/core/map-bookmarks/", {
+        ...params,
+      });
+      console.log(res.request.responseURL);
+      let data = JSON.parse(res.request.response);
+      console.log(data);
+      let url = `${window.location.protocol}//${window.location.hostname}/bookmark/${data.id}`;
+      setBookmarks([url, ...bookmarks]);
+      setIsLoaded(true);
+    } catch (error) {
+      console.log(error.response);
+      setIsLoaded(true);
+      setError(error);
+    }
   }
 
   function handleCopyUrl(text) {
-    console.log(text);
     navigator.clipboard.writeText(text);
     setTooltipText("Copied!");
   }

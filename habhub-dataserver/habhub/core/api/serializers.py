@@ -30,8 +30,8 @@ class DataLayerSerializer(serializers.ModelSerializer):
 
 
 class MapBookmarkSerializer(serializers.ModelSerializer):
-    species = serializers.ListField(child=serializers.CharField(max_value=50))
-    data_layers = serializers.ListField(child=serializers.CharField(max_value=50))
+    species = serializers.ListField(child=serializers.CharField())
+    data_layers = serializers.ListField(child=serializers.CharField())
 
     class Meta:
         model = MapBookmark

@@ -34,7 +34,9 @@ const ga4react = new GA4React(GA_UID);
           <Routes>
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />
-              <Route path="bookmark" element={<Bookmark />} />
+              <Route path="bookmark" element={<Bookmark />}>
+                <Route path=":bookmarkId" element={<Bookmark />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

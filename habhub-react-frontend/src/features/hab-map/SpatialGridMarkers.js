@@ -24,7 +24,7 @@ export default function SpatialGridMarkers({
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  console.log(results);
+
   useEffect(() => {
     async function fetchResults() {
       try {

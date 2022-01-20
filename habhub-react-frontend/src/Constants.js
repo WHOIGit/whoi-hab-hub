@@ -38,3 +38,9 @@ export const ENVIRONMENTS = ["Marine", "Freshwater"];
 export const ItemTypes = {
   PANE: "pane",
 };
+
+export const INITIAL_DATE_RANGE = {
+  years: 1,
+  months: 0,
+  days: 0,
+};
