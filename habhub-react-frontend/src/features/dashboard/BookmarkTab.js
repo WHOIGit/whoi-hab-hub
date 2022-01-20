@@ -64,9 +64,9 @@ export default function BookmarkTab({ viewport }) {
       endDate: dateFilter.endDate,
       species: visibleSpecies.map((item) => item.id),
       dataLayers: visibleLayers.map((item) => item.id),
-      latitude: viewport.latitude,
-      longitude: viewport.longitude,
-      zoom: viewport.zoom,
+      latitude: Math.round(viewport.latitude * 10000) / 10000,
+      longitude: Math.round(viewport.longitude * 10000) / 10000,
+      zoom: Math.round(viewport.zoom * 1000) / 1000,
       seasonal: dateFilter.seasonal.toString(),
       excludeMonthRange: dateFilter.excludeMonthRange.toString(),
     };
@@ -79,7 +79,7 @@ export default function BookmarkTab({ viewport }) {
       console.log(res.request.responseURL);
       let data = JSON.parse(res.request.response);
       console.log(data);
-      let url = `${window.location.protocol}//${window.location.hostname}/bookmark/${data.id}`;
+      let url = `${window.location.protocol}//${window.location.hostname}/bookmark/${data.id}/`;
       setBookmarks([url, ...bookmarks]);
       setIsLoaded(true);
     } catch (error) {
@@ -194,17 +194,17 @@ export default function BookmarkTab({ viewport }) {
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Map Zoom: {viewport.zoom}
+              Map Zoom: {Math.round(viewport.zoom * 1000) / 1000}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Latitude: {viewport.latitude}
+              Latitude: {Math.round(viewport.latitude * 10000) / 10000}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Longitude: {viewport.longitude}
+              Longitude: {Math.round(viewport.longitude * 10000) / 10000}
             </Typography>
           </ListItem>
         </List>

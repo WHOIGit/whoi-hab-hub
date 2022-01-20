@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // Import our stuff
 import HabMap from "../features/hab-map/HabMap";
 import DashBoard from "../features/dashboard/DashBoard";
@@ -9,16 +9,23 @@ const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
 const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
 const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
 
-export default function MapContainer() {
+const defaultViewport = {
+  latitude: MAP_LATITUDE,
+  longitude: MAP_LONGITUDE,
+  zoom: MAP_ZOOM,
+  width: "100%",
+  height: "100vh",
+};
+export default function MapContainer({ bookmarkViewport }) {
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
-  const [viewport, setViewport] = useState({
-    latitude: MAP_LATITUDE,
-    longitude: MAP_LONGITUDE,
-    zoom: MAP_ZOOM,
-    width: "100%",
-    height: "100vh",
-  });
+  const [viewport, setViewport] = useState(defaultViewport);
+
+  useEffect(() => {
+    if (bookmarkViewport) {
+      setViewport(bookmarkViewport);
+    }
+  }, [bookmarkViewport]);
 
   return (
     <>

@@ -90,6 +90,15 @@ export const habSpeciesSlice = createSlice({
         }
       });
     },
+    setAllSpeciesVisibility: (state, action) => {
+      state.species.forEach((element) => {
+        if (action.payload.speciesList.includes(element.id)) {
+          element.visibility = true;
+        } else {
+          element.visibility = false;
+        }
+      });
+    },
     changeSpeciesActiveOption: (state, action) => {
       state.species.forEach((element) => {
         if (element.id == action.payload.species.id) {
@@ -150,6 +159,7 @@ export const {
   changeSpeciesVisibility,
   changeSpeciesColor,
   changeSpeciesActiveOption,
+  setAllSpeciesVisibility,
 } = habSpeciesSlice.actions;
 
 export default habSpeciesSlice.reducer;

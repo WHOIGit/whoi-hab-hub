@@ -40,6 +40,15 @@ export const dataLayersSlice = createSlice({
         }
       });
     },
+    setAllLayersVisibility: (state, action) => {
+      state.layers.forEach((element) => {
+        if (action.payload.layerList.includes(element.id)) {
+          element.visibility = true;
+        } else {
+          element.visibility = false;
+        }
+      });
+    },
     changeMaxMean: (state, action) => {
       state.showMaxMean = action.payload.value;
     },
@@ -87,8 +96,12 @@ export const dataLayersSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeLayerVisibility, changeMaxMean, changeLegendVisibility } =
-  dataLayersSlice.actions;
+export const {
+  changeLayerVisibility,
+  changeMaxMean,
+  changeLegendVisibility,
+  setAllLayersVisibility,
+} = dataLayersSlice.actions;
 
 export default dataLayersSlice.reducer;
 

@@ -6,7 +6,8 @@ import { useParams } from "react-router-dom";
 import MapContainer from "../app/MapContainer";
 import axiosInstance from "../app/apiAxios";
 import { changeDateRange } from "../features/date-filter/dateFilterSlice";
-import { changeLayerVisibility } from "../features/data-layers/dataLayersSlice";
+import { setAllLayersVisibility } from "../features/data-layers/dataLayersSlice";
+import { setAllSpeciesVisibility } from "../features/hab-species/habSpeciesSlice";
 
 export default function Bookmark() {
   let params = useParams();
@@ -16,6 +17,7 @@ export default function Bookmark() {
   let [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
   let [isLoaded, setIsLoaded] = useState(false);
+  let [viewport, setViewport] = useState(null);
 
   useEffect(() => {
     async function fetchBookmark() {
@@ -36,14 +38,28 @@ export default function Bookmark() {
         };
         // set Date Range
         dispatch(changeDateRange(datePayload));
+
         // set Data Layers
-        bookmarkData.dataLayers.forEach((item) => {
-          let layerPayload = {
-            layerID: item,
-            checked: true,
-          };
-          dispatch(changeLayerVisibility(layerPayload));
-        });
+        let layerPayload = {
+          layerList: bookmarkData.dataLayers,
+        };
+        dispatch(setAllLayersVisibility(layerPayload));
+
+        // set visible Species
+        let speciesPayload = {
+          speciesList: bookmarkData.species,
+        };
+        dispatch(setAllSpeciesVisibility(speciesPayload));
+
+        // set Map Viewport
+        let viewport = {
+          latitude: parseFloat(bookmarkData.latitude),
+          longitude: parseFloat(bookmarkData.longitude),
+          zoom: parseFloat(bookmarkData.zoom),
+          width: "100%",
+          height: "100vh",
+        };
+        setViewport(viewport);
       } catch (error) {
         console.log(error.response);
         setIsLoaded(true);
@@ -55,5 +71,7 @@ export default function Bookmark() {
     fetchBookmark();
   }, [bookmarkId]);
 
-  return <MapContainer />;
+  if (!viewport) return null;
+
+  return <MapContainer bookmarkViewport={viewport} />;
 }
