@@ -1,0 +1,71 @@
+version: "3.7"
+
+volumes:
+  production_postgres_data: {}
+  production_postgres_data_backups: {}
+  static_volume_habhub: {}
+  media_volume_habhub: {}
+
+services:
+  react_frontend:
+    image: ghcr.io/whoigit/habhub-react-frontend:develop
+    container_name: react_frontend
+    environment:
+      - "REACT_APP_API_URL=https://habhub-staging.whoi.edu/services/"
+    ports:
+      - "172.17.0.1:3300:3000"
+
+  django: &django
+    image: ghcr.io/whoigit/habhub-dataserver:develop
+    container_name: django
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - static_volume_habhub:/app/staticfiles # <-- bind the static files
+      - media_volume_habhub:/app/media # <-- bind the media files
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    restart: unless-stopped
+    command: /start
+    ports:
+      - "172.17.0.1:8000:8000"
+
+  postgres:
+    image: ghcr.io/whoigit/postgres-postgis-docker:12
+    container_name: postgres
+    volumes:
+      - production_postgres_data:/var/lib/postgresql/data
+      - production_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.production/.postgres
+    restart: unless-stopped
+
+  redis:
+    image: redis:6.0
+
+  celeryworker:
+    <<: *django
+    container_name: django_celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    container_name: django_celerybeat
+    <<: *django
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    container_name: django_flower
+    <<: *django
+    ports:
+      - "5555:5555"
+    command: /start-flower

@@ -82,25 +82,24 @@ AWS_S3_OBJECT_PARAMETERS = {
 # ------------------------
 # region http://stackoverflow.com/questions/10390244/
 # Full-fledge class: https://stackoverflow.com/a/18046120/104731
-from storages.backends.s3boto3 import S3Boto3Storage  # noqa E402
+# from storages.backends.s3boto3 import S3Boto3Storage  # noqa E402
 
 
-class StaticRootS3Boto3Storage(S3Boto3Storage):
-    location = "static"
+# class StaticRootS3Boto3Storage(S3Boto3Storage):
+#   location = "static"
 
 
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_STORAGE = "config.settings.production.StaticRootS3Boto3Storage"
-STATIC_URL = f"https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/static/"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# STATICFILES_STORAGE = "config.settings.production.StaticRootS3Boto3Storage"
+# STATIC_URL = f"https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/static/"
 
 
-class MediaRootS3Boto3Storage(S3Boto3Storage):
-    location = "media"
-    file_overwrite = False
+# class MediaRootS3Boto3Storage(S3Boto3Storage):
+#    location = "media"
+#    file_overwrite = False
 
-
-DEFAULT_FILE_STORAGE = "config.settings.production.MediaRootS3Boto3Storage"
-MEDIA_URL = f"https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/media/"
+# DEFAULT_FILE_STORAGE = "config.settings.production.MediaRootS3Boto3Storage"
+# MEDIA_URL = f"https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/media/"
 
 # TEMPLATES
 # ------------------------------------------------------------------------------

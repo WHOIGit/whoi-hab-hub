@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: 0,
   },
   blueText: {
-    color: theme.palette.secondary.dark,
+    color: theme.palette.primary.main,
   },
   divider: {
     marginTop: theme.spacing(1),
@@ -79,7 +79,7 @@ export default function BookmarkTab({ viewport }) {
       console.log(res.request.responseURL);
       let data = JSON.parse(res.request.response);
       console.log(data);
-      let url = `${window.location.protocol}//${window.location.hostname}/bookmark/${data.id}/`;
+      let url = `${window.location.protocol}//${window.location.hostname}:3000/bookmark/${data.id}/`;
       setBookmarks([url, ...bookmarks]);
       setIsLoaded(true);
     } catch (error) {
@@ -128,7 +128,13 @@ export default function BookmarkTab({ viewport }) {
 
             <List dense={true}>
               {bookmarks.map((item, index) => (
-                <ListItem className={classes.listItem} key={index}>
+                <ListItem
+                  className={classes.listItem}
+                  key={index}
+                  component="a"
+                  href={item}
+                  target="_blank"
+                >
                   <ListItemText className={classes.blueText} primary={item} />
                   <ListItemSecondaryAction>
                     <Tooltip
