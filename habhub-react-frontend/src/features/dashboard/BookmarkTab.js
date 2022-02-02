@@ -79,7 +79,7 @@ export default function BookmarkTab({ viewport }) {
       console.log(res.request.responseURL);
       let data = JSON.parse(res.request.response);
       console.log(data);
-      let url = `${window.location.protocol}//${window.location.hostname}:3000/bookmark/${data.id}/`;
+      let url = `${window.location.protocol}//${window.location.hostname}/bookmark/${data.id}/`;
       setBookmarks([url, ...bookmarks]);
       setIsLoaded(true);
     } catch (error) {
