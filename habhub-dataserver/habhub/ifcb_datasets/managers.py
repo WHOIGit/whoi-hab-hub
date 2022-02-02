@@ -6,7 +6,7 @@ from django.db.models import (
     Max,
     Window,
     Avg,
-    IntegerField,
+    BigIntegerField,
     TextField,
 )
 from django.db.models.functions import Cast
@@ -62,7 +62,7 @@ class BinQuerySet(models.QuerySet):
                         metric["metric_id"],
                         (KeyTextTransform(str(i), "cell_concentration_data")),
                     ),
-                    IntegerField(),
+                    BigIntegerField(),
                 )
 
                 get_species_value = Cast(

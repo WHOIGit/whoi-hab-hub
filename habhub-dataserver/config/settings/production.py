@@ -8,7 +8,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
 
-DEBUG = False
+DEBUG = True
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -90,6 +90,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+WHITENOISE_STATIC_PREFIX = "/static/"
+STATIC_URL = "/services" + WHITENOISE_STATIC_PREFIX
 # STATICFILES_STORAGE = "config.settings.production.StaticRootS3Boto3Storage"
 # STATIC_URL = f"https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/static/"
 
