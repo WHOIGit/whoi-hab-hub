@@ -21,8 +21,8 @@ CACHE_TTL = 60 * 60
 class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShellfishAreaListSerializer
     detail_serializer_class = ShellfishAreaDetailSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ["state"]
+    # filter_backends = (filters.DjangoFilterBackend,)
+    # filterset_fields = ["state"]
 
     @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
@@ -42,7 +42,7 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = ShellfishArea.objects.all()
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
-        state = self.request.query_params.get("state", None)
+        states = self.request.query_params.get("states", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
         exclude_month_range = (
             self.request.query_params.get("exclude_month_range", None) == "true"
@@ -56,6 +56,14 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
             start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
         else:
             start_date_obj = earliest_closure.effective_date
+
+        # filter queryset by States if available
+        if states:
+            try:
+                stateList = states.split(",")
+                queryset = queryset.filter(state__in=stateList)
+            except Exception as e:
+                pass
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()

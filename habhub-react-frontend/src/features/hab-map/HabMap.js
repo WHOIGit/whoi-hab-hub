@@ -1,12 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import MapGL, {
-  NavigationControl,
-  ScaleControl,
-  Source,
-  Layer,
-} from "react-map-gl";
+import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
@@ -173,7 +168,7 @@ export default function HabMap({ viewport, setViewport }) {
   const onMapClick = (event) => {
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
-
+    console.log(feature);
     if (
       feature !== undefined &&
       interactiveLayerIds.includes(feature.layer.id)
@@ -200,7 +195,6 @@ export default function HabMap({ viewport, setViewport }) {
     setFeatures(newFeatures);
   };
 
-  // useCallback here, visibleLayerIds,gridZoomRange  as deps.?
   const renderMarkerLayer = (layerID) => {
     if (layerID === DATA_LAYERS.stationsLayer) {
       return (
@@ -211,7 +205,10 @@ export default function HabMap({ viewport, setViewport }) {
           key={layerID}
         />
       );
-    } else if (layerID === DATA_LAYERS.closuresLayer) {
+    } else if (
+      layerID === DATA_LAYERS.closuresLayer ||
+      layerID === DATA_LAYERS.closuresSeasonalLayer
+    ) {
       return <ClosuresLayer layerID={layerID} key={layerID} />;
     } else if (layerID === DATA_LAYERS.cellConcentrationSpatialGridLayer) {
       return (

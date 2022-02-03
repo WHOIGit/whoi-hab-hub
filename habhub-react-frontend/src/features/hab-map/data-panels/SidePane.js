@@ -57,7 +57,6 @@ export default function SidePane({
 
   useEffect(() => {
     // Filter the results to only visible species to pass to the Graph
-    console.log(results);
 
     if (metricID && metricID !== METRIC_IDS.shellfishToxicity) {
       const data = results.properties.timeseriesData;
@@ -80,16 +79,19 @@ export default function SidePane({
   let subTitle;
 
   if (dataLayer === DATA_LAYERS.stationsLayer) {
-    title = `Station Toxicity Data: ${results.properties.stationLocation}`;
+    title = `Station Toxicity Data: ${results.properties?.stationLocation}`;
     subTitle = `
-      Station Name: ${results.properties.station_name} |
+      Station Name: ${results.properties?.station_name} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
-  } else if (dataLayer === DATA_LAYERS.closuresLayer) {
-    title = `Shellfish Closure: ${results.properties.name}`;
+  } else if (
+    dataLayer === DATA_LAYERS.closuresLayer ||
+    dataLayer === DATA_LAYERS.closuresSeasonalLayer
+  ) {
+    title = `Shellfish Closure: ${results.properties?.name}`;
     subTitle = `
-      State: ${results.properties.state} |
-      ${results.properties.areaDescription}
+      State: ${results.properties?.state} |
+      ${results.properties?.areaDescription}
     `;
   } else if (
     dataLayer === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
@@ -100,9 +102,9 @@ export default function SidePane({
     title = `Grid Center Point | Lat: ${results.geometry.coordinates[1]}, Long: ${results.geometry.coordinates[0]}`;
     //subTitle = `Grid Area (km<sup>2</sup): ${gridArea}`;
   } else {
-    title = `IFCB Data: ${results.properties.name}`;
+    title = `IFCB Data: ${results.properties?.name}`;
     subTitle = `
-      ${results.properties.location} |
+      ${results.properties?.location} |
       Lat: ${results.geometry.coordinates[1]} Long: ${results.geometry.coordinates[0]}
     `;
   }
@@ -149,7 +151,8 @@ export default function SidePane({
               dataLayer={dataLayer}
             />
           )}
-        {dataLayer === DATA_LAYERS.closuresLayer && (
+        {(dataLayer === DATA_LAYERS.closuresLayer ||
+          dataLayer === DATA_LAYERS.closuresSeasonalLayer) && (
           <ClosuresList results={results} />
         )}
       </CardContent>

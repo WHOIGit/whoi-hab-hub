@@ -7,6 +7,7 @@ BIOVOLUME_LAYER = "biovolume_layer"
 BIOVOLUME_SPATIALGRID_LAYER = "biovolume_spatialgrid_layer"
 STATIONS_LAYER = "stations_layer"
 CLOSURES_LAYER = "closures_layer"
+CLOSURES_SEASONAL_LAYER = "closures_seasonal_layer"
 
 DATA_LAYERS = (
     (CELL_CONCENTRATION_LAYER, "Cell Concentration (Fixed Locations)"),
@@ -14,7 +15,8 @@ DATA_LAYERS = (
     (BIOVOLUME_LAYER, "Biovolume (Fixed Locations)"),
     (BIOVOLUME_SPATIALGRID_LAYER, "Biovolume (Spatial Grid)"),
     (STATIONS_LAYER, "Shellfish Toxicity"),
-    (CLOSURES_LAYER, "Shellfish Bed Closures"),
+    (CLOSURES_LAYER, "Shellfish Bed Closures (Event Triggered)"),
+    (CLOSURES_SEASONAL_LAYER, "Shellfish Bed Closures (Seasonal)"),
 )
 
 # METRICS constant = default Data Layer Metrics

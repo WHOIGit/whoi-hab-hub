@@ -43,7 +43,6 @@ export default function DataPanel({
   useEffect(() => {
     // Need to check different properties to see whether the API result has data for time frame
     function hasData(result, dataLayer) {
-      console.log(result);
       if (dataLayer !== DATA_LAYERS.closuresLayer) {
         result.properties.maxMeanValues.length
           ? setHasData(true)
@@ -69,7 +68,10 @@ export default function DataPanel({
           dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
         ) {
           endpoint = `api/v1/ifcb-spatial-grid/${featureID}/`;
-        } else if (dataLayer === DATA_LAYERS.closuresLayer) {
+        } else if (
+          dataLayer === DATA_LAYERS.closuresLayer ||
+          dataLayer === DATA_LAYERS.closuresSeasonalLayer
+        ) {
           endpoint = `api/v1/closures/${featureID}/`;
         }
 

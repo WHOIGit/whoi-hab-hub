@@ -6,6 +6,7 @@ export const DATA_LAYERS = {
   cellConcentrationSpatialGridLayer: "cell_concentration_spatialgrid_layer",
   stationsLayer: "stations_layer",
   closuresLayer: "closures_layer",
+  closuresSeasonalLayer: "closures_seasonal_layer",
 };
 
 export const METRIC_IDS = {

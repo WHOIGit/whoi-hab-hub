@@ -6,18 +6,20 @@ import { makeStyles } from "@material-ui/styles";
 import { CircularProgress } from "@material-ui/core";
 
 import axiosInstance from "../../app/apiAxios";
+import { DATA_LAYERS } from "../../Constants";
 
 // eslint-disable-next-line no-unused-vars
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   placeholder: {
     position: "absolute",
     left: "50%",
-    top: "40%"
-  }
+    top: "40%",
+  },
 }));
 
 export default function ClosuresLayer({ layerID }) {
-  const dateFilter = useSelector(state => state.dateFilter);
+  console.log(layerID);
+  const dateFilter = useSelector((state) => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -27,16 +29,24 @@ export default function ClosuresLayer({ layerID }) {
 
   useEffect(() => {
     async function fetchResults() {
+      let layerStates;
+      if (layerID === DATA_LAYERS.closuresLayer) {
+        layerStates = "MA,NH";
+      } else if (layerID === DATA_LAYERS.closuresSeasonalLayer) {
+        layerStates = "ME";
+      }
+
       try {
         const params = new URLSearchParams({
           start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: dateFilter.smoothingFactor
+          smoothing_factor: dateFilter.smoothingFactor,
+          states: layerStates,
         });
         const res = await axiosInstance.get("api/v1/closures/", {
-          params
+          params,
         });
         console.log(res.request.responseURL);
         setIsLoaded(true);
@@ -53,26 +63,32 @@ export default function ClosuresLayer({ layerID }) {
   // update the Labels text layer when API results change
   useEffect(() => {
     if (results) {
-      const centerPoints = results.features.map(item => {
+      const centerPoints = results.features.map((item) => {
         const point = {
           type: "Feature",
           properties: {
-            name: item.properties.name
+            name: item.properties.name,
             //"count": item.properties.closures.length
           },
-          geometry: item.properties.geomCenterPoint
+          geometry: item.properties.geomCenterPoint,
         };
         return point;
       });
 
       const labelsGeojson = {
         type: "FeatureCollection",
-        features: centerPoints
+        features: centerPoints,
       };
       setLabels(labelsGeojson);
       console.log(labelsGeojson);
     }
   }, [results]);
+
+  // update map color for different layers
+  let layerColor = "orange";
+  if (layerID === DATA_LAYERS.closuresSeasonalLayer) {
+    layerColor = "#FFEB3B";
+  }
 
   // Set default layer styles
   const layerClosures = {
@@ -80,13 +96,13 @@ export default function ClosuresLayer({ layerID }) {
     type: "fill",
     source: "closures-src",
     paint: {
-      "fill-color": "orange",
+      "fill-color": layerColor,
       "fill-opacity": 0.5,
-      "fill-outline-color": "#fc4e2a"
+      "fill-outline-color": "#fc4e2a",
     },
     layout: {
-      visibility: "visible"
-    }
+      visibility: "visible",
+    },
   };
   /*
   const layerLabels = {
@@ -116,14 +132,14 @@ export default function ClosuresLayer({ layerID }) {
   }
   */
   const layerClosuresIcons = {
-    id: "closures-icons-layer",
+    id: layerID + "-icons-layer",
     type: "symbol",
-    source: "closures-labels-src",
+    source: layerID + "-labels-src",
     layout: {
       "icon-image": "icon-shellfish-closure",
       "icon-allow-overlap": false,
-      visibility: "visible"
-    }
+      visibility: "visible",
+    },
   };
 
   return (
@@ -137,7 +153,7 @@ export default function ClosuresLayer({ layerID }) {
       <React.Fragment>
         {results && (
           <Source
-            id="closures-src"
+            id={layerID + "-src"}
             type="geojson"
             data={results}
             buffer={10}
@@ -148,8 +164,8 @@ export default function ClosuresLayer({ layerID }) {
         )}
 
         {labels && (
-          <Source id="closures-labels-src" type="geojson" data={labels}>
-            <Layer {...layerClosuresIcons} key="closures-layer" />
+          <Source id={layerID + "-labels-src"} type="geojson" data={labels}>
+            <Layer {...layerClosuresIcons} key={layerID} />
           </Source>
         )}
       </React.Fragment>
