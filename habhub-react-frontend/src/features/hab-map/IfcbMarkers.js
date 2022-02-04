@@ -5,12 +5,16 @@ import { Marker } from "react-map-gl";
 import { format, parseISO } from "date-fns";
 import { CircularProgress } from "@material-ui/core";
 
-import IfcbMarkerSquaresGrid from "./IfcbMarkerSquaresGrid";
+import IfcbMarkerTrianglesGrid from "./IfcbMarkerTrianglesGrid";
 import axiosInstance from "../../app/apiAxios";
 // eslint-disable-next-line no-unused-vars
 import IfcbMarkerIcon from "./IfcbMarkerIcon";
-import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
+import {
+  selectMaxMeanOption,
+  selectVisibleLayerIds,
+} from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
+import { DATA_LAYERS } from "../../Constants";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
@@ -34,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
 export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
   console.log(metricID);
   const visibleSpecies = useSelector(selectVisibleSpecies);
+  const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
 
@@ -42,6 +47,19 @@ export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const [showGlyphs, setShowGlyphs] = useState(true);
+
+  // check if the Spatial Grid layer is visible,
+  // if so need to hide the triangle glyphs
+  useEffect(() => {
+    if (
+      visibleLayerIds.includes(DATA_LAYERS.cellConcentrationSpatialGridLayer)
+    ) {
+      setShowGlyphs(false);
+    } else {
+      setShowGlyphs(true);
+    }
+  }, [visibleLayerIds]);
 
   useEffect(() => {
     async function fetchResults() {
@@ -94,7 +112,7 @@ export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
 
       if (speciesValues.length) {
         return (
-          <IfcbMarkerSquaresGrid
+          <IfcbMarkerTrianglesGrid
             feature={feature}
             layerID={layerID}
             speciesValues={speciesValues}
@@ -139,9 +157,11 @@ export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
 
       {results && (
         <div>
-          {results.features.map((feature) =>
-            renderSquaresGrid(feature, showMaxMean)
-          )}
+          {showGlyphs &&
+            results.features.map((feature) =>
+              renderSquaresGrid(feature, showMaxMean)
+            )}
+
           {results.features.map((feature) => renderCircleMarker(feature))}
         </div>
       )}

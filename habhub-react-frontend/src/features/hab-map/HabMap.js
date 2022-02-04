@@ -4,12 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-// Material UI imports
 import { makeStyles } from "@material-ui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
-import FixedLocationMarkers from "./FixedLocationMarkers";
+import IfcbMarkers from "./IfcbMarkers";
 import SpatialGridMarkers from "./SpatialGridMarkers";
 import ClosuresLayer from "./ClosuresLayer";
 import DisclaimerBox from "./DisclaimerBox";
@@ -222,7 +221,7 @@ export default function HabMap({ viewport, setViewport }) {
       );
     } else if (layerID === DATA_LAYERS.cellConcentrationLayer) {
       return (
-        <FixedLocationMarkers
+        <IfcbMarkers
           onMarkerClick={onMarkerClick}
           metricID={METRIC_IDS.cellConcentration}
           layerID={layerID}
@@ -231,7 +230,7 @@ export default function HabMap({ viewport, setViewport }) {
       );
     } else if (layerID === DATA_LAYERS.biovolumeLayer) {
       return (
-        <FixedLocationMarkers
+        <IfcbMarkers
           onMarkerClick={onMarkerClick}
           metricID={METRIC_IDS.biovolume}
           layerID={layerID}

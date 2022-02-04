@@ -18,7 +18,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function ClosuresLayer({ layerID }) {
-  console.log(layerID);
   const dateFilter = useSelector((state) => state.dateFilter);
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -80,7 +79,6 @@ export default function ClosuresLayer({ layerID }) {
         features: centerPoints,
       };
       setLabels(labelsGeojson);
-      console.log(labelsGeojson);
     }
   }, [results]);
 

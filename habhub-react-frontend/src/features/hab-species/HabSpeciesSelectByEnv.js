@@ -6,42 +6,42 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Typography
+  Typography,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
 import {
   changeSpeciesVisibility,
   changeSpeciesColor,
-  selectSpeciesByEnvironment
+  selectSpeciesByEnvironment,
 } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
 import { PALETTE } from "../../Constants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formGroup: {
     maxHeight: "340px",
     overflowY: "scroll",
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(2),
   },
   colorPickerBtn: {
-    display: "inline-block"
-  }
+    display: "inline-block",
+  },
 }));
 
 export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
   const dispatch = useDispatch();
   const classes = useStyles();
 
-  const speciesList = useSelector(state =>
+  const speciesList = useSelector((state) =>
     selectSpeciesByEnvironment(state, environment)
   );
-  console.log(speciesList);
+
   const handleSpeciesSelect = (event, species) => {
     dispatch(
       changeSpeciesVisibility({
         checked: event.target.checked,
-        species: species
+        species: species,
       })
     );
   };
@@ -53,7 +53,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
     <>
       <FormLabel component="legend">{environment}</FormLabel>
       <FormGroup className={classes.formGroup}>
-        {speciesList.map(species => {
+        {speciesList.map((species) => {
           return (
             <FormControlLabel
               key={species.id}
@@ -61,7 +61,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                 <Checkbox
                   color="primary"
                   checked={species.visibility}
-                  onChange={event => handleSpeciesSelect(event, species)}
+                  onChange={(event) => handleSpeciesSelect(event, species)}
                   name={species.speciesName}
                   disabled={limitReached && !species.visibility}
                 />
@@ -79,11 +79,11 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                       value={species.primaryColor}
                       hideTextfield
                       disableAlpha
-                      onChange={event =>
+                      onChange={(event) =>
                         dispatch(
                           changeSpeciesColor({
                             primaryColor: "#" + event.hex,
-                            species: species
+                            species: species,
                           })
                         )
                       }
