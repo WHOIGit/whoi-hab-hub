@@ -8,43 +8,50 @@ import LegendToxicity from "../legends/LegendToxicity";
 import LegendCellConcentration from "../legends/LegendCellConcentration";
 import HabSpeciesList from "../hab-species/HabSpeciesList";
 import DataLayersList from "../data-layers/DataLayersList";
-import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
+import {
+  changeLegendVisibility,
+  selectVisibleLayers,
+} from "../data-layers/dataLayersSlice";
+import { DATA_LAYERS } from "../../Constants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   legendBox: {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(2),
   },
   legendBoxTop: {
-    marginTop: theme.spacing(0)
+    marginTop: theme.spacing(0),
   },
   legendDivider: {
-    maring: theme.spacing(2)
+    maring: theme.spacing(2),
   },
   popper: {
-    zIndex: 9999
-  }
+    zIndex: 9999,
+  },
 }));
 
 export default function LegendTab() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const dataLayers = useSelector(state => state.dataLayers.layers);
+  const dataLayers = useSelector(selectVisibleLayers);
 
-  const handleLegendOpen = layerID => {
+  const handleLegendOpen = (layerID) => {
     dispatch(
       changeLegendVisibility({
         layerID: layerID,
-        legendVisibility: true
+        legendVisibility: true,
       })
     );
   };
 
-  const renderLegendGraphics = layer => {
-    if (layer === "ifcb-layer") {
+  const renderLegendGraphics = (layer) => {
+    if (
+      layer.id === DATA_LAYERS.cellConcentrationLayer ||
+      layer.id === DATA_LAYERS.cellConcentrationSpatialGridLayer
+    ) {
       return (
         <>
           <div className={classes.legendBox}>
@@ -53,11 +60,11 @@ export default function LegendTab() {
               <Tooltip
                 title="Open window"
                 classes={{
-                  popper: classes.popper
+                  popper: classes.popper,
                 }}
               >
                 <IconButton
-                  onClick={() => handleLegendOpen(layer)}
+                  onClick={() => handleLegendOpen(layer.id)}
                   aria-label="open Cell Concentration legend on map"
                 >
                   <Launch />
@@ -69,7 +76,7 @@ export default function LegendTab() {
           <Divider />
         </>
       );
-    } else if (layer === "stations-layer") {
+    } else if (layer.id === DATA_LAYERS.stationsLayer) {
       return (
         <>
           <div className={classes.legendBox}>
@@ -78,11 +85,11 @@ export default function LegendTab() {
               <Tooltip
                 title="Open window"
                 classes={{
-                  popper: classes.popper
+                  popper: classes.popper,
                 }}
               >
                 <IconButton
-                  onClick={() => handleLegendOpen(layer)}
+                  onClick={() => handleLegendOpen(layer.id)}
                   aria-label="open Shellfish Toxicity legend on map"
                 >
                   <Launch />
@@ -117,7 +124,7 @@ export default function LegendTab() {
       </div>
       <Divider />
 
-      {dataLayers.map(layer => renderLegendGraphics(layer.id))}
+      {dataLayers.map((layer) => renderLegendGraphics(layer))}
     </div>
   );
 }

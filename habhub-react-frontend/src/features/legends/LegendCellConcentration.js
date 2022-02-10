@@ -2,7 +2,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/styles";
 import { Grid, Typography } from "@material-ui/core";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
     width: 300,
@@ -10,12 +10,12 @@ const useStyles = makeStyles(theme => ({
     position: "absolute",
     bottom: 0,
     left: 0,
-    zIndex: 2000
+    zIndex: 2000,
   },
   legendGrid: {
-    fontSize: ".8em"
+    fontSize: ".8em",
   },
-  legendText: {}
+  legendText: {},
 }));
 
 export default function LegendCellConcentration() {
@@ -25,17 +25,18 @@ export default function LegendCellConcentration() {
   const minSquareSize = 8;
   const strokeColor = "black";
   const strokeWidth = 4;
-  const fillColor = "white";
+  const fillColor = "black";
 
   return (
     <>
       <Grid
         container
-        spacing={3}
+        spacing={4}
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
       >
+        {/*
         <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg width={minSquareSize} height={minSquareSize}>
@@ -58,77 +59,84 @@ export default function LegendCellConcentration() {
             </svg>
           </Typography>
         </Grid>
+      */}
         <Grid item>
           <Typography variant="caption" display="block" align="center">
-            <svg width={minSquareSize} height={minSquareSize}>
-              <rect
-                width={minSquareSize}
-                height={minSquareSize}
+            <svg
+              viewBox="0 0 100 100"
+              width={minSquareSize}
+              height={minSquareSize}
+            >
+              <polygon
+                points="0 0, 100 100, 0 100"
                 fill={fillColor}
                 strokeWidth={strokeWidth}
                 stroke={strokeColor}
-              ></rect>
+              />
             </svg>
           </Typography>
         </Grid>
         <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg
+              viewBox="0 0 100 100"
               width={(maxSquareSize / 5) * 2}
               height={(maxSquareSize / 5) * 2}
             >
-              <rect
-                width={(maxSquareSize / 5) * 2}
-                height={(maxSquareSize / 5) * 2}
+              <polygon
+                points="0 0, 100 100, 0 100"
                 fill={fillColor}
                 strokeWidth={strokeWidth}
                 stroke={strokeColor}
-              ></rect>
+              />
             </svg>
           </Typography>
         </Grid>
         <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg
+              viewBox="0 0 100 100"
               width={(maxSquareSize / 5) * 3}
               height={(maxSquareSize / 5) * 3}
             >
-              <rect
-                width={(maxSquareSize / 5) * 3}
-                height={(maxSquareSize / 5) * 3}
+              <polygon
+                points="0 0, 100 100, 0 100"
                 fill={fillColor}
                 strokeWidth={strokeWidth}
                 stroke={strokeColor}
-              ></rect>
+              />
             </svg>
           </Typography>
         </Grid>
         <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg
+              viewBox="0 0 100 100"
               width={(maxSquareSize / 5) * 4}
               height={(maxSquareSize / 5) * 4}
             >
-              <rect
-                width={(maxSquareSize / 5) * 4}
-                height={(maxSquareSize / 5) * 4}
+              <polygon
+                points="0 0, 100 100, 0 100"
                 fill={fillColor}
                 strokeWidth={strokeWidth}
                 stroke={strokeColor}
-              ></rect>
+              />
             </svg>
           </Typography>
         </Grid>
         <Grid item>
           <Typography variant="caption" display="block" align="center">
-            <svg width={maxSquareSize} height={maxSquareSize}>
-              <rect
-                width={maxSquareSize}
-                height={maxSquareSize}
+            <svg
+              viewBox="0 0 100 100"
+              width={maxSquareSize}
+              height={maxSquareSize}
+            >
+              <polygon
+                points="0 0, 100 100, 0 100"
                 fill={fillColor}
                 strokeWidth={strokeWidth}
                 stroke={strokeColor}
-              ></rect>
+              />
             </svg>
           </Typography>
         </Grid>
@@ -136,11 +144,12 @@ export default function LegendCellConcentration() {
 
       <Grid
         container
-        spacing={1}
+        spacing={2}
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
       >
+        {/*
         <Grid item>
           <Typography
             variant="caption"
@@ -151,6 +160,7 @@ export default function LegendCellConcentration() {
             ND
           </Typography>
         </Grid>
+        */}
         <Grid item>
           <Typography
             variant="caption"
