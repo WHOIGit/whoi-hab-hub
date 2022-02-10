@@ -10,7 +10,7 @@ import HabSpeciesList from "../hab-species/HabSpeciesList";
 import DataLayersList from "../data-layers/DataLayersList";
 import {
   changeLegendVisibility,
-  selectVisibleLayers,
+  selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
 import { DATA_LAYERS } from "../../Constants";
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
 export default function LegendTab() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const dataLayers = useSelector(selectVisibleLayers);
+  const dataLayers = useSelector(selectVisibleLayerIds);
 
   const handleLegendOpen = (layerID) => {
     dispatch(
@@ -45,63 +45,6 @@ export default function LegendTab() {
         legendVisibility: true,
       })
     );
-  };
-
-  const renderLegendGraphics = (layer) => {
-    if (
-      layer.id === DATA_LAYERS.cellConcentrationLayer ||
-      layer.id === DATA_LAYERS.cellConcentrationSpatialGridLayer
-    ) {
-      return (
-        <>
-          <div className={classes.legendBox}>
-            <Typography variant="subtitle1" display="block" gutterBottom>
-              Cell Concentration
-              <Tooltip
-                title="Open window"
-                classes={{
-                  popper: classes.popper,
-                }}
-              >
-                <IconButton
-                  onClick={() => handleLegendOpen(layer.id)}
-                  aria-label="open Cell Concentration legend on map"
-                >
-                  <Launch />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <LegendCellConcentration />
-          </div>
-          <Divider />
-        </>
-      );
-    } else if (layer.id === DATA_LAYERS.stationsLayer) {
-      return (
-        <>
-          <div className={classes.legendBox}>
-            <Typography variant="subtitle1" display="block" gutterBottom>
-              Shellfish Toxicity
-              <Tooltip
-                title="Open window"
-                classes={{
-                  popper: classes.popper,
-                }}
-              >
-                <IconButton
-                  onClick={() => handleLegendOpen(layer.id)}
-                  aria-label="open Shellfish Toxicity legend on map"
-                >
-                  <Launch />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <LegendToxicity />
-          </div>
-          <Divider />
-        </>
-      );
-    }
   };
 
   return (
@@ -124,7 +67,58 @@ export default function LegendTab() {
       </div>
       <Divider />
 
-      {dataLayers.map((layer) => renderLegendGraphics(layer))}
+      {(dataLayers.includes(DATA_LAYERS.cellConcentrationLayer) ||
+        dataLayers.includes(DATA_LAYERS.cellConcentrationSpatialGridLayer)) && (
+        <>
+          <div className={classes.legendBox}>
+            <Typography variant="subtitle1" display="block" gutterBottom>
+              Cell Concentration
+              <Tooltip
+                title="Open window"
+                classes={{
+                  popper: classes.popper,
+                }}
+              >
+                <IconButton
+                  onClick={() =>
+                    handleLegendOpen(DATA_LAYERS.cellConcentrationLayer)
+                  }
+                  aria-label="open Cell Concentration legend on map"
+                >
+                  <Launch />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <LegendCellConcentration />
+          </div>
+          <Divider />
+        </>
+      )}
+
+      {dataLayers.includes(DATA_LAYERS.stationsLayer) && (
+        <>
+          <div className={classes.legendBox}>
+            <Typography variant="subtitle1" display="block" gutterBottom>
+              Shellfish Toxicity
+              <Tooltip
+                title="Open window"
+                classes={{
+                  popper: classes.popper,
+                }}
+              >
+                <IconButton
+                  onClick={() => handleLegendOpen(DATA_LAYERS.stationsLayer)}
+                  aria-label="open Shellfish Toxicity legend on map"
+                >
+                  <Launch />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <LegendToxicity />
+          </div>
+          <Divider />
+        </>
+      )}
     </div>
   );
 }

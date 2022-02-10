@@ -35,6 +35,9 @@ const useStyles = makeStyles((theme) => ({
   closureIcon: {
     backgroundColor: "#f2b036",
   },
+  closureSeasonalIcon: {
+    backgroundColor: "#FFEB3B",
+  },
 }));
 
 export default function HabSpeciesForm() {
@@ -156,6 +159,14 @@ export default function HabSpeciesForm() {
                     src="images/icon-shellfish-closure.png"
                     alt="Closures Legend Icon"
                     className={`${classes.layerIcon} ${classes.closureIcon}`}
+                  />
+                )}
+
+                {dataLayer.id === DATA_LAYERS.closuresSeasonalLayer && (
+                  <img
+                    src="images/icon-shellfish-closure.png"
+                    alt="Closures Legend Icon"
+                    className={`${classes.layerIcon} ${classes.closureSeasonalIcon}`}
                   />
                 )}
               </div>

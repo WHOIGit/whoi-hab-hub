@@ -7,7 +7,7 @@ import { DATA_LAYERS } from "../../Constants";
 // need to check it against the active layers in the API results
 const legendLayerIds = [
   DATA_LAYERS.stationsLayer,
-  DATA_LAYERS.cellConcentrationSpatialGridLayer,
+  DATA_LAYERS.cellConcentrationLayer,
 ];
 const interactiveLayerIds = [
   DATA_LAYERS.closuresLayer,

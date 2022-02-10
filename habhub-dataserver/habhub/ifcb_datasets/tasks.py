@@ -33,7 +33,7 @@ def recalculate_metrics(self, species_id=None):
     cache.set(cache_key, self.request.id)
 
     if species_id:
-        bins = Bin.objects.filter(species_found__contains=[species_id])[:100]
+        bins = Bin.objects.filter(species_found__contains=[species_id])
     else:
         bins = Bin.objects.all()
 

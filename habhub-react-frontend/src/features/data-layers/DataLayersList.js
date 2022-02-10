@@ -8,6 +8,7 @@ import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import SquareMarker from "../../images/square-orange.svg";
 import ClosureIcon from "../../images/icon-shellfish-closure.png";
+import { selectVisibleLayers } from "../data-layers/dataLayersSlice";
 
 const useStyles = makeStyles(() => ({
   formControl: {
@@ -19,7 +20,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export default function DataLayersList() {
-  const dataLayers = useSelector((state) => state.dataLayers.layers);
+  const dataLayers = useSelector(selectVisibleLayers);
   const classes = useStyles();
 
   const renderLayerGrid = (dataLayer) => {
@@ -37,13 +38,15 @@ export default function DataLayersList() {
     return (
       <div key={dataLayer.id}>
         <Grid item xs={2}>
-          <div>
-            <img
-              src={imgSrc}
-              alt={dataLayer.name}
-              className={classes.layerIcon}
-            />
-          </div>
+          {imgSrc && (
+            <div>
+              <img
+                src={imgSrc}
+                alt={dataLayer.name}
+                className={classes.layerIcon}
+              />
+            </div>
+          )}
         </Grid>
         <Grid item xs={10}>
           <Typography
