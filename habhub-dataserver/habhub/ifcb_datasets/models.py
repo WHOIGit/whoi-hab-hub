@@ -29,6 +29,7 @@ class Dataset(models.Model):
         return f"{self.name} - {self.location}"
 
     def reset_bin_data(self):
+        print("Data Reset Method -", self.id)
         reset_ifcb_dataset_data.delay(self.id)
         return f"{self.name} data reset started"
 

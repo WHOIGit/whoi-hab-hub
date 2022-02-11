@@ -95,8 +95,11 @@ def reset_ifcb_data(dataset_id=None):
     """
     from .models import Dataset
 
+    print("REQUEST DATASET ID ", dataset_id)
+
     if not dataset_id:
-        datasets = Dataset.objects.all()
+        print("FAILURE!!!")
+        """datasets = Dataset.objects.all()
         for dataset in datasets:
             print(f"DATASET: {dataset}")
             # update DB with any new Bins, then replace all existing IFCB data
@@ -107,7 +110,7 @@ def reset_ifcb_data(dataset_id=None):
                 _get_ifcb_autoclass_file(bin)
                 print("Start calculating metrics from scores..")
                 _calculate_metrics(bin)
-                print(f"{bin} processed.")
+                print(f"{bin} processed.")"""
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
         # update DB with any new Bins, then replace all existing IFCB data

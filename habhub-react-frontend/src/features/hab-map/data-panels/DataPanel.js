@@ -68,6 +68,8 @@ export default function DataPanel({
           dataLayer === DATA_LAYERS.biovolumeSpatialGridLayer
         ) {
           endpoint = `api/v1/ifcb-spatial-grid/${featureID}/`;
+          // Match smoothing_factor for Spatial Grid graphs
+          smoothingFactor = 4;
         } else if (
           dataLayer === DATA_LAYERS.closuresLayer ||
           dataLayer === DATA_LAYERS.closuresSeasonalLayer
