@@ -7,7 +7,7 @@ redis==3.5.3 # https://github.com/antirez/redis
 hiredis==2.0.0
 celery==5.2.3 # pyup: < 5.0  # https://github.com/celery/celery
 django-celery-beat==2.2.1
-flower==0.9.5  # https://github.com/mher/flower
+flower==1.0.0  # https://github.com/mher/flower
 
 # Django
 # ------------------------------------------------------------------------------
