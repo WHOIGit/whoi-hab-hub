@@ -19,9 +19,9 @@ def get_ifcb_dashboard_data():
         print("set complete")
 
 
-@shared_task(time_limit=20000, soft_time_limit=20000)
-def reset_ifcb_dataset_data():
-    reset_ifcb_data()
+@shared_task(time_limit=86400, soft_time_limit=86400)
+def reset_ifcb_dataset_data(self, dataset_id=None):
+    reset_ifcb_data(dataset_id)
 
 
 @shared_task(time_limit=20000, soft_time_limit=20000, bind=True)

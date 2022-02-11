@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
+from habhub.ifcb_datasets.tasks import reset_ifcb_dataset_data
 from .managers import BinQuerySet
 
 # IFCB dataset models
@@ -26,6 +27,10 @@ class Dataset(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.location}"
+
+    def reset_bin_data(self):
+        reset_ifcb_dataset_data.delay(self.id)
+        return f"{self.name} data reset started"
 
     def get_data_layer_metrics(self):
         metrics = Metric.objects.filter(
