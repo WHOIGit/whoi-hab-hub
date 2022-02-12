@@ -67,5 +67,5 @@ services:
     container_name: django_flower
     <<: *django
     ports:
-      - "5555:5555"
+      - "172.17.0.1:5555:5555"
     command: /start-flower

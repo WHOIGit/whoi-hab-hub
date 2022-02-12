@@ -8,7 +8,7 @@ from .api_requests import (
 )
 
 
-@shared_task(time_limit=3000, soft_time_limit=3000)
+@shared_task(time_limit=84600, soft_time_limit=84600)
 def get_ifcb_dashboard_data():
     from .models import Dataset
 
@@ -19,13 +19,13 @@ def get_ifcb_dashboard_data():
         print("set complete")
 
 
-@shared_task(time_limit=86400, soft_time_limit=86400, bind=True)
+@shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
 def reset_ifcb_dataset_data(self, dataset_id=None):
     print("DATASET ID ", dataset_id)
     reset_ifcb_data(dataset_id)
 
 
-@shared_task(time_limit=20000, soft_time_limit=20000, bind=True)
+@shared_task(time_limit=84600, soft_time_limit=84600, bind=True)
 def recalculate_metrics(self, species_id=None):
     from .models import Bin
 
