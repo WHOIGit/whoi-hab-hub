@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { DATA_LAYERS } from "../../Constants";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
-import SquareMarker from "../../images/square-orange.svg";
+import TriangleMarker from "../../images/triangle.svg";
 import ClosureIcon from "../../images/icon-shellfish-closure.png";
 import { selectVisibleLayers } from "../data-layers/dataLayersSlice";
 
@@ -16,6 +16,12 @@ const useStyles = makeStyles(() => ({
   },
   layerIcon: {
     width: "25px",
+  },
+  closureIcon: {
+    backgroundColor: "#f2b036",
+  },
+  closureSeasonalIcon: {
+    backgroundColor: "#FFEB3B",
   },
 }));
 
@@ -32,18 +38,35 @@ export default function DataLayersList() {
       dataLayer.id === DATA_LAYERS.biovolumeLayer
     ) {
       imgSrc = CircleMarker;
-    } else if (dataLayer.id === DATA_LAYERS.closuresLayer) {
+    } else if (
+      dataLayer.id === DATA_LAYERS.cellConcentrationSpatialGridLayer ||
+      dataLayer.id === DATA_LAYERS.biovolumeSpatialGridLayer
+    ) {
+      imgSrc = TriangleMarker;
+    } else if (
+      dataLayer.id === DATA_LAYERS.closuresLayer ||
+      dataLayer.id === DATA_LAYERS.closuresSeasonalLayer
+    ) {
       imgSrc = ClosureIcon;
     }
+
     return (
-      <div key={dataLayer.id}>
+      <Grid container spacing={2} key={dataLayer.id}>
         <Grid item xs={2}>
           {imgSrc && (
             <div>
               <img
                 src={imgSrc}
                 alt={dataLayer.name}
-                className={classes.layerIcon}
+                className={`${classes.layerIcon} ${
+                  dataLayer.id === DATA_LAYERS.closuresLayer
+                    ? classes.closureIcon
+                    : ""
+                }  ${
+                  dataLayer.id === DATA_LAYERS.closuresSeasonalLayer
+                    ? classes.closureSeasonalIcon
+                    : ""
+                }`}
               />
             </div>
           )}
@@ -57,35 +80,9 @@ export default function DataLayersList() {
             {dataLayer.name}
           </Typography>
         </Grid>
-        {dataLayer.id === "closures-layer" && (
-          <>
-            <Grid item xs={2}>
-              <div>
-                <img
-                  src={SquareMarker}
-                  alt="Closures Area Color"
-                  className={classes.layerIcon}
-                />
-              </div>
-            </Grid>
-            <Grid item xs={10}>
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                className={classes.labelText}
-              >
-                Closure Area
-              </Typography>
-            </Grid>
-          </>
-        )}
-      </div>
+      </Grid>
     );
   };
 
-  return (
-    <Grid container spacing={0}>
-      {dataLayers.map((layer) => renderLayerGrid(layer))}
-    </Grid>
-  );
+  return dataLayers.map((layer) => renderLayerGrid(layer));
 }

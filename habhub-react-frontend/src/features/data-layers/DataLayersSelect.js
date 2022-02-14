@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { changeLayerVisibility } from "./dataLayersSlice";
 import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
+import TriangleMarker from "../../images/triangle.svg";
 // local
 import { DATA_LAYERS } from "../../Constants";
 
@@ -141,7 +142,16 @@ export default function HabSpeciesForm() {
                 {dataLayer.id === DATA_LAYERS.cellConcentrationLayer && (
                   <img
                     src={CircleMarker}
-                    alt="Cell Concentration Legend Icon"
+                    alt="Fixed Location Legend Icon"
+                    className={classes.layerIcon}
+                  />
+                )}
+
+                {dataLayer.id ===
+                  DATA_LAYERS.cellConcentrationSpatialGridLayer && (
+                  <img
+                    src={TriangleMarker}
+                    alt="Spatial Grid Legend Icon"
                     className={classes.layerIcon}
                   />
                 )}

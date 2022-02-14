@@ -98,8 +98,7 @@ def reset_ifcb_data(dataset_id=None):
     print("REQUEST DATASET ID ", dataset_id)
 
     if not dataset_id:
-        print("FAILURE!!!")
-        """datasets = Dataset.objects.all()
+        datasets = Dataset.objects.all()
         for dataset in datasets:
             print(f"DATASET: {dataset}")
             # update DB with any new Bins, then replace all existing IFCB data
@@ -110,7 +109,7 @@ def reset_ifcb_data(dataset_id=None):
                 _get_ifcb_autoclass_file(bin)
                 print("Start calculating metrics from scores..")
                 _calculate_metrics(bin)
-                print(f"{bin} processed.")"""
+                print(f"{bin} processed.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
         # update DB with any new Bins, then replace all existing IFCB data
@@ -244,7 +243,7 @@ def _get_ifcb_autoclass_file(bin_obj):
                     pid=image_number,
                     defaults={"score": max_val, "species": species_obj, "bin": bin_obj},
                 )
-                print(autoclass_score.score)
+                print(autoclass_score.score, autoclass_score.species)
 
 
 def _calculate_metrics(bin_obj):
@@ -287,7 +286,7 @@ def _calculate_metrics(bin_obj):
             score__gte=species.autoclass_threshold
         )
 
-        print(scores.count())
+        print(species.species_id, scores.count())
         if scores.exists():
             # calculate cell concentrations
             # number of positive hits (score_count) / mL analyed.

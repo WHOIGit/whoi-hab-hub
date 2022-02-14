@@ -20,7 +20,6 @@ import { PALETTE } from "../../Constants";
 
 const useStyles = makeStyles((theme) => ({
   formGroup: {
-    maxHeight: "340px",
     overflowY: "scroll",
     marginBottom: theme.spacing(2),
   },

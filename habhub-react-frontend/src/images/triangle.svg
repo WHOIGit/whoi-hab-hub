@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <polygon
+        points="5 5, 95 95, 5 95"
+        fill="transparent"
+        stroke-width="6" 
+        stroke="black"
+    />
+
+</svg>
