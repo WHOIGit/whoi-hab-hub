@@ -40,7 +40,7 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = DatasetListSerializer
     detail_serializer_class = DatasetDetailSerializer
 
-    # @method_decorator(cache_page(CACHE_TTL))
+    @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -61,7 +61,7 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
-    # @method_decorator(cache_page(CACHE_TTL))
+    @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
