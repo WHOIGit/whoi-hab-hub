@@ -1,4 +1,4 @@
-FROM gangstead/postgis:13-3.1-arm
+FROM ghcr.io/baosystems/postgis:13-3.2
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 
