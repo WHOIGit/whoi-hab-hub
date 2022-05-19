@@ -5,18 +5,6 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-  react_frontend:
-    build:
-      context: .
-      dockerfile: ./compose/local/react-frontend/Dockerfile
-    image: habhub_local_react_frontend
-    volumes:
-      - ./habhub-react-frontend:/usr/src/app
-      - /usr/src/app/node_modules #<- Use anonymous volume to keep node_modules directory
-    ports:
-      - "3000:3000"
-    command: npm start
-
   django: &django
     build:
       context: .
