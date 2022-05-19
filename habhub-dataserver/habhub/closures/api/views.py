@@ -24,7 +24,7 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
     # filter_backends = (filters.DjangoFilterBackend,)
     # filterset_fields = ["state"]
 
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
