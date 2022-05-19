@@ -7,8 +7,8 @@ import {
   Checkbox,
   Typography,
   Grid,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { useSelector, useDispatch } from "react-redux";
 import { changeLayerVisibility } from "./dataLayersSlice";
 import DiamondMarker from "../../images/diamond.svg";

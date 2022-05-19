@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Source, Layer } from "react-map-gl";
 import { format, parseISO } from "date-fns";
-import { makeStyles } from "@material-ui/styles";
-import { CircularProgress } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { CircularProgress } from "@mui/material";
 
 import axiosInstance from "../../app/apiAxios";
 import { DATA_LAYERS } from "../../Constants";

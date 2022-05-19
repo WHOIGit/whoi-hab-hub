@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/styles";
-import { CircularProgress } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { CircularProgress } from "@mui/material";
 import { format, parseISO } from "date-fns";
 // local
 import SidePane from "./SidePane";

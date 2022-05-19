@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Typography,
   List,
@@ -12,8 +12,8 @@ import {
   Button,
   IconButton,
   Tooltip,
-} from "@material-ui/core";
-import { Link, FileCopy } from "@material-ui/icons";
+} from "@mui/material";
+import { Link, FileCopy } from "@mui/icons-material";
 import { parseISO, format } from "date-fns";
 // local imports
 import axiosInstance from "../../app/apiAxios";
@@ -94,127 +94,123 @@ export default function BookmarkTab({ viewport }) {
     setTooltipText("Copied!");
   }
 
-  return (
-    <>
-      <div className={classes.root}>
-        <Typography variant="subtitle1" display="block" gutterBottom>
-          Bookmark Your Map
-        </Typography>
+  return <>
+    <div className={classes.root}>
+      <Typography variant="subtitle1" display="block" gutterBottom>
+        Bookmark Your Map
+      </Typography>
 
-        <Typography variant="body2" display="block" gutterBottom>
-          If you want to save your current map settings, you can use this
-          feature to create a unique bookmarkable link.
-        </Typography>
+      <Typography variant="body2" display="block" gutterBottom>
+        If you want to save your current map settings, you can use this
+        feature to create a unique bookmarkable link.
+      </Typography>
 
-        <Divider className={classes.divider} />
+      <Divider className={classes.divider} />
 
-        <div className={classes.buttonDiv}>
-          {" "}
-          <Button
-            onClick={() => handleBookmarkCreate()}
-            variant="contained"
-            color="default"
-            startIcon={<Link />}
-          >
-            Create Link
-          </Button>
-        </div>
-
-        {bookmarks?.length > 0 && (
-          <div>
-            <Typography variant="subtitle1" display="block">
-              Saved Bookmarks
-            </Typography>
-
-            <List dense={true}>
-              {bookmarks.map((item, index) => (
-                <ListItem
-                  className={classes.listItem}
-                  key={index}
-                  component="a"
-                  href={item}
-                  target="_blank"
-                >
-                  <ListItemText className={classes.blueText} primary={item} />
-                  <ListItemSecondaryAction>
-                    <Tooltip
-                      title={tooltipText}
-                      classes={{
-                        popper: classes.popper,
-                      }}
-                      onClose={() => setTooltipText(defaultTooltipText)}
-                    >
-                      <IconButton
-                        edge="end"
-                        aria-label="copy link"
-                        onClick={() => handleCopyUrl(item)}
-                      >
-                        <FileCopy />
-                      </IconButton>
-                    </Tooltip>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-          </div>
-        )}
-
-        <Divider className={classes.divider} />
-
-        <Typography variant="subtitle1" display="block">
-          Current Map Settings
-        </Typography>
-
-        <List>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              HAB Species:{" "}
-              {visibleSpecies.map((item) => item.displayName).join(", ")}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Data Layers: {visibleLayers.map((item) => item.name).join(", ")}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Start Date:{" "}
-              {format(parseISO(dateFilter.startDate), "MMM dd, yyyy")}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              End Date: {format(parseISO(dateFilter.endDate), "MMM dd, yyyy")}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Seasonal: {dateFilter.seasonal.toString()}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Exclude Months: {dateFilter.excludeMonthRange.toString()}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Map Zoom: {Math.round(viewport.zoom * 1000) / 1000}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Latitude: {Math.round(viewport.latitude * 10000) / 10000}
-            </Typography>
-          </ListItem>
-          <ListItem className={classes.listItem}>
-            <Typography variant="body2" display="block">
-              Longitude: {Math.round(viewport.longitude * 10000) / 10000}
-            </Typography>
-          </ListItem>
-        </List>
+      <div className={classes.buttonDiv}>
+        {" "}
+        <Button
+          onClick={() => handleBookmarkCreate()}
+          variant="contained"
+          startIcon={<Link />}>
+          Create Link
+        </Button>
       </div>
-    </>
-  );
+
+      {bookmarks?.length > 0 && (
+        <div>
+          <Typography variant="subtitle1" display="block">
+            Saved Bookmarks
+          </Typography>
+
+          <List dense={true}>
+            {bookmarks.map((item, index) => (
+              <ListItem
+                className={classes.listItem}
+                key={index}
+                component="a"
+                href={item}
+                target="_blank"
+              >
+                <ListItemText className={classes.blueText} primary={item} />
+                <ListItemSecondaryAction>
+                  <Tooltip
+                    title={tooltipText}
+                    classes={{
+                      popper: classes.popper,
+                    }}
+                    onClose={() => setTooltipText(defaultTooltipText)}
+                  >
+                    <IconButton
+                      edge="end"
+                      aria-label="copy link"
+                      onClick={() => handleCopyUrl(item)}
+                      size="large">
+                      <FileCopy />
+                    </IconButton>
+                  </Tooltip>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </div>
+      )}
+
+      <Divider className={classes.divider} />
+
+      <Typography variant="subtitle1" display="block">
+        Current Map Settings
+      </Typography>
+
+      <List>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            HAB Species:{" "}
+            {visibleSpecies.map((item) => item.displayName).join(", ")}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Data Layers: {visibleLayers.map((item) => item.name).join(", ")}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Start Date:{" "}
+            {format(parseISO(dateFilter.startDate), "MMM dd, yyyy")}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            End Date: {format(parseISO(dateFilter.endDate), "MMM dd, yyyy")}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Seasonal: {dateFilter.seasonal.toString()}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Exclude Months: {dateFilter.excludeMonthRange.toString()}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Map Zoom: {Math.round(viewport.zoom * 1000) / 1000}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Latitude: {Math.round(viewport.latitude * 10000) / 10000}
+          </Typography>
+        </ListItem>
+        <ListItem className={classes.listItem}>
+          <Typography variant="body2" display="block">
+            Longitude: {Math.round(viewport.longitude * 10000) / 10000}
+          </Typography>
+        </ListItem>
+      </List>
+    </div>
+  </>;
 }

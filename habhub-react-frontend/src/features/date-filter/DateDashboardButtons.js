@@ -1,10 +1,10 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { Button } from "@material-ui/core";
-//import ScheduleIcon from "@material-ui/icons/Schedule";
-import MyLocationIcon from "@material-ui/icons/MyLocation";
-import TuneIcon from "@material-ui/icons/Tune";
-import { makeStyles } from "@material-ui/styles";
+import { Button } from "@mui/material";
+//import ScheduleIcon from "@mui/icons-material/Schedule";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
+import TuneIcon from "@mui/icons-material/Tune";
+import { makeStyles } from "@mui/styles";
 import { sub } from "date-fns";
 import { changeDateRange } from "./dateFilterSlice";
 

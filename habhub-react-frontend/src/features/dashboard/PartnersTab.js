@@ -1,6 +1,6 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import { Typography, Link, Grid, Box } from "@material-ui/core";
+import makeStyles from '@mui/styles/makeStyles';
+import { Typography, Link, Grid, Box } from "@mui/material";
 import NsfLogo from "../../images/nsf-logo.jpg";
 import NihLogo from "../../images/nih-new.png";
 import NccosLogo from "../../images/nccos_logofile.jpeg";

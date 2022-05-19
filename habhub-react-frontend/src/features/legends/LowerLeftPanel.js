@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@mui/styles";
 import LegendPane from "./LegendPane";
 import { selectLayerLegendIds } from "../data-layers/dataLayersSlice";
 // eslint-disable-next-line no-unused-vars

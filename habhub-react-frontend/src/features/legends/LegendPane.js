@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { makeStyles } from "@material-ui/styles";
-import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
+import { makeStyles } from "@mui/styles";
+import { Card, CardHeader, CardContent, IconButton } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import LegendCellConcentration from "./LegendCellConcentration";
 import LegendToxicity from "./LegendToxicity";
 import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
@@ -65,7 +65,7 @@ export default function LegendPane({ dataLayer }) {
                 )
               }
               aria-label="close"
-            >
+              size="large">
               <Close />
             </IconButton>
           </React.Fragment>

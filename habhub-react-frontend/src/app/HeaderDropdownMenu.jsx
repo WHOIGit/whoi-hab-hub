@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuIcon from "@material-ui/icons/Menu";
+import makeStyles from '@mui/styles/makeStyles';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import logoNehab from "../images/logo-nehab.png";
 import logoNehabon from "../images/logo-nehabon.png";
@@ -62,7 +63,7 @@ export default function HeaderDropdownMenu() {
         onClick={handleClick}
         aria-controls="dropdown-menu"
         aria-haspopup="true"
-      >
+        size="large">
         <MenuIcon />
       </IconButton>
 

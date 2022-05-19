@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/styles";
-import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
-import { Close, OpenWith, Minimize } from "@material-ui/icons";
+import { makeStyles } from "@mui/styles";
+import { Card, CardHeader, CardContent, IconButton } from "@mui/material";
+import { Close, OpenWith, Minimize } from "@mui/icons-material";
 // local
 import StationsGraph from "./StationsGraph";
 import IfcbGraph from "./IfcbGraph";
@@ -117,13 +117,10 @@ export default function SidePane({
         }}
         action={
           <React.Fragment>
-            <IconButton onClick={() => onExpandPanel()} aria-label="expand">
+            <IconButton onClick={() => onExpandPanel()} aria-label="expand" size="large">
               {expandPane ? <Minimize /> : <OpenWith />}
             </IconButton>
-            <IconButton
-              onClick={() => onPaneClose(featureID)}
-              aria-label="close"
-            >
+            <IconButton onClick={() => onPaneClose(featureID)} aria-label="close" size="large">
               <Close />
             </IconButton>
           </React.Fragment>

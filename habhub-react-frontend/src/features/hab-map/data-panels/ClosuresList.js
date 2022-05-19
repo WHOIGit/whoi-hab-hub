@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@mui/styles";
 import {
   Typography,
   TableContainer,
@@ -10,8 +10,8 @@ import {
   TableCell,
   Box,
   Grid
-} from "@material-ui/core";
-import DescriptionIcon from "@material-ui/icons/Description";
+} from "@mui/material";
+import DescriptionIcon from "@mui/icons-material/Description";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles(theme => ({

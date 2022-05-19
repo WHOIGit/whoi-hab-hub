@@ -1,13 +1,13 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Typography,
   Link,
   List,
   ListItem,
   ListItemIcon,
-} from "@material-ui/core";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+} from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import FeedbackText from "./FeedbackText";
 
 const useStyles = makeStyles((theme) => ({

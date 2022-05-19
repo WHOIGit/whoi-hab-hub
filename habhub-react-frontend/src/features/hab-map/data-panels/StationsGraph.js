@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@mui/styles";
 import Highcharts from "highcharts";
 import Exporting from "highcharts/modules/exporting";
 import ExportData from "highcharts/modules/export-data";

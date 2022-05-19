@@ -1,8 +1,8 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { makeStyles } from "@material-ui/core/styles";
-import { Typography, Divider, IconButton, Tooltip } from "@material-ui/core";
-import { Launch } from "@material-ui/icons";
+import makeStyles from '@mui/styles/makeStyles';
+import { Typography, Divider, IconButton, Tooltip } from "@mui/material";
+import { Launch } from "@mui/icons-material";
 
 import LegendToxicity from "../legends/LegendToxicity";
 import LegendCellConcentration from "../legends/LegendCellConcentration";
@@ -84,7 +84,7 @@ export default function LegendTab() {
                     handleLegendOpen(DATA_LAYERS.cellConcentrationLayer)
                   }
                   aria-label="open Cell Concentration legend on map"
-                >
+                  size="large">
                   <Launch />
                 </IconButton>
               </Tooltip>
@@ -109,7 +109,7 @@ export default function LegendTab() {
                 <IconButton
                   onClick={() => handleLegendOpen(DATA_LAYERS.stationsLayer)}
                   aria-label="open Shellfish Toxicity legend on map"
-                >
+                  size="large">
                   <Launch />
                 </IconButton>
               </Tooltip>

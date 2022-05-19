@@ -1,10 +1,10 @@
-import { createMuiTheme }  from "@material-ui/core/styles"
-import orange from "@material-ui/core/colors/orange";
+import { createTheme, adaptV4Theme } from "@mui/material/styles";
+import { orange } from '@mui/material/colors';
 
-const theme = createMuiTheme({
+const theme = createTheme(adaptV4Theme({
   palette: {
     primary: { main: "#467fcf" },
     secondary: orange,
   },
-})
+}))
 export default theme;

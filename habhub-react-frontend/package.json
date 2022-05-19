@@ -1,6 +1,6 @@
 {
   "name": "habhub",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
     "@date-io/date-fns": "1.x",

@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Grid, Typography } from "@material-ui/core";
+import { Grid, Typography } from "@mui/material";
 import HabSpeciesColorChip from "../hab-species/HabSpeciesColorChip";
 import { selectSpeciesBySyndrome } from "../hab-species/habSpeciesSlice";
 

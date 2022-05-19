@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 import { Marker } from "react-map-gl";
 import { format, parseISO } from "date-fns";
-import { CircularProgress } from "@material-ui/core";
+import { CircularProgress } from "@mui/material";
 
 import IfcbMarkerTrianglesGrid from "./IfcbMarkerTrianglesGrid";
 import axiosInstance from "../../app/apiAxios";

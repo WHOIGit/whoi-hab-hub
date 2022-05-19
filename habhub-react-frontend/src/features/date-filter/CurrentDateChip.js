@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Chip } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
+import { Chip } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { parseISO, format } from "date-fns";
 
 const useStyles = makeStyles(theme => ({

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { makeStyles } from "@material-ui/styles";
-import { IconButton } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
+import { makeStyles } from "@mui/styles";
+import { IconButton } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import Highcharts from "highcharts";
 import Exporting from "highcharts/modules/exporting";
 import ExportData from "highcharts/modules/export-data";
@@ -242,7 +242,7 @@ function IfcbGraph({
             <IconButton
               onClick={() => setOpenMetaData(!openMetaData)}
               aria-label="close image panel"
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
           </div>

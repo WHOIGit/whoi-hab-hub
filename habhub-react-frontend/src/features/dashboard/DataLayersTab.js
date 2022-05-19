@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import { makeStyles } from "@material-ui/styles";
-import { Divider, List, ListItem } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { Divider, List, ListItem } from "@mui/material";
 
 import DataLayersSelect from "../data-layers/DataLayersSelect";
 import MaxMeanSelect from "../data-layers/MaxMeanSelect";

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@mui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";

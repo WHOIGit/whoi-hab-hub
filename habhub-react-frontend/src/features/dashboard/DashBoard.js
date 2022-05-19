@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { makeStyles } from "@material-ui/styles";
-import { Typography, Box, Tabs, Tab } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { Typography, Box, Tabs, Tab } from "@mui/material";
 import {
   Stars,
   Layers,
@@ -8,7 +8,7 @@ import {
   Explore,
   Ballot,
   Bookmark,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
 import LegendTab from "./LegendTab";

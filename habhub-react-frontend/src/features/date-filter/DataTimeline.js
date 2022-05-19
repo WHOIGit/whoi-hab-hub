@@ -4,8 +4,8 @@ import { parseISO } from "date-fns";
 import _ from "lodash";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
-import { makeStyles } from "@material-ui/styles";
-import { CircularProgress } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { CircularProgress } from "@mui/material";
 import { changeDateRange } from "./dateFilterSlice";
 
 import axiosInstance from "../../app/apiAxios";
