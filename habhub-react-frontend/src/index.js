@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GA4React from "ga-4-react";
 import App from "./app/App";
@@ -27,7 +27,10 @@ const ga4react = new GA4React(GA_UID);
   // eslint-disable-next-line no-unused-vars
   await ga4react.initialize().catch((err) => {});
 
-  ReactDOM.render(
+  const container = document.getElementById('root');
+  const root = createRoot(container); 
+
+  root.render(
     <Provider store={store}>
       <React.StrictMode>
         <BrowserRouter>
@@ -42,7 +45,6 @@ const ga4react = new GA4React(GA_UID);
         </BrowserRouter>
         <App />
       </React.StrictMode>
-    </Provider>,
-    document.getElementById("root")
+    </Provider>
   );
 })();

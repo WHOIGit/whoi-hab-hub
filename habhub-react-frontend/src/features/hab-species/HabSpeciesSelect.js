@@ -1,21 +1,12 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import {
-  FormLabel,
+  Box,
   FormControl,
-  FormGroup,
-  FormControlLabel,
-  FormHelperText,
-  Checkbox,
   Typography
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  changeSpeciesVisibility,
-  changeSpeciesColor,
-  selectSpeciesByEnvironment
-} from "./habSpeciesSlice";
 import HabSpeciesSelectByEnv from "./HabSpeciesSelectByEnv";
 
 const useStyles = makeStyles(theme => ({
@@ -39,15 +30,6 @@ export default function HabSpeciesSelect() {
   const error = habSpecies.filter(item => item.visibility).length > 6;
   const limitReached = habSpecies.filter(item => item.visibility).length >= 6;
 
-  const handleSpeciesSelect = (event, species) => {
-    dispatch(
-      changeSpeciesVisibility({
-        checked: event.target.checked,
-        species: species
-      })
-    );
-  };
-
   return (
     <div>
       <Typography variant="subtitle1" display="block" gutterBottom>
@@ -63,23 +45,23 @@ export default function HabSpeciesSelect() {
         Choose up to <strong>6 species</strong> to display on the map at one
         time. Click on the color box to change color palette.
       </Typography>
-
-      <FormControl
-        required
-        error={error}
-        component="fieldset"
-        className={classes.formControl}
-      >
-        {habEnvironments.map(item => (
-          <>
-            <HabSpeciesSelectByEnv
-              key={item}
-              environment={item}
-              limitReached={limitReached}
-            />
-          </>
-        ))}
-      </FormControl>
+      <Box>
+        <FormControl
+          required
+          error={error}
+          component="fieldset"
+          className={classes.formControl}
+        >
+          {habEnvironments.map(item => (
+            <Box key={item}>
+              <HabSpeciesSelectByEnv
+                environment={item}
+                limitReached={limitReached}
+              />
+            </Box>
+          ))}
+        </FormControl>
+      </Box>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { makeStyles } from "@mui/styles";
-import { Typography, Box, Tabs, Tab } from "@mui/material";
+import { styled } from '@mui/material/styles';
+import { Box, Tabs, Tab } from "@mui/material";
 import {
   Stars,
   Layers,
@@ -15,6 +16,12 @@ import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
+
+const IconTab = styled(Tab)({
+  minWidth: "110px",
+  color: "white",
+  
+});
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -98,7 +105,7 @@ function TabPanel(props) {
     >
       {value === index && (
         <Box>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -112,6 +119,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   const [tabValue, setTabValue] = useState(0);
 
   function handleTabChange(event, newTabValue) {
+    console.log(tabValue, newTabValue, showControls);
     if (tabValue === newTabValue && showControls) {
       setShowControls(false);
     } else {
@@ -121,10 +129,22 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   }
 
   return (
-    <div
-      className={`${classes.root} control-panel ${
-        showControls ? "active" : classes.collapse
-      }`}
+    <Box sx={[
+        {
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: "448px",
+          background: "none",
+          zIndex: 1200,
+          height: "100vh",
+          overflowY: "scroll",
+          transition: "all 0.3s",
+        },
+        !showControls && {
+          right: "-284px",
+        },
+      ]}
     >
       <div className={classes.dashboardContainer}>
         <>
@@ -133,51 +153,38 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
               value={tabValue}
               onChange={handleTabChange}
               orientation="vertical"
-              classes={{
-                indicator: classes.indicator,
-              }}
+              textColor="inherit"
+              indicatorColor="secondary"
             >
-              <Tab
+              <IconTab
                 icon={<Ballot />}
                 label="Algal Species"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
-              <Tab
+              <IconTab
                 icon={<Layers />}
                 label="Data Layers"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
-              <Tab
+              <IconTab
                 icon={<List />}
                 label="Legend"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
-              <Tab
+              <IconTab
                 icon={<Explore />}
                 label="Links"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
-              <Tab
+              <IconTab
                 icon={<Stars />}
                 label="Partners"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
-              <Tab
+              <IconTab
                 icon={<Bookmark />}
                 label="Save Map"
-                classes={{
-                  root: classes.tabRoot,
-                }}
+                
               />
             </Tabs>
           </div>
@@ -202,6 +209,6 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
           </TabPanel>
         </>
       </div>
-    </div>
+    </Box>
   );
 }

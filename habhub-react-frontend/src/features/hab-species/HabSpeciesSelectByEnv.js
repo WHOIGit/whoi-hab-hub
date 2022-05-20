@@ -15,7 +15,7 @@ import {
   changeSpeciesColor,
   selectSpeciesByEnvironment,
 } from "./habSpeciesSlice";
-import { ColorPicker } from "material-ui-color";
+import { ColorPicker } from "mui-color";
 import { PALETTE } from "../../Constants";
 
 const useStyles = makeStyles((theme) => ({
