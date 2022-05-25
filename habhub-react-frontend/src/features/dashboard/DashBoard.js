@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/styles";
-import { Box, Tabs, Tab } from "@material-ui/core";
+import { Box, Tabs, Tab, Dialog, DialogActions, Button } from "@material-ui/core";
 import {
   Stars,
   Layers,
@@ -8,6 +8,7 @@ import {
   Explore,
   Ballot,
   Bookmark,
+  Help
 } from "@material-ui/icons";
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
@@ -15,6 +16,7 @@ import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
+import HelpDialog from "./HelpDialog";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -110,8 +112,24 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   const classes = useStyles();
   // Set local state
   const [tabValue, setTabValue] = useState(0);
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   function handleTabChange(event, newTabValue) {
+    console.log(newTabValue);
+    // handle the Help button with Dialog modal instead of tabs
+    if (newTabValue === 6) {
+      handleClickOpen();
+      return null
+    }
+
     if (tabValue === newTabValue && showControls) {
       setShowControls(false);
     } else {
@@ -179,6 +197,13 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
                   root: classes.tabRoot,
                 }}
               />
+              <Tab
+                icon={<Help />}
+                label="Help"
+                classes={{
+                  root: classes.tabRoot,
+                }}
+              />
             </Tabs>
           </div>
 
@@ -200,6 +225,20 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
           <TabPanel value={tabValue} index={5} className={classes.tabPanelRoot}>
             <BookmarkTab viewport={viewport} />
           </TabPanel>
+
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            hideBackdrop={true}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description">
+              <HelpDialog />
+              <DialogActions>
+                <Button onClick={handleClose} color="primary">
+                  Close
+                </Button>
+              </DialogActions>
+          </Dialog>
         </>
       </div>
     </div>
