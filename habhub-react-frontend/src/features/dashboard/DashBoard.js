@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/styles";
-import { Typography, Box, Tabs, Tab } from "@material-ui/core";
+import { Box, Tabs, Tab } from "@material-ui/core";
 import {
   Stars,
   Layers,
@@ -98,7 +98,7 @@ function TabPanel(props) {
     >
       {value === index && (
         <Box>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
