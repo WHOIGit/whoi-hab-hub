@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/styles";
-import { Box, Tabs, Tab, Dialog, DialogActions, Button } from "@material-ui/core";
+import {
+  Box,
+  Tabs,
+  Tab,
+  Dialog,
+  DialogActions,
+  Button,
+} from "@material-ui/core";
 import {
   Stars,
   Layers,
@@ -8,7 +15,7 @@ import {
   Explore,
   Ballot,
   Bookmark,
-  Help
+  Help,
 } from "@material-ui/icons";
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
@@ -16,7 +23,7 @@ import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
-import HelpDialog from "./HelpDialog";
+import GuideDialog from "./GuideDialog";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -98,11 +105,7 @@ function TabPanel(props) {
       aria-labelledby={`vertical-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box>{children}</Box>}
     </div>
   );
 }
@@ -127,7 +130,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
     // handle the Help button with Dialog modal instead of tabs
     if (newTabValue === 6) {
       handleClickOpen();
-      return null
+      return null;
     }
 
     if (tabValue === newTabValue && showControls) {
@@ -199,7 +202,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
               />
               <Tab
                 icon={<Help />}
-                label="Help"
+                label="Guide"
                 classes={{
                   root: classes.tabRoot,
                 }}
@@ -231,13 +234,14 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
             onClose={handleClose}
             hideBackdrop={true}
             aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description">
-              <HelpDialog />
-              <DialogActions>
-                <Button onClick={handleClose} color="primary">
-                  Close
-                </Button>
-              </DialogActions>
+            aria-describedby="alert-dialog-description"
+          >
+            <GuideDialog />
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Close
+              </Button>
+            </DialogActions>
           </Dialog>
         </>
       </div>
