@@ -23,7 +23,7 @@ import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
-import GuideDialog from "./GuideDialog";
+import GuideDialog from "../guide/GuideDialog";
 
 const useStyles = makeStyles((theme) => ({
   root: {

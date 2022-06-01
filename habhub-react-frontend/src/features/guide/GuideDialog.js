@@ -8,6 +8,9 @@ import Step from "@material-ui/core/Step";
 import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import { useSelector, useDispatch } from "react-redux";
+// eslint-disable-next-line no-unused-vars
+import { changeActiveGuideStep } from "./guideSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,29 +35,23 @@ function getSteps() {
   ];
 }
 
-function getStepContent(stepIndex) {
-  switch (stepIndex) {
-    case 0:
-      return `Add up to 6 HAB Species/Syndromes of interest at a time. 
-                You can change the color indicated by clicking the square      
-                to use the color picker tool and create your own custom color palette.`;
-    case 1:
-      return "What is an ad group anyways?";
-    case 2:
-      return "This is the bit I really care about!";
-    default:
-      return "Unknown stepIndex";
-  }
-}
-
 export default function GuideDialog() {
   const classes = useStyles();
+  // eslint-disable-next-line no-unused-vars
+  const dispatch = useDispatch();
+  const guideSteps = useSelector((state) => state.guide.guideSteps);
   const [activeStep, setActiveStep] = React.useState(0);
   const [completed, setCompleted] = React.useState({});
   const steps = getSteps();
 
+  const getStepContent = (stepId) => {
+    const step = guideSteps.find((item) => item.stepId === stepId);
+    console.log(stepId, step);
+    return step.text;
+  };
+
   const totalSteps = () => {
-    return steps.length;
+    return guideSteps.length;
   };
 
   const completedSteps = () => {
@@ -83,8 +80,8 @@ export default function GuideDialog() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleStep = (step) => () => {
-    setActiveStep(step);
+  const handleStep = (stepId) => () => {
+    setActiveStep(stepId);
   };
 
   // eslint-disable-next-line no-unused-vars
@@ -93,11 +90,6 @@ export default function GuideDialog() {
     newCompleted[activeStep] = true;
     setCompleted(newCompleted);
     handleNext();
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-    setCompleted({});
   };
 
   return (
@@ -109,44 +101,35 @@ export default function GuideDialog() {
         <DialogContentText id="alert-dialog-description">
           <div className={classes.root}>
             <Stepper nonLinear activeStep={activeStep} alternativeLabel>
-              {steps.map((label, index) => (
-                <Step key={label}>
+              {guideSteps.map((step) => (
+                <Step key={step.stepId}>
                   <StepButton
-                    onClick={handleStep(index)}
-                    completed={completed[index]}
+                    onClick={handleStep(step.stepId)}
+                    completed={completed[step.stepId]}
                   >
-                    {label}
+                    {step.label}
                   </StepButton>
                 </Step>
               ))}
             </Stepper>
             <div>
-              {activeStep === steps.length ? (
+              <div>
+                <Typography className={classes.instructions}>
+                  {getStepContent(activeStep)}
+                </Typography>
                 <div>
-                  <Typography className={classes.instructions}>
-                    All steps completed
-                  </Typography>
-                  <Button onClick={handleReset}>Reset</Button>
+                  <Button onClick={handleBack} className={classes.backButton}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}
+                  >
+                    {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                  </Button>
                 </div>
-              ) : (
-                <div>
-                  <Typography className={classes.instructions}>
-                    {getStepContent(activeStep)}
-                  </Typography>
-                  <div>
-                    <Button onClick={handleBack} className={classes.backButton}>
-                      Back
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleNext}
-                    >
-                      {activeStep === steps.length - 1 ? "Finish" : "Next"}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </DialogContentText>
