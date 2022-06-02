@@ -1,7 +1,6 @@
 import React from "react";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import { makeStyles } from "@material-ui/core/styles";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
@@ -9,7 +8,7 @@ import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { useSelector, useDispatch } from "react-redux";
-// eslint-disable-next-line no-unused-vars
+// local imports
 import { changeActiveGuideStep } from "./guideSlice";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,16 +24,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function getSteps() {
-  return [
-    "Select HAB Species",
-    "Select Data Layers",
-    "Select Timeframe",
-    "View and Save Data",
-    "Learn More",
-  ];
-}
-
 export default function GuideDialog() {
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -42,12 +31,10 @@ export default function GuideDialog() {
   const guideSteps = useSelector((state) => state.guide.guideSteps);
   const [activeStep, setActiveStep] = React.useState(0);
   const [completed, setCompleted] = React.useState({});
-  const steps = getSteps();
 
   const getStepContent = (stepId) => {
     const step = guideSteps.find((item) => item.stepId === stepId);
-    console.log(stepId, step);
-    return step.text;
+    return { __html: step.text };
   };
 
   const totalSteps = () => {
@@ -71,7 +58,7 @@ export default function GuideDialog() {
       isLastStep() && !allStepsCompleted()
         ? // It's the last step, but not all steps have been completed,
           // find the first step that has been completed
-          steps.findIndex((step, i) => !(i in completed))
+          guideSteps.findIndex((step, i) => !(i in completed))
         : activeStep + 1;
     setActiveStep(newActiveStep);
   };
@@ -82,6 +69,12 @@ export default function GuideDialog() {
 
   const handleStep = (stepId) => () => {
     setActiveStep(stepId);
+    // dispatch active step to Redux state
+    dispatch(
+      changeActiveGuideStep({
+        stepId: stepId,
+      })
+    );
   };
 
   // eslint-disable-next-line no-unused-vars
@@ -94,9 +87,6 @@ export default function GuideDialog() {
 
   return (
     <div>
-      <DialogTitle id="alert-dialog-title">
-        {"Welcome to the WHOI HABHub!​"}
-      </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           <div className={classes.root}>
@@ -115,7 +105,7 @@ export default function GuideDialog() {
             <div>
               <div>
                 <Typography className={classes.instructions}>
-                  {getStepContent(activeStep)}
+                  <div dangerouslySetInnerHTML={getStepContent(activeStep)} />;
                 </Typography>
                 <div>
                   <Button onClick={handleBack} className={classes.backButton}>
@@ -126,7 +116,7 @@ export default function GuideDialog() {
                     color="primary"
                     onClick={handleNext}
                   >
-                    {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                    {activeStep === guideSteps.length - 1 ? "Finish" : "Next"}
                   </Button>
                 </div>
               </div>

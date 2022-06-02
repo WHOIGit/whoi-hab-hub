@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/styles";
 import {
   Box,
@@ -17,6 +17,8 @@ import {
   Bookmark,
   Help,
 } from "@material-ui/icons";
+// local imports
+import { useSelector, useDispatch } from "react-redux";
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
 import LegendTab from "./LegendTab";
@@ -24,6 +26,8 @@ import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
 import GuideDialog from "../guide/GuideDialog";
+import { selectActiveGuideStep, resetGuideSteps } from "../guide/guideSlice";
+import styles from "../guide/styles.module.css";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,6 +80,7 @@ const useStyles = makeStyles((theme) => ({
   tabRoot: {
     minWidth: "110px",
     color: "white",
+    //boxShadow: "0px 0px 1px 1px #0000001a",
   },
   tabPanelRoot: {
     maxWidth: "284px",
@@ -113,9 +118,12 @@ function TabPanel(props) {
 export default function Dashboard({ showControls, setShowControls, viewport }) {
   // Set const variables
   const classes = useStyles();
+  const dispatch = useDispatch();
   // Set local state
   const [tabValue, setTabValue] = useState(0);
   const [open, setOpen] = React.useState(false);
+  const activeGuideStep = useSelector(selectActiveGuideStep);
+  console.log(activeGuideStep);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -123,10 +131,11 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
 
   const handleClose = () => {
     setOpen(false);
+    // dispatch resetting all Guide Steps to inactive in Redux state
+    dispatch(resetGuideSteps());
   };
 
-  function handleTabChange(event, newTabValue) {
-    console.log(newTabValue);
+  const handleTabChange = (event, newTabValue) => {
     // handle the Help button with Dialog modal instead of tabs
     if (newTabValue === 6) {
       handleClickOpen();
@@ -139,7 +148,13 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
       setShowControls(true);
     }
     setTabValue(newTabValue);
-  }
+  };
+
+  useEffect(() => {
+    if (activeGuideStep && activeGuideStep?.tabIndex !== null) {
+      setTabValue(activeGuideStep?.tabIndex);
+    }
+  }, [activeGuideStep]);
 
   return (
     <div
@@ -161,6 +176,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
               <Tab
                 icon={<Ballot />}
                 label="Algal Species"
+                className={activeGuideStep?.tabIndex === 0 && styles.pulse}
                 classes={{
                   root: classes.tabRoot,
                 }}
@@ -168,6 +184,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
               <Tab
                 icon={<Layers />}
                 label="Data Layers"
+                className={activeGuideStep?.tabIndex === 1 && styles.pulse}
                 classes={{
                   root: classes.tabRoot,
                 }}

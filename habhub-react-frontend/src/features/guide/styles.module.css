@@ -1,0 +1,25 @@
+.pulse {
+    animation: pulse-bg 2s infinite;
+}
+
+.guideHighlightBox {
+    border: "2px solid white";
+}
+  
+@keyframes pulse-shadow {
+    0% {
+      box-shadow: inset 0 0 0 0px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+      box-shadow: inset 0 0 0 50px rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes pulse-bg {
+  0%, 100% {
+    background-color: #467fcf;
+  }
+  50% {
+    background-color: #3768ac;
+  }
+}
