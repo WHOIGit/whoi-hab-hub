@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/styles";
-import {
-  Box,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogActions,
-  Button,
-} from "@material-ui/core";
+import { Box, Tabs, Tab } from "@material-ui/core";
 import {
   Stars,
   Layers,
@@ -25,9 +18,9 @@ import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
-import GuideDialog from "../guide/GuideDialog";
 import { selectActiveGuideStep, resetGuideSteps } from "../guide/guideSlice";
 import styles from "../guide/styles.module.css";
+import GuidePane from "../guide/GuidePane";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -121,16 +114,16 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   const dispatch = useDispatch();
   // Set local state
   const [tabValue, setTabValue] = useState(0);
-  const [open, setOpen] = React.useState(false);
+  const [openGuide, setOpenGuide] = React.useState(false);
   const activeGuideStep = useSelector(selectActiveGuideStep);
   console.log(activeGuideStep);
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleGuideOpen = () => {
+    setOpenGuide(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleGuideClose = () => {
+    setOpenGuide(false);
     // dispatch resetting all Guide Steps to inactive in Redux state
     dispatch(resetGuideSteps());
   };
@@ -138,7 +131,7 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   const handleTabChange = (event, newTabValue) => {
     // handle the Help button with Dialog modal instead of tabs
     if (newTabValue === 6) {
-      handleClickOpen();
+      handleGuideOpen();
       return null;
     }
 
@@ -157,111 +150,124 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
   }, [activeGuideStep]);
 
   return (
-    <div
-      className={`${classes.root} control-panel ${
-        showControls ? "active" : classes.collapse
-      }`}
-    >
-      <div className={classes.dashboardContainer}>
-        <>
-          <div className={classes.iconsContainer}>
-            <Tabs
+    <>
+      <div
+        className={`${classes.root} control-panel ${
+          showControls ? "active" : classes.collapse
+        }`}
+      >
+        <div className={classes.dashboardContainer}>
+          <>
+            <div className={classes.iconsContainer}>
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                orientation="vertical"
+                classes={{
+                  indicator: classes.indicator,
+                }}
+              >
+                <Tab
+                  icon={<Ballot />}
+                  label="Algal Species"
+                  className={activeGuideStep?.tabIndex === 0 && styles.pulse}
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<Layers />}
+                  label="Data Layers"
+                  className={activeGuideStep?.tabIndex === 1 && styles.pulse}
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<List />}
+                  label="Legend"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<Explore />}
+                  label="Links"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<Stars />}
+                  label="Partners"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<Bookmark />}
+                  label="Save Map"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
+                  icon={<Help />}
+                  label="Guide"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+              </Tabs>
+            </div>
+
+            <TabPanel
               value={tabValue}
-              onChange={handleTabChange}
-              orientation="vertical"
-              classes={{
-                indicator: classes.indicator,
-              }}
+              index={0}
+              className={classes.tabPanelRoot}
             >
-              <Tab
-                icon={<Ballot />}
-                label="Algal Species"
-                className={activeGuideStep?.tabIndex === 0 && styles.pulse}
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<Layers />}
-                label="Data Layers"
-                className={activeGuideStep?.tabIndex === 1 && styles.pulse}
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<List />}
-                label="Legend"
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<Explore />}
-                label="Links"
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<Stars />}
-                label="Partners"
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<Bookmark />}
-                label="Save Map"
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-              <Tab
-                icon={<Help />}
-                label="Guide"
-                classes={{
-                  root: classes.tabRoot,
-                }}
-              />
-            </Tabs>
-          </div>
-
-          <TabPanel value={tabValue} index={0} className={classes.tabPanelRoot}>
-            <HabSpeciesTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={1} className={classes.tabPanelRoot}>
-            <DataLayersTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={2} className={classes.tabPanelRoot}>
-            <LegendTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={3} className={classes.tabPanelRoot}>
-            <LinksTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4} className={classes.tabPanelRoot}>
-            <PartnersTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={5} className={classes.tabPanelRoot}>
-            <BookmarkTab viewport={viewport} />
-          </TabPanel>
-
-          <Dialog
-            open={open}
-            onClose={handleClose}
-            hideBackdrop={true}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <GuideDialog />
-            <DialogActions>
-              <Button onClick={handleClose} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </>
+              <HabSpeciesTab />
+            </TabPanel>
+            <TabPanel
+              value={tabValue}
+              index={1}
+              className={classes.tabPanelRoot}
+            >
+              <DataLayersTab />
+            </TabPanel>
+            <TabPanel
+              value={tabValue}
+              index={2}
+              className={classes.tabPanelRoot}
+            >
+              <LegendTab />
+            </TabPanel>
+            <TabPanel
+              value={tabValue}
+              index={3}
+              className={classes.tabPanelRoot}
+            >
+              <LinksTab />
+            </TabPanel>
+            <TabPanel
+              value={tabValue}
+              index={4}
+              className={classes.tabPanelRoot}
+            >
+              <PartnersTab />
+            </TabPanel>
+            <TabPanel
+              value={tabValue}
+              index={5}
+              className={classes.tabPanelRoot}
+            >
+              <BookmarkTab viewport={viewport} />
+            </TabPanel>
+          </>
+        </div>
       </div>
-    </div>
+
+      <GuidePane openGuide={openGuide} handleGuideClose={handleGuideClose} />
+    </>
   );
 }

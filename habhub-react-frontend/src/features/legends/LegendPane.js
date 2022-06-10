@@ -15,9 +15,6 @@ const useStyles = makeStyles((theme) => ({
     transition: "all 0.3s",
     zIndex: 2000,
   },
-  rootWider: {
-    width: 300,
-  },
   rootHeader: {
     paddingBottom: 0,
   },
