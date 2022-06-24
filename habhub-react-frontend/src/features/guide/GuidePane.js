@@ -15,7 +15,7 @@ import { changeActiveGuideStep } from "./guideSlice";
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: theme.spacing(1),
-    width: 300,
+    width: 640,
     transition: "all 0.3s",
     zIndex: 2000,
     display: "none",
@@ -146,10 +146,14 @@ export default function GuidePane({ openGuide, handleGuideClose }) {
             <div>
               <div>
                 <Typography className={classes.instructions}>
-                  <div dangerouslySetInnerHTML={getStepContent(activeStep)} />;
+                  <div dangerouslySetInnerHTML={getStepContent(activeStep)} />
                 </Typography>
                 <div>
-                  <Button onClick={handleBack} className={classes.backButton}>
+                  <Button
+                    onClick={handleBack}
+                    className={classes.backButton}
+                    disabled={activeStep === 0}
+                  >
                     Back
                   </Button>
                   <Button
