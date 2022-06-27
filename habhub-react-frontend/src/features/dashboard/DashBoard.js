@@ -11,16 +11,15 @@ import {
   Help,
 } from "@material-ui/icons";
 // local imports
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
 import LegendTab from "./LegendTab";
 import LinksTab from "./LinksTab";
 import PartnersTab from "./PartnersTab";
 import BookmarkTab from "./BookmarkTab";
-import { selectActiveGuideStep, resetGuideSteps } from "../guide/guideSlice";
+import { selectActiveGuideStep } from "../guide/guideSlice";
 import styles from "../guide/styles.module.css";
-import GuidePane from "../guide/GuidePane";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -108,30 +107,22 @@ function TabPanel(props) {
   );
 }
 
-export default function Dashboard({ showControls, setShowControls, viewport }) {
+export default function Dashboard({
+  showControls,
+  setShowControls,
+  viewport,
+  setOpenGuide,
+}) {
   // Set const variables
   const classes = useStyles();
-  const dispatch = useDispatch();
   // Set local state
   const [tabValue, setTabValue] = useState(0);
-  const [openGuide, setOpenGuide] = React.useState(false);
   const activeGuideStep = useSelector(selectActiveGuideStep);
-  console.log(activeGuideStep);
-
-  const handleGuideOpen = () => {
-    setOpenGuide(true);
-  };
-
-  const handleGuideClose = () => {
-    setOpenGuide(false);
-    // dispatch resetting all Guide Steps to inactive in Redux state
-    dispatch(resetGuideSteps());
-  };
 
   const handleTabChange = (event, newTabValue) => {
     // handle the Help button with Dialog modal instead of tabs
     if (newTabValue === 6) {
-      handleGuideOpen();
+      setOpenGuide(true);
       return null;
     }
 
@@ -266,8 +257,6 @@ export default function Dashboard({ showControls, setShowControls, viewport }) {
           </>
         </div>
       </div>
-
-      <GuidePane openGuide={openGuide} handleGuideClose={handleGuideClose} />
     </>
   );
 }

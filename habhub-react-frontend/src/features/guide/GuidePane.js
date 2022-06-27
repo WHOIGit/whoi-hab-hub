@@ -87,6 +87,12 @@ export default function GuidePane({ openGuide, handleGuideClose }) {
           guideSteps.findIndex((step, i) => !(i in completed))
         : activeStep + 1;
     setActiveStep(newActiveStep);
+    // dispatch active step to Redux state
+    dispatch(
+      changeActiveGuideStep({
+        stepId: newActiveStep,
+      })
+    );
   };
 
   const handleBack = () => {
