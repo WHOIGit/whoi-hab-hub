@@ -1,4 +1,6 @@
 import React from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 // Material UI imports
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { ThemeProvider } from "@material-ui/core/styles";
@@ -12,12 +14,14 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth={false} disableGutters={true}>
-        <Header />
-        <main>
-          <Outlet />
-        </main>
-      </Container>
+      <DndProvider backend={HTML5Backend}>
+        <Container maxWidth={false} disableGutters={true}>
+          <Header />
+          <main>
+            <Outlet />
+          </main>
+        </Container>
+      </DndProvider>
     </ThemeProvider>
   );
 }

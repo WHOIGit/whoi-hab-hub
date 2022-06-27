@@ -2,8 +2,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { makeStyles } from "@material-ui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
@@ -243,63 +241,59 @@ export default function HabMap({ viewport, setViewport }) {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <div>
       <div>
-        <div>
-          <CurrentDateChip />
-        </div>
-        {features && (
-          <div className={classes.dataPanelContainer}>
-            {features.map((feature) => (
-              <DataPanel
-                key={feature.id}
-                featureID={feature.id}
-                dataLayer={feature.layerID}
-                yAxisScale={yAxisScale}
-                onPaneClose={onPaneClose}
-                metricID={feature.metricID}
-                gridLength={getGridZoomLength()}
-              />
-            ))}
-          </div>
-        )}
-        <div>
-          <MapGL
-            {...viewport}
-            mapboxApiAccessToken={MAPBOX_TOKEN}
-            mapStyle="mapbox://styles/mapbox/light-v10"
-            onViewportChange={(viewport, interactionState, oldViewState) => {
-              //console.log(interactionState);
-              //console.log(oldViewState);
-              setViewport(viewport);
-              //onMapTransitionEnd();
-            }}
-            onClick={(event) => onMapClick(event)}
-            onLoad={onMapLoad}
-            interactiveLayerIds={interactiveLayerIds}
-            preserveDrawingBuffer={true}
-            onTransitionEnd={onMapTransitionEnd}
-            ref={mapRef}
-          >
-            <React.Fragment>
-              {visibleLayerIds
-                .reverse()
-                .map((layer) => renderMarkerLayer(layer))}
-            </React.Fragment>
-
-            <div style={navStyle}>
-              <NavigationControl />
-            </div>
-            <div style={scaleControlStyle}>
-              <ScaleControl />
-            </div>
-          </MapGL>
-        </div>
-
-        <div>
-          <DisclaimerBox />
-        </div>
+        <CurrentDateChip />
       </div>
-    </DndProvider>
+      {features && (
+        <div className={classes.dataPanelContainer}>
+          {features.map((feature) => (
+            <DataPanel
+              key={feature.id}
+              featureID={feature.id}
+              dataLayer={feature.layerID}
+              yAxisScale={yAxisScale}
+              onPaneClose={onPaneClose}
+              metricID={feature.metricID}
+              gridLength={getGridZoomLength()}
+            />
+          ))}
+        </div>
+      )}
+      <div>
+        <MapGL
+          {...viewport}
+          mapboxApiAccessToken={MAPBOX_TOKEN}
+          mapStyle="mapbox://styles/mapbox/light-v10"
+          onViewportChange={(viewport, interactionState, oldViewState) => {
+            //console.log(interactionState);
+            //console.log(oldViewState);
+            setViewport(viewport);
+            //onMapTransitionEnd();
+          }}
+          onClick={(event) => onMapClick(event)}
+          onLoad={onMapLoad}
+          interactiveLayerIds={interactiveLayerIds}
+          preserveDrawingBuffer={true}
+          onTransitionEnd={onMapTransitionEnd}
+          ref={mapRef}
+        >
+          <React.Fragment>
+            {visibleLayerIds.reverse().map((layer) => renderMarkerLayer(layer))}
+          </React.Fragment>
+
+          <div style={navStyle}>
+            <NavigationControl />
+          </div>
+          <div style={scaleControlStyle}>
+            <ScaleControl />
+          </div>
+        </MapGL>
+      </div>
+
+      <div>
+        <DisclaimerBox />
+      </div>
+    </div>
   );
 }
