@@ -30,9 +30,9 @@ export default function MapContainer({ bookmarkViewport }) {
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
   const [viewport, setViewport] = useState(defaultViewport);
+  const [guide, setGuide] = useState({guide: { bottom: "50%", left: "50%", transform: "translate(-50%, 50%)"}})
   const [panes, setPanes] = useState({})
   const [openGuide, setOpenGuide] = React.useState(false);
-  console.log(panes);
 
   useEffect(() => {
     if (legendLayerIds) {
@@ -58,12 +58,12 @@ export default function MapContainer({ bookmarkViewport }) {
     dispatch(resetGuideSteps());
   };
 
-  const moveBox = useCallback(
-    (dataLayer, left, bottom) => {
-      console.log(dataLayer);
+  const movePane = useCallback(
+    (id, left, bottom) => {
+      console.log(id);
       setPanes(
         update(panes, {
-          [dataLayer]: {
+          [id]: {
             $merge: { left, bottom },
           },
         }),
@@ -72,19 +72,49 @@ export default function MapContainer({ bookmarkViewport }) {
     [panes, setPanes],
   )
 
+  const moveGuide = useCallback(
+    (id, left, bottom, transform) => {
+      console.log(id);
+      setGuide(
+        update(guide, {
+          [id]: {
+            $merge: { left, bottom, transform },
+          },
+        }),
+      )
+    },
+    [guide, setGuide],
+  )
+
   const [, drop] = useDrop(
     () => ({
       accept: ITEM_TYPES.PANE,
       drop(item, monitor) {
         console.log(item);
+        let left, bottom
         const delta = monitor.getDifferenceFromInitialOffset();
-        const left = Math.round(item.left + delta.x);
-        const bottom = Math.round(item.bottom - delta.y);
-        moveBox(item.dataLayer, left, bottom);
+        const offset = monitor.getInitialClientOffset();
+
+        // need to check it the current item's left/bottom are in %
+        if (isNaN(item.left) || isNaN(item.bottom)) { 
+          left = Math.round(offset.x + delta.x);
+          bottom = Math.round(offset.y - delta.y);
+        } else {
+          left = Math.round(item.left + delta.x);
+          bottom = Math.round(item.bottom - delta.y);
+        }
+        
+        console.log("OFFSET", offset);
+
+        if (item.id === "guide") {
+          moveGuide(item.id, left, bottom, "none");
+        } else {
+          movePane(item.id, left, bottom);
+        }
         return undefined;
       },
     }),
-    [moveBox]
+    [movePane]
   );
 
   return (
@@ -105,20 +135,26 @@ export default function MapContainer({ bookmarkViewport }) {
           setShowDateControls={setShowDateControls}
         />
 
-      <GuidePane openGuide={openGuide} handleGuideClose={handleGuideClose} />
+      <GuidePane 
+        openGuide={openGuide} 
+        handleGuideClose={handleGuideClose} 
+        left={guide["guide"].left}
+        bottom={guide["guide"].bottom}
+        transform={guide["guide"].transform}
+        id={Object.keys(guide)[0]} 
+      />
 
       {Object.keys(panes).map((key) => {
-        const { left, bottom } = panes[key]
-        return (
-          <LegendPane
-            key={key}
-            dataLayer={key}
-            id={key}
-            left={left}
-            bottom={bottom}
-          />
-            
-        )
+          const { left, bottom } = panes[key]
+          return (
+            <LegendPane
+              key={key}
+              dataLayer={key}
+              left={left}
+              bottom={bottom}
+              id={key}
+            />
+          )
       })}
       
     </div>

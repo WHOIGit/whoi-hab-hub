@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import { useDrag } from "react-dnd";
 import { makeStyles } from "@material-ui/styles";
 import { Card, CardHeader, CardContent, IconButton } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
@@ -11,47 +12,69 @@ import Typography from "@material-ui/core/Typography";
 import { useSelector, useDispatch } from "react-redux";
 // local imports
 import { changeActiveGuideStep } from "./guideSlice";
+import { ITEM_TYPES } from "../../Constants";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    margin: theme.spacing(1),
-    width: 640,
-    transition: "all 0.3s",
-    zIndex: 2000,
-    display: "none",
-  },
-  guideOpen: {
-    display: "block",
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    transform: "translate(-50%, -50%)",
-  },
-  rootContent: {
-    width: "100%",
-  },
-  rootHeader: {
-    paddingBottom: 0,
-  },
-  title: {
-    color: theme.palette.primary.main,
-    fontSize: "1.1rem",
-  },
-  backButton: {
-    marginRight: theme.spacing(1),
-  },
-  instructions: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-}));
-
-export default function GuidePane({ openGuide, handleGuideClose }) {
+export default function GuidePane({
+  openGuide,
+  handleGuideClose,
+  left,
+  bottom,
+  transform,
+  id,
+}) {
+  console.log(left, bottom);
+  const useStyles = makeStyles((theme) => ({
+    root: {
+      margin: theme.spacing(1),
+      width: 640,
+      transition: "all 0.3s",
+      zIndex: 2000,
+      display: "none",
+      cursor: "move",
+    },
+    guideOpen: {
+      display: "block",
+      position: "absolute",
+      left: left,
+      bottom: bottom,
+      //left: "50%",
+      //top: "50%",
+      transform: transform,
+    },
+    rootContent: {
+      width: "100%",
+    },
+    rootHeader: {
+      paddingBottom: 0,
+    },
+    title: {
+      color: theme.palette.primary.main,
+      fontSize: "1.1rem",
+    },
+    backButton: {
+      marginRight: theme.spacing(1),
+    },
+    instructions: {
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+    },
+  }));
   const dispatch = useDispatch();
   const classes = useStyles();
   const guideSteps = useSelector((state) => state.guide.guideSteps);
   const [activeStep, setActiveStep] = React.useState(0);
   const [completed, setCompleted] = React.useState({});
+
+  const [, drag] = useDrag(
+    () => ({
+      type: ITEM_TYPES.PANE,
+      item: { id, left, bottom },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }),
+    [id, left, bottom]
+  );
 
   const guideStyle = clsx({
     [classes.root]: true, //always applies
@@ -118,7 +141,7 @@ export default function GuidePane({ openGuide, handleGuideClose }) {
   };
 
   return (
-    <div className={guideStyle}>
+    <div className={guideStyle} ref={drag} id={id}>
       <Card>
         <CardHeader
           classes={{

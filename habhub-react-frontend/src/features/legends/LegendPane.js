@@ -10,7 +10,7 @@ import { changeLegendVisibility } from "../data-layers/dataLayersSlice";
 import { DATA_LAYERS } from "../../Constants";
 import { ITEM_TYPES } from "../../Constants";
 
-export default function LegendPane({ dataLayer, left, bottom }) {
+export default function LegendPane({ dataLayer, left, bottom, id }) {
   const useStyles = makeStyles((theme) => ({
     root: {
       margin: theme.spacing(1),
@@ -37,12 +37,12 @@ export default function LegendPane({ dataLayer, left, bottom }) {
   const [, drag] = useDrag(
     () => ({
       type: ITEM_TYPES.PANE,
-      item: { dataLayer, left, bottom },
+      item: { id, left, bottom },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [dataLayer, left, bottom]
+    [id, left, bottom]
   );
 
   let title;
