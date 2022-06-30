@@ -97,7 +97,9 @@ export default function MapContainer({ bookmarkViewport }) {
 
         // need to check it the current item's left/bottom are in %
         if (isNaN(item.left) || isNaN(item.bottom)) { 
-          left = Math.round(offset.x + delta.x);
+          // use the client offset function from DnD instead of left/bottom CSS
+          // offset returns the middle x coordinate of the item, so need to correct by half width of guide
+          left = Math.round(offset.x - 320 + delta.x);
           bottom = Math.round(offset.y - delta.y);
         } else {
           left = Math.round(item.left + delta.x);
