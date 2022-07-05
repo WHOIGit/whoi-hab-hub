@@ -1,6 +1,7 @@
 FROM node:16
 
 WORKDIR /usr/src/app
+RUN useradd worker
 USER worker
 # Copy package.json to Docker environment
 COPY ./habhub-react-frontend/package.json /usr/src/app
