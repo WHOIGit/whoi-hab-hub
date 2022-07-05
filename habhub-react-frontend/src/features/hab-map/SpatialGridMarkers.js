@@ -64,10 +64,14 @@ export default function SpatialGridMarkers({
       const maxMeanItem = speciesItem.data.find(
         (data) => data.metricId === metricID
       );
-      let value = maxMeanItem.maxValue;
+      let value = maxMeanItem?.maxValue;
 
       if (showMaxMean === "mean") {
-        value = maxMeanItem.meanValue;
+        value = maxMeanItem?.meanValue;
+      }
+
+      if (!value) {
+        return null;
       }
 
       return {
