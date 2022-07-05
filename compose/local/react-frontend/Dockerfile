@@ -1,10 +1,14 @@
-FROM node:15
+FROM node:16
+
+RUN ["mkdir", "/install"]
+ADD ["./habhub-react-frontend/package.json", "/install"]
+ADD ["./habhub-react-frontend/package-lock.json", "/install"]
+
+WORKDIR /install
+
+RUN npm install --verbose
+ENV NODE_PATH=/install/node_modules
 
 WORKDIR /usr/src/app
 
-# Copy package.json to Docker environment
-COPY ./habhub-react-frontend/package.json /usr/src/app
-COPY ./habhub-react-frontend/package-lock.json /usr/src/app
 
-# Install all node packages
-RUN npm install
