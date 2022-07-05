@@ -24,7 +24,7 @@ services:
       dockerfile: ./compose/local/django/Dockerfile
     image: habhub_local_django
     depends_on:
-      - postgres
+      - postgres_habhub
     volumes:
       - ./habhub-dataserver:/app
     env_file:

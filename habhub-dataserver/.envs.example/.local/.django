@@ -9,7 +9,7 @@ IPYTHONDIR=/app/.ipython
 
 # ------------------------------------------------------------------------------
 
-REDIS_URL=redis_habhub://redis:6379/0
+REDIS_URL=redis://redis:6379/0
 
 DJANGO_SECRET_KEY=secret_key
 DJANGO_ADMIN_URL=admin/
