@@ -12,3 +12,5 @@ RUN npm install
 
 RUN chown -R worker /usr/src/app
 USER worker
+
+RUN npm start
