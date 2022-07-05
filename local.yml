@@ -34,7 +34,7 @@ services:
       - "8888:8000"
     command: /start
 
-  postgres:
+  postgres_habhub:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
@@ -65,7 +65,7 @@ services:
     ports: []
     command: /start-celerybeat
 
-  redis:
+  redis_habhub:
     image: redis:6.0
     restart: unless-stopped
 
