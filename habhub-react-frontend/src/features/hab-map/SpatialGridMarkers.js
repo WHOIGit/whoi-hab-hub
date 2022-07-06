@@ -61,18 +61,24 @@ export default function SpatialGridMarkers({
         (data) => item.id === data.species
       );
       console.log(speciesItem);
+
+      if (!speciesItem) {
+        return [];
+      }
+
       const maxMeanItem = speciesItem.data.find(
         (data) => data.metricId === metricID
       );
       console.log(maxMeanItem);
+
+      if (!maxMeanItem) {
+        return [];
+      }
+
       let value = maxMeanItem?.maxValue;
 
       if (showMaxMean === "mean") {
         value = maxMeanItem?.meanValue;
-      }
-
-      if (!value) {
-        return null;
       }
 
       return {
@@ -86,6 +92,8 @@ export default function SpatialGridMarkers({
     if (!speciesValues.length) {
       return null;
     }
+
+    console.log(speciesValues);
 
     return (
       <div className="gridSquare">
