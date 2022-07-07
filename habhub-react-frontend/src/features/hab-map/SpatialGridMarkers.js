@@ -32,7 +32,7 @@ export default function SpatialGridMarkers({
           end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
-          smoothing_factor: 4,
+          smoothing_factor: 2,
           grid_level: gridLength,
         });
         const res = await axiosInstance.get("api/v1/ifcb-spatial-grid/", {
