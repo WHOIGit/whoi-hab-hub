@@ -4,25 +4,26 @@ import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
 import axiosInstance from "../../../app/apiAxios";
 
-const useStyles = makeStyles(theme => ({
+const imageBaseUrl = "http://192.168.13.103:8000";
+const useStyles = makeStyles((theme) => ({
   placeholder: {
-    textAlign: "center"
+    textAlign: "center",
   },
   rootGrid: {
     marginTop: theme.spacing(2),
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "space-around",
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
   },
   imageGrid: {
-    maxWidth: "100%"
+    maxWidth: "100%",
   },
   gridList: {
     flexWrap: "nowrap",
     // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
-    transform: "translateZ(0)"
-  }
+    transform: "translateZ(0)",
+  },
 }));
 
 const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
@@ -75,7 +76,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
                 <Button
                   size="small"
                   color="primary"
-                  href={`https://habon-ifcb.whoi.edu/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
+                  href={`${imageBaseUrl}/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
                   target="_blank"
                 >
                   IFCB Dashboard source link
@@ -85,7 +86,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
           </div>
           <div className={classes.rootGrid}>
             <Grid container spacing={2}>
-              {pointImgData.images.map(image => (
+              {pointImgData.images.map((image) => (
                 <Grid item xs={gridSize} key={image}>
                   <img
                     src={image}

@@ -17,6 +17,7 @@ from .api.serializers import DatasetListSerializer
 env = environ.Env()
 
 IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
+IFCB_DASHBOARD_PUBLIC_URL = env("IFCB_DASHBOARD_PUBLIC_URL", default=IFCB_DASHBOARD_URL)
 
 # Function to load IFBC map sidebar
 class BinAjaxGetImagesBySpecies(View):
@@ -44,7 +45,7 @@ class BinAjaxGetImagesBySpecies(View):
             image_numbers = data["image_numbers"][:30]
             print(image_numbers)
             for img_name in image_numbers:
-                img_path = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{img_name}.png"
+                img_path = f"{IFCB_DASHBOARD_PUBLIC_URL}/{bin_obj.dataset.dashboard_id_name}/{img_name}.png"
                 # need to check is this image exists locally. If not, go get it and cache locally
                 # _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
                 # img_path = F"media/ifcb/images/{img_name}.png"

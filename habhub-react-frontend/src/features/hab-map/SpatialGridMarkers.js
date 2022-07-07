@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Source, Layer } from "react-map-gl";
 import { format, parseISO } from "date-fns";
 // local imports
 import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
@@ -60,7 +59,6 @@ export default function SpatialGridMarkers({
       const speciesItem = feature.properties.maxMeanValues.find(
         (data) => item.id === data.species
       );
-      console.log(speciesItem);
 
       if (!speciesItem) {
         return [];
@@ -69,7 +67,6 @@ export default function SpatialGridMarkers({
       const maxMeanItem = speciesItem.data.find(
         (data) => data.metricId === metricID
       );
-      console.log(maxMeanItem);
 
       if (!maxMeanItem) {
         return [];
@@ -92,8 +89,6 @@ export default function SpatialGridMarkers({
     if (!speciesValues.length) {
       return null;
     }
-
-    console.log(speciesValues);
 
     return (
       <div className="gridSquare">

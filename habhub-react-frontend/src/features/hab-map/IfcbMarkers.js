@@ -36,7 +36,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
-  console.log(metricID);
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const dateFilter = useSelector((state) => state.dateFilter);
