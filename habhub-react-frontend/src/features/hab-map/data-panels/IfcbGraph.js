@@ -44,7 +44,6 @@ function IfcbGraph({
   yAxisScale,
   dataLayer,
 }) {
-  console.log(visibleResults, metricID);
   const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
   const chartRef = useRef();
@@ -115,7 +114,6 @@ function IfcbGraph({
               click: function () {
                 // eslint-disable-next-line no-unused-vars
                 const [y_value, pointData] = highChartsGetMetaData(this);
-                console.log(this.series.name, pointData);
                 // build API URL to get BIN images
                 const url =
                   `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` +
@@ -184,7 +182,6 @@ function IfcbGraph({
   function handleChartDataFormat(dataObj, metricID) {
     // set up data arrays for Highcharts format
     // match the value displayed to the metricID
-    console.log(dataObj);
     const dataArray = dataObj.data
       .map((item) => {
         const sampleTime = Date.parse(item.sampleTime);
@@ -210,11 +207,10 @@ function IfcbGraph({
     const timeSeries = visibleResults.find(
       (series) => series.speciesDisplay === point.series.name
     );
-    console.log(timeSeries);
+
     const pointData = timeSeries.data.find(
       (row) => Date.parse(row.sampleTime) === point.x
     );
-    console.log(pointData);
 
     let y_value = point.y;
     if (point.y == 1) {
