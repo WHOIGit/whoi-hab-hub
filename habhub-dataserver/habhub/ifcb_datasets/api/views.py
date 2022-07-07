@@ -23,7 +23,7 @@ from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
 env = environ.Env()
 
-CACHE_TTL = env("CACHE_TTL", default=60 * 60)
+CACHE_TTL = env("CACHE_TTL", default=60 * 10)
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
@@ -61,7 +61,7 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
-    # @method_decorator(cache_page(CACHE_TTL))
+    @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
