@@ -40,10 +40,10 @@ class BinQuerySet(models.QuerySet):
 
         for i in index_list:
             for metric in metrics:
-                val_name = f"val_{metric['metric_id']}_{i}"
-                max_name = f"max_{metric['metric_id']}_{i}"
-                mean_name = f"mean_{metric['metric_id']}_{i}"
-                species_name = f"species_{i}"
+                val_name = f"{i}_val_{metric['metric_id']}"
+                max_name = f"{i}_max_{metric['metric_id']}"
+                mean_name = f"{i}_mean_{metric['metric_id']}"
+                species_name = f"{i}_species"
 
                 field_list.extend([max_name, mean_name, species_name])
 

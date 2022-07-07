@@ -172,6 +172,7 @@ class BinSpatialGridSerializer(serializers.Serializer):
     def format_max_mean(self, square):
         target_list = TargetSpecies.objects.values_list("species_id", flat=True)
         index_list = [*range(0, target_list.count(), 1)]
+
         metrics = Metric.objects.filter(
             data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
         ).distinct()
@@ -196,7 +197,10 @@ class BinSpatialGridSerializer(serializers.Serializer):
         for i in index_list:
             list_item = {"species": None, "data": []}
             for key, val in square.items():
-                if str(i) in key:
+                # get the species numeric key by splitting the string
+                species_key = key.split("_")[0]
+
+                if str(i) == species_key:
                     # get the species ID for the index, else add it to the data list as it's a metric
                     if "species" in key:
                         list_item["species"] = val
