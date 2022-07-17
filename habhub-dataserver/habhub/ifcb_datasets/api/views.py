@@ -1,6 +1,6 @@
 import environ
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Prefetch, F, Q
 from django.contrib.gis.db.models import Extent
 
+from habhub.core.models import TargetSpecies
 from ..models import Dataset, Bin
 from .serializers import (
     DatasetListSerializer,
@@ -28,12 +29,55 @@ CACHE_TTL = env("CACHE_TTL", default=60 * 10)
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = BinSerializer
+    lookup_field = "pid"
 
     def get_queryset(self):
         queryset = Bin.objects.filter(cell_concentration_data__isnull=False)
         # call custom filter method from mixin
         queryset = self.handle_query_param_filters(queryset)
         return queryset
+
+    @action(detail=True, methods=["get"])
+    def get_species_images(self, request, pid):
+        obj = self.get_object()
+        species_name = request.query_params.get("species", None)
+
+        # API request is sending display name
+        target_list = TargetSpecies.objects.all()
+        species = next(
+            (item for item in target_list if item.display_name == species_name), False
+        )
+
+        bin_images_json = {}
+        images = []
+
+        if obj and species:
+            data = obj.get_concentration_data_by_species(species.species_id)
+            image_numbers = data["image_numbers"][:30]
+            public_url = obj.dataset.dashboard_public_url
+            if not public_url:
+                public_url = obj.dataset.dashboard_base_url
+
+            for img_name in image_numbers:
+                img_path = (
+                    f"{public_url}/{obj.dataset.dashboard_id_name}/{img_name}.png"
+                )
+                # need to check is this image exists locally. If not, go get it and cache locally
+                # _get_image_ifcb_dashboard(bin_obj.dataset, img_name)
+                # img_path = F"media/ifcb/images/{img_name}.png"
+                images.append(img_path)
+
+            bin_images_json = {
+                "bin": {
+                    "pid": obj.pid,
+                    "dataset_id": obj.dataset.dashboard_id_name,
+                    "dataset_link": public_url,
+                },
+                "species": species.display_name,
+                "images": images,
+            }
+
+        return Response(status=status.HTTP_200_OK, data=bin_images_json)
 
 
 class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):

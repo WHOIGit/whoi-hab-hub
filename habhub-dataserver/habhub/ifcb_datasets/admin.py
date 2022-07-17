@@ -7,8 +7,16 @@ from .forms import DatasetForm
 # Register models here.
 class DatasetAdmin(LeafletGeoAdmin):
     form = DatasetForm
-    list_display = ('name', 'location', 'dashboard_id_name', 'fixed_location', 'geom')
-    list_editable = ('geom', )
+    list_display = (
+        "name",
+        "location",
+        "dashboard_base_url",
+        "dashboard_id_name",
+        "fixed_location",
+        "geom",
+    )
+    list_editable = ("geom",)
+
 
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(Bin)

@@ -14,7 +14,7 @@ from django.contrib.gis.geos import Point, Polygon
 
 env = environ.Env()
 
-IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
+# IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
 IFCB_DASHBOARD_THROTTLE_RATE = env("IFCB_DASHBOARD_THROTTLE_RATE", default=50)
 
 
@@ -143,9 +143,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
     else:
         params = {}
 
-    csv_url = (
-        f"{IFCB_DASHBOARD_URL}/api/export_metadata/{dataset_obj.dashboard_id_name}"
-    )
+    csv_url = f"{dataset_obj.dashboard_base_url}/api/export_metadata/{dataset_obj.dashboard_id_name}"
 
     response = requests.get(csv_url, params=params)
     print(response.status_code, response.url)
@@ -212,8 +210,8 @@ def _get_ifcb_autoclass_file(bin_obj):
     from habhub.core.models import TargetSpecies
     from .models import AutoclassScore
 
-    bin_url = f"{IFCB_DASHBOARD_URL}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}"
-    class_scores_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
+    bin_url = f"{bin_obj.dataset.dashboard_base_url}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}"
+    class_scores_url = f"{bin_obj.dataset.dashboard_base_url}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
 
     target_list = TargetSpecies.objects.values_list("species_id", flat=True)
     print(f"DASHBOARD URL requested: {bin_url}")
@@ -249,7 +247,7 @@ def _get_ifcb_autoclass_file(bin_obj):
 def _calculate_metrics(bin_obj):
     from habhub.core.models import TargetSpecies
 
-    features_url = f"{IFCB_DASHBOARD_URL}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
+    features_url = f"{bin_obj.dataset.dashboard_base_url}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
     ml_analyzed = bin_obj.ml_analyzed
     target_list = TargetSpecies.objects.all()
 

@@ -2,7 +2,7 @@ import datetime
 from statistics import mean
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
@@ -16,8 +16,14 @@ class Dataset(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100, null=False, blank=True)
     geom = models.PointField(srid=4326, null=True, blank=True)
+    # base URL for IFCB dashboard for data ingestion
+    dashboard_base_url = models.URLField(
+        max_length=200, default="https://habon-ifcb.whoi.edu"
+    )
     # the lookup name from the IFCB dashboard
     dashboard_id_name = models.CharField(max_length=100)
+    # OPTIONAL: public dashboard URL if it differs from data ingestion
+    dashboard_public_url = models.URLField(max_length=200, null=False, blank=True)
     fixed_location = models.BooleanField(default=True)
 
     # objects = DatasetQuerySet.as_manager()
@@ -143,7 +149,7 @@ class Bin(models.Model):
         models.CharField(max_length=500), null=True, blank=True, default=None
     )
     # cell_concentration: cells/L (image_numbers / bin.ml_analyzed) * 1000
-    cell_concentration_data = JSONField(null=True)
+    cell_concentration_data = models.JSONField(null=True)
 
     objects = BinQuerySet.as_manager()
 

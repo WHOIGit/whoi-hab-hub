@@ -4,7 +4,6 @@ import { Typography, Button, Grid, CircularProgress } from "@material-ui/core";
 
 import axiosInstance from "../../../app/apiAxios";
 
-const imageBaseUrl = "http://192.168.13.103:8000";
 const useStyles = makeStyles((theme) => ({
   placeholder: {
     textAlign: "center",
@@ -76,7 +75,7 @@ const IfcbMetaData = ({ metaDataUrl, chartExpanded }) => {
                 <Button
                   size="small"
                   color="primary"
-                  href={`${imageBaseUrl}/bin?dataset=${pointImgData.bin.dataset_id}&bin=${pointImgData.bin.pid}`}
+                  href={`${pointImgData.bin.datasetLink}/bin?dataset=${pointImgData.bin.datasetId}&bin=${pointImgData.bin.pid}`}
                   target="_blank"
                 >
                   IFCB Dashboard source link

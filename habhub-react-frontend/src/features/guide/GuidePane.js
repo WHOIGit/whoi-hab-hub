@@ -22,7 +22,6 @@ export default function GuidePane({
   transform,
   id,
 }) {
-  console.log(left, bottom);
   const useStyles = makeStyles((theme) => ({
     root: {
       margin: theme.spacing(1),

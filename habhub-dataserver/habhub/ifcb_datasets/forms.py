@@ -3,6 +3,7 @@ from django.contrib.gis.geos import Point
 
 from .models import Dataset
 
+
 class DatasetForm(forms.ModelForm):
 
     latitude = forms.FloatField(
@@ -18,19 +19,33 @@ class DatasetForm(forms.ModelForm):
 
     class Meta(object):
         model = Dataset
-        fields = ['name', 'location', 'dashboard_id_name', 'fixed_location', 'latitude', 'longitude', 'geom', ]
+        fields = [
+            "name",
+            "location",
+            "dashboard_base_url",
+            "dashboard_id_name",
+            "dashboard_public_url",
+            "fixed_location",
+            "latitude",
+            "longitude",
+            "geom",
+        ]
+
+        help_texts = {
+            "dashboard_public_url": "optional field - enter public URL for IFCB dashboard links if it differs from data ingestion URL",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        coordinates = self.initial.get('geom', None)
+        coordinates = self.initial.get("geom", None)
         if isinstance(coordinates, Point):
-            self.initial['longitude'], self.initial['latitude'] = coordinates.tuple
+            self.initial["longitude"], self.initial["latitude"] = coordinates.tuple
 
     def clean(self):
         data = super().clean()
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        geom = data.get('geom')
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        geom = data.get("geom")
         if latitude and longitude:
-            data['geom'] = Point(longitude, latitude)
+            data["geom"] = Point(longitude, latitude)
         return data

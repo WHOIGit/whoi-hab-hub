@@ -116,11 +116,9 @@ function IfcbGraph({
                 const [y_value, pointData] = highChartsGetMetaData(this);
                 // build API URL to get BIN images
                 const url =
-                  `${API_URL}ifcb-datasets/maps/ajax/get-bin-images-species/?` +
+                  `${API_URL}api/v1/ifcb-bins/${pointData.binPid}/get_species_images/?` +
                   new URLSearchParams({
                     species: this.series.name,
-                    bin_pid: pointData.binPid,
-                    format: "json",
                   });
                 setMetaDataUrl(url);
                 setOpenMetaData(true);
