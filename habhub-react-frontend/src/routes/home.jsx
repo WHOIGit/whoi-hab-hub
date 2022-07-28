@@ -21,7 +21,7 @@ if (
 
 export default function Home() {
   let dispatch = useDispatch();
-
+  console.log("HOME");
   useEffect(() => {
     if (defaultStartDate) {
       let payload = {

@@ -1,5 +1,6 @@
 import axiosInstance from "../../app/apiAxios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSelector } from "reselect";
 // local
 import { DATA_LAYERS } from "../../Constants";
 
@@ -8,6 +9,7 @@ import { DATA_LAYERS } from "../../Constants";
 const legendLayerIds = [
   DATA_LAYERS.stationsLayer,
   DATA_LAYERS.cellConcentrationLayer,
+  DATA_LAYERS.cellConcentrationSpatialGridLayer,
 ];
 const interactiveLayerIds = [
   DATA_LAYERS.closuresLayer,
@@ -130,12 +132,20 @@ export const selectInteractiveLayerIds = (state) => {
 };
 
 // return a flat array of just the dataLayer IDs that have a Legend pane
+/*
 export const selectLayerLegendIds = (state) => {
   const layerIds = state.dataLayers.layers
     .filter((layer) => layer.legendVisibility)
     .map((layer) => layer.id);
   return layerIds;
-};
+};*/
+
+//const selectLayerLegends = (state) => state.dataLayers.layers;
+export const selectLayerLegendIds = createSelector(
+  (state) => state.dataLayers.layers,
+  (items) =>
+    items.filter((layer) => layer.legendVisibility).map((layer) => layer.id)
+);
 
 // return max/mean value selection
 export const selectMaxMeanOption = (state) => state.dataLayers.showMaxMean;

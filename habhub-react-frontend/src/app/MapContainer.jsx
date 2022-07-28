@@ -13,23 +13,13 @@ import { resetGuideSteps } from "../features/guide/guideSlice";
 import GuidePane from "../features/guide/GuidePane";
 import { ITEM_TYPES } from "../Constants";
 
-const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
-const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
-const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
-
-const defaultViewport = {
-  latitude: MAP_LATITUDE,
-  longitude: MAP_LONGITUDE,
-  zoom: MAP_ZOOM,
-  width: "100%",
-  height: "100vh",
-};
 export default function MapContainer({ bookmarkViewport }) {
+  console.log("HABMAP");
   const dispatch = useDispatch();
   const legendLayerIds = useSelector(selectLayerLegendIds);
+  console.log(legendLayerIds);
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
-  const [viewport, setViewport] = useState(defaultViewport);
   const [guide, setGuide] = useState({guide: { bottom: "50%", left: "50%", transform: "translate(-50%, 50%)"}})
   const [panes, setPanes] = useState({})
   const [openGuide, setOpenGuide] = React.useState(false);
@@ -45,12 +35,6 @@ export default function MapContainer({ bookmarkViewport }) {
       setPanes(newPaneList)
     }
   }, [legendLayerIds]);
-
-  useEffect(() => {
-    if (bookmarkViewport) {
-      setViewport(bookmarkViewport);
-    }
-  }, [bookmarkViewport]);
 
   const handleGuideClose = () => {
     setOpenGuide(false);
@@ -122,19 +106,19 @@ export default function MapContainer({ bookmarkViewport }) {
   return (
     <div ref={drop}>
      
-        <HabMap viewport={viewport} setViewport={setViewport} />
+      <HabMap bookmarkViewport={bookmarkViewport} />
 
-        <DashBoard
-          showControls={showControls}
-          setShowControls={setShowControls}
-          setOpenGuide={setOpenGuide}
-        />
+      <DashBoard
+        showControls={showControls}
+        setShowControls={setShowControls}
+        setOpenGuide={setOpenGuide}
+      />
 
-        <DateControls
-          showControls={showControls}
-          showDateControls={showDateControls}
-          setShowDateControls={setShowDateControls}
-        />
+      <DateControls
+        showControls={showControls}
+        showDateControls={showDateControls}
+        setShowDateControls={setShowDateControls}
+      />
 
       <GuidePane 
         openGuide={openGuide} 

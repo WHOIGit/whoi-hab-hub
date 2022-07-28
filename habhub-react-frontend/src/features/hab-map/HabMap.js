@@ -56,12 +56,25 @@ const initialGridZoomArray = [
   { gridLength: 1.0, maxZoom: 5, minZoom: 0, isActive: false },
 ];
 
-export default function HabMap({ viewport, setViewport }) {
+const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
+const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
+const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
+
+const defaultViewport = {
+  latitude: MAP_LATITUDE,
+  longitude: MAP_LONGITUDE,
+  zoom: MAP_ZOOM,
+  width: "100%",
+  height: "100vh",
+};
+
+export default function HabMap({ bookmarkViewport }) {
   const classes = useStyles();
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   // only refers to map layer that use the Mapbox Layer/Source properties
   const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
+  const [viewport, setViewport] = useState(defaultViewport);
   const [features, setFeatures] = useState([]);
   const [mapBounds, setMapBounds] = useState(null);
   const [gridZoomRange, setGridZoomRange] = useState(initialGridZoomArray);
@@ -69,6 +82,12 @@ export default function HabMap({ viewport, setViewport }) {
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (bookmarkViewport) {
+      setViewport(bookmarkViewport);
+    }
+  }, [bookmarkViewport]);
 
   useEffect(() => {
     const newFeatures = features.filter((feature) =>
