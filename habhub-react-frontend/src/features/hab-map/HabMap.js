@@ -16,6 +16,7 @@ import {
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
+import { changeMapData } from "./habMapDataSlice";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -98,6 +99,16 @@ export default function HabMap({ viewport, setViewport }) {
   }, [mapBounds]);
   */
 
+  const dispatchHabMapChanges = (viewport) => {
+    // trigger Redux dispatch function to fetch active grid squaresdata
+    const payload = {
+      latitude: viewport.latitude,
+      longitude: viewport.longitude,
+      zoom: viewport.zoom,
+    };
+    dispatch(changeMapData(payload));
+  };
+
   const getGridZoomLength = () => {
     const zoom = gridZoomRange.find((item) => item.isActive).gridLength;
     return zoom;
@@ -173,11 +184,6 @@ export default function HabMap({ viewport, setViewport }) {
       feature.layerID = feature.layer.id;
       setFeatures([feature, ...features]);
     }
-  };
-
-  const onMapTransitionEnd = () => {
-    handleZoomUpdates(viewport);
-    //handleMapBoundsUpdates(viewport);
   };
 
   const onMarkerClick = (event, feature, layerID, metricID) => {
@@ -269,13 +275,13 @@ export default function HabMap({ viewport, setViewport }) {
             //console.log(interactionState);
             //console.log(oldViewState);
             setViewport(viewport);
-            //onMapTransitionEnd();
+            dispatchHabMapChanges(viewport);
           }}
           onClick={(event) => onMapClick(event)}
           onLoad={onMapLoad}
           interactiveLayerIds={interactiveLayerIds}
           preserveDrawingBuffer={true}
-          onTransitionEnd={onMapTransitionEnd}
+          onTransitionEnd={handleZoomUpdates}
           ref={mapRef}
         >
           <React.Fragment>

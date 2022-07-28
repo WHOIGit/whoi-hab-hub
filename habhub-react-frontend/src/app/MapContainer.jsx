@@ -127,7 +127,6 @@ export default function MapContainer({ bookmarkViewport }) {
         <DashBoard
           showControls={showControls}
           setShowControls={setShowControls}
-          viewport={viewport}
           setOpenGuide={setOpenGuide}
         />
 

@@ -110,10 +110,10 @@ function TabPanel(props) {
 export default function Dashboard({
   showControls,
   setShowControls,
-  viewport,
   setOpenGuide,
 }) {
   // Set const variables
+  console.log("DASHBOARD");
   const classes = useStyles();
   // Set local state
   const [tabValue, setTabValue] = useState(0);
@@ -252,7 +252,7 @@ export default function Dashboard({
               index={5}
               className={classes.tabPanelRoot}
             >
-              <BookmarkTab viewport={viewport} />
+              <BookmarkTab />
             </TabPanel>
           </>
         </div>

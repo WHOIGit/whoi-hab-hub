@@ -46,17 +46,18 @@ const useStyles = makeStyles((theme) => ({
 
 const defaultTooltipText = "Copy to Clipboard";
 
-export default function BookmarkTab({ viewport }) {
-  let classes = useStyles();
-  let dateFilter = useSelector((state) => state.dateFilter);
-  let visibleSpecies = useSelector(selectVisibleSpecies);
-  let visibleLayers = useSelector(selectVisibleLayers);
-  let [bookmarks, setBookmarks] = useState([]);
-  let [tooltipText, setTooltipText] = useState(defaultTooltipText);
+export default function BookmarkTab() {
+  const classes = useStyles();
+  const dateFilter = useSelector((state) => state.dateFilter);
+  const visibleSpecies = useSelector(selectVisibleSpecies);
+  const visibleLayers = useSelector(selectVisibleLayers);
+  const habMapData = useSelector((state) => state.habMapData);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [tooltipText, setTooltipText] = useState(defaultTooltipText);
   // eslint-disable-next-line no-unused-vars
-  let [error, setError] = useState(null);
+  const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
-  let [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   async function handleBookmarkCreate() {
     let params = {
@@ -64,9 +65,9 @@ export default function BookmarkTab({ viewport }) {
       endDate: dateFilter.endDate,
       species: visibleSpecies.map((item) => item.id),
       dataLayers: visibleLayers.map((item) => item.id),
-      latitude: Math.round(viewport.latitude * 10000) / 10000,
-      longitude: Math.round(viewport.longitude * 10000) / 10000,
-      zoom: Math.round(viewport.zoom * 1000) / 1000,
+      latitude: Math.round(habMapData.latitude * 10000) / 10000,
+      longitude: Math.round(habMapData.longitude * 10000) / 10000,
+      zoom: Math.round(habMapData.zoom * 1000) / 1000,
       seasonal: dateFilter.seasonal.toString(),
       excludeMonthRange: dateFilter.excludeMonthRange.toString(),
     };
@@ -200,17 +201,17 @@ export default function BookmarkTab({ viewport }) {
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Map Zoom: {Math.round(viewport.zoom * 1000) / 1000}
+              Map Zoom: {Math.round(habMapData.zoom * 1000) / 1000}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Latitude: {Math.round(viewport.latitude * 10000) / 10000}
+              Latitude: {Math.round(habMapData.latitude * 10000) / 10000}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              Longitude: {Math.round(viewport.longitude * 10000) / 10000}
+              Longitude: {Math.round(habMapData.longitude * 10000) / 10000}
             </Typography>
           </ListItem>
         </List>
