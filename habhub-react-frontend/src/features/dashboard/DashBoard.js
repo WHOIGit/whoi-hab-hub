@@ -182,6 +182,13 @@ export default function Dashboard({
                   }}
                 />
                 <Tab
+                  icon={<Bookmark />}
+                  label="Save Map"
+                  classes={{
+                    root: classes.tabRoot,
+                  }}
+                />
+                <Tab
                   icon={<Explore />}
                   label="Links"
                   classes={{
@@ -191,13 +198,6 @@ export default function Dashboard({
                 <Tab
                   icon={<Stars />}
                   label="Partners"
-                  classes={{
-                    root: classes.tabRoot,
-                  }}
-                />
-                <Tab
-                  icon={<Bookmark />}
-                  label="Save Map"
                   classes={{
                     root: classes.tabRoot,
                   }}
@@ -238,21 +238,21 @@ export default function Dashboard({
               index={3}
               className={classes.tabPanelRoot}
             >
-              <LinksTab />
+              <BookmarkTab />
             </TabPanel>
             <TabPanel
               value={tabValue}
               index={4}
               className={classes.tabPanelRoot}
             >
-              <PartnersTab />
+              <LinksTab />
             </TabPanel>
             <TabPanel
               value={tabValue}
               index={5}
               className={classes.tabPanelRoot}
             >
-              <BookmarkTab />
+              <PartnersTab />
             </TabPanel>
           </>
         </div>
