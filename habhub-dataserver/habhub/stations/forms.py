@@ -19,22 +19,34 @@ class StationForm(forms.ModelForm):
     class Meta(object):
         model = Station
         exclude = []
-        fields = ['station_name', 'station_location', 'state', 'hab_species', 'latitude', 'longitude', 'geom' ]
+        fields = [
+            "station_name",
+            "station_location",
+            "state",
+            "hab_species",
+            "latitude",
+            "longitude",
+            "geom",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        coordinates = self.initial.get('geom', None)
+        coordinates = self.initial.get("geom", None)
         if isinstance(coordinates, Point):
-            self.initial['longitude'], self.initial['latitude'] = coordinates.tuple
+            self.initial["longitude"], self.initial["latitude"] = coordinates.tuple
 
     def clean(self):
         data = super().clean()
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        geom = data.get('geom')
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        geom = data.get("geom")
         if latitude and longitude:
-            data['geom'] = Point(longitude, latitude)
+            data["geom"] = Point(longitude, latitude)
         return data
+
+
+class StationCsvUploadForm(forms.Form):
+    stations_csv = forms.FileField()
 
 
 class DatapointCsvUploadForm(forms.Form):

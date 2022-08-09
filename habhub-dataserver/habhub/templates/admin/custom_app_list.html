@@ -1,0 +1,23 @@
+<div id="extra_links_wrapper" class="module">
+  <table>
+    <caption>
+      <a class="section" title="Custom Pages">Import Station Layer Data</a>
+    </caption>
+    <tr>
+      <th scope="row">
+        <a href="{% url 'admin:upload_stations' %}"> Upload New Stations </a>
+      </th>
+      <td></td>
+    </tr>
+    <tr>
+      <th scope="row">
+        <a href="{% url 'admin:upload_station_data' %}">
+          Upload New Station Toxicity Data
+        </a>
+      </th>
+      <td></td>
+    </tr>
+  </table>
+</div>
+
+{% include 'admin/app_list.html' %}

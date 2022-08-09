@@ -5,13 +5,16 @@ from django.contrib.gis import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from config.admin import HabHubAdminSite
 from habhub.stations import views as stations_views
 from habhub.closures import views as closures_views
 from habhub.esp_instrument import views as esp_instrument_views
 
-admin.site.site_header = 'WHOI HABHub Administration'
-admin.site.index_title = 'Site administration'
-admin.site.site_title = 'WHOI HABHub Administration'
+# custom admin site class
+admin.site.__class__ = HabHubAdminSite
+admin.site.site_header = "WHOI HABHub Administration"
+admin.site.index_title = "Site administration"
+admin.site.site_title = "WHOI HABHub Administration"
 
 urlpatterns = [
     # path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -28,23 +31,29 @@ urlpatterns = [
         include("habhub.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
-
     # Custom HAB urls
-    path('', stations_views.StationListView.as_view(), name='home'),
-    path('', include('habhub.dashboard.urls', namespace='dashboard')),
-    path('ajax/load-esp-deployment-data/', esp_instrument_views.load_esp_deployment_data, name='ajax_load_esp_deployment_data'),
-    path('closures/', include('habhub.closures.urls', namespace='closures')),
-    path('stations/', include('habhub.stations.urls', namespace='stations')),
-    path('ifcb-datasets/', include('habhub.ifcb_datasets.urls', namespace='ifcb_datasets')),
-    path('monitoring_systems/', include('habhub.monitoring_systems.urls', namespace='monitoring_systems')),
+    path("", stations_views.StationListView.as_view(), name="home"),
+    path("", include("habhub.dashboard.urls", namespace="dashboard")),
+    path(
+        "ajax/load-esp-deployment-data/",
+        esp_instrument_views.load_esp_deployment_data,
+        name="ajax_load_esp_deployment_data",
+    ),
+    path("closures/", include("habhub.closures.urls", namespace="closures")),
+    path("stations/", include("habhub.stations.urls", namespace="stations")),
+    path(
+        "ifcb-datasets/",
+        include("habhub.ifcb_datasets.urls", namespace="ifcb_datasets"),
+    ),
+    path(
+        "monitoring_systems/",
+        include("habhub.monitoring_systems.urls", namespace="monitoring_systems"),
+    ),
     # API urls
-    path('api/v1/', include('habhub.core.api.urls', namespace='api_v1')),
+    path("api/v1/", include("habhub.core.api.urls", namespace="api_v1")),
     # Summernote WYSIWYG
-    path('summernote/', include('django_summernote.urls')),
-
-] + static(
-    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-)
+    path("summernote/", include("django_summernote.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit

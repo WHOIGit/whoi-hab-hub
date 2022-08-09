@@ -1,0 +1,55 @@
+{# templates/admin/custom_page.html #}
+
+{% extends 'admin/base_site.html' %}
+{% load crispy_forms_tags %}
+
+{% block pagination %}{% endblock %}
+{% block filters %}{% endblock filters %}
+{% block object-tools %}{% endblock object-tools %}
+{% block search %}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  {% if page_name %} &rsaquo; {{ page_name }}{% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h1>Upload Station Toxicity Datapoint CSV</h1>
+
+  <p>Use this tool to upload Station Toxicity Datapoint CSV. 
+    Matching  <a href="{% url 'admin:stations_station_changelist' %}">Stations</a> must exist in the database before importing data.</p>
+
+  <hr>
+
+  <form class="form-horizontal" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <div class="row">
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">
+                        <strong>{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+
+    </div>
+
+    <input type="submit" value="Run Import" class="default" name="_upload" style="float: none;">
+  </form>
+</div>
+{% endblock content %}
+
+
