@@ -2,7 +2,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Marker } from "react-map-gl";
-import DotMarker from "../../images/dot-gray.svg";
+import DotMarker from "../../images/dot-grey.svg";
 
 const useStyles = makeStyles(() => ({
   button: {
