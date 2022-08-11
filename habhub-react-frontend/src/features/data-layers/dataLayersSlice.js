@@ -156,6 +156,7 @@ export const selectLayerLegendIds = createSelector(
     const checkForSpatial = activeLegends.some(
       (layer) => layer === DATA_LAYERS.cellConcentrationSpatialGridLayer
     );
+    console.log(checkForFixed, checkForSpatial, activeLegends);
 
     if (checkForFixed && checkForSpatial) {
       //remove one of the legends
