@@ -73,8 +73,8 @@ export const dataLayersSlice = createSlice({
       // Add any fetched layers to the array
       state.layers = state.layers.concat(action.payload);
       state.layers.forEach((element) => {
-        // only one of ifcb-layer/ifcb-biovolume-layer can be active at one time
-        // default to ifcb-layer (cell_concentration) as initial active layer
+        // only one of cell_concentration/biovolume can be active at one time
+        // default to cell_concentration as initial active layer
         if (
           element.id === DATA_LAYERS.biovolumeLayer ||
           element.id === DATA_LAYERS.biovolumeSpatialGridLayer
@@ -84,6 +84,8 @@ export const dataLayersSlice = createSlice({
           element.visibility = true;
         }
 
+        // fixed and spatial cell_concentration have same legend pane
+        // only one should show at a single time
         if (legendLayerIds.includes(element.id)) {
           element.legendVisibility = true;
         }
@@ -140,11 +142,30 @@ export const selectLayerLegendIds = (state) => {
   return layerIds;
 };*/
 
-//const selectLayerLegends = (state) => state.dataLayers.layers;
 export const selectLayerLegendIds = createSelector(
   (state) => state.dataLayers.layers,
-  (items) =>
-    items.filter((layer) => layer.legendVisibility).map((layer) => layer.id)
+  (items) => {
+    let activeLegends = items
+      .filter((layer) => layer.legendVisibility && layer.visibility)
+      .map((layer) => layer.id);
+    // fixed and spatial cell_concentration have same legend pane
+    // only one should show at a single time
+    const checkForFixed = activeLegends.some(
+      (layer) => layer === DATA_LAYERS.cellConcentrationLayer
+    );
+    const checkForSpatial = activeLegends.some(
+      (layer) => layer === DATA_LAYERS.cellConcentrationSpatialGridLayer
+    );
+
+    if (checkForFixed && checkForSpatial) {
+      //remove one of the legends
+      activeLegends = activeLegends.filter(
+        (layer) => layer !== DATA_LAYERS.cellConcentrationLayer
+      );
+    }
+
+    return activeLegends;
+  }
 );
 
 // return max/mean value selection
