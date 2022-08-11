@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSelector } from "reselect";
 // local
 import axiosInstance from "../../app/apiAxios";
 import { colorShade } from "../../app/utils/colorUtils";
@@ -168,13 +169,11 @@ export default habSpeciesSlice.reducer;
 // return all species
 export const selectAllSpecies = (state) => state.habSpecies.species;
 
-// return only the currently visible layers
-export const selectVisibleSpecies = (state) =>
-  state.habSpecies.species.filter((item) => item.visibility);
-
-// return only the Species that are currently selectable to be visible on the map
-export const selectActiveSpecies = (state) =>
-  state.habSpecies.species.filter((item) => item.isActive);
+// return only the currently selected/visible species
+export const selectVisibleSpecies = createSelector(
+  (state) => state.habSpecies.species,
+  (items) => items.filter((item) => item.visibility)
+);
 
 // get species by syndrome
 export const selectSpeciesBySyndrome = (state, syndrome) =>

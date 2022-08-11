@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import SidePane from "./SidePane";
 import axiosInstance from "../../../app/apiAxios";
 import { DATA_LAYERS } from "../../../Constants";
+import { selectDateFilter } from "../../date-filter/dateFilterSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,8 +32,8 @@ export default function DataPanel({
   metricID,
   gridLength,
 }) {
-  console.log(gridLength);
-  const dateFilter = useSelector((state) => state.dateFilter);
+  //const dateFilter = useSelector((state) => state.dateFilter);
+  const dateFilter = useSelector(selectDateFilter);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);

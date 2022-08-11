@@ -1,5 +1,6 @@
 import { sub, differenceInDays, parseISO } from "date-fns";
 import { createSlice } from "@reduxjs/toolkit";
+import { createSelector } from "reselect";
 
 // Set small initial start date to avoid async data loading confusion
 let initialStartDate = sub(new Date(), {
@@ -88,3 +89,10 @@ export const { changeDateRange, changeDefaultStartDate } =
   dateFilterSlice.actions;
 
 export default dateFilterSlice.reducer;
+
+// Selector functions
+// use createSelector to create memoized selector
+export const selectDateFilter = createSelector(
+  (state) => state.dateFilter,
+  (item) => item
+);

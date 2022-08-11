@@ -7,6 +7,7 @@ import Highcharts from "highcharts";
 import Exporting from "highcharts/modules/exporting";
 import ExportData from "highcharts/modules/export-data";
 import OfflineExporting from "highcharts/modules/offline-exporting";
+import Boost from "highcharts/modules/boost";
 import Serieslabel from "highcharts/modules/series-label";
 import HighchartsReact from "highcharts-react-official";
 // Local imports
@@ -20,6 +21,7 @@ Exporting(Highcharts);
 ExportData(Highcharts);
 Serieslabel(Highcharts);
 OfflineExporting(Highcharts);
+Boost(Highcharts);
 
 // eslint-disable-next-line no-undef
 const API_URL = process.env.REACT_APP_API_URL;
@@ -53,6 +55,7 @@ function IfcbGraph({
   const [openMetaData, setOpenMetaData] = useState(false);
 
   useEffect(() => {
+    console.log(visibleResults.length, visibleResults);
     const chartData = visibleResults.map((item) =>
       handleChartDataFormat(item, metricID)
     );
@@ -68,6 +71,11 @@ function IfcbGraph({
       chart: {
         type: chartType,
         zoomType: "x",
+      },
+      boost: {
+        useGPUTranslations: true,
+        usePreAllocated: true,
+        seriesThreshold: 10,
       },
       title: {
         text: null,
@@ -122,6 +130,16 @@ function IfcbGraph({
                   });
                 setMetaDataUrl(url);
                 setOpenMetaData(true);
+              },
+              mouseOver: function () {
+                // workaround from Highcharts for click function to work in Boost mode, enable Halo
+                if (this.series.halo) {
+                  this.series.halo
+                    .attr({
+                      class: "highcharts-tracker",
+                    })
+                    .toFront();
+                }
               },
             },
           },
@@ -196,6 +214,7 @@ function IfcbGraph({
       color: seriesColor.primaryColor,
       name: dataObj.speciesDisplay,
       data: dataArray,
+      boostThreshold: 1000,
     };
     return timeSeries;
   }

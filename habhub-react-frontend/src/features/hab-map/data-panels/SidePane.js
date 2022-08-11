@@ -7,7 +7,7 @@ import { Close, OpenWith, Minimize } from "@material-ui/icons";
 import StationsGraph from "./StationsGraph";
 import IfcbGraph from "./IfcbGraph";
 import ClosuresList from "./ClosuresList";
-import { selectAllSpecies } from "../../hab-species/habSpeciesSlice";
+import { selectVisibleSpecies } from "../../hab-species/habSpeciesSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../../Constants";
 
 const expandWidth = window.outerWidth - 420;
@@ -50,7 +50,7 @@ export default function SidePane({
   onPaneClose,
   metricID,
 }) {
-  const habSpecies = useSelector(selectAllSpecies);
+  const habSpecies = useSelector(selectVisibleSpecies);
   const classes = useStyles();
   const [expandPane, setExpandPane] = useState(false);
   const [visibleResults, setVisibleResults] = useState([]);

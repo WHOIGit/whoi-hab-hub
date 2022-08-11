@@ -193,6 +193,7 @@ export default function HabMap({ bookmarkViewport }) {
   };
 
   const onMapClick = (event) => {
+    console.log("MAP CLICK");
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
     console.log(feature);
@@ -206,7 +207,7 @@ export default function HabMap({ bookmarkViewport }) {
   };
 
   const onMarkerClick = (event, feature, layerID, metricID) => {
-    console.log(metricID);
+    console.log("MARKER CLICK");
     feature.layerID = layerID;
     feature.metricID = metricID;
     setFeatures([feature, ...features]);

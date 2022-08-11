@@ -130,7 +130,6 @@ export default function IfcbSpatialMarkerGrid({
   };
 
   if (isNoDetect(speciesValues)) {
-    console.log("NO DETECT");
     return (
       <Marker
         key={feature.properties.geohash}
