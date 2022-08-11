@@ -17,7 +17,6 @@ export default function MapContainer({ bookmarkViewport }) {
   console.log("HABMAP");
   const dispatch = useDispatch();
   const legendLayerIds = useSelector(selectLayerLegendIds);
-  console.log(legendLayerIds);
   const [showControls, setShowControls] = useState(true);
   const [showDateControls, setShowDateControls] = useState(false);
   const [guide, setGuide] = useState({guide: { bottom: "50%", left: "50%", transform: "translate(-50%, 50%)"}})

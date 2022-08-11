@@ -1,8 +1,8 @@
 /* eslint-disable */
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Grid } from "@material-ui/core";
 import { Marker } from "react-map-gl";
+import DotMarker from "../../images/dot-gray.svg";
 
 const useStyles = makeStyles(() => ({
   button: {
@@ -19,6 +19,11 @@ const useStyles = makeStyles(() => ({
     flexBasis: "100%",
     height: 0,
   },
+  dotSquare: {
+    display: "block",
+    width: "20px",
+    height: "20px",
+  },
 }));
 
 export default function IfcbSpatialMarkerGrid({
@@ -30,8 +35,8 @@ export default function IfcbSpatialMarkerGrid({
 }) {
   const classes = useStyles();
   // set some constants for square sizes
-  const maxSquareSize = 30;
-  const minSquareSize = 8;
+  const maxSquareSize = 35;
+  const minSquareSize = 7;
   // set default grid structure for different #s of species. Max squares across = 4
   let gridHorizontal = 3;
   let gridVertical = 2;
@@ -42,11 +47,19 @@ export default function IfcbSpatialMarkerGrid({
     gridVertical = Math.ceil(speciesValues.length / 4);
   }
 
+  const isNoDetect = (speciesValues) => {
+    // check the speciesValue array to see if any values are non-zero
+    // if all are zero, render "no detect" dot
+    const nonZeroList = speciesValues.filter((item) => item.value !== 0);
+    if (nonZeroList.length) return false;
+    return true;
+  };
+
   const getSquareSize = (speciesItem, maxSquareSize) => {
     const value = speciesItem.value;
     let squareSize = maxSquareSize;
 
-    if (value < 100) {
+    if (value < 1000) {
       squareSize = minSquareSize;
     } else if (value < 1e4) {
       squareSize = (maxSquareSize / 5) * 2;
@@ -116,14 +129,28 @@ export default function IfcbSpatialMarkerGrid({
     */
   };
 
+  if (isNoDetect(speciesValues)) {
+    console.log("NO DETECT");
+    return (
+      <Marker
+        key={feature.properties.geohash}
+        latitude={feature.geometry.coordinates[1]}
+        longitude={feature.geometry.coordinates[0]}
+        captureClick={true}
+      >
+        <div className={classes.dotSquare}>
+          <img src={DotMarker} alt="No detection marker" />
+        </div>
+      </Marker>
+    );
+  }
+
   return (
     <Marker
       key={feature.properties.geohash}
       latitude={feature.geometry.coordinates[1]}
       longitude={feature.geometry.coordinates[0]}
       captureClick={true}
-      offsetLeft={-20}
-      offsetTop={-20}
     >
       <div
         className={classes.button}

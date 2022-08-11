@@ -2,11 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { format, parseISO } from "date-fns";
+import { makeStyles } from "@material-ui/core/styles";
 // local imports
 import IfcbSpatialMarkerGrid from "./IfcbSpatialMarkerGrid";
 import { selectMaxMeanOption } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
 import axiosInstance from "../../app/apiAxios";
+
+const useStyles = makeStyles(() => ({
+  dotSquare: {
+    width: "10px",
+    height: "10px",
+  },
+}));
 
 export default function SpatialGridMarkers({
   onMarkerClick,
@@ -15,7 +23,6 @@ export default function SpatialGridMarkers({
   layerID,
 }) {
   const visibleSpecies = useSelector(selectVisibleSpecies);
-  const habSpecies = useSelector((state) => state.habSpecies.species);
   const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
   // eslint-disable-next-line no-unused-vars
@@ -23,6 +30,7 @@ export default function SpatialGridMarkers({
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
+  const classes = useStyles();
 
   useEffect(() => {
     async function fetchResults() {
@@ -85,7 +93,6 @@ export default function SpatialGridMarkers({
       };
     });
     //.sort((a, b) => (a.value < b.value ? 1 : -1));
-
     if (!speciesValues.length) {
       return null;
     }
