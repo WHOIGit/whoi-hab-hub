@@ -54,6 +54,15 @@ const guideSteps = [
     tabIndex: null,
     isActive: false,
   },
+  {
+    stepId: 5,
+    label: "Learn More!",
+    text: `Learn more about this data portal <a href="https://northeasthab.whoi.edu/hab-hub/" target="_blank">here<a>.
+    <br /><br />Click the orange dropdown icon in the upper left corner for links to companion websites with additional information and resources on HABs in New England.
+    <br /><br />To open this guide at any time, click the <strong>Guide</strong> tab.`,
+    tabIndex: null,
+    isActive: false,
+  },
 ];
 
 const initialState = {

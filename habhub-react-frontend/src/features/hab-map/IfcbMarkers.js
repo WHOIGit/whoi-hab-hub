@@ -7,13 +7,12 @@ import { CircularProgress } from "@material-ui/core";
 
 import IfcbMarkerTrianglesGrid from "./IfcbMarkerTrianglesGrid";
 import axiosInstance from "../../app/apiAxios";
-// eslint-disable-next-line no-unused-vars
-import IfcbMarkerIcon from "./IfcbMarkerIcon";
 import {
   selectMaxMeanOption,
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
+import { selectActiveGuideStep } from "../guide/guideSlice";
 import { DATA_LAYERS } from "../../Constants";
 
 // eslint-disable-next-line no-unused-vars
@@ -35,11 +34,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
+export default function IfcbMarkers({
+  onMarkerClick,
+  metricID,
+  layerID,
+  onPaneClose,
+}) {
+  console.log("IFCB MARKERS");
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const dateFilter = useSelector((state) => state.dateFilter);
   const showMaxMean = useSelector(selectMaxMeanOption);
+  const activeGuideStep = useSelector(selectActiveGuideStep);
 
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
@@ -83,6 +89,23 @@ export default function IfcbMarkers({ onMarkerClick, metricID, layerID }) {
     }
     fetchResults();
   }, [dateFilter]);
+
+  // check if Guide step "View/Save Data" is active
+  // if so, auto activate a chart for user to interact with
+  useEffect(() => {
+    if (results) {
+      if (activeGuideStep && activeGuideStep?.stepId === 4) {
+        onMarkerClick(
+          "guideActivation",
+          results.features[0],
+          layerID,
+          metricID
+        );
+      } else if (activeGuideStep) {
+        onPaneClose(results.features[0].id);
+      }
+    }
+  }, [activeGuideStep, results]);
 
   const renderSquaresGrid = (feature, showMaxMean) => {
     // create new Array with Visible Species/Values

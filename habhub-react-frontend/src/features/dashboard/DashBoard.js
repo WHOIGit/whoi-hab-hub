@@ -10,8 +10,8 @@ import {
   Bookmark,
   Help,
 } from "@material-ui/icons";
-// local imports
 import { useSelector } from "react-redux";
+// local imports
 import DataLayersTab from "./DataLayersTab";
 import HabSpeciesTab from "./HabSpeciesTab";
 import LegendTab from "./LegendTab";

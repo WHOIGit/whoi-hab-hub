@@ -12,7 +12,8 @@ import Typography from "@material-ui/core/Typography";
 import { useSelector, useDispatch } from "react-redux";
 // local imports
 import { changeActiveGuideStep } from "./guideSlice";
-import { ITEM_TYPES } from "../../Constants";
+import { changeLayerVisibility } from "../data-layers/dataLayersSlice";
+import { ITEM_TYPES, DATA_LAYERS } from "../../Constants";
 
 export default function GuidePane({
   openGuide,
@@ -101,6 +102,26 @@ export default function GuidePane({
     return completedSteps() === totalSteps();
   };
 
+  const dispatchHandler = (newActiveStep) => {
+    // dispatch active step to Redux state
+    // activate Cell Concentration layer for Graph display if necessary
+    console.log(newActiveStep);
+    dispatch(
+      changeActiveGuideStep({
+        stepId: newActiveStep,
+      })
+    );
+
+    if (newActiveStep === 4) {
+      dispatch(
+        changeLayerVisibility({
+          layerID: DATA_LAYERS.cellConcentrationLayer,
+          checked: true,
+        })
+      );
+    }
+  };
+
   const handleNext = () => {
     const newActiveStep =
       isLastStep() && !allStepsCompleted()
@@ -110,11 +131,7 @@ export default function GuidePane({
         : activeStep + 1;
     setActiveStep(newActiveStep);
     // dispatch active step to Redux state
-    dispatch(
-      changeActiveGuideStep({
-        stepId: newActiveStep,
-      })
-    );
+    dispatchHandler(newActiveStep);
   };
 
   const handleBack = () => {
@@ -124,11 +141,7 @@ export default function GuidePane({
   const handleStep = (stepId) => () => {
     setActiveStep(stepId);
     // dispatch active step to Redux state
-    dispatch(
-      changeActiveGuideStep({
-        stepId: stepId,
-      })
-    );
+    dispatchHandler(stepId);
   };
 
   // eslint-disable-next-line no-unused-vars

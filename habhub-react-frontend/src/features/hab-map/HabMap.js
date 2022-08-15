@@ -15,6 +15,7 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
+import { selectActiveGuideStep } from "../guide/guideSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
 //import { changeMapData } from "./habMapDataSlice";
 
@@ -74,6 +75,7 @@ export default function HabMap({ bookmarkViewport }) {
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   // only refers to map layer that use the Mapbox Layer/Source properties
   const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
+  const activeGuideStep = useSelector(selectActiveGuideStep);
   const [viewport, setViewport] = useState(defaultViewport);
   const [features, setFeatures] = useState([]);
   const [mapBounds, setMapBounds] = useState(null);
@@ -94,13 +96,6 @@ export default function HabMap({ bookmarkViewport }) {
       visibleLayerIds.includes(feature.layerID)
     );
     setFeatures(newFeatures);
-
-    /*
-    if (!event.target.checked) {
-      const newLegends = visibleLegends.filter((item) => item !== layerID);
-      setVisibleLegends(newLegends);
-    }
-    */
   }, [visibleLayerIds]);
 
   /*
@@ -249,6 +244,7 @@ export default function HabMap({ bookmarkViewport }) {
           onMarkerClick={onMarkerClick}
           metricID={METRIC_IDS.cellConcentration}
           layerID={layerID}
+          onPaneClose={onPaneClose}
           key={layerID}
         />
       );

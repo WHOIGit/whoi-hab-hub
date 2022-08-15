@@ -38,6 +38,7 @@ export const dataLayersSlice = createSlice({
   initialState: initialState,
   reducers: {
     changeLayerVisibility: (state, action) => {
+      console.log(action);
       state.layers.forEach((element) => {
         if (element.id === action.payload.layerID) {
           element.visibility = action.payload.checked;
@@ -116,13 +117,16 @@ export default dataLayersSlice.reducer;
 export const selectVisibleLayers = (state) =>
   state.dataLayers.layers.filter((layer) => layer.visibility);
 
-// return a flat array of just the dataLayer IDs
-export const selectVisibleLayerIds = (state) => {
-  const layerIds = state.dataLayers.layers
-    .filter((layer) => layer.visibility)
-    .map((layer) => layer.id);
-  return layerIds;
-};
+// return a memoized flat array of just the visible dataLayer IDs
+export const selectVisibleLayerIds = createSelector(
+  (state) => state.dataLayers.layers,
+  (items) => {
+    const layerIds = items
+      .filter((layer) => layer.visibility)
+      .map((layer) => layer.id);
+    return layerIds;
+  }
+);
 
 // return a flat array of just the dataLayer IDs that are interactive with Mapbox Layer propery
 export const selectInteractiveLayerIds = (state) => {
