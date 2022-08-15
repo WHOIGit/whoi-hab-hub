@@ -1,6 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/styles";
 import { Grid, Typography } from "@material-ui/core";
+import DotMarker from "../../images/dot-grey.svg";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,7 +16,11 @@ const useStyles = makeStyles((theme) => ({
   legendGrid: {
     fontSize: ".8em",
   },
-  legendText: {},
+  dotSquare: {
+    display: "block",
+    width: "20px",
+    height: "20px",
+  },
 }));
 
 export default function LegendCellConcentration() {
@@ -31,7 +36,7 @@ export default function LegendCellConcentration() {
     <>
       <Grid
         container
-        spacing={4}
+        spacing={3}
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
@@ -60,6 +65,13 @@ export default function LegendCellConcentration() {
           </Typography>
         </Grid>
       */}
+        <Grid item>
+          <Typography variant="caption" display="block" align="center">
+            <div className={classes.dotSquare}>
+              <img src={DotMarker} alt="No detection marker" />
+            </div>
+          </Typography>
+        </Grid>
         <Grid item>
           <Typography variant="caption" display="block" align="center">
             <svg
@@ -144,12 +156,11 @@ export default function LegendCellConcentration() {
 
       <Grid
         container
-        spacing={2}
+        spacing={1}
         justify="center"
         alignItems="center"
         className={classes.legendGrid}
       >
-        {/*
         <Grid item>
           <Typography
             variant="caption"
@@ -160,7 +171,7 @@ export default function LegendCellConcentration() {
             ND
           </Typography>
         </Grid>
-        */}
+
         <Grid item>
           <Typography
             variant="caption"

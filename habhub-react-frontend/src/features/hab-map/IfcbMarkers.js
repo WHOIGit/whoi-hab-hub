@@ -40,7 +40,6 @@ export default function IfcbMarkers({
   layerID,
   onPaneClose,
 }) {
-  console.log("IFCB MARKERS");
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   const dateFilter = useSelector((state) => state.dateFilter);
