@@ -214,7 +214,7 @@ def _get_ifcb_autoclass_file(bin_obj):
     class_scores_url = f"{bin_obj.dataset.dashboard_base_url}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
 
     target_list = TargetSpecies.objects.values_list("species_id", flat=True)
-    print(f"DASHBOARD URL requested: {bin_url}")
+    print(f"DASHBOARD URL requested: {bin_url} {class_scores_url}")
 
     # get the autoclass CSV to calculate cell concentrations. This is required
     try:
@@ -223,6 +223,7 @@ def _get_ifcb_autoclass_file(bin_obj):
         print(e)
         return
 
+    print(f"Response code: {response.status_code}")
     if response.status_code == 200:
         lines = (line.decode("utf-8") for line in response.iter_lines())
         for row in csv.DictReader(lines):
