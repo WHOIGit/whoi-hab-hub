@@ -24,7 +24,7 @@ from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
 env = environ.Env()
 
-CACHE_TTL = env("CACHE_TTL", default=60 * 10)
+CACHE_TTL = env("CACHE_TTL", default=60 * 60)
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):

@@ -218,7 +218,7 @@ def _get_ifcb_autoclass_file(bin_obj):
 
     # get the autoclass CSV to calculate cell concentrations. This is required
     try:
-        response = requests.get(class_scores_url, timeout=1)
+        response = requests.get(class_scores_url, timeout=2)
     except Exception as e:
         print(e)
         return
@@ -254,7 +254,7 @@ def _calculate_metrics(bin_obj):
 
     # get the features csv to calculate Biovolumes. Continue if unavailable
     try:
-        response_features = requests.get(features_url, timeout=1)
+        response_features = requests.get(features_url, timeout=2)
     except Exception as e:
         print(e)
         response_features = None

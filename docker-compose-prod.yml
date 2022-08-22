@@ -12,6 +12,8 @@ services:
     container_name: react_frontend
     environment:
       - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
+    networks:
+      - habhub-network
 
   django: &django
     image: ghcr.io/whoigit/habhub-dataserver:stable
@@ -27,6 +29,8 @@ services:
       - ./.envs/.production/.postgres
     restart: unless-stopped
     command: /start
+    networks:
+      - habhub-network
 
   postgres:
     image: ghcr.io/whoigit/postgres-postgis-docker:12
@@ -37,6 +41,8 @@ services:
     env_file:
       - ./.envs/.production/.postgres
     restart: unless-stopped
+    networks:
+      - habhub-network
 
   nginx:
     image: nginx:1.15
@@ -46,15 +52,19 @@ services:
       - react_frontend
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
-      - ./.ssl/whoi_certs:/etc/ssl/whoi_certs:ro # bind a local directory with the WHOI SSL certs
+      - /etc/ssl/whoi_certs:/etc/ssl/whoi_certs:ro # bind a local directory with the WHOI SSL certs
       - ./nginx/log:/var/log/nginx # mount local directory for NGINX logs
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
     restart: unless-stopped
+    networks:
+      - habhub-network
 
   redis:
     image: redis:6.0
+    networks:
+      - habhub-network
 
   celeryworker:
     <<: *django
@@ -80,3 +90,8 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+
+networks:
+  habhub-network:
+    name: habhub-network
+    driver: bridge

@@ -1,0 +1,63 @@
+version: "3.7"
+
+volumes:
+  production_postgres_data_demo: {}
+  production_postgres_data_backups_demo: {}
+  static_volume_habhub_demo: {}
+  media_volume_habhub_demo: {}
+
+services:
+  react_frontend_demo:
+    image: ghcr.io/whoigit/habhub-react-frontend:develop
+    container_name: react_frontend_demo
+    environment:
+      - "REACT_APP_API_URL=https://habhub.whoi.edu/services/"
+
+  django_demo: &django_demo
+    image: ghcr.io/whoigit/habhub-dataserver:develop
+    container_name: django_demo
+    depends_on:
+      - postgres_demo
+    volumes:
+      #- static_volume_habhub_demo:/app/staticfiles # <-- bind the static files
+      - media_volume_habhub_demo:/app/media # <-- bind the media files
+    env_file:
+      - ./.envs/.production/.django_demo
+      - ./.envs/.production/.postgres_demo
+    restart: unless-stopped
+    command: /start
+
+  postgres_demo:
+    image: ghcr.io/whoigit/postgres-postgis-docker:12
+    container_name: postgres_demo
+    volumes:
+      - production_postgres_data_demo:/var/lib/postgresql/data
+      - production_postgres_data_backups_demo:/backups
+    env_file:
+      - ./.envs/.production/.postgres_demo
+    restart: unless-stopped
+  
+  redis_demo:
+    image: redis:6.0
+    container_name: redis_demo
+
+  celeryworker_demo:
+    <<: *django_demo
+    container_name: celeryworker_demo
+    depends_on:
+      - postgres_demo
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat_demo:
+    container_name: celerybeat_demo
+    <<: *django_demo
+    depends_on:
+      - postgres_demo
+    ports: []
+    command: /start-celerybeat
+
+networks:
+  default:
+    external:
+      name: habhub-network
