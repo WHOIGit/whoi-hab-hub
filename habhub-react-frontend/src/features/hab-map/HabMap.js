@@ -17,7 +17,7 @@ import {
 } from "../data-layers/dataLayersSlice";
 import { selectActiveGuideStep } from "../guide/guideSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
-//import { changeMapData } from "./habMapDataSlice";
+import { changeMapData } from "./habMapDataSlice";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -111,8 +111,7 @@ export default function HabMap({ bookmarkViewport }) {
       dispatch(changeActiveGridSquares(payload));
     }
   }, [mapBounds]);
-  
-
+ */
   const dispatchHabMapChanges = (viewport) => {
     // trigger Redux dispatch function to fetch active grid squaresdata
     const payload = {
@@ -122,7 +121,6 @@ export default function HabMap({ bookmarkViewport }) {
     };
     dispatch(changeMapData(payload));
   };
- */
 
   const getGridZoomLength = () => {
     const zoom = gridZoomRange.find((item) => item.isActive).gridLength;
@@ -291,7 +289,7 @@ export default function HabMap({ bookmarkViewport }) {
             //console.log(interactionState);
             //console.log(oldViewState);
             setViewport(viewport);
-            //dispatchHabMapChanges(viewport);
+            dispatchHabMapChanges(viewport);
           }}
           onClick={(event) => onMapClick(event)}
           onLoad={onMapLoad}

@@ -3,7 +3,6 @@ version: "3.7"
 volumes:
   production_postgres_data_demo: {}
   production_postgres_data_backups_demo: {}
-  static_volume_habhub_demo: {}
   media_volume_habhub_demo: {}
 
 services:
@@ -19,7 +18,6 @@ services:
     depends_on:
       - postgres_demo
     volumes:
-      #- static_volume_habhub_demo:/app/staticfiles # <-- bind the static files
       - media_volume_habhub_demo:/app/media # <-- bind the media files
     env_file:
       - ./.envs/.production/.django_demo
