@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import MapGL, { NavigationControl, ScaleControl } from "react-map-gl";
+import Map, { NavigationControl, ScaleControl } from "react-map-gl";
+import maplibregl from "maplibre-gl";
 import { makeStyles } from "@material-ui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
@@ -18,6 +19,7 @@ import {
 import { selectActiveGuideStep } from "../guide/guideSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
 import { changeMapData } from "./habMapDataSlice";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -281,16 +283,17 @@ export default function HabMap({ bookmarkViewport }) {
         </div>
       )}
       <div>
-        <MapGL
+        <Map
           {...viewport}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v10"
-          onViewportChange={(viewport, interactionState, oldViewState) => {
-            //console.log(interactionState);
-            //console.log(oldViewState);
-            setViewport(viewport);
-            dispatchHabMapChanges(viewport);
+          mapLib={maplibregl}
+          //mapboxApiAccessToken={MAPBOX_TOKEN}
+          mapStyle="https://api.maptiler.com/maps/streets/style.json?key=TmZ9aal6ExudHs1hVtCW"
+          onMove={(evt) => {
+            setViewport(evt.viewState);
+            dispatchHabMapChanges(evt.viewState);
           }}
+          reuseMaps={true}
+          style={{ height: "100vh" }}
           onClick={(event) => onMapClick(event)}
           onLoad={onMapLoad}
           interactiveLayerIds={interactiveLayerIds}
@@ -308,7 +311,7 @@ export default function HabMap({ bookmarkViewport }) {
           <div style={scaleControlStyle}>
             <ScaleControl />
           </div>
-        </MapGL>
+        </Map>
       </div>
 
       <div>
