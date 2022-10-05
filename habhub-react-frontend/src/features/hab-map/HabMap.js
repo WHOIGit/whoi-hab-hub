@@ -67,8 +67,6 @@ const defaultViewport = {
   latitude: MAP_LATITUDE,
   longitude: MAP_LONGITUDE,
   zoom: MAP_ZOOM,
-  width: "100%",
-  height: "100vh",
 };
 
 export default function HabMap({ bookmarkViewport }) {
@@ -293,7 +291,7 @@ export default function HabMap({ bookmarkViewport }) {
             dispatchHabMapChanges(evt.viewState);
           }}
           reuseMaps={true}
-          style={{ height: "100vh" }}
+          style={{ height: "100vh", width: "100%" }}
           onClick={(event) => onMapClick(event)}
           onLoad={onMapLoad}
           interactiveLayerIds={interactiveLayerIds}
