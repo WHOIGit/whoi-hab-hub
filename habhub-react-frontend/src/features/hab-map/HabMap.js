@@ -287,7 +287,7 @@ export default function HabMap({ bookmarkViewport }) {
           {...viewport}
           mapLib={maplibregl}
           //mapboxApiAccessToken={MAPBOX_TOKEN}
-          mapStyle="https://api.maptiler.com/maps/streets/style.json?key=TmZ9aal6ExudHs1hVtCW"
+          mapStyle="positron-map-style.json"
           onMove={(evt) => {
             setViewport(evt.viewState);
             dispatchHabMapChanges(evt.viewState);
