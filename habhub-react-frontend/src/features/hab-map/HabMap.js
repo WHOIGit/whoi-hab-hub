@@ -294,8 +294,8 @@ export default function HabMap({ bookmarkViewport }) {
           onClick={(event) => onMapClick(event)}
           onLoad={onMapLoad}
           interactiveLayerIds={interactiveLayerIds}
-          preserveDrawingBuffer={true}
-          onTransitionEnd={handleZoomUpdates}
+          //preserveDrawingBuffer={true}
+          onZoomEnd={handleZoomUpdates}
           ref={mapRef}
         >
           <React.Fragment>
