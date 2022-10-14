@@ -284,7 +284,7 @@ export default function HabMap({ bookmarkViewport }) {
         <Map
           {...viewport}
           mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/streets-v9"
+          mapStyle="mapbox://styles/mapbox/light-v10"
           onMove={(evt) => {
             setViewport(evt.viewState);
             dispatchHabMapChanges(evt.viewState);
