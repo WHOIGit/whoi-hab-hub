@@ -7,6 +7,7 @@ import { CircularProgress } from "@material-ui/core";
 
 import axiosInstance from "../../app/apiAxios";
 import { DATA_LAYERS } from "../../Constants";
+import ClosuresIconLayer from "./ClosuresIconLayer";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
@@ -24,7 +25,6 @@ export default function ClosuresLayer({ layerID }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [results, setResults] = useState();
-  const [labels, setLabels] = useState();
 
   useEffect(() => {
     async function fetchResults() {
@@ -57,30 +57,6 @@ export default function ClosuresLayer({ layerID }) {
     }
     fetchResults();
   }, [dateFilter]);
-
-  // Need to create a new data source/layer to put label on polygon centroid
-  // update the Labels text layer when API results change
-  useEffect(() => {
-    if (results) {
-      const centerPoints = results.features.map((item) => {
-        const point = {
-          type: "Feature",
-          properties: {
-            name: item.properties.name,
-            //"count": item.properties.closures.length
-          },
-          geometry: item.properties.geomCenterPoint,
-        };
-        return point;
-      });
-
-      const labelsGeojson = {
-        type: "FeatureCollection",
-        features: centerPoints,
-      };
-      setLabels(labelsGeojson);
-    }
-  }, [results]);
 
   // update map color for different layers
   let layerColor = "orange";
@@ -129,16 +105,6 @@ export default function ClosuresLayer({ layerID }) {
     }
   }
   */
-  const layerClosuresIcons = {
-    id: layerID + "-icons-layer",
-    type: "symbol",
-    source: layerID + "-labels-src",
-    layout: {
-      "icon-image": "icon-shellfish-closure",
-      "icon-allow-overlap": false,
-      visibility: "visible",
-    },
-  };
 
   return (
     <div>
@@ -148,10 +114,11 @@ export default function ClosuresLayer({ layerID }) {
         </div>
       )}
 
-      <React.Fragment>
-        {results && (
+      {results && (
+        <React.Fragment>
           <Source
             id={layerID + "-src"}
+            key={layerID + "-src"}
             type="geojson"
             data={results}
             buffer={10}
@@ -159,14 +126,9 @@ export default function ClosuresLayer({ layerID }) {
           >
             <Layer {...layerClosures} />
           </Source>
-        )}
-
-        {labels && (
-          <Source id={layerID + "-labels-src"} type="geojson" data={labels}>
-            <Layer {...layerClosuresIcons} key={layerID} />
-          </Source>
-        )}
-      </React.Fragment>
+          <ClosuresIconLayer layerID={layerID} results={results} />
+        </React.Fragment>
+      )}
     </div>
   );
 }
