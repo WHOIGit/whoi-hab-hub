@@ -53,10 +53,6 @@ export default function ClosuresIconLayer({ layerID, results }) {
     },
   };
 
-  if (!map.hasImage("icon-shellfish-closure" || !map.isStyleLoaded())) {
-    return null;
-  }
-
   return (
     <div>
       {labels && (
