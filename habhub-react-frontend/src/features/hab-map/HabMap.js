@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Map, { NavigationControl, ScaleControl } from "react-map-gl";
-//import maplibregl from "maplibre-gl";
+import maplibregl from "maplibre-gl";
 import { makeStyles } from "@material-ui/styles";
 // local
 import DataPanel from "./data-panels/DataPanel";
@@ -19,9 +19,9 @@ import {
 import { selectActiveGuideStep } from "../guide/guideSlice";
 import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
 import { changeMapData } from "./habMapDataSlice";
-//import "maplibre-gl/dist/maplibre-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
-const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
+//const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const navStyle = {
   position: "absolute",
@@ -274,8 +274,8 @@ export default function HabMap({ bookmarkViewport }) {
       <div>
         <Map
           {...viewport}
-          mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v10"
+          mapLib={maplibregl}
+          mapStyle="positron-map-style.json"
           onMove={(evt) => {
             setViewport(evt.viewState);
             dispatchHabMapChanges(evt.viewState);
