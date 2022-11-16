@@ -41,18 +41,6 @@ export default function ClosuresIconLayer({ layerID, results }) {
     }
   }, [results]);
 
-  // eslint-disable-next-line no-unused-vars
-  const layerClosuresIcons = {
-    id: layerID + "-icons-layer",
-    type: "symbol",
-    source: layerID + "-labels-src",
-    layout: {
-      "icon-image": "icon-shellfish-closure",
-      "icon-allow-overlap": false,
-      //visibility: "visible",
-    },
-  };
-
   return (
     <div>
       {labels && (

@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import Map, { NavigationControl, ScaleControl } from "react-map-gl";
 //import maplibregl from "maplibre-gl";
 import { makeStyles } from "@material-ui/styles";
-//import { ErrorBoundary } from "react-error-boundary";
 // local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
