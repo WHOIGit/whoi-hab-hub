@@ -1,9 +1,22 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { Source, Layer } from "react-map-gl";
+import { useMap } from "react-map-gl";
+import { DATA_LAYERS } from "../../Constants";
 
 export default function ClosuresIconLayer({ layerID, results }) {
   const [labels, setLabels] = useState();
+  const { current: map } = useMap();
 
+  if (!map.hasImage("icon-shellfish-closure")) {
+    map.loadImage("images/icon-shellfish-closure.png", (error, image) => {
+      if (error) throw error;
+      if (!map.hasImage("icon-shellfish-closure")) {
+        console.log(layerID, "Load icon image closure");
+        map.addImage("icon-shellfish-closure", image);
+      }
+    });
+  }
   // Need to create a new data source/layer to put label on polygon centroid
   // update the Labels text layer when API results change
   useEffect(() => {
@@ -28,6 +41,7 @@ export default function ClosuresIconLayer({ layerID, results }) {
     }
   }, [results]);
 
+  // eslint-disable-next-line no-unused-vars
   const layerClosuresIcons = {
     id: layerID + "-icons-layer",
     type: "symbol",
@@ -35,9 +49,13 @@ export default function ClosuresIconLayer({ layerID, results }) {
     layout: {
       "icon-image": "icon-shellfish-closure",
       "icon-allow-overlap": false,
-      visibility: "visible",
+      //visibility: "visible",
     },
   };
+
+  if (!map.hasImage("icon-shellfish-closure" || !map.isStyleLoaded())) {
+    return null;
+  }
 
   return (
     <div>
@@ -48,7 +66,17 @@ export default function ClosuresIconLayer({ layerID, results }) {
           type="geojson"
           data={labels}
         >
-          <Layer {...layerClosuresIcons} key={layerID} />
+          <Layer
+            id={layerID + "-icons-layer"}
+            type="symbol"
+            source={layerID + "-labels-src"}
+            layout={{
+              "icon-image": "icon-shellfish-closure",
+              "icon-allow-overlap": false,
+              //visibility: "visible",
+            }}
+            key={layerID}
+          />
         </Source>
       )}
     </div>

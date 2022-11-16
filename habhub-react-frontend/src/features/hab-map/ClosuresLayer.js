@@ -126,6 +126,7 @@ export default function ClosuresLayer({ layerID }) {
           >
             <Layer {...layerClosures} />
           </Source>
+
           <ClosuresIconLayer layerID={layerID} results={results} />
         </React.Fragment>
       )}

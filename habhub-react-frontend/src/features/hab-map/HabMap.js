@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Map, { NavigationControl, ScaleControl } from "react-map-gl";
 //import maplibregl from "maplibre-gl";
 import { makeStyles } from "@material-ui/styles";
+//import { ErrorBoundary } from "react-error-boundary";
 // local
 import DataPanel from "./data-panels/DataPanel";
 import StationsMarkers from "./StationsMarkers";
@@ -172,15 +173,6 @@ export default function HabMap({ bookmarkViewport }) {
   };
 
   const onMapLoad = () => {
-    const mapObj = mapRef.current.getMap();
-    // Load the custom icon image from the 'public' directory for the Closures Layer
-    mapObj.loadImage(
-      "images/icon-shellfish-closure.png",
-      function (error, image) {
-        if (error) throw error;
-        mapObj.addImage("icon-shellfish-closure", image);
-      }
-    );
     // set the initial bbox/zoom levels for Spatial Grid
     handleMapBoundsUpdates(viewport);
   };
@@ -292,7 +284,7 @@ export default function HabMap({ bookmarkViewport }) {
           reuseMaps={true}
           style={{ height: "100vh", width: "100%" }}
           onClick={(event) => onMapClick(event)}
-          onLoad={onMapLoad}
+          //onLoad={onMapLoad}
           interactiveLayerIds={interactiveLayerIds}
           //preserveDrawingBuffer={true}
           onZoomEnd={handleZoomUpdates}
