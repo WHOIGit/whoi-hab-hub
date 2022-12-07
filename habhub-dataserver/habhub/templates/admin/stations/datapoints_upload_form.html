@@ -22,6 +22,11 @@
   <p>Use this tool to upload Station Toxicity Datapoint CSV. 
     Matching  <a href="{% url 'admin:stations_station_changelist' %}">Stations</a> must exist in the database before importing data.</p>
 
+    <p>
+      CSV file should have the following columns/headers: <b>measurement_date,
+      measurement, station, species</b>
+    </p>
+
   <hr>
 
   <form class="form-horizontal" method="post" enctype="multipart/form-data" novalidate>

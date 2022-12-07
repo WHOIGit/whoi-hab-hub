@@ -1,38 +1,42 @@
-
-{% extends "base.html" %}
-{% load crispy_forms_tags %}
-
-{% block title %}Upload Station Toxicity Datapoint CSV{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% load crispy_forms_tags %} {% block title %}Upload
+Station Toxicity Datapoint CSV{% endblock %} {% block content %}
 <div class="container">
   <h2>Upload Station Toxicity Datapoint CSV</h2>
 
-  <p>Use this tool to upload Station Toxicity Datapoint CSV. Matching Stations must be imported first.</p>
+  <p>
+    Use this tool to upload Station Toxicity Datapoint CSV. Matching Stations
+    must be imported first.
+  </p>
 
-  <hr>
+  <p>
+    CSV file should have the following columns/headers: measurement_date,
+    measurement, station, species
+  </p>
 
-  <form class="form-horizontal" method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
-    {{ form|crispy }}
+  <hr />
+
+  <form
+    class="form-horizontal"
+    method="post"
+    enctype="multipart/form-data"
+    novalidate
+  >
+    {% csrf_token %} {{ form|crispy }}
 
     <div class="row">
-        {% if form.errors %}
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div class="alert alert-danger">
-                        <strong>{{ error|escape }}</strong>
-                    </div>
-                {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <div class="alert alert-danger">
-                    <strong>{{ error|escape }}</strong>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-
+      {% if form.errors %}
+      <h2>
+        Errors found. Data import aborted. Correct CSV error and try again
+      </h2>
+      {% for field in form %} {% for error in field.errors %}
+      <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+      </div>
+      {% endfor %} {% endfor %} {% for error in form.non_field_errors %}
+      <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+      </div>
+      {% endfor %} {% endif %}
     </div>
 
     <div class="control-group">

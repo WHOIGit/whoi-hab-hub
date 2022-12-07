@@ -335,7 +335,6 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
 
         if uploader["errors"]:
             uploader["status"] = "fail"
-            print(uploader)
             return uploader
 
         points = Datapoint.objects.bulk_create(uploader["data"])
