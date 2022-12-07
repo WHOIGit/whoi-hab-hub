@@ -189,8 +189,10 @@ class StationCsvUploadView(LoginRequiredMixin, FormView):
             ).filter(state=state)
 
             if stations.exists():
-                error = f"Error: Station already exists - {row_info}"
-                uploader["errors"].append(error)
+                # error = f"Error: Station already exists - {row_info}"
+                # uploader["errors"].append(error)
+                print("Station already exists, skipping row...")
+                continue
 
             try:
                 latitude = row["latitude"]
@@ -271,7 +273,13 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
         uploader = {"status": "pending", "data": list(), "errors": list()}
 
         for row in reader:
-            row_info = f"Row info: {row['measurement_date']}, {row['station']}, {row['measurement']}"
+            try:
+                row_info = f"Row info: {row['measurement_date']}, {row['station']}, {row['measurement']}"
+            except Exception as e:
+                error = f"Error: CSV headers don't match expected headers - measurement_date, measurement, station, species"
+                uploader["errors"].append(error)
+                break
+
             # get matching Station object from station_location
             try:
                 station = Station.objects.get(station_location=row["station"].strip())
@@ -293,17 +301,27 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
                     continue
 
                 if "<" in measurement:
-                    measurement = measurement.replace("<", "-")
-
+                    measurement = measurement.replace("<", "")
                 measurement = Decimal(measurement)
 
                 if measurement < 0:
-                    measurement = 40.0
+                    measurement = 0
 
             except Exception as e:
                 error = f"Error converting measurement to decimal - {row_info}"
                 uploader["errors"].append(error)
                 continue
+
+            # check if datapoint already exists, skip row
+            try:
+                datapoint = Datapoint.objects.get(
+                    station=station, measurement_date=measurement_date
+                )
+                if datapoint:
+                    print("Datapoint already exists, skipping row...")
+                    continue
+            except:
+                pass
 
             if not uploader["errors"]:
                 datapoint = Datapoint(
