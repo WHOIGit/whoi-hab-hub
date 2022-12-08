@@ -275,7 +275,7 @@ export default function HabMap({ bookmarkViewport }) {
         <Map
           {...viewport}
           mapLib={maplibregl}
-          mapStyle="positron-map-style.json"
+          mapStyle="/positron-map-style.json"
           onMove={(evt) => {
             setViewport(evt.viewState);
             dispatchHabMapChanges(evt.viewState);
