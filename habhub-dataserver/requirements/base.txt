@@ -41,3 +41,4 @@ requests==2.24.0
 colour==0.1.5
 django-colorfield==0.4.1
 s2sphere==0.2.5
+python-dateutil==2.8.2

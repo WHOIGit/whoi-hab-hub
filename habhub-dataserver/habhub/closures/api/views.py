@@ -53,7 +53,7 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
 
         if start_date:
-            start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
             start_date_obj = earliest_closure.effective_date
 
@@ -66,7 +66,7 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
                 pass
 
         if end_date:
-            end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             end_date_obj = timezone.now()
 

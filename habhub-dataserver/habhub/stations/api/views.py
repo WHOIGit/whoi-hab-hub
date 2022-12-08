@@ -43,9 +43,9 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         smoothing_factor = int(self.request.query_params.get("smoothing_factor", 1))
 
         if start_date:
-            start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         if end_date:
-            end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
 
         if start_date and end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series

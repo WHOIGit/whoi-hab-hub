@@ -31,12 +31,12 @@ class BinFiltersMixin:
             return queryset
 
         if start_date:
-            start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
             start_date_obj = earliest_bin.sample_time
 
         if end_date:
-            end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             end_date_obj = timezone.now()
 
@@ -126,12 +126,12 @@ class DatasetFiltersMixin:
             return queryset
 
         if start_date:
-            start_date_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y").date()
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
             start_date_obj = earliest_bin.sample_time
 
         if end_date:
-            end_date_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y").date()
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             end_date_obj = timezone.now()
 
