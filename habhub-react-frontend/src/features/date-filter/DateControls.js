@@ -340,7 +340,7 @@ export default function DateControls({
                           <KeyboardDatePicker
                             disableToolbar
                             variant="inline"
-                            format="MM/dd/yyyy"
+                            format="yyyy-MM-dd"
                             margin="normal"
                             id="start-date"
                             label="Start Date"
@@ -355,7 +355,7 @@ export default function DateControls({
                           <KeyboardDatePicker
                             disableToolbar
                             variant="inline"
-                            format="MM/dd/yyyy"
+                            format="yyyy-MM-dd"
                             margin="normal"
                             id="end-date"
                             label="End Date"

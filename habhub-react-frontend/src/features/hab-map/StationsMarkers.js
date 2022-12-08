@@ -32,8 +32,8 @@ export default function StationsMarkers({ onMarkerClick, metricID, layerID }) {
     async function fetchResults() {
       try {
         const params = new URLSearchParams({
-          start_date: format(parseISO(dateFilter.startDate), "MM/dd/yyyy"),
-          end_date: format(parseISO(dateFilter.endDate), "MM/dd/yyyy"),
+          start_date: format(parseISO(dateFilter.startDate), "yyyy-MM-dd"),
+          end_date: format(parseISO(dateFilter.endDate), "yyyy-MM-dd"),
           seasonal: dateFilter.seasonal,
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: 6,
