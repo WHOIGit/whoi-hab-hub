@@ -41,6 +41,8 @@ export default function ClosuresIconLayer({ layerID, results }) {
     }
   }, [results]);
 
+  if (layerID === DATA_LAYERS.closuresSeasonalLayer) return null;
+
   return (
     <div>
       {labels && (
