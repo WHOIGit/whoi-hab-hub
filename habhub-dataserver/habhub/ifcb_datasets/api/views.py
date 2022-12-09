@@ -1,4 +1,6 @@
 import environ
+import hashlib
+import json
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -7,6 +9,7 @@ from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Prefetch, F, Q
 from django.contrib.gis.db.models import Extent
@@ -25,6 +28,16 @@ from .mixins import DatasetFiltersMixin, BinFiltersMixin
 env = environ.Env()
 
 CACHE_TTL = env("CACHE_TTL", default=60 * 60)
+
+
+def create_cache_key(request, pk=0):
+    print(request.query_params)
+    qp_encoded = json.dumps(request.query_params, sort_keys=True).encode()
+    qp_hash = hashlib.md5(qp_encoded)
+    print(qp_hash.hexdigest())
+    cache_key = f"{request.path}:{qp_hash.hexdigest()}:{pk}"
+    print(cache_key)
+    return cache_key
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
@@ -105,21 +118,30 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
-    @method_decorator(cache_page(CACHE_TTL))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
     def list(self, request):
+        cache_key = create_cache_key(request)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
+
+        print("RUNNING QUERY")
         queryset = Bin.objects.filter(
             cell_concentration_data__isnull=False, geom__isnull=False
         )
         queryset = self.handle_query_param_filters(queryset)
         serializer = BinSpatialGridSerializer(queryset, context={"request": request})
+        # set cache
+        cache.set(cache_key, serializer.data)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        cache_key = create_cache_key(request, pk)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
         # use the unique Geohash for the pk lookup
-        print(pk)
         queryset = Bin.objects.filter(
             cell_concentration_data__isnull=False, geom__isnull=False
         )
@@ -128,4 +150,6 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
         serializer = BinSpatialGridDetailSerializer(
             queryset, context={"request": request, "geohash": pk}
         )
+        # set cache
+        cache.set(cache_key, serializer.data)
         return Response(serializer.data)
