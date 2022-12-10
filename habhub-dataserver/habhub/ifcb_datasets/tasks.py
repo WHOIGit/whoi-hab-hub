@@ -17,12 +17,16 @@ def get_ifcb_dashboard_data():
         print(set)
         run_species_classifed_import(set)
         print("set complete")
+    # clear the cache of stale results
+    cache.clear()
 
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
 def reset_ifcb_dataset_data(self, dataset_id=None):
     print("DATASET ID ", dataset_id)
     reset_ifcb_data(dataset_id)
+    # clear the cache of stale results
+    cache.clear()
 
 
 @shared_task(time_limit=84600, soft_time_limit=84600, bind=True)
@@ -40,3 +44,5 @@ def recalculate_metrics(self, species_id=None):
 
     for bin in bins:
         _calculate_metrics(bin)
+    # clear the cache of stale results
+    cache.clear()
