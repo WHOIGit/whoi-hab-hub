@@ -1,6 +1,7 @@
 import environ
 import hashlib
 import json
+import datetime
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -121,6 +122,7 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
     def list(self, request):
         cache_key = create_cache_key(request)
         cached_data = cache.get(cache_key)
+        print(datetime.datetime.now())
         if cached_data:
             print("CACHE HIT")
             return Response(cached_data)
