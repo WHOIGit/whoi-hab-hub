@@ -297,7 +297,7 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
 
             try:
                 measurement = row["measurement"]
-                if not measurement:
+                if not measurement or measurement == "n/a":
                     continue
 
                 if "<" in measurement:
