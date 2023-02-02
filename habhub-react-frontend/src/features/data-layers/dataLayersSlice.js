@@ -18,7 +18,7 @@ const interactiveLayerIds = [
 
 const initialState = {
   layers: [],
-  showMaxMean: "max",
+  showMaxMean: "mean",
   status: "idle",
   error: null,
 };
