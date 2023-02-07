@@ -90,7 +90,7 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} processed.")
 
 
-def reset_ifcb_data(dataset_id=None):
+def reset_ifcb_data(dataset_id=None, species_id=None):
     """
     recreate all IFCB data for all Bins in all Datasets or single Dataset
     this operation may take a long time
@@ -108,9 +108,9 @@ def reset_ifcb_data(dataset_id=None):
             bins = dataset.bins.all()
             for bin in bins:
                 print("Start autoclass processing...")
-                _get_ifcb_autoclass_file(bin)
+                _get_ifcb_autoclass_file(bin, species_id)
                 print("Start calculating metrics from scores..")
-                _calculate_metrics(bin)
+                _calculate_metrics(bin, species_id)
                 print(f"{bin} processed.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
@@ -119,9 +119,9 @@ def reset_ifcb_data(dataset_id=None):
         bins = dataset_obj.bins.all()
         for bin in bins:
             print("Start autoclass processing...")
-            _get_ifcb_autoclass_file(bin)
+            _get_ifcb_autoclass_file(bin, species_id)
             print("Start calculating metrics from scores..")
-            _calculate_metrics(bin)
+            _calculate_metrics(bin, species_id)
             print(f"{bin} processed.")
     print("Complete data ingestion.")
 
@@ -209,7 +209,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
                 print(e)
 
 
-def _get_ifcb_autoclass_file(bin_obj):
+def _get_ifcb_autoclass_file(bin_obj, species_id=None):
     """
     Function to make API request for Autoclass CSV file, calculate abundance of target species
     Args: 'dataset_obj' - Dataset object, 'bin_obj' -  Bin object
@@ -220,7 +220,11 @@ def _get_ifcb_autoclass_file(bin_obj):
     bin_url = f"{bin_obj.dataset.dashboard_base_url}/bin?dataset={bin_obj.dataset.dashboard_id_name}&bin={bin_obj.pid}"
     class_scores_url = f"{bin_obj.dataset.dashboard_base_url}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_class_scores.csv"
 
-    target_list = TargetSpecies.objects.values_list("species_id", flat=True)
+    if not species_id:
+        target_list = TargetSpecies.objects.values_list("species_id", flat=True)
+    else:
+        target_list = [species_id]
+
     print(f"DASHBOARD URL requested: {bin_url} {class_scores_url}")
 
     # get the autoclass CSV to calculate cell concentrations. This is required
@@ -252,12 +256,17 @@ def _get_ifcb_autoclass_file(bin_obj):
                 print(autoclass_score.score, autoclass_score.species)
 
 
-def _calculate_metrics(bin_obj):
+def _calculate_metrics(bin_obj, species_id=None):
     from habhub.core.models import TargetSpecies
 
     features_url = f"{bin_obj.dataset.dashboard_base_url}/{bin_obj.dataset.dashboard_id_name}/{bin_obj.pid}_features.csv"
     ml_analyzed = bin_obj.ml_analyzed
-    target_list = TargetSpecies.objects.all()
+
+    if not species_id:
+        target_list = TargetSpecies.objects.all()
+    else:
+        target_list = TargetSpecies.objects.filter(species_id=species_id)
+        print("TARGET LIST", target_list)
 
     # get the features csv to calculate Biovolumes. Continue if unavailable
     try:

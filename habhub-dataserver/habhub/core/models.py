@@ -8,7 +8,7 @@ from colorfield.fields import ColorField
 
 from config import celery_app
 from .utils import linear_gradient
-from habhub.ifcb_datasets.tasks import recalculate_metrics
+from habhub.ifcb_datasets.tasks import recalculate_metrics, reset_ifcb_dataset_data
 
 
 class TargetSpecies(models.Model):
@@ -78,17 +78,28 @@ class TargetSpecies(models.Model):
         color_gradient.insert(0, dark_shade.hex)
         color_gradient.reverse()
         self.color_gradient = color_gradient
-
-        # Need to check if autoclass_threshold value has changed
+        # Check if new species added, start new data ingestion
+        # Also seed to check if autoclass_threshold value has changed
         # if yes, IFCB metric data needs to be reset
+        start_new_data_ingest = False
         threshold_changed = False
         if self.pk is not None:
             orig = TargetSpecies.objects.get(pk=self.pk)
             if orig.autoclass_threshold != self.autoclass_threshold:
                 threshold_changed = True
+        else:
+            # new item added
+            print("NEW SPECIES ADDED")
+            start_new_data_ingest = True
 
         super(TargetSpecies, self).save(*args, **kwargs)
         # trigger celery task to recalculate IFCB data
+        if start_new_data_ingest:
+            print("START NEW SPECIES DATA RUN ", self.species_id)
+            transaction.on_commit(
+                lambda: reset_ifcb_dataset_data.delay(None, self.species_id)
+            )
+
         if threshold_changed:
             # search cache for any current tasks that are running for this species
             # revoke tasks to avoid endless queue
