@@ -1,52 +1,32 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import {
-  FormLabel,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  FormHelperText,
-  Checkbox,
-  Typography
-} from "@material-ui/core";
+import { FormControl, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  changeSpeciesVisibility,
-  changeSpeciesColor,
-  selectSpeciesByEnvironment
-} from "./habSpeciesSlice";
-import HabSpeciesSelectByEnv from "./HabSpeciesSelectByEnv";
+import { changeSpeciesVisibility } from "./habSpeciesSlice";
+import HabSpeciesSelectByType from "./HabSpeciesSelectByType";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
     width: "100%",
-    marginTop: theme.spacing(2)
+    marginTop: theme.spacing(2),
   },
   colorPickerBtn: {
-    display: "inline-block"
+    display: "inline-block",
   },
   infoText: {
-    width: "95%"
-  }
+    width: "95%",
+  },
 }));
 
 export default function HabSpeciesSelect() {
-  const habSpecies = useSelector(state => state.habSpecies.species);
-  const habEnvironments = useSelector(state => state.habSpecies.enviroments);
+  const habSpecies = useSelector((state) => state.habSpecies.species);
+  //const habEnvironments = useSelector(state => state.habSpecies.enviroments);
+  const habTypes = useSelector((state) => state.habSpecies.species_types);
   const dispatch = useDispatch();
   const classes = useStyles();
-  const error = habSpecies.filter(item => item.visibility).length > 6;
-  const limitReached = habSpecies.filter(item => item.visibility).length >= 6;
-
-  const handleSpeciesSelect = (event, species) => {
-    dispatch(
-      changeSpeciesVisibility({
-        checked: event.target.checked,
-        species: species
-      })
-    );
-  };
+  const error = habSpecies.filter((item) => item.visibility).length > 6;
+  const limitReached = habSpecies.filter((item) => item.visibility).length >= 6;
 
   return (
     <div>
@@ -70,11 +50,11 @@ export default function HabSpeciesSelect() {
         component="fieldset"
         className={classes.formControl}
       >
-        {habEnvironments.map(item => (
+        {habTypes.map((item) => (
           <>
-            <HabSpeciesSelectByEnv
+            <HabSpeciesSelectByType
               key={item}
-              environment={item}
+              species_type={item}
               limitReached={limitReached}
             />
           </>

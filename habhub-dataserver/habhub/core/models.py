@@ -22,6 +22,14 @@ class TargetSpecies(models.Model):
         (FRESHWATER, "Freshwater"),
     ]
 
+    # Species Type (HAB or Other)
+    HAB = "HAB"
+    OTHER = "Other"
+    SPECIES_TYPE_CHOICES = [
+        (HAB, "HAB"),
+        (OTHER, "Other"),
+    ]
+
     # species_id needs to match the Autoclass files in the IFCB Dashboard
     species_id = models.CharField(
         max_length=100,
@@ -34,6 +42,11 @@ class TargetSpecies(models.Model):
     primary_color = ColorField(default="#FF0000")
     color_gradient = ArrayField(
         models.CharField(max_length=7), null=True, blank=True, default=None
+    )
+    species_type = models.CharField(
+        max_length=20,
+        choices=SPECIES_TYPE_CHOICES,
+        default=HAB,
     )
     species_environment = models.CharField(
         max_length=20,

@@ -3,7 +3,7 @@ import { createSelector } from "reselect";
 // local
 import axiosInstance from "../../app/apiAxios";
 import { colorShade } from "../../app/utils/colorUtils";
-import { ENVIRONMENTS } from "../../Constants";
+import { ENVIRONMENTS, SPECIES_TYPES } from "../../Constants";
 
 let INITIAL_SPECIES_LIST = null;
 // eslint-disable-next-line no-undef
@@ -14,6 +14,7 @@ if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {
 const initialState = {
   species: [],
   enviroments: ENVIRONMENTS,
+  species_types: SPECIES_TYPES,
   status: "idle",
   error: null,
 };
@@ -184,3 +185,7 @@ export const selectSpeciesByEnvironment = (state, environment) =>
   state.habSpecies.species.filter(
     (item) => item.speciesEnvironment === environment
   );
+
+// get species by type
+export const selectSpeciesByType = (state, species_type) =>
+  state.habSpecies.species.filter((item) => item.speciesType === species_type);

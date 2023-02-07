@@ -35,6 +35,9 @@ export const PALETTE = {
 // Match available species environment options in API Target Species
 export const ENVIRONMENTS = ["Marine", "Freshwater"];
 
+// Match available species type options in API Target Species
+export const SPECIES_TYPES = ["HAB", "Other"];
+
 // object of Component "types" to work with react-dnd drag and drop functionality
 export const ITEM_TYPES = {
   PANE: "pane",
