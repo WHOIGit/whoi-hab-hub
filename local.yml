@@ -65,7 +65,7 @@ services:
     ports: []
     command: /start-celerybeat
 
-  redis_habhub:
+  redis:
     image: redis:6.0
     restart: unless-stopped
 
