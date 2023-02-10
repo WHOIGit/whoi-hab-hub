@@ -187,3 +187,49 @@ class AutoclassScore(models.Model):
     bin = models.ForeignKey(
         Bin, related_name="autoclass_scores", on_delete=models.CASCADE
     )
+
+
+class AggregateDatasetMetric(models.Model):
+    DAILY = "Daily"
+    MONTHLY = "Monthly"
+    TIMESPAN_CHOICES = [
+        (DAILY, "Daily"),
+        (MONTHLY, "Monthly"),
+    ]
+
+    sample_time = models.DateField(default=timezone.now, db_index=True)
+    timespan = models.CharField(
+        max_length=20,
+        choices=TIMESPAN_CHOICES,
+        default=DAILY,
+    )
+    dataset = models.ForeignKey(
+        Dataset, related_name="aggregate_metrics", on_delete=models.CASCADE
+    )
+    metrics = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"{self.timespan} - {self.sample_time}"
+
+
+class AggregateGeospatialMetric(models.Model):
+    DAILY = "Daily"
+    MONTHLY = "Monthly"
+    TIMESPAN_CHOICES = [
+        (DAILY, "Daily"),
+        (MONTHLY, "Monthly"),
+    ]
+
+    sample_time = models.DateField(default=timezone.now, db_index=True)
+    timespan = models.CharField(
+        max_length=20,
+        choices=TIMESPAN_CHOICES,
+        default=DAILY,
+    )
+    # center point of the grid square
+    geom = models.PointField(srid=4326, null=False)
+    geohash = models.CharField(max_length=100, db_index=True, null=False)
+    metrics = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"{self.timespan} - {self.sample_time}"

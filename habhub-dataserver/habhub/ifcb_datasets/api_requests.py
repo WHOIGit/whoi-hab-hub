@@ -88,6 +88,8 @@ def run_species_classifed_import(dataset_obj):
         print("Start calculating metrics from scores..")
         _calculate_metrics(bin)
         print(f"{bin} processed.")
+        _calculate_aggregates(bin)
+        print(f"{bin} aggregate data saved.")
 
 
 def reset_ifcb_data(dataset_id=None, species_id=None):
@@ -348,3 +350,18 @@ def _calculate_metrics(bin_obj, species_id=None):
     bin_obj.species_found = species_found
     bin_obj.cell_concentration_data = data
     bin_obj.save()
+
+
+def _calculate_aggregates(bin):
+    # Function to preprocess aggregate data as new bins are added
+
+    concentration_timeseries = []
+    metrics = bin.get_data_layer_metrics()
+    # set up data structure to store results
+    for species in TargetSpecies.objects.all():
+        dict = {
+            "species": species.species_id,
+            "species_display": species.display_name,
+            "data": [],
+        }
+        concentration_timeseries.append(dict)
