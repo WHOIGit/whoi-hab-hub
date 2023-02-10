@@ -76,8 +76,3 @@ services:
       - "5555:5555"
     command: /start-flower
 
-
-networks:
-  default:
-    external:
-      name: ifcbdb_nginx_network
