@@ -24,7 +24,7 @@ services:
       dockerfile: ./compose/local/django/Dockerfile
     image: habhub_local_django
     depends_on:
-      - postgres_habhub
+      - postgres
     volumes:
       - ./habhub-dataserver:/app
     env_file:
@@ -34,7 +34,7 @@ services:
       - "8888:8000"
     command: /start
 
-  postgres_habhub:
+  postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
