@@ -96,9 +96,9 @@ class TargetSpecies(models.Model):
         # trigger celery task to recalculate IFCB data
         if start_new_data_ingest:
             print("START NEW SPECIES DATA RUN ", self.species_id)
-            transaction.on_commit(
-                lambda: reset_ifcb_dataset_data.delay(None, self.species_id)
-            )
+            # transaction.on_commit(
+            #    lambda: reset_ifcb_dataset_data.delay(None, self.species_id)
+            # )
 
         if threshold_changed:
             # search cache for any current tasks that are running for this species
