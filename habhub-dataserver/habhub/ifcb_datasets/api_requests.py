@@ -88,7 +88,7 @@ def run_species_classifed_import(dataset_obj):
         print("Start calculating metrics from scores..")
         _calculate_metrics(bin)
         print(f"{bin} processed.")
-        _calculate_aggregates(bin)
+        _run_aggregate_calculations(bin)
         print(f"{bin} aggregate data saved.")
 
 
@@ -114,7 +114,7 @@ def reset_ifcb_data(dataset_id=None):
                 print("Start calculating metrics from scores..")
                 _calculate_metrics(bin)
                 print(f"{bin} processed.")
-                _calculate_aggregates(bin)
+                _run_aggregate_calculations(bin)
                 print(f"{bin} aggregate data saved.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
@@ -127,7 +127,7 @@ def reset_ifcb_data(dataset_id=None):
             print("Start calculating metrics from scores..")
             _calculate_metrics(bin)
             print(f"{bin} processed.")
-            _calculate_aggregates(bin)
+            _run_aggregate_calculations(bin)
             print(f"{bin} aggregate data saved.")
     print("Complete data ingestion.")
 
@@ -347,22 +347,37 @@ def _calculate_metrics(bin_obj):
     bin_obj.save()
 
 
-def _calculate_aggregates(bin):
+def _run_aggregate_calculations(bin):
+    from .models import AggregateDatasetMetric
+
+    agg_types = AggregateDatasetMetric.TIMESPAN_CHOICES
+
+    # Function to preprocess aggregate data as new bins are added
+    for type in agg_types:
+        print("CALCULATING AGGREGATES")
+        print(type)
+        _calculate_aggregates(bin, type[0])
+
+
+def _calculate_aggregates(bin, type):
     from .models import AggregateDatasetMetric
     from habhub.core.models import TargetSpecies
 
-    print("CALCULATING DAILY AGGREGATES")
-    # Function to preprocess aggregate data as new bins are added
-    bin_day = bin.sample_time.date()
-    print(bin_day)
-    agg_bin_daily = (
+    if type == AggregateDatasetMetric.DAILY:
+        bin_day = bin.sample_time.date()
+        print(bin_day)
+    else:
+        bin_day = datetime.date(bin.sample_time.year, bin.sample_time.month, 1)
+        print(bin_day)
+
+    agg_qs = (
         AggregateDatasetMetric.objects.filter(sample_time=bin_day)
-        .filter(timespan="Daily")
+        .filter(timespan=type)
         .select_related("species")
     )
-    print(agg_bin_daily)
+    print(f"agg_qs: {agg_qs}")
 
-    if not agg_bin_daily.exists():
+    if not agg_qs.exists():
         # no daily aggregate, create new one
         # setup metric JSON
 
@@ -376,7 +391,7 @@ def _calculate_aggregates(bin):
 
             new_bin = AggregateDatasetMetric(
                 sample_time=bin_day,
-                timespan="Daily",
+                timespan=type,
                 dataset=bin.dataset,
                 cell_concentration_max=item["cell_concentration"],
                 cell_concentration_mean=item["cell_concentration"],
@@ -388,11 +403,9 @@ def _calculate_aggregates(bin):
             new_bin.save()
     else:
         # update aggregate data
-        agg_bin_daily_obj = agg_bin_daily.first()
-        new_count = agg_bin_daily_obj.count + 1
-
         for item in bin.cell_concentration_data:
-            for agg_bin in agg_bin_daily:
+            for agg_bin in agg_qs:
+                new_count = agg_bin.count + 1
 
                 if item["species"] == agg_bin.species.species_id:
                     print(
