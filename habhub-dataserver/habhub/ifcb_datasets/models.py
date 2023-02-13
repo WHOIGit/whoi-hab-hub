@@ -204,10 +204,19 @@ class AggregateDatasetMetric(models.Model):
         default=DAILY,
     )
     dataset = models.ForeignKey(
-        Dataset, related_name="aggregate_metrics", on_delete=models.CASCADE
+        Dataset, related_name="aggregate_dataset_metrics", on_delete=models.CASCADE
     )
-    metrics = models.JSONField(null=True)
-    count = models.PositiveIntegerField(null=True)
+    species = models.ForeignKey(
+        TargetSpecies,
+        related_name="aggregate_dataset_metrics",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    cell_concentration_max = models.BigIntegerField(null=True, blank=True)
+    cell_concentration_mean = models.BigIntegerField(null=True, blank=True)
+    biovolume_max = models.BigIntegerField(null=True, blank=True)
+    biovolume_mean = models.BigIntegerField(null=True, blank=True)
+    count = models.BigIntegerField(null=True)
 
     def __str__(self):
         return f"{self.timespan} - {self.sample_time}"

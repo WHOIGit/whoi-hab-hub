@@ -349,110 +349,82 @@ def _calculate_metrics(bin_obj):
 
 def _calculate_aggregates(bin):
     from .models import AggregateDatasetMetric
+    from habhub.core.models import TargetSpecies
 
     print("CALCULATING DAILY AGGREGATES")
     # Function to preprocess aggregate data as new bins are added
     bin_day = bin.sample_time.date()
     print(bin_day)
-    agg_bin_daily = AggregateDatasetMetric.objects.filter(sample_time=bin_day).filter(
-        timespan="Daily"
+    agg_bin_daily = (
+        AggregateDatasetMetric.objects.filter(sample_time=bin_day)
+        .filter(timespan="Daily")
+        .select_related("species")
     )
     print(agg_bin_daily)
-    new_metrics = []
 
-    if not agg_bin_daily:
+    if not agg_bin_daily.exists():
         # no daily aggregate, create new one
         # setup metric JSON
 
         for item in bin.cell_concentration_data:
             print(item)
-            agg_data = {"species": item["species"], "data": []}
-            biovolume_data = {
-                "metricId": "biovolume",
-                "metricName": "Biovolume",
-                "maxValue": item["biovolume"],
-                "meanValue": item["biovolume"],
-                "units": "cubic microns/L",
-            }
-            cell_concentration_data = {
-                "metricId": "cell_concentration",
-                "metricName": "Cell Concentration",
-                "maxValue": item["cell_concentration"],
-                "meanValue": item["cell_concentration"],
-                "units": "cells/L",
-            }
-            agg_data["data"].append(biovolume_data)
-            agg_data["data"].append(cell_concentration_data)
-            new_metrics.append(agg_data)
+            try:
+                species = TargetSpecies.objects.get(species_id=item["species"])
+            except TargetSpecies.DoesNotExist:
+                print("Error. No matching species ID")
+                continue
 
-        new_bin = AggregateDatasetMetric(
-            sample_time=bin_day,
-            timespan="Daily",
-            dataset=bin.dataset,
-            metrics=new_metrics,
-            count=1,
-        )
-        new_bin.save()
+            new_bin = AggregateDatasetMetric(
+                sample_time=bin_day,
+                timespan="Daily",
+                dataset=bin.dataset,
+                cell_concentration_max=item["cell_concentration"],
+                cell_concentration_mean=item["cell_concentration"],
+                biovolume_max=item["biovolume"],
+                biovolume_mean=item["biovolume"],
+                species=species,
+                count=1,
+            )
+            new_bin.save()
     else:
         # update aggregate data
-        agg_bin_daily_obj = agg_bin_daily[0]
-        print("Current metrics:", agg_bin_daily_obj.metrics)
+        agg_bin_daily_obj = agg_bin_daily.first()
+        new_count = agg_bin_daily_obj.count + 1
+
         for item in bin.cell_concentration_data:
-            for agg_item in agg_bin_daily_obj.metrics:
-                if item["species"] == agg_item["species"]:
-                    print(f"update daily agg for {agg_item['species']}")
-                    agg_data = {"species": item["species"], "data": []}
+            for agg_bin in agg_bin_daily:
 
-                    # update biovolume values
-                    current_biovolume = [
-                        metric
-                        for metric in agg_item["data"]
-                        if metric["metricId"] == "biovolume"
-                    ][0]
+                if item["species"] == agg_bin.species.species_id:
+                    print(
+                        f"Current max: { agg_bin.cell_concentration_max}-{agg_bin.species}"
+                    )
+                    print(f"Current mean: {agg_bin.cell_concentration_mean}")
+                    print(f"Current count: {agg_bin.count} ")
+                    # calculate new cell_concentration metrics
+                    new_concentration_max = agg_bin.cell_concentration_max
+                    if item["cell_concentration"] > new_concentration_max:
+                        new_concentration_max = item["cell_concentration"]
+                    print(f"New max: {item['cell_concentration']} ")
 
-                    new_max = current_biovolume["maxValue"]
-                    if item["biovolume"] > current_biovolume["maxValue"]:
-                        new_max = item["biovolume"]
+                    new_concentration_mean = (
+                        agg_bin.cell_concentration_mean + item["cell_concentration"]
+                    ) / new_count
+                    print(f"New mean: {new_concentration_mean} ")
+                    new_concentration_mean = round(new_concentration_mean)
 
-                    new_mean = (
-                        current_biovolume["meanValue"] + item["biovolume"]
-                    ) / agg_bin_daily_obj.count
+                    # calculate new biovolume metrics
+                    new_biovolume_max = agg_bin.biovolume_max
+                    if item["biovolume"] > new_biovolume_max:
+                        new_biovolume_max = item["biovolume"]
 
-                    biovolume_data = {
-                        "metricId": "biovolume",
-                        "metricName": "Biovolume",
-                        "maxValue": new_max,
-                        "meanValue": new_mean,
-                        "units": "cubic microns/L",
-                    }
+                    new_biovolume_mean = (
+                        agg_bin.biovolume_mean + item["biovolume"]
+                    ) / new_count
+                    new_biovolume_mean = round(new_biovolume_mean)
 
-                    # update cell concentration values
-                    current_concentration = [
-                        metric
-                        for metric in agg_item["data"]
-                        if metric["metricId"] == "cell_concentration"
-                    ][0]
-
-                    new_max = current_concentration["maxValue"]
-                    if item["cell_concentration"] > current_concentration["maxValue"]:
-                        new_max = item["cell_concentration"]
-
-                    new_mean = (
-                        current_concentration["meanValue"] + item["cell_concentration"]
-                    ) / agg_bin_daily_obj.count
-
-                    cell_concentration_data = {
-                        "metricId": "cell_concentration",
-                        "metricName": "Cell Concentration",
-                        "maxValue": new_max,
-                        "meanValue": new_mean,
-                        "units": "cells/L",
-                    }
-
-                    agg_data["data"].append(biovolume_data)
-                    agg_data["data"].append(cell_concentration_data)
-                    new_metrics.append(agg_data)
-
-        agg_bin_daily_obj.metrics = new_metrics
-        agg_bin_daily_obj.count = agg_bin_daily_obj.count + 1
-        agg_bin_daily_obj.save()
+                    agg_bin.cell_concentration_max = new_concentration_max
+                    agg_bin.cell_concentration_mean = new_concentration_mean
+                    agg_bin.biovolume_max = new_biovolume_max
+                    agg_bin.biovolume_mean = new_biovolume_mean
+                    agg_bin.count = new_count
+                    agg_bin.save()
