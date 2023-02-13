@@ -207,6 +207,7 @@ class AggregateDatasetMetric(models.Model):
         Dataset, related_name="aggregate_metrics", on_delete=models.CASCADE
     )
     metrics = models.JSONField(null=True)
+    count = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return f"{self.timespan} - {self.sample_time}"
@@ -230,6 +231,7 @@ class AggregateGeospatialMetric(models.Model):
     geom = models.PointField(srid=4326, null=False)
     geohash = models.CharField(max_length=100, db_index=True, null=False)
     metrics = models.JSONField(null=True)
+    count = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return f"{self.timespan} - {self.sample_time}"

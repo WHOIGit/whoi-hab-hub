@@ -22,9 +22,9 @@ def get_ifcb_dashboard_data():
 
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
-def reset_ifcb_dataset_data(self, dataset_id=None, species_id=None):
+def reset_ifcb_dataset_data(self, dataset_id=None):
     print("DATASET ID ", dataset_id)
-    reset_ifcb_data(dataset_id, species_id)
+    reset_ifcb_data(dataset_id)
     # clear the cache of stale results
     cache.clear()
 
