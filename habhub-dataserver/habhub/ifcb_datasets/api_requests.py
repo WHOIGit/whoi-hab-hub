@@ -97,9 +97,12 @@ def reset_ifcb_data(dataset_id=None):
     recreate all IFCB data for all Bins in all Datasets or single Dataset
     this operation may take a long time
     """
-    from .models import Dataset
+    from .models import Dataset, AggregateDatasetMetric
 
     print("REQUEST DATASET ID ", dataset_id)
+    # clear all existing aggregate data
+    agg_qs = AggregateDatasetMetric.objects.all()
+    agg_qs.delete()
 
     if not dataset_id:
         datasets = Dataset.objects.all()

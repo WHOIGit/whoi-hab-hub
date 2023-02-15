@@ -9,6 +9,7 @@ from rest_framework_gis.serializers import (
 from rest_framework_gis.fields import GeometryField
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
+from django.db.models import Avg, Max, F
 
 from ..models import Dataset, Bin
 from habhub.core.models import TargetSpecies, Metric, DataLayer
@@ -108,6 +109,61 @@ class DatasetDetailSerializer(DatasetListSerializer):
                         concentration_timeseries[index]["data"].append(data_dict)
 
         return concentration_timeseries
+
+
+class DatasetAggSerializer(GeoFeatureModelSerializer):
+    max_mean_values = serializers.SerializerMethodField("get_max_mean_values")
+
+    class Meta:
+        model = Dataset
+        geo_field = "geom"
+        fields = [
+            "id",
+            "name",
+            "location",
+            "dashboard_id_name",
+            "geom",
+            "max_mean_values",
+        ]
+
+    def get_max_mean_values(self, obj):
+        max_mean_values = []
+        group_qs = (
+            obj.aggregate_dataset_metrics.values(
+                "species__species_id",
+            )
+            .order_by("species")
+            .annotate(
+                cell_concentration_mean=Avg("cell_concentration_mean"),
+                cell_concentration_max=Max("cell_concentration_max"),
+                biovolume_mean=Avg("biovolume_mean"),
+                biovolume_max=Max("biovolume_max"),
+                # display_name=F("species__display_name"),
+            )
+        )
+
+        for item in group_qs:
+            maxmean_obj = {
+                "species": item["species__species_id"],
+                "data": [
+                    {
+                        "metricId": "biovolume",
+                        "metricName": "Biovolume",
+                        "maxValue": item["biovolume_max"],
+                        "meanValue": item["biovolume_mean"],
+                        "units": "cubic microns/L",
+                    },
+                    {
+                        "metricId": "cell_concentration",
+                        "metricName": "Cell Concentration",
+                        "maxValue": item["cell_concentration_max"],
+                        "meanValue": item["cell_concentration_mean"],
+                        "units": "cells/L",
+                    },
+                ],
+            }
+            max_mean_values.append(maxmean_obj)
+        return max_mean_values
 
 
 class BinSpatialGridSerializer(serializers.Serializer):

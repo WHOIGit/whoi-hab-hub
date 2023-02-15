@@ -23,8 +23,9 @@ from .serializers import (
     BinSerializer,
     BinSpatialGridSerializer,
     BinSpatialGridDetailSerializer,
+    DatasetAggSerializer,
 )
-from .mixins import DatasetFiltersMixin, BinFiltersMixin
+from .mixins import DatasetFiltersMixin, BinFiltersMixin, DatasetAggFiltersMixin
 
 env = environ.Env()
 
@@ -155,3 +156,16 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
         # set cache
         cache.set(cache_key, serializer.data)
         return Response(serializer.data)
+
+
+class DatasetAggViewSet(DatasetAggFiltersMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = DatasetAggSerializer
+
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        queryset = Dataset.objects.filter(fixed_location=True)
+        # call custom filter method from mixin
+        queryset = self.handle_query_param_filters(queryset)
+        return queryset

@@ -11,6 +11,7 @@ from habhub.ifcb_datasets.api.views import (
     DatasetViewSet,
     BinViewSet,
     BinSpatialGridViewSet,
+    DatasetAggViewSet,
 )
 from habhub.closures.api.views import ShellfishAreaViewSet
 
@@ -23,6 +24,7 @@ router.register(r"core/map-bookmarks", MapBookmarkViewSet, "map-bookmarks")
 router.register(r"ifcb-datasets", DatasetViewSet, "ifcb-datasets")
 router.register(r"ifcb-spatial-grid", BinSpatialGridViewSet, "ifcb-spatial-grid")
 router.register(r"ifcb-bins", BinViewSet, "ifcb-bins")
+router.register(r"ifcb-fixed-datasets", DatasetAggViewSet, "ifcb-fixed-datasets")
 router.register(r"closures", ShellfishAreaViewSet, "closures")
 router.register(r"stations", StationViewSet, "stations")
 
