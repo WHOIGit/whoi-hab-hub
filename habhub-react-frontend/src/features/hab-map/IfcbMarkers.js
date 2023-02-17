@@ -75,7 +75,7 @@ export default function IfcbMarkers({
           exclude_month_range: dateFilter.excludeMonthRange,
           smoothing_factor: dateFilter.smoothingFactor,
         });
-        const res = await axiosInstance.get("api/v1/ifcb-datasets/", {
+        const res = await axiosInstance.get("api/v1/ifcb-fixed-datasets/", {
           params,
         });
         console.log(res.request.responseURL);

@@ -422,8 +422,10 @@ def _calculate_aggregates(bin, type):
                         new_concentration_max = item["cell_concentration"]
                     print(f"New max: {item['cell_concentration']} ")
 
+                    # algorithm to calculate rolling average as new values are added
                     new_concentration_mean = (
-                        agg_bin.cell_concentration_mean + item["cell_concentration"]
+                        agg_bin.cell_concentration_mean * (new_count - 1)
+                        + item["cell_concentration"]
                     ) / new_count
                     print(f"New mean: {new_concentration_mean} ")
                     new_concentration_mean = round(new_concentration_mean)
@@ -433,10 +435,10 @@ def _calculate_aggregates(bin, type):
                     if item["biovolume"] > new_biovolume_max:
                         new_biovolume_max = item["biovolume"]
 
+                    # algorithm to calculate rolling average as new values are added
                     new_biovolume_mean = (
-                        agg_bin.biovolume_mean + item["biovolume"]
+                        agg_bin.biovolume_mean * (new_count - 1) + item["biovolume"]
                     ) / new_count
-                    new_biovolume_mean = round(new_biovolume_mean)
 
                     agg_bin.cell_concentration_max = new_concentration_max
                     agg_bin.cell_concentration_mean = new_concentration_mean
