@@ -1,9 +1,17 @@
+ne_atlantic_bbox = [
+    [-39.12548265299614, 61.52490785000191],
+    [-81.07064491669979, 61.52490785000191],
+    [-81.09251277024886, 31.661280481604706],
+    [-40.22925594086158, 31.718469043639402],
+    [-39.12548265299614, 61.52490785000191],
+]
+
 geojson_atlantic = {
     "type": "FeatureCollection",
     "features": [
         {
             "type": "Feature",
-            "properties": {"Region": "Northeastern Atlantic"},
+            "properties": {"region": "NE Atlantic"},
             "geometry": {
                 "coordinates": [
                     [
@@ -19,7 +27,7 @@ geojson_atlantic = {
         },
         {
             "type": "Feature",
-            "properties": {"Region": "Southeastern Atlantic"},
+            "properties": {"region": "SE Atlantic"},
             "geometry": {
                 "coordinates": [
                     [

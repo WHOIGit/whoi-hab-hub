@@ -12,6 +12,7 @@ from habhub.ifcb_datasets.api.views import (
     BinViewSet,
     BinSpatialGridViewSet,
     DatasetAggViewSet,
+    GeohashGridViewSet,
 )
 from habhub.closures.api.views import ShellfishAreaViewSet
 
@@ -27,6 +28,7 @@ router.register(r"ifcb-bins", BinViewSet, "ifcb-bins")
 router.register(r"ifcb-fixed-datasets", DatasetAggViewSet, "ifcb-fixed-datasets")
 router.register(r"closures", ShellfishAreaViewSet, "closures")
 router.register(r"stations", StationViewSet, "stations")
+router.register(r"geohash-grid", GeohashGridViewSet, "geohash-grid")
 
 app_name = "api_v1"
 urlpatterns = [

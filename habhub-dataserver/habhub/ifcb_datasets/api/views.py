@@ -4,6 +4,7 @@ import json
 import datetime
 
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -16,7 +17,7 @@ from django.db.models import Prefetch, F, Q
 from django.contrib.gis.db.models import Extent
 
 from habhub.core.models import TargetSpecies
-from ..models import Dataset, Bin
+from ..models import Dataset, Bin, GeohashGrid
 from .serializers import (
     DatasetListSerializer,
     DatasetDetailSerializer,
@@ -24,6 +25,7 @@ from .serializers import (
     BinSpatialGridSerializer,
     BinSpatialGridDetailSerializer,
     DatasetAggSerializer,
+    GeohashGridSerializer,
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin, DatasetAggFiltersMixin
 
@@ -169,3 +171,10 @@ class DatasetAggViewSet(DatasetAggFiltersMixin, viewsets.ReadOnlyModelViewSet):
         # call custom filter method from mixin
         queryset = self.handle_query_param_filters(queryset)
         return queryset
+
+
+class GeohashGridViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = GeohashGrid.objects.all()
+        serializer = GeohashGridSerializer(queryset, context={"request": request})
+        return Response(serializer.data)

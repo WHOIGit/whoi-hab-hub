@@ -1,7 +1,7 @@
 from django.db.models.expressions import ExpressionWrapper
 from statistics import mean
 from collections import OrderedDict
-
+import s2sphere
 from rest_framework import serializers
 from rest_framework_gis.serializers import (
     GeoFeatureModelSerializer,
@@ -11,7 +11,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
 from django.db.models import Avg, Max, F
 
-from ..models import Dataset, Bin
+from ..models import Dataset, Bin, GeohashGrid
 from habhub.core.models import TargetSpecies, Metric, DataLayer
 
 
@@ -373,3 +373,60 @@ class BinSpatialGridDetailSerializer(serializers.Serializer):
                         timeseries_data[index]["data"].append(data_dict)
 
         return {"timeseries_data": timeseries_data, "geometry": geometry}
+
+
+class GeohashGridSerializer(serializers.Serializer):
+    features = serializers.SerializerMethodField("get_grid_center_points")
+
+    def to_representation(self, instance):
+        data = super(GeohashGridSerializer, self).to_representation(instance)
+        print("getting data")
+        # must be "FeatureCollection" according to GeoJSON spec
+        res = OrderedDict()
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        res["type"] = "FeatureCollection"
+        # add metadata attribute, optional for GeoJSON
+        metadata = OrderedDict()
+        for k, v in data.items():
+            if k != "features":
+                metadata[k] = data[k]
+        res["metadata"] = metadata
+        # required features attribute
+        # MUST be present in output according to GeoJSON spec
+        res["features"] = data["features"]
+        return res
+
+    def convert_s2_point_to_latlng(self, s2_point):
+        print("converting to lat.lang")
+        # utility function to convert S2 points to Point object
+        coords = str(s2_point).split()[-1].split(",")
+        point = Point(float(coords[1]), float(coords[0]))
+        return point
+
+    def get_grid_center_points(self, obj):
+        features = []
+        grid_qs = GeohashGrid.objects.all()
+        print(grid_qs)
+        for square in grid_qs:
+            # convert s2 token to latlng
+            cell_id = s2sphere.CellId.from_token(square.geohash_token)
+            cell_center_ll = cell_id.to_lat_lng()
+            geo_point = self.convert_s2_point_to_latlng(cell_center_ll)
+            feature = OrderedDict()
+            # required type attribute
+            # must be "Feature" according to GeoJSON spec
+            feature["type"] = "Feature"
+            # set id to be unique geohash
+            feature["id"] = square.geohash_token
+            # required geometry attribute
+            # MUST be present in output according to GeoJSON spec
+            geo_field = GeometryField()
+            feature["geometry"] = geo_field.to_representation(geo_point)
+            # set GeoJSON properties
+            properties = OrderedDict()
+            properties["region"] = square.region
+            feature["properties"] = properties
+            features.append(feature)
+        print(features)
+        return features

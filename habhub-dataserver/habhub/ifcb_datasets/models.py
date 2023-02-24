@@ -189,6 +189,30 @@ class AutoclassScore(models.Model):
     )
 
 
+class GeohashGrid(models.Model):
+    # Stores the prebuilt s2 geohash grids for all regions
+    # Serves a lookup table for the aggregated geospatial bin data
+    NE_ATLANTIC = "NE Atlantic"
+    SE_ATLANTIC = "SE Atlantic"
+    PACIFIC_COAST = "Pacific Coast"
+    ALASKA = "Alaska"
+    REGION_CHOICES = [
+        (NE_ATLANTIC, "NE Atlantic"),
+        (SE_ATLANTIC, "SE Atlantic"),
+        (PACIFIC_COAST, "Pacific Coast"),
+        (ALASKA, "Alaska"),
+    ]
+    geohash_token = models.CharField(max_length=100, db_index=True)
+    s2_grid_level = models.PositiveIntegerField()
+    region = models.CharField(
+        max_length=20,
+        choices=REGION_CHOICES,
+    )
+
+    def __str__(self):
+        return f"{self.geohash_token} - {self.region}"
+
+
 class AggregateDatasetMetric(models.Model):
     DAILY = "Daily"
     MONTHLY = "Monthly"
