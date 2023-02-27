@@ -83,7 +83,7 @@ export default function ClosuresLayerDialog() {
             </Link>
             ,{" "}
             <Link
-              href="https://www.maine.gov/dmr/fisheries/shellfish/closures"
+              href="https://www4.des.state.nh.us/CoastalAtlas/Atlas.html"
               target="_blank"
               rel="noreferrer"
             >
@@ -91,7 +91,7 @@ export default function ClosuresLayerDialog() {
             </Link>
             , and{" "}
             <Link
-              href="https://www.maine.gov/dmr/fisheries/shellfish/closures"
+              href="https://www.mass.gov/lists/biotoxin-notices"
               target="_blank"
               rel="noreferrer"
             >
