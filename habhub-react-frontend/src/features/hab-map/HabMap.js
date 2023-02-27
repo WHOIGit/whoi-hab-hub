@@ -84,7 +84,7 @@ export default function HabMap({ bookmarkViewport }) {
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
   const dispatch = useDispatch();
-
+  console.log(features);
   useEffect(() => {
     if (bookmarkViewport) {
       setViewport(bookmarkViewport);

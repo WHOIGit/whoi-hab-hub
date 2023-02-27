@@ -47,6 +47,7 @@ class MapBookmarkSerializer(serializers.ModelSerializer):
             "zoom",
             "seasonal",
             "exclude_month_range",
+            "max_mean",
         )
 
 

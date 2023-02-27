@@ -6,7 +6,10 @@ import { useParams } from "react-router-dom";
 import MapContainer from "../app/MapContainer";
 import axiosInstance from "../app/apiAxios";
 import { changeDateRange } from "../features/date-filter/dateFilterSlice";
-import { setAllLayersVisibility } from "../features/data-layers/dataLayersSlice";
+import {
+  setAllLayersVisibility,
+  changeMaxMean,
+} from "../features/data-layers/dataLayersSlice";
 import { setAllSpeciesVisibility } from "../features/hab-species/habSpeciesSlice";
 
 export default function Bookmark() {
@@ -50,6 +53,12 @@ export default function Bookmark() {
           speciesList: bookmarkData.species,
         };
         dispatch(setAllSpeciesVisibility(speciesPayload));
+
+        // set Max/Mean
+        let maxMeanPayload = {
+          value: bookmarkData.maxMean,
+        };
+        dispatch(changeMaxMean(maxMeanPayload));
 
         // set Map Viewport
         let viewport = {

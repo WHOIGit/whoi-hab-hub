@@ -18,7 +18,10 @@ import { parseISO, format } from "date-fns";
 // local imports
 import axiosInstance from "../../app/apiAxios";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
-import { selectVisibleLayers } from "../data-layers/dataLayersSlice";
+import {
+  selectVisibleLayers,
+  selectMaxMeanOption,
+} from "../data-layers/dataLayersSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -51,6 +54,7 @@ export default function BookmarkTab() {
   const dateFilter = useSelector((state) => state.dateFilter);
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const visibleLayers = useSelector(selectVisibleLayers);
+  const showMaxMean = useSelector(selectMaxMeanOption);
   const habMapData = useSelector((state) => state.habMapData);
   const [bookmarks, setBookmarks] = useState([]);
   const [tooltipText, setTooltipText] = useState(defaultTooltipText);
@@ -70,6 +74,7 @@ export default function BookmarkTab() {
       zoom: Math.round(habMapData.zoom * 1000) / 1000,
       seasonal: dateFilter.seasonal.toString(),
       excludeMonthRange: dateFilter.excludeMonthRange.toString(),
+      maxMean: showMaxMean,
     };
 
     console.log(params);
@@ -187,6 +192,12 @@ export default function BookmarkTab() {
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
               End Date: {format(parseISO(dateFilter.endDate), "MMM dd, yyyy")}
+            </Typography>
+          </ListItem>
+          <ListItem className={classes.listItem}>
+            <Typography variant="body2" display="block">
+              Data Type:{" "}
+              {showMaxMean.charAt(0).toUpperCase() + showMaxMean.slice(1)}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>

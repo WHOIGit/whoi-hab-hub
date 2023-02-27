@@ -166,7 +166,7 @@ export default function HabSpeciesForm() {
 
                 {dataLayer.id === DATA_LAYERS.closuresLayer && (
                   <img
-                    src="images/icon-shellfish-closure.png"
+                    src="/images/icon-shellfish-closure.png"
                     alt="Closures Legend Icon"
                     className={`${classes.layerIcon} ${classes.closureIcon}`}
                   />
@@ -174,7 +174,7 @@ export default function HabSpeciesForm() {
 
                 {dataLayer.id === DATA_LAYERS.closuresSeasonalLayer && (
                   <img
-                    src="images/icon-shellfish-closure.png"
+                    src="/images/icon-shellfish-closure.png"
                     alt="Closures Legend Icon"
                     className={`${classes.layerIcon} ${classes.closureSeasonalIcon}`}
                   />
