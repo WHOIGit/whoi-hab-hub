@@ -276,6 +276,7 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
             try:
                 row_info = f"Row info: {row['measurement_date']}, {row['station']}, {row['measurement']}"
             except Exception as e:
+                print(e)
                 error = f"Error: CSV headers don't match expected headers - measurement_date, measurement, station, species"
                 uploader["errors"].append(error)
                 break

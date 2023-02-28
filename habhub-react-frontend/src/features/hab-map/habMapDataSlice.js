@@ -6,6 +6,7 @@ const initialState = {
   latitude: MAP_LATITUDE,
   longitude: MAP_LONGITUDE,
   zoom: 5,
+  activeFeatures: [],
 };
 
 export const habMapDataSlice = createSlice({
@@ -17,16 +18,29 @@ export const habMapDataSlice = createSlice({
       state.longitude = action.payload.longitude;
       state.zoom = action.payload.zoom;
     },
-    // eslint-disable-next-line no-unused-vars
-    resetGuideSteps: (state, action) => {
-      state.guideSteps.forEach((element) => {
-        element.isActive = false;
-      });
+    addFeature(state, action) {
+      state.activeFeatures.push(action.payload);
+    },
+    deleteFeature(state, action) {
+      const newFeatures = state.activeFeatures.filter(
+        (feature) => feature.id !== action.payload
+      );
+      // "Mutate" the existing state to save the new array
+      state.activeFeatures = newFeatures;
+    },
+    setAllFeatures(state, action) {
+      // set all active features to new array
+      state.activeFeatures = action.payload;
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { changeMapData } = habMapDataSlice.actions;
+export const { changeMapData, addFeature, deleteFeature } =
+  habMapDataSlice.actions;
 
 export default habMapDataSlice.reducer;
+
+// Selector functions
+// return all active features
+export const selectActiveFeatues = (state) => state.habMapData.activeFeatures;
