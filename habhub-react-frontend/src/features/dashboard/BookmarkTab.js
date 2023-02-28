@@ -22,6 +22,7 @@ import {
   selectVisibleLayers,
   selectMaxMeanOption,
 } from "../data-layers/dataLayersSlice";
+import { selectActiveFeatues } from "../hab-map/habMapDataSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,6 +56,7 @@ export default function BookmarkTab() {
   const visibleSpecies = useSelector(selectVisibleSpecies);
   const visibleLayers = useSelector(selectVisibleLayers);
   const showMaxMean = useSelector(selectMaxMeanOption);
+  const activeFeatures = useSelector(selectActiveFeatues);
   const habMapData = useSelector((state) => state.habMapData);
   const [bookmarks, setBookmarks] = useState([]);
   const [tooltipText, setTooltipText] = useState(defaultTooltipText);
@@ -62,6 +64,8 @@ export default function BookmarkTab() {
   const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const showDatacharts = activeFeatures.length ? "Yes" : "No";
 
   async function handleBookmarkCreate() {
     let params = {
@@ -75,6 +79,7 @@ export default function BookmarkTab() {
       seasonal: dateFilter.seasonal.toString(),
       excludeMonthRange: dateFilter.excludeMonthRange.toString(),
       maxMean: showMaxMean,
+      activeFeatures: activeFeatures,
     };
 
     console.log(params);
@@ -223,6 +228,11 @@ export default function BookmarkTab() {
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
               Longitude: {Math.round(habMapData.longitude * 10000) / 10000}
+            </Typography>
+          </ListItem>
+          <ListItem className={classes.listItem}>
+            <Typography variant="body2" display="block">
+              Show Data Charts: {showDatacharts}
             </Typography>
           </ListItem>
         </List>

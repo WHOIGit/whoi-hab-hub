@@ -36,7 +36,7 @@ export const habMapDataSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { changeMapData, addFeature, deleteFeature } =
+export const { changeMapData, addFeature, deleteFeature, setAllFeatures } =
   habMapDataSlice.actions;
 
 export default habMapDataSlice.reducer;

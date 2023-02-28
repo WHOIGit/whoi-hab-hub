@@ -11,29 +11,30 @@ import {
   changeMaxMean,
 } from "../features/data-layers/dataLayersSlice";
 import { setAllSpeciesVisibility } from "../features/hab-species/habSpeciesSlice";
+import { setAllFeatures } from "../features/hab-map/habMapDataSlice";
 
 export default function Bookmark() {
-  let params = useParams();
-  let bookmarkId = params.bookmarkId;
-  let dispatch = useDispatch();
+  const params = useParams();
+  const bookmarkId = params.bookmarkId;
+  const dispatch = useDispatch();
   // eslint-disable-next-line no-unused-vars
-  let [error, setError] = useState(null);
+  const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
-  let [isLoaded, setIsLoaded] = useState(false);
-  let [viewport, setViewport] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [viewport, setViewport] = useState(null);
 
   useEffect(() => {
     async function fetchBookmark() {
       try {
-        let res = await axiosInstance.get(
+        const res = await axiosInstance.get(
           `api/v1/core/map-bookmarks/${bookmarkId}`
         );
 
         setIsLoaded(true);
-        let bookmarkData = res.data;
+        const bookmarkData = res.data;
         console.log(bookmarkData);
 
-        let datePayload = {
+        const datePayload = {
           startDate: bookmarkData.startDate,
           endDate: bookmarkData.endDate,
           seasonal: bookmarkData.seasonal,
@@ -43,25 +44,29 @@ export default function Bookmark() {
         dispatch(changeDateRange(datePayload));
 
         // set Data Layers
-        let layerPayload = {
+        const layerPayload = {
           layerList: bookmarkData.dataLayers,
         };
         dispatch(setAllLayersVisibility(layerPayload));
 
         // set visible Species
-        let speciesPayload = {
+        const speciesPayload = {
           speciesList: bookmarkData.species,
         };
         dispatch(setAllSpeciesVisibility(speciesPayload));
 
         // set Max/Mean
-        let maxMeanPayload = {
+        const maxMeanPayload = {
           value: bookmarkData.maxMean,
         };
         dispatch(changeMaxMean(maxMeanPayload));
 
+        // set Active Features
+        const featurePayload = bookmarkData.activeFeatures;
+        dispatch(setAllFeatures(featurePayload));
+
         // set Map Viewport
-        let viewport = {
+        const viewport = {
           latitude: parseFloat(bookmarkData.latitude),
           longitude: parseFloat(bookmarkData.longitude),
           zoom: parseFloat(bookmarkData.zoom),
