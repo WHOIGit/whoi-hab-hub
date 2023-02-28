@@ -17,6 +17,7 @@ import {
 } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
 import { PALETTE } from "../../Constants";
+import HabSpeciesNameDisplay from "./HabSpeciesNameDisplay";
 
 const useStyles = makeStyles((theme) => ({
   formGroup: {
@@ -88,7 +89,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                       }
                     />
                   </div>
-                  <em>{species.displayName}</em> / {species.syndrome}
+                  <HabSpeciesNameDisplay species={species} />
                 </Typography>
               }
             />
