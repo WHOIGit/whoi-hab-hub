@@ -6,29 +6,27 @@ export default function HabSpeciesColorChip({
   species,
   chipWidth = 20,
   chipHeight = 20,
-  chipType = "opacity",
+  chipType = "gradient"
 }) {
-  let color = species.primaryColor;
-  let opacities = [0.2, 0.4, 0.6, 0.8, 1];
+  let colors = species.colorGradient;
+
   if (chipType === "primary") {
-    color = species.primaryColor;
-    opacities = [1];
+    colors = [species.primaryColor];
   }
 
-  if (!color) {
+  if (!colors) {
     return null;
   }
 
-  let svgWidth = chipWidth * opacities.length;
+  let svgWidth = chipWidth * colors.length;
 
   return (
     <svg width={svgWidth} height={chipHeight}>
-      {opacities.map((opacity, index) => (
+      {colors.map((color, index) => (
         <rect
           width={chipWidth}
           height={chipHeight}
           fill={color}
-          fillOpacity={opacity}
           x={index * chipWidth}
           key={index}
         ></rect>
