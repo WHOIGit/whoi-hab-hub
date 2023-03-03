@@ -327,10 +327,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
         "schedule": crontab(minute=30, hour="*/3"),
     },
-    # "prewarm_api_cache_task": {
-    #    "task": "habhub.core.tasks.prewarm_api_cache",
-    #    "schedule": crontab(minute="*/5"),
-    # },
+    "prewarm_api_cache_task": {
+        "task": "habhub.core.tasks.prewarm_api_cache",
+        "schedule": crontab(minute="*/5"),
+    },
 }
 
 # Summernote config
