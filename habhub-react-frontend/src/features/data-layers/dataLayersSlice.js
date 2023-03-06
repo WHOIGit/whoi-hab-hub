@@ -12,8 +12,8 @@ const legendLayerIds = [
   DATA_LAYERS.cellConcentrationSpatialGridLayer,
 ];
 const interactiveLayerIds = [
-  DATA_LAYERS.closuresLayer,
-  DATA_LAYERS.closuresSeasonalLayer,
+  DATA_LAYERS.closuresIconsLayer,
+  DATA_LAYERS.closuresSeasonalIconsLayer,
 ];
 
 const initialState = {

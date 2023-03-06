@@ -24,8 +24,10 @@ export default function ClosuresIconLayer({ layerID, results }) {
       const centerPoints = results.features.map((item) => {
         const point = {
           type: "Feature",
+          id: item.id,
           properties: {
             name: item.properties.name,
+            layerID: layerID,
             //"count": item.properties.closures.length
           },
           geometry: item.properties.geomCenterPoint,
@@ -41,8 +43,6 @@ export default function ClosuresIconLayer({ layerID, results }) {
     }
   }, [results]);
 
-  if (layerID === DATA_LAYERS.closuresSeasonalLayer) return null;
-
   return (
     <div>
       {labels && (
@@ -53,7 +53,7 @@ export default function ClosuresIconLayer({ layerID, results }) {
           data={labels}
         >
           <Layer
-            id={layerID + "-icons-layer"}
+            id={layerID + "_icons"}
             type="symbol"
             source={layerID + "-labels-src"}
             layout={{

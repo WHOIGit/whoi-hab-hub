@@ -7,7 +7,14 @@ export const DATA_LAYERS = {
   stationsLayer: "stations_layer",
   closuresLayer: "closures_layer",
   closuresSeasonalLayer: "closures_seasonal_layer",
+  closuresIconsLayer: "closures_layer_icons",
+  closuresSeasonalIconsLayer: "closures_seasonal_layer_icons",
 };
+
+export const INTERACTIVE_LAYERS = [
+  DATA_LAYERS.closuresIconsLayer,
+  DATA_LAYERS.closuresSeasonalIconsLayer,
+];
 
 export const METRIC_IDS = {
   biovolume: "biovolume",

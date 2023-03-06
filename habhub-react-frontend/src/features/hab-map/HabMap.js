@@ -16,7 +16,7 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
-import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
+import { DATA_LAYERS, METRIC_IDS, INTERACTIVE_LAYERS } from "../../Constants";
 import {
   changeMapData,
   selectActiveFeatues,
@@ -79,7 +79,7 @@ export default function HabMap({ bookmarkViewport }) {
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   // only refers to map layer that use the Mapbox Layer/Source properties
-  const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
+  //const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
   const features = useSelector(selectActiveFeatues);
   const [viewport, setViewport] = useState(defaultViewport);
   const [gridZoomRange, setGridZoomRange] = useState(initialGridZoomArray);
@@ -166,12 +166,13 @@ export default function HabMap({ bookmarkViewport }) {
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
     console.log(feature);
+    console.log(INTERACTIVE_LAYERS);
     if (
       feature !== undefined &&
-      interactiveLayerIds.includes(feature.layer.id)
+      INTERACTIVE_LAYERS.includes(feature.layer.id)
     ) {
-      feature.layerID = feature.layer.id;
-      const payload = { id: feature.id, layerID: feature.layer.id };
+      console.log(feature);
+      const payload = { id: feature.id, layerID: feature.properties.layerID };
       dispatch(addFeature(payload));
     }
   };
@@ -270,7 +271,7 @@ export default function HabMap({ bookmarkViewport }) {
           reuseMaps={true}
           style={{ height: "100vh", width: "100%" }}
           onClick={(event) => onMapClick(event)}
-          interactiveLayerIds={interactiveLayerIds}
+          //interactiveLayerIds={interactiveLayerIds}
           //preserveDrawingBuffer={true}
           onZoomEnd={handleZoomUpdates}
           ref={mapRef}
