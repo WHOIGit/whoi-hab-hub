@@ -11,7 +11,7 @@ def prewarm_api_cache():
     # periodic task to hit api endpoints to prewarm the cache
     domain = Site.objects.get_current().domain
     # match default start date from the React frontend app
-    start_date_obj = datetime.now() - relativedelta(years=5)
+    start_date_obj = datetime.now() - relativedelta(years=1)
     start_date = start_date_obj.strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
 
