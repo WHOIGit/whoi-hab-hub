@@ -12,9 +12,11 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from "@material-ui/core";
 import { Link, FileCopy } from "@material-ui/icons";
-import { parseISO, format } from "date-fns";
+import { parseISO, format, differenceInDays } from "date-fns";
 // local imports
 import axiosInstance from "../../app/apiAxios";
 import { selectVisibleSpecies } from "../hab-species/habSpeciesSlice";
@@ -46,6 +48,9 @@ const useStyles = makeStyles((theme) => ({
   popper: {
     zIndex: 9999,
   },
+  label: {
+    ...theme.typography.body2,
+  },
 }));
 
 const defaultTooltipText = "Copy to Clipboard";
@@ -64,10 +69,22 @@ export default function BookmarkTab() {
   const [error, setError] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [isLoaded, setIsLoaded] = useState(false);
+  const [useRelativeDateRange, setUseRelativeDateRange] = useState(false);
 
   const showDatacharts = activeFeatures.length ? "Yes" : "No";
 
   async function handleBookmarkCreate() {
+    let relativeDateRange = null;
+
+    if (useRelativeDateRange) {
+      console.log("Using relative date range");
+      relativeDateRange = differenceInDays(
+        parseISO(dateFilter.endDate),
+        parseISO(dateFilter.startDate)
+      );
+      console.log(relativeDateRange);
+    }
+
     let params = {
       startDate: dateFilter.startDate,
       endDate: dateFilter.endDate,
@@ -80,6 +97,7 @@ export default function BookmarkTab() {
       excludeMonthRange: dateFilter.excludeMonthRange.toString(),
       maxMean: showMaxMean,
       activeFeatures: activeFeatures,
+      relativeDateRange: relativeDateRange,
     };
 
     console.log(params);
@@ -170,6 +188,25 @@ export default function BookmarkTab() {
           </div>
         )}
 
+        <FormControlLabel
+          classes={{
+            //root: classes.checkBoxes, // class name, e.g. `classes-nesting-root-x`
+            label: classes.label,
+          }}
+          control={
+            <Checkbox
+              checked={useRelativeDateRange}
+              onChange={(event) =>
+                setUseRelativeDateRange(event.target.checked)
+              }
+              name="relativeDateRange"
+              color="primary"
+            />
+          }
+          label="Use date range relative to current day (ex: always show the most recent 30 days of data)"
+        />
+        <Typography variant="body2" display="block"></Typography>
+
         <Divider className={classes.divider} />
 
         <Typography variant="subtitle1" display="block">
@@ -191,14 +228,28 @@ export default function BookmarkTab() {
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
               Start Date:{" "}
-              {format(parseISO(dateFilter.startDate), "MMM dd, yyyy")}
+              {useRelativeDateRange
+                ? "Today"
+                : format(parseISO(dateFilter.startDate), "yyyy-MM-dd")}
             </Typography>
           </ListItem>
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
-              End Date: {format(parseISO(dateFilter.endDate), "MMM dd, yyyy")}
+              End Date:{" "}
+              {useRelativeDateRange
+                ? differenceInDays(
+                    parseISO(dateFilter.endDate),
+                    parseISO(dateFilter.startDate)
+                  ) + " days"
+                : format(parseISO(dateFilter.endDate), "yyyy-MM-dd")}
             </Typography>
           </ListItem>
+          <ListItem className={classes.listItem}>
+            <Typography variant="body2" display="block">
+              Use Relative Date Range: {useRelativeDateRange.toString()}
+            </Typography>
+          </ListItem>
+
           <ListItem className={classes.listItem}>
             <Typography variant="body2" display="block">
               Data Type:{" "}

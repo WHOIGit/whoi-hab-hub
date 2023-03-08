@@ -87,7 +87,6 @@ export default function HabMap({ bookmarkViewport }) {
   const [yAxisScale, setYAxisScale] = useState("linear");
   const mapRef = useRef();
   const dispatch = useDispatch();
-  console.log(features);
 
   useEffect(() => {
     if (bookmarkViewport) {
@@ -165,8 +164,6 @@ export default function HabMap({ bookmarkViewport }) {
     console.log("MAP CLICK");
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
-    console.log(feature);
-    console.log(INTERACTIVE_LAYERS);
     if (
       feature !== undefined &&
       INTERACTIVE_LAYERS.includes(feature.layer.id)

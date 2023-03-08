@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from datetime import datetime, timedelta
 
 from ..models import MapBookmark, TargetSpecies, DataLayer
 from habhub.stations.models import Datapoint
@@ -33,6 +34,7 @@ class DataLayerSerializer(serializers.ModelSerializer):
 class MapBookmarkSerializer(serializers.ModelSerializer):
     species = serializers.ListField(child=serializers.CharField())
     data_layers = serializers.ListField(child=serializers.CharField())
+    # start_date = serializers.SerializerMethodField("get_start_date")
 
     class Meta:
         model = MapBookmark
@@ -49,7 +51,24 @@ class MapBookmarkSerializer(serializers.ModelSerializer):
             "exclude_month_range",
             "max_mean",
             "active_features",
+            "relative_date_range",
         )
+
+    def to_representation(self, obj):
+        rep = super().to_representation(obj)
+        # need to change the start/end dates if this is a relative date range bookmark
+        start_date = obj.start_date
+        end_date = obj.end_date
+
+        if obj.relative_date_range:
+            print("Use relative date range: ", obj.relative_date_range)
+            today = datetime.today()
+            start_date = today - timedelta(days=obj.relative_date_range)
+            end_date = today
+
+        rep["start_date"] = start_date
+        rep["end_date"] = end_date
+        return rep
 
 
 class DatapointSerializer(serializers.ModelSerializer):
