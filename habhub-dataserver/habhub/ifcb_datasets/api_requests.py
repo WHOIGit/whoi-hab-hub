@@ -11,6 +11,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point, Polygon
+from django.utils import timezone
 
 env = environ.Env()
 
@@ -88,22 +89,23 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} processed.")
 
 
-def reset_ifcb_data(dataset_id=None):
+def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     """
     recreate all IFCB data for all Bins in all Datasets or single Dataset
     this operation may take a long time
     """
-    from .models import Dataset
+    from .models import Dataset, Bin
 
     print("REQUEST DATASET ID ", dataset_id)
-
+    print("API Request Dates: ", start_date, end_date)
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
             print(f"DATASET: {dataset}")
             # update DB with any new Bins, then replace all existing IFCB data
             _get_ifcb_bins_dataset(dataset)
-            bins = dataset.bins.all()
+            bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+            print(bins.count())
             for bin in bins:
                 print("Start autoclass processing...")
                 _get_ifcb_autoclass_file(bin)
@@ -114,7 +116,8 @@ def reset_ifcb_data(dataset_id=None):
         dataset_obj = Dataset.objects.get(id=dataset_id)
         # update DB with any new Bins, then replace all existing IFCB data
         _get_ifcb_bins_dataset(dataset_obj)
-        bins = dataset_obj.bins.all()
+        bins = dataset_obj.bins.filter(sample_time__range=(start_date, end_date))
+        print(bins.count())
         for bin in bins:
             print("Start autoclass processing...")
             _get_ifcb_autoclass_file(bin)

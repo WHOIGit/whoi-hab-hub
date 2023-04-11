@@ -34,9 +34,10 @@ class Dataset(models.Model):
     def __str__(self):
         return f"{self.name} - {self.location}"
 
-    def reset_bin_data(self):
+    def reset_bin_data(self, start_date=None, end_date=None):
         print("Data Reset Method -", self.id)
-        reset_ifcb_dataset_data.delay(self.id)
+        print("Dates: ", start_date, end_date)
+        reset_ifcb_dataset_data.delay(self.id, start_date, end_date)
         return f"{self.name} data reset started"
 
     def get_data_layer_metrics(self):
