@@ -17,7 +17,7 @@ class Dataset(models.Model):
     location = models.CharField(max_length=100, null=False, blank=True)
     geom = models.PointField(srid=4326, null=True, blank=True)
     # base URL for IFCB dashboard for data ingestion
-    dashboard_base_url = models.URLField(
+    dashboard_base_url = models.CharField(
         max_length=200, default="https://habon-ifcb.whoi.edu"
     )
     # the lookup name from the IFCB dashboard
