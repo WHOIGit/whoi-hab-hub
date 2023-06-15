@@ -154,7 +154,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
             print(row["pid"])
             # check if "skip" value is true
             # check for valid long/lat. Skip row if no valid geo data
-            if row["skip"] == 1:
+            if row["skip"] == "1":
                 print("Skip value set to 1, skipping row")
                 continue
 
