@@ -100,7 +100,11 @@ def reset_ifcb_data(dataset_id=None):
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
+            # remove all Bins
+            bins = dataset.bins.all()
+            bins.delete()
             print(f"DATASET: {dataset}")
+            print(f"Bins deleted")
             # update DB with any new Bins, then replace all existing IFCB data
             _get_ifcb_bins_dataset(dataset)
             bins = dataset.bins.all()
@@ -112,6 +116,10 @@ def reset_ifcb_data(dataset_id=None):
                 print(f"{bin} processed.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
+        # remove all Bins
+        bins = dataset_obj.bins.all()
+        bins.delete()
+        print(f"Bins deleted")
         # update DB with any new Bins, then replace all existing IFCB data
         _get_ifcb_bins_dataset(dataset_obj)
         bins = dataset_obj.bins.all()
