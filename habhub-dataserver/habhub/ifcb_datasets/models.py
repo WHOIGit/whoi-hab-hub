@@ -150,6 +150,7 @@ class Bin(models.Model):
     )
     # cell_concentration: cells/L (image_numbers / bin.ml_analyzed) * 1000
     cell_concentration_data = models.JSONField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     objects = BinQuerySet.as_manager()
 
