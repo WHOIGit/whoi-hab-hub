@@ -101,7 +101,11 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
+            # remove all Bins
+            bins = dataset.bins.all()
+            bins.delete()
             print(f"DATASET: {dataset}")
+            print(f"Bins deleted")
             # update DB with any new Bins, then replace all existing IFCB data
             _get_ifcb_bins_dataset(dataset)
             bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
@@ -114,6 +118,10 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
                 print(f"{bin} processed.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
+        # remove all Bins
+        bins = dataset_obj.bins.all()
+        bins.delete()
+        print(f"Bins deleted")
         # update DB with any new Bins, then replace all existing IFCB data
         _get_ifcb_bins_dataset(dataset_obj)
         bins = dataset_obj.bins.filter(sample_time__range=(start_date, end_date))
@@ -157,7 +165,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
             print(row["pid"])
             # check if "skip" value is true
             # check for valid long/lat. Skip row if no valid geo data
-            if row["skip"] == 1:
+            if row["skip"] == "1":
                 print("Skip value set to 1, skipping row")
                 continue
 

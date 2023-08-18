@@ -44,7 +44,7 @@ function handleSmoothingFactor(startDate, endDate) {
   let newFactor = 8;
 
   if (dateRange < 180) {
-    newFactor = 2;
+    newFactor = 1;
   } else if (dateRange < 240) {
     newFactor = 3;
   }

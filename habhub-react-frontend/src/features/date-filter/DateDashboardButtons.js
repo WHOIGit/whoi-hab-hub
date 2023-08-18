@@ -52,7 +52,7 @@ export default function DateDashboardButtons({
 
   const onCurrentDataClick = () => {
     let end = new Date();
-    let start = sub(end, { months: 1 });
+    let start = sub(end, { months: 3 });
     // trigger Redux dispatch function to send data
     const payload = {
       startDate: start.toISOString(),
