@@ -139,17 +139,18 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
         qs = self.get_queryset()
 
         for station in qs:
-            row = [
-                station.station_name,
-                station.station_location,
-                station.state,
-                str(station.geom.coords[1]),
-                str(station.geom.coords[0]),
-                "Alexandrium catenella",
-                "measurement_date",
-                "measurement",
-                "micrograms/100 g meat",
-            ]
-            print(row)
-            writer.writerow(row)
+            for datapoint in station.datapoints.all():
+                row = [
+                    station.station_name,
+                    station.station_location,
+                    station.state,
+                    str(station.geom.coords[1]),
+                    str(station.geom.coords[0]),
+                    "Alexandrium catenella",
+                    datapoint.measurement_date,
+                    datapoint.measurement,
+                    "micrograms/100 g meat",
+                ]
+                print(row)
+                writer.writerow(row)
         return response
