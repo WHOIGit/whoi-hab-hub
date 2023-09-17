@@ -1,7 +1,9 @@
 import datetime
 import csv
+from dateutil.relativedelta import relativedelta
 
 from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import generics, viewsets, status
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
@@ -42,8 +44,13 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+        else:
+            start_date_obj = timezone.now() - relativedelta(years=1)
+
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        else:
+            end_date_obj = timezone.now()
 
         if start_date and end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series

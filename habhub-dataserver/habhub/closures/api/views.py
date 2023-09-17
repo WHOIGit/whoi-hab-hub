@@ -1,5 +1,5 @@
 import datetime
-
+from dateutil.relativedelta import relativedelta
 from rest_framework import generics, viewsets
 from django_filters import rest_framework as filters
 from django.utils import timezone
@@ -47,15 +47,11 @@ class ShellfishAreaViewSet(viewsets.ReadOnlyModelViewSet):
         exclude_month_range = (
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
-        try:
-            earliest_closure = ClosureNotice.objects.earliest()
-        except ClosureNotice.DoesNotExist:
-            return queryset
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = earliest_closure.effective_date
+            start_date_obj = timezone.now() - relativedelta(years=1)
 
         # filter queryset by States if available
         if states:

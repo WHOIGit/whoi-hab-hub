@@ -1,5 +1,5 @@
 import datetime
-
+from dateutil.relativedelta import relativedelta
 from django.db.models import Prefetch, F, Q
 from django.utils import timezone
 from django.utils.timezone import make_aware
@@ -21,19 +21,14 @@ class BinFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
-
-        try:
-            earliest_bin = Bin.objects.earliest()
-        except Bin.DoesNotExist:
-            return queryset
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = earliest_bin.sample_time
+            start_date_obj = timezone.now() - relativedelta(years=1)
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -116,19 +111,17 @@ class DatasetFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
-
-        try:
-            earliest_bin = Bin.objects.earliest()
-        except Bin.DoesNotExist:
-            return queryset
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = earliest_bin.sample_time
+            start_date_obj = timezone.now() - relativedelta(years=1)
+
+        print(start_date_obj)
+        print("SMOOTHING", smoothing_factor)
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
