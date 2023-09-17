@@ -158,6 +158,5 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
                     datapoint.measurement,
                     "micrograms/100 g meat",
                 ]
-                print(row)
                 writer.writerow(row)
         return response
