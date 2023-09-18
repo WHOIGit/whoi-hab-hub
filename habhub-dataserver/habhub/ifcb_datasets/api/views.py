@@ -128,6 +128,7 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
             return Response(cached_data)
 
         print("RUNNING QUERY")
+        print("USER", request.user)
         queryset = Bin.objects.filter(
             cell_concentration_data__isnull=False, geom__isnull=False
         )
