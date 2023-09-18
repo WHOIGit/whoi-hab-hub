@@ -12,7 +12,10 @@ from habhub.ifcb_datasets.api.views import (
     BinViewSet,
     BinSpatialGridViewSet,
 )
-from habhub.closures.api.views import ShellfishAreaViewSet
+from habhub.closures.api.views import (
+    ShellfishAreaViewSet,
+    ShellfishAreaAllDataViewSet,
+)
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
@@ -24,6 +27,7 @@ router.register(r"ifcb-datasets", DatasetViewSet, "ifcb-datasets")
 router.register(r"ifcb-spatial-grid", BinSpatialGridViewSet, "ifcb-spatial-grid")
 router.register(r"ifcb-bins", BinViewSet, "ifcb-bins")
 router.register(r"closures", ShellfishAreaViewSet, "closures")
+router.register(r"area-closures", ShellfishAreaAllDataViewSet, "area-closures")
 router.register(r"stations", StationViewSet, "stations")
 
 app_name = "api_v1"
