@@ -89,6 +89,34 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} processed.")
 
 
+def _handle_dataset_reset(dataset, start_date=None, end_date=None):
+
+    # if date range, limit the reset range
+    if start_date:
+        bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+    else:
+        bins = dataset.bins.all()
+
+    bins.delete()
+    print(f"DATASET: {dataset}")
+    print(f"Bins deleted")
+    # update DB with any new Bins, then replace all existing IFCB data
+    _get_ifcb_bins_dataset(dataset)
+
+    if start_date:
+        bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+    else:
+        bins = dataset.bins.all()
+
+    print(bins.count())
+    for bin in bins:
+        print("Start autoclass processing...")
+        _get_ifcb_autoclass_file(bin)
+        print("Start calculating metrics from scores..")
+        _calculate_metrics(bin)
+        print(f"{bin} processed.")
+
+
 def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     """
     recreate all IFCB data for all Bins in all Datasets or single Dataset
@@ -101,70 +129,10 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
-            # if date range, limit the reset range
-            if start_date and end_date:
-                start_date_obj = datetime.datetime.strptime(
-                    start_date, "%Y-%m-%d"
-                ).date()
-                end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-                bins = dataset.bins.filter(
-                    sample_time__range=(start_date_obj, end_date_obj)
-                )
-            else:
-                bins = dataset.bins.all()
-
-            bins.delete()
-            print(f"DATASET: {dataset}")
-            print(f"Bins deleted")
-            # update DB with any new Bins, then replace all existing IFCB data
-            _get_ifcb_bins_dataset(dataset)
-
-            if start_date and end_date:
-                bins = dataset.bins.filter(
-                    sample_time__range=(start_date_obj, end_date_obj)
-                )
-            else:
-                bins = dataset.bins.all()
-
-            print(bins.count())
-            for bin in bins:
-                print("Start autoclass processing...")
-                _get_ifcb_autoclass_file(bin)
-                print("Start calculating metrics from scores..")
-                _calculate_metrics(bin)
-                print(f"{bin} processed.")
+            _handle_dataset_reset(dataset, start_date, end_date)
     else:
-        dataset_obj = Dataset.objects.get(id=dataset_id)
-        # if date range, limit the reset range
-        if start_date and end_date:
-            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-            bins = dataset_obj.bins.filter(
-                sample_time__range=(start_date_obj, end_date_obj)
-            )
-        else:
-            bins = dataset_obj.bins.all()
-
-        bins.delete()
-        print(f"Bins deleted")
-
-        # update DB with any new Bins
-        _get_ifcb_bins_dataset(dataset_obj)
-
-        if start_date and end_date:
-            bins = dataset_obj.bins.filter(
-                sample_time__range=(start_date_obj, end_date_obj)
-            )
-        else:
-            bins = dataset_obj.bins.all()
-
-        print(bins.count())
-        for bin in bins:
-            print("Start autoclass processing...")
-            _get_ifcb_autoclass_file(bin)
-            print("Start calculating metrics from scores..")
-            _calculate_metrics(bin)
-            print(f"{bin} processed.")
+        dataset = Dataset.objects.get(id=dataset_id)
+        _handle_dataset_reset(dataset, start_date, end_date)
     print("Complete data ingestion.")
 
 

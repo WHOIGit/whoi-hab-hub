@@ -5,7 +5,7 @@ from habhub.ifcb_datasets.models import Dataset, Bin
 
 
 class Command(BaseCommand):
-    help = "Reset all IFCB data for a specific Dataset. Enter the Dashboard ID name as an argument"
+    help = "Reset all IFCB data for a specific Dataset. Args: --datasets Enter the Dashboard ID names as an argument, separate with + sign for multiple datasets. Enter optional --start_date and --end_date range in yyyy-mm-dd format"
 
     def add_arguments(self, parser):
         parser.add_argument("--datasets", nargs="+", type=str)
