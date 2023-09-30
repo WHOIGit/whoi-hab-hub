@@ -101,14 +101,31 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
-            # remove all Bins
-            bins = dataset.bins.all()
+            # if date range, limit the reset range
+            if start_date and end_date:
+                start_date_obj = datetime.datetime.strptime(
+                    start_date, "%Y-%m-%d"
+                ).date()
+                end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+                bins = dataset.bins.filter(
+                    sample_time__range=(start_date_obj, end_date_obj)
+                )
+            else:
+                bins = dataset.bins.all()
+
             bins.delete()
             print(f"DATASET: {dataset}")
             print(f"Bins deleted")
             # update DB with any new Bins, then replace all existing IFCB data
             _get_ifcb_bins_dataset(dataset)
-            bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+
+            if start_date and end_date:
+                bins = dataset.bins.filter(
+                    sample_time__range=(start_date_obj, end_date_obj)
+                )
+            else:
+                bins = dataset.bins.all()
+
             print(bins.count())
             for bin in bins:
                 print("Start autoclass processing...")
@@ -118,13 +135,29 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
                 print(f"{bin} processed.")
     else:
         dataset_obj = Dataset.objects.get(id=dataset_id)
-        # remove all Bins
-        bins = dataset_obj.bins.all()
+        # if date range, limit the reset range
+        if start_date and end_date:
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+            bins = dataset_obj.bins.filter(
+                sample_time__range=(start_date_obj, end_date_obj)
+            )
+        else:
+            bins = dataset_obj.bins.all()
+
         bins.delete()
         print(f"Bins deleted")
-        # update DB with any new Bins, then replace all existing IFCB data
+
+        # update DB with any new Bins
         _get_ifcb_bins_dataset(dataset_obj)
-        bins = dataset_obj.bins.filter(sample_time__range=(start_date, end_date))
+
+        if start_date and end_date:
+            bins = dataset_obj.bins.filter(
+                sample_time__range=(start_date_obj, end_date_obj)
+            )
+        else:
+            bins = dataset_obj.bins.all()
+
         print(bins.count())
         for bin in bins:
             print("Start autoclass processing...")
