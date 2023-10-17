@@ -1,5 +1,5 @@
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM node:14 AS builder
+FROM node:18.17-bullseye AS builder
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 

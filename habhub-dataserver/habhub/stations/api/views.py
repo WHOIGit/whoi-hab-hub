@@ -4,16 +4,13 @@ from dateutil.relativedelta import relativedelta
 
 from django.http import HttpResponse
 from django.utils import timezone
-from rest_framework import generics, viewsets, status
-from rest_framework.settings import api_settings
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from django_filters import rest_framework as filters
-from django.db import models
 from django.utils.timezone import make_aware
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.db.models import Prefetch, F, Count, Q
+from django.db.models import Prefetch, F, Q
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -25,11 +22,10 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StationSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("station_name", "station_location")
-    """
+    
     @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    """
 
     def get_queryset(self):
         queryset = Station.objects.exclude(datapoints__isnull=True)

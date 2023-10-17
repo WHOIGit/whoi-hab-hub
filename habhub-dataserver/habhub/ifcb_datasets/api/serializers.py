@@ -7,8 +7,6 @@ from rest_framework_gis.serializers import (
     GeoFeatureModelSerializer,
 )
 from rest_framework_gis.fields import GeometryField
-from django.contrib.gis.geos import Point, Polygon
-from django.contrib.gis.db.models import Extent
 
 from ..models import Dataset, Bin
 from habhub.core.models import TargetSpecies, Metric, DataLayer

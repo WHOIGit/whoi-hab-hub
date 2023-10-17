@@ -103,7 +103,7 @@ class DatasetFiltersMixin:
     custom mixin to handle all filtering by query_params for IFCB Datasets
     """
 
-    def handle_query_param_filters(self, queryset, is_fixed_location=True):
+    def handle_query_param_filters(self, queryset):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
@@ -114,6 +114,11 @@ class DatasetFiltersMixin:
         smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
+        fixed_locations = self.request.query_params.get("fixed_locations", False)
+
+        # limit results to only fixed locations for HABHub map
+        if fixed_locations:
+            queryset = queryset.filter(fixed_location=True)
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -131,13 +136,7 @@ class DatasetFiltersMixin:
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()
         # geo_q_filters = Q()
-        # add Geographic filter is this is SPATIAL dataset
-        """
-        if not is_fixed_location:
-            geo_q_filters = Q(
-                sample_time__range=(dr["start_date"], dr["end_date"])
-            )
-        """
+        
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
             if seasonal:
