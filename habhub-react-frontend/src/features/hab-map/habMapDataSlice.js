@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
-const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
+const MAP_LATITUDE = parseFloat(import.meta.env.VITE_MAP_LATITUDE);
+const MAP_LONGITUDE = parseFloat(import.meta.env.VITE_MAP_LONGITUDE);
 
 const initialState = {
   latitude: MAP_LATITUDE,

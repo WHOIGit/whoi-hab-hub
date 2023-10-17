@@ -8,14 +8,14 @@ import { changeDateRange } from "../features/date-filter/dateFilterSlice";
 // Get user set startDate from .env if available
 let defaultStartDate;
 if (
-  process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS &&
-  process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS &&
-  process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS
+  import.meta.env.VITE_INITIAL_DATE_RANGE_YEARS &&
+  import.meta.env.VITE_INITIAL_DATE_RANGE_MONTHS &&
+  import.meta.env.VITE_INITIAL_DATE_RANGE_DAYS
 ) {
   defaultStartDate = sub(new Date(), {
-    years: process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS,
-    months: process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS,
-    days: process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS,
+    years: import.meta.env.VITE_INITIAL_DATE_RANGE_YEARS,
+    months: import.meta.env.VITE_INITIAL_DATE_RANGE_MONTHS,
+    days: import.meta.env.VITE_INITIAL_DATE_RANGE_DAYS,
   }).toISOString();
 }
 

@@ -26,8 +26,6 @@ import {
 } from "./habMapDataSlice";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-//const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-
 const navStyle = {
   position: "absolute",
   bottom: 72,
@@ -64,9 +62,9 @@ const initialGridZoomArray = [
   { gridLength: 1.0, maxZoom: 5, minZoom: 0, isActive: false },
 ];
 
-const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
-const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
-const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
+const MAP_LATITUDE = parseFloat(import.meta.env.VITE_MAP_LATITUDE);
+const MAP_LONGITUDE = parseFloat(import.meta.env.VITE_MAP_LONGITUDE);
+const MAP_ZOOM = parseFloat(import.meta.env.VITE_MAP_ZOOM);
 
 const defaultViewport = {
   latitude: MAP_LATITUDE,

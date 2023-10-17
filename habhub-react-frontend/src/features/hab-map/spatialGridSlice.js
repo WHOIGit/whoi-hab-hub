@@ -7,7 +7,7 @@ import booleanIntersects from "@turf/boolean-intersects";
 import * as turfMeta from "@turf/meta";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const gridLengths = [40, 70, 150];
 const initialState = {
@@ -16,18 +16,18 @@ const initialState = {
   gridJson: {},
   cellSide: 70,
   status: "idle",
-  error: null
+  error: null,
 };
 
-const createGridSquares = bbox => {
+const createGridSquares = (bbox) => {
   const options = {
     units: "kilometers",
-    properties: { isActive: false }
+    properties: { isActive: false },
   };
-  const newGrid = gridLengths.map(item => {
+  const newGrid = gridLengths.map((item) => {
     const gridCollection = squareGrid(bbox, item, options);
 
-    return gridCollection.features.map(feature => {
+    return gridCollection.features.map((feature) => {
       feature.id = uuidv4();
       feature.gridLength = item;
       return feature;
@@ -61,7 +61,7 @@ export const spatialGridSlice = createSlice({
 
       const mapPoly = bboxPolygon(state.gridBoundingBox);
 
-      newGrid.forEach(item => {
+      newGrid.forEach((item) => {
         if (booleanIntersects(item, mapPoly)) {
           item.properties.isActive = true;
         } else {
@@ -73,17 +73,17 @@ export const spatialGridSlice = createSlice({
     changeActiveGridSquares: (state, action) => {
       const bbox = action.payload.mapBounds;
       const mapPoly = bboxPolygon(bbox);
-      state.gridSquares.forEach(item => {
+      state.gridSquares.forEach((item) => {
         if (booleanIntersects(item, mapPoly)) {
           item.properties.isActive = true;
         } else {
           item.properties.isActive = false;
         }
       });
-    }
+    },
   },
   extraReducers: {
-    [fetchBoundingBox.pending]: state => {
+    [fetchBoundingBox.pending]: (state) => {
       state.status = "loading";
     },
     [fetchBoundingBox.fulfilled]: (state, action) => {
@@ -96,15 +96,13 @@ export const spatialGridSlice = createSlice({
     [fetchBoundingBox.rejected]: (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
-    }
-  }
+    },
+  },
 });
 
 // Action creators are generated for each case reducer function
-export const {
-  changeGridZoom,
-  changeActiveGridSquares
-} = spatialGridSlice.actions;
+export const { changeGridZoom, changeActiveGridSquares } =
+  spatialGridSlice.actions;
 
 export default spatialGridSlice.reducer;
 
@@ -113,7 +111,7 @@ export default spatialGridSlice.reducer;
 // return only the currently visible layers by Zoom level
 export const selectActiveGridSquaresByZoom = (state, gridLength) => {
   const squares = state.spatialGrid.gridSquares.filter(
-    item => item.properties.isActive && item.gridLength == gridLength
+    (item) => item.properties.isActive && item.gridLength == gridLength
   );
   return squares;
 };

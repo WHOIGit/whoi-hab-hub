@@ -24,7 +24,7 @@ OfflineExporting(Highcharts);
 Boost(Highcharts);
 
 // eslint-disable-next-line no-undef
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 const expandWidth = window.outerWidth - 430;
 
 const useStyles = makeStyles(() => ({
