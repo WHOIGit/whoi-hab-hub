@@ -287,3 +287,4 @@ celerybeat-schedule
 !.envs.example/
 
 .vscode/
+dist/

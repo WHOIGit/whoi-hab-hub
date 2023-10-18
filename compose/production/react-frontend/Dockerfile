@@ -20,7 +20,7 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
 # Copy static assets from builder stage
-COPY --from=builder /app/build .
+COPY --from=builder /app/dist .
 
 # Copy nginx conf file to
 COPY ./compose/production/react-frontend/nginx.conf /etc/nginx/conf.d/default.conf
