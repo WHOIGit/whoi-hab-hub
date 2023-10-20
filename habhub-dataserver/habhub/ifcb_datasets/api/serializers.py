@@ -86,6 +86,8 @@ class DatasetDetailSerializer(DatasetListSerializer):
                         data_dict = {
                             "sample_time": date_str,
                             "bin_pid": bin.pid,
+                            "latitude": bin.geom.coords[1],
+                            "longitude": bin.geom.coords[0],
                             "metrics": [],
                         }
 
