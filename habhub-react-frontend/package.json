@@ -18,7 +18,7 @@
     "@turf/points-within-polygon": "^6.4.0",
     "@turf/square-grid": "^6.4.0",
     "@vitejs/plugin-react-swc": "^3.4.0",
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "clsx": "^1.1.1",
     "date-fns": "^2.16.1",
     "ga-4-react": "^0.1.281",
