@@ -7,8 +7,8 @@ import { ENVIRONMENTS, SPECIES_TYPES } from "../../Constants";
 
 let INITIAL_SPECIES_LIST = null;
 // eslint-disable-next-line no-undef
-if (process.env.REACT_APP_INITIAL_SPECIES_LIST) {
-  INITIAL_SPECIES_LIST = process.env.REACT_APP_INITIAL_SPECIES_LIST.split(",");
+if (import.meta.env.VITE_INITIAL_SPECIES_LIST) {
+  INITIAL_SPECIES_LIST = import.meta.env.VITE_INITIAL_SPECIES_LIST.split(",");
 }
 
 const initialState = {

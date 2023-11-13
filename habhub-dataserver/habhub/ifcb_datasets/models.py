@@ -17,7 +17,7 @@ class Dataset(models.Model):
     location = models.CharField(max_length=100, null=False, blank=True)
     geom = models.PointField(srid=4326, null=True, blank=True)
     # base URL for IFCB dashboard for data ingestion
-    dashboard_base_url = models.URLField(
+    dashboard_base_url = models.CharField(
         max_length=200, default="https://habon-ifcb.whoi.edu"
     )
     # the lookup name from the IFCB dashboard
@@ -34,9 +34,10 @@ class Dataset(models.Model):
     def __str__(self):
         return f"{self.name} - {self.location}"
 
-    def reset_bin_data(self):
+    def reset_bin_data(self, start_date=None, end_date=None):
         print("Data Reset Method -", self.id)
-        reset_ifcb_dataset_data.delay(self.id)
+        print("Dates: ", start_date, end_date)
+        reset_ifcb_dataset_data.delay(self.id, start_date, end_date)
         return f"{self.name} data reset started"
 
     def get_data_layer_metrics(self):
@@ -150,6 +151,7 @@ class Bin(models.Model):
     )
     # cell_concentration: cells/L (image_numbers / bin.ml_analyzed) * 1000
     cell_concentration_data = models.JSONField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     objects = BinQuerySet.as_manager()
 

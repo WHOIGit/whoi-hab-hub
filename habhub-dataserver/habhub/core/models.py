@@ -168,6 +168,9 @@ class MapBookmark(models.Model):
     zoom = models.DecimalField(max_digits=7, decimal_places=5)
     seasonal = models.BooleanField(default=False)
     exclude_month_range = models.BooleanField(default=False)
+    max_mean = models.CharField(max_length=20, default="mean")
+    active_features = models.JSONField(null=True, blank=True)
+    relative_date_range = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["id"]

@@ -1,5 +1,5 @@
 import datetime
-
+from dateutil.relativedelta import relativedelta
 from django.db.models import Prefetch, F, Q
 from django.utils import timezone
 from django.utils.timezone import make_aware
@@ -21,19 +21,14 @@ class BinFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
-
-        try:
-            earliest_bin = Bin.objects.earliest()
-        except Bin.DoesNotExist:
-            return queryset
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = earliest_bin.sample_time
+            start_date_obj = timezone.now() - relativedelta(years=1)
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -108,7 +103,7 @@ class DatasetFiltersMixin:
     custom mixin to handle all filtering by query_params for IFCB Datasets
     """
 
-    def handle_query_param_filters(self, queryset, is_fixed_location=True):
+    def handle_query_param_filters(self, queryset):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
@@ -116,19 +111,22 @@ class DatasetFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
+        fixed_locations = self.request.query_params.get("fixed_locations", False)
 
-        try:
-            earliest_bin = Bin.objects.earliest()
-        except Bin.DoesNotExist:
-            return queryset
+        # limit results to only fixed locations for HABHub map
+        if fixed_locations:
+            queryset = queryset.filter(fixed_location=True)
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = earliest_bin.sample_time
+            start_date_obj = timezone.now() - relativedelta(years=1)
+
+        print(start_date_obj)
+        print("SMOOTHING", smoothing_factor)
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -138,13 +136,7 @@ class DatasetFiltersMixin:
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()
         # geo_q_filters = Q()
-        # add Geographic filter is this is SPATIAL dataset
-        """
-        if not is_fixed_location:
-            geo_q_filters = Q(
-                sample_time__range=(dr["start_date"], dr["end_date"])
-            )
-        """
+        
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
             if seasonal:

@@ -8,6 +8,7 @@ import { CircularProgress } from "@material-ui/core";
 import axiosInstance from "../../app/apiAxios";
 import { DATA_LAYERS } from "../../Constants";
 import ClosuresIconLayer from "./ClosuresIconLayer";
+import ClosuresLayerDialog from "../data-layers/ClosuresLayerDialog";
 
 // eslint-disable-next-line no-unused-vars
 const useStyles = makeStyles((theme) => ({
@@ -116,6 +117,7 @@ export default function ClosuresLayer({ layerID }) {
 
       {results && (
         <React.Fragment>
+          <ClosuresLayerDialog />
           <Source
             id={layerID + "-src"}
             key={layerID + "-src"}

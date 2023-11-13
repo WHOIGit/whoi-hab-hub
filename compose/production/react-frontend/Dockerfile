@@ -1,5 +1,5 @@
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM node:14 AS builder
+FROM node:18.17-bullseye AS builder
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 
@@ -20,7 +20,7 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
 # Copy static assets from builder stage
-COPY --from=builder /app/build .
+COPY --from=builder /app/dist .
 
 # Copy nginx conf file to
 COPY ./compose/production/react-frontend/nginx.conf /etc/nginx/conf.d/default.conf

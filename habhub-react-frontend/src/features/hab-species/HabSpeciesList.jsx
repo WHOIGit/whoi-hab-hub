@@ -3,20 +3,20 @@ import { Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import { useSelector } from "react-redux";
 import HabSpeciesColorChip from "./HabSpeciesColorChip";
-
+import HabSpeciesNameDisplay from "./HabSpeciesNameDisplay";
 const useStyles = makeStyles(() => ({
   formControl: {
-    width: "100%"
-  }
+    width: "100%",
+  },
 }));
 
 export default function HabSpeciesList() {
-  const habSpecies = useSelector(state => state.habSpecies.species);
+  const habSpecies = useSelector((state) => state.habSpecies.species);
   const classes = useStyles();
 
   return (
     <Grid container spacing={0}>
-      {habSpecies.map(species => {
+      {habSpecies.map((species) => {
         return (
           <>
             <Grid item xs={2}>
@@ -35,7 +35,7 @@ export default function HabSpeciesList() {
                 color="textSecondary"
                 className={classes.labelText}
               >
-                <em>{species.displayName}</em> / {species.syndrome}
+                <HabSpeciesNameDisplay species={species} />
               </Typography>
             </Grid>
           </>

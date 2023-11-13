@@ -6,14 +6,9 @@ import datetime
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
-from django.utils.timezone import make_aware
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-from django.db import models
-from django.db.models import Prefetch, F, Q
-from django.contrib.gis.db.models import Extent
 
 from habhub.core.models import TargetSpecies
 from ..models import Dataset, Bin
@@ -103,7 +98,7 @@ class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        queryset = Dataset.objects.filter(fixed_location=True).defer("bins")
+        queryset = Dataset.objects.all().defer("bins")
         # call custom filter method from mixin
         queryset = self.handle_query_param_filters(queryset)
         return queryset
@@ -128,6 +123,7 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
             return Response(cached_data)
 
         print("RUNNING QUERY")
+        print("USER", request.user)
         queryset = Bin.objects.filter(
             cell_concentration_data__isnull=False, geom__isnull=False
         )

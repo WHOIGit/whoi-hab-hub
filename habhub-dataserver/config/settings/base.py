@@ -83,6 +83,7 @@ THIRD_PARTY_APPS = [
     "drf_multiple_model",
     "rest_framework_csv",
     "colorfield",
+    "rest_framework.authtoken",
 ]
 LOCAL_APPS = [
     "habhub.users.apps.UsersAppConfig",
@@ -287,11 +288,16 @@ REST_FRAMEWORK = {
     # When you enable API versioning, the request.version attribute will contain a string
     # that corresponds to the version requested in the incoming client request.
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ),
     "DEFAULT_PERMISSION_CLASSES": [],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #    'rest_framework.permissions.IsAuthenticated',
-    # ]
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
 }
 
 # django-cors-headers settings
@@ -327,10 +333,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
         "schedule": crontab(minute=30, hour="*/3"),
     },
-    "prewarm_api_cache_task": {
-        "task": "habhub.core.tasks.prewarm_api_cache",
-        "schedule": crontab(minute="*/5"),
-    },
+    # "prewarm_api_cache_task": {
+    #    "task": "habhub.core.tasks.prewarm_api_cache",
+    #    "schedule": crontab(minute="*/5"),
+    # },
 }
 
 # Summernote config

@@ -16,12 +16,15 @@ import {
   selectInteractiveLayerIds,
   selectVisibleLayerIds,
 } from "../data-layers/dataLayersSlice";
-import { selectActiveGuideStep } from "../guide/guideSlice";
-import { DATA_LAYERS, METRIC_IDS } from "../../Constants";
-import { changeMapData } from "./habMapDataSlice";
+import { DATA_LAYERS, METRIC_IDS, INTERACTIVE_LAYERS } from "../../Constants";
+import {
+  changeMapData,
+  selectActiveFeatues,
+  addFeature,
+  deleteFeature,
+  setAllFeatures,
+} from "./habMapDataSlice";
 import "maplibre-gl/dist/maplibre-gl.css";
-
-//const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const navStyle = {
   position: "absolute",
@@ -59,9 +62,9 @@ const initialGridZoomArray = [
   { gridLength: 1.0, maxZoom: 5, minZoom: 0, isActive: false },
 ];
 
-const MAP_LATITUDE = parseFloat(process.env.REACT_APP_MAP_LATITUDE);
-const MAP_LONGITUDE = parseFloat(process.env.REACT_APP_MAP_LONGITUDE);
-const MAP_ZOOM = parseFloat(process.env.REACT_APP_MAP_ZOOM);
+const MAP_LATITUDE = parseFloat(import.meta.env.VITE_MAP_LATITUDE);
+const MAP_LONGITUDE = parseFloat(import.meta.env.VITE_MAP_LONGITUDE);
+const MAP_ZOOM = parseFloat(import.meta.env.VITE_MAP_ZOOM);
 
 const defaultViewport = {
   latitude: MAP_LATITUDE,
@@ -74,11 +77,9 @@ export default function HabMap({ bookmarkViewport }) {
 
   const visibleLayerIds = useSelector(selectVisibleLayerIds);
   // only refers to map layer that use the Mapbox Layer/Source properties
-  const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
-  const activeGuideStep = useSelector(selectActiveGuideStep);
+  //const interactiveLayerIds = useSelector(selectInteractiveLayerIds);
+  const features = useSelector(selectActiveFeatues);
   const [viewport, setViewport] = useState(defaultViewport);
-  const [features, setFeatures] = useState([]);
-  const [mapBounds, setMapBounds] = useState(null);
   const [gridZoomRange, setGridZoomRange] = useState(initialGridZoomArray);
   // eslint-disable-next-line no-unused-vars
   const [yAxisScale, setYAxisScale] = useState("linear");
@@ -95,7 +96,8 @@ export default function HabMap({ bookmarkViewport }) {
     const newFeatures = features.filter((feature) =>
       visibleLayerIds.includes(feature.layerID)
     );
-    setFeatures(newFeatures);
+    //setFeatures(newFeatures);
+    dispatch(setAllFeatures(newFeatures));
   }, [visibleLayerIds]);
 
   /*
@@ -127,21 +129,6 @@ export default function HabMap({ bookmarkViewport }) {
     return zoom;
   };
 
-  const handleMapBoundsUpdates = (viewport) => {
-    // Get the map viewport bounds, set state to load spatial data
-    if (mapRef.current !== undefined) {
-      const mapObj = mapRef.current.getMap();
-      const bounds = mapObj.getBounds();
-      const bbox = [
-        bounds._sw.lng,
-        bounds._sw.lat,
-        bounds._ne.lng,
-        bounds._ne.lat,
-      ];
-      setMapBounds(bbox);
-    }
-  };
-
   const handleZoomUpdates = () => {
     // set the zoom levels for Spatial Grid
     const currentZoomRange = gridZoomRange.find((item) => item.isActive);
@@ -171,22 +158,17 @@ export default function HabMap({ bookmarkViewport }) {
     }
   };
 
-  const onMapLoad = () => {
-    // set the initial bbox/zoom levels for Spatial Grid
-    handleMapBoundsUpdates(viewport);
-  };
-
   const onMapClick = (event) => {
     console.log("MAP CLICK");
     const mapFeatures = mapRef.current.queryRenderedFeatures(event.point);
     const feature = mapFeatures[0];
-    console.log(feature);
     if (
       feature !== undefined &&
-      interactiveLayerIds.includes(feature.layer.id)
+      INTERACTIVE_LAYERS.includes(feature.layer.id)
     ) {
-      feature.layerID = feature.layer.id;
-      setFeatures([feature, ...features]);
+      console.log(feature);
+      const payload = { id: feature.id, layerID: feature.properties.layerID };
+      dispatch(addFeature(payload));
     }
   };
 
@@ -194,12 +176,13 @@ export default function HabMap({ bookmarkViewport }) {
     console.log("MARKER CLICK");
     feature.layerID = layerID;
     feature.metricID = metricID;
-    setFeatures([feature, ...features]);
+    const payload = { id: feature.id, layerID: layerID, metricID: metricID };
+    dispatch(addFeature(payload));
   };
 
   const onPaneClose = (featureID) => {
-    const newFeatures = features.filter((feature) => feature.id !== featureID);
-    setFeatures(newFeatures);
+    const payload = featureID;
+    dispatch(deleteFeature(payload));
   };
 
   const renderMarkerLayer = (layerID) => {
@@ -283,8 +266,7 @@ export default function HabMap({ bookmarkViewport }) {
           reuseMaps={true}
           style={{ height: "100vh", width: "100%" }}
           onClick={(event) => onMapClick(event)}
-          //onLoad={onMapLoad}
-          interactiveLayerIds={interactiveLayerIds}
+          //interactiveLayerIds={interactiveLayerIds}
           //preserveDrawingBuffer={true}
           onZoomEnd={handleZoomUpdates}
           ref={mapRef}

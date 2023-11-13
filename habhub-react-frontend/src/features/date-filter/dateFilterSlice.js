@@ -18,14 +18,14 @@ let defaultStartDate = sub(new Date(), {
 
 // Get user set startDate from .env if available
 if (
-  process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS &&
-  process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS &&
-  process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS
+  import.meta.env.VITE_INITIAL_DATE_RANGE_YEARS &&
+  import.meta.env.VITE_INITIAL_DATE_RANGE_MONTHS &&
+  import.meta.env.VITE_INITIAL_DATE_RANGE_DAYS
 ) {
   defaultStartDate = sub(new Date(), {
-    years: process.env.REACT_APP_INITIAL_DATE_RANGE_YEARS,
-    months: process.env.REACT_APP_INITIAL_DATE_RANGE_MONTHS,
-    days: process.env.REACT_APP_INITIAL_DATE_RANGE_DAYS,
+    years: import.meta.env.VITE_INITIAL_DATE_RANGE_YEARS,
+    months: import.meta.env.VITE_INITIAL_DATE_RANGE_MONTHS,
+    days: import.meta.env.VITE_INITIAL_DATE_RANGE_DAYS,
   }).toISOString();
 }
 
@@ -44,7 +44,7 @@ function handleSmoothingFactor(startDate, endDate) {
   let newFactor = 8;
 
   if (dateRange < 180) {
-    newFactor = 2;
+    newFactor = 1;
   } else if (dateRange < 240) {
     newFactor = 3;
   }

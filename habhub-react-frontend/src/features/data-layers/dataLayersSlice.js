@@ -12,8 +12,8 @@ const legendLayerIds = [
   DATA_LAYERS.cellConcentrationSpatialGridLayer,
 ];
 const interactiveLayerIds = [
-  DATA_LAYERS.closuresLayer,
-  DATA_LAYERS.closuresSeasonalLayer,
+  DATA_LAYERS.closuresIconsLayer,
+  DATA_LAYERS.closuresSeasonalIconsLayer,
 ];
 
 const initialState = {
@@ -74,9 +74,12 @@ export const dataLayersSlice = createSlice({
       // Add any fetched layers to the array
       state.layers = state.layers.concat(action.payload);
       state.layers.forEach((element) => {
+        // hide closures layer by default on load
         // only one of cell_concentration/biovolume can be active at one time
         // default to cell_concentration as initial active layer
         if (
+          element.id === DATA_LAYERS.closuresLayer ||
+          element.id === DATA_LAYERS.closuresSeasonalLayer ||
           element.id === DATA_LAYERS.biovolumeLayer ||
           element.id === DATA_LAYERS.biovolumeSpatialGridLayer
         ) {

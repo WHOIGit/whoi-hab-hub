@@ -1,14 +1,16 @@
 import datetime
+import csv
+from dateutil.relativedelta import relativedelta
 
-from rest_framework import generics, viewsets
-from rest_framework.settings import api_settings
-from rest_framework_csv.renderers import CSVRenderer
+from django.http import HttpResponse
+from django.utils import timezone
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from django_filters import rest_framework as filters
-from django.db import models
 from django.utils.timezone import make_aware
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.db.models import Prefetch, F, Count, Q
+from django.db.models import Prefetch, F, Q
 
 from ..models import Station, Datapoint
 from .serializers import StationSerializer
@@ -16,17 +18,11 @@ from .serializers import StationSerializer
 CACHE_TTL = 60 * 60
 
 
-class StationCSVRenderer(CSVRenderer):
-    header = ["features.id", "features.geometry"]
-    labels = {"features.id": "duck"}
-
-
 class StationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StationSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("station_name", "station_location")
-    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (CSVRenderer,)
-
+    
     @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
@@ -44,8 +40,13 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+        else:
+            start_date_obj = timezone.now() - relativedelta(years=1)
+
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        else:
+            end_date_obj = timezone.now()
 
         if start_date and end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
@@ -116,3 +117,42 @@ class StationViewSet(viewsets.ReadOnlyModelViewSet):
                 .add_station_mean()
             )
         return queryset
+
+    @action(methods=["GET"], detail=False)
+    def download(self, request):
+        response = HttpResponse(content_type="text/csv")
+        response[
+            "Content-Disposition"
+        ] = 'attachment; filename="state-shellfish-toxicity-export.csv"'
+
+        writer = csv.writer(response)
+        header = [
+            "station_name",
+            "station_location",
+            "state",
+            "latitude",
+            "longitude",
+            "hab_species",
+            "measurement_date",
+            "measurement",
+            "metric",
+        ]
+        writer.writerow(header)
+
+        qs = self.get_queryset()
+
+        for station in qs:
+            for datapoint in station.datapoints.all():
+                row = [
+                    station.station_name,
+                    station.station_location,
+                    station.state,
+                    str(station.geom.coords[1]),
+                    str(station.geom.coords[0]),
+                    "Alexandrium catenella",
+                    datapoint.measurement_date,
+                    datapoint.measurement,
+                    "micrograms/100 g meat",
+                ]
+                writer.writerow(row)
+        return response

@@ -11,6 +11,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point, Polygon
+from django.utils import timezone
 
 from habhub.core.constants import METRICS
 
@@ -92,15 +93,42 @@ def run_species_classifed_import(dataset_obj):
         print(f"{bin} aggregate data saved.")
 
 
-def reset_ifcb_data(dataset_id=None):
+def _handle_dataset_reset(dataset, start_date=None, end_date=None):
+    # if date range, limit the reset range
+    if start_date:
+        bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+    else:
+        bins = dataset.bins.all()
+
+    bins.delete()
+    print(f"DATASET: {dataset}")
+    print(f"Bins deleted")
+    # update DB with any new Bins, then replace all existing IFCB data
+    _get_ifcb_bins_dataset(dataset)
+
+    if start_date:
+        bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
+    else:
+        bins = dataset.bins.all()
+
+    print(bins.count())
+    for bin in bins:
+        print("Start autoclass processing...")
+        _get_ifcb_autoclass_file(bin)
+        print("Start calculating metrics from scores..")
+        _calculate_metrics(bin)
+        print(f"{bin} processed.")
+
+
+def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     """
     recreate all IFCB data for all Bins in all Datasets or single Dataset
     this operation may take a long time
     """
-    from .models import Dataset
+    from .models import Dataset, Bin
 
     print("REQUEST DATASET ID ", dataset_id)
-
+    print("API Request Dates: ", start_date, end_date)
     if not dataset_id:
         datasets = Dataset.objects.all()
         for dataset in datasets:
@@ -162,7 +190,7 @@ def _get_ifcb_bins_dataset(dataset_obj):
             print(row["pid"])
             # check if "skip" value is true
             # check for valid long/lat. Skip row if no valid geo data
-            if row["skip"] == 1:
+            if row["skip"] == "1":
                 print("Skip value set to 1, skipping row")
                 continue
 
@@ -327,7 +355,6 @@ def _calculate_metrics(bin_obj):
                     line.decode("utf-8") for line in response_features.iter_lines()
                 )
                 for row in csv.DictReader(lines):
-
                     if row["roi_number"] in image_ids:
                         # convert to cubic microns
                         biovolume = float(row["Biovolume"]) / 21.254

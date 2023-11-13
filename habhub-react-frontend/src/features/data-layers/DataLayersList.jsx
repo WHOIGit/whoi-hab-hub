@@ -8,7 +8,7 @@ import DiamondMarker from "../../images/diamond.svg";
 import CircleMarker from "../../images/circle.svg";
 import TriangleMarker from "../../images/triangle.svg";
 import ClosureIcon from "../../images/icon-shellfish-closure.png";
-import { selectVisibleLayers } from "../data-layers/dataLayersSlice";
+import { selectVisibleLayers } from "./dataLayersSlice";
 
 const useStyles = makeStyles(() => ({
   formControl: {

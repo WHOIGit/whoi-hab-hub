@@ -2,7 +2,6 @@
 import React from "react";
 import {
   FormLabel,
-  FormControl,
   FormGroup,
   FormControlLabel,
   Checkbox,
@@ -13,10 +12,11 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   changeSpeciesVisibility,
   changeSpeciesColor,
-  selectSpeciesByEnvironment,
+  selectSpeciesByType,
 } from "./habSpeciesSlice";
 import { ColorPicker } from "material-ui-color";
 import { PALETTE } from "../../Constants";
+import HabSpeciesNameDisplay from "./HabSpeciesNameDisplay";
 
 const useStyles = makeStyles((theme) => ({
   formGroup: {
@@ -28,12 +28,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
+export default function HabSpeciesSelectByType({ species_type, limitReached }) {
   const dispatch = useDispatch();
   const classes = useStyles();
 
   const speciesList = useSelector((state) =>
-    selectSpeciesByEnvironment(state, environment)
+    selectSpeciesByType(state, species_type)
   );
 
   const handleSpeciesSelect = (event, species) => {
@@ -50,7 +50,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
   }
   return (
     <>
-      <FormLabel component="legend">{environment}</FormLabel>
+      <FormLabel component="legend">{species_type}</FormLabel>
       <FormGroup className={classes.formGroup}>
         {speciesList.map((species) => {
           return (
@@ -88,7 +88,7 @@ export default function HabSpeciesSelectByEnv({ environment, limitReached }) {
                       }
                     />
                   </div>
-                  <em>{species.displayName}</em> / {species.syndrome}
+                  <HabSpeciesNameDisplay species={species} />
                 </Typography>
               }
             />

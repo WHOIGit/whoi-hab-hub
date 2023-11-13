@@ -22,9 +22,10 @@ def get_ifcb_dashboard_data():
 
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
-def reset_ifcb_dataset_data(self, dataset_id=None):
+def reset_ifcb_dataset_data(self, dataset_id=None, start_date=None, end_date=None):
     print("DATASET ID ", dataset_id)
-    reset_ifcb_data(dataset_id)
+    print("Task Dates: ", start_date, end_date)
+    reset_ifcb_data(dataset_id, start_date, end_date)
     # clear the cache of stale results
     cache.clear()
 
