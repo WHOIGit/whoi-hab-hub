@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Prefetch, F, Q
+from django.db.models import Prefetch, F, Q, ExpressionWrapper, CharField
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.contrib.gis.geos import Polygon
@@ -85,7 +85,11 @@ class BinFiltersMixin:
 
         queryset = (
             queryset.filter(date_q_filters)
-            .annotate(smoothing=F("id") % smoothing_factor)
+            .annotate(
+                smoothing=ExpressionWrapper(
+                    F("id") % smoothing_factor, output_field=CharField()
+                )
+            )
             .filter(smoothing=0)
         )
 
@@ -136,7 +140,7 @@ class DatasetFiltersMixin:
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()
         # geo_q_filters = Q()
-        
+
         if start_date or end_date:
             # if "seaonsal" filter is True, need to get multiple date ranges across the time series
             if seasonal:
@@ -187,7 +191,11 @@ class DatasetFiltersMixin:
                 "bins",
                 queryset=Bin.objects.filter(cell_concentration_data__isnull=False)
                 .filter(date_q_filters)
-                .annotate(smoothing=F("id") % smoothing_factor)
+                .annotate(
+                    smoothing=ExpressionWrapper(
+                        F("id") % smoothing_factor, output_field=CharField()
+                    )
+                )
                 .filter(smoothing=0),
             )
         )

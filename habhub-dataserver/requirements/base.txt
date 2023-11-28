@@ -11,14 +11,14 @@ flower==1.0.0  # https://github.com/mher/flower
 
 # Django
 # ------------------------------------------------------------------------------
-django==3.1.14  #   # https://www.djangoproject.com/
+django==3.2.23  #   # https://www.djangoproject.com/
 django-environ==0.8.1  # https://github.com/joke2k/django-environ
 django-model-utils==4.2.0  # https://github.com/jazzband/django-model-utils
 django-allauth==0.45.0  # https://github.com/pennersr/django-allauth
 django-crispy-forms==1.13.0  # https://github.com/django-crispy-forms/django-crispy-forms
 django-redis==5.2.0  # https://github.com/jazzband/django-redis
 django-import-export==2.4.0
-django-storages[boto3]==1.11  # https://github.com/jschneier/django-storages
+django-storages[boto3]==1.14.2  # https://github.com/jschneier/django-storages
 
 # Django REST Framework
 djangorestframework==3.13.1  # https://github.com/encode/django-rest-framework

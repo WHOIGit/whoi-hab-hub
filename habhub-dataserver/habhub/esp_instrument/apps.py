@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class EspInstrumentConfig(AppConfig):
-    name = 'esp_instrument'
+    name = "habhub.esp_instrument"
+    default_auto_field = "django.db.models.BigAutoField"
