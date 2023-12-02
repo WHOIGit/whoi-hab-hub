@@ -1,5 +1,8 @@
 from .base import *  # noqa
 from .base import env
+import os
+import requests
+from storages.backends.s3boto3 import S3Boto3Storage
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -7,7 +10,11 @@ from .base import env
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
-
+# Get the IP addresss for AWS Fargate container from AWS API,
+# add to ALLOWED_HOSTS so AWS Health Checks work
+METADATA_URI = os.environ["ECS_CONTAINER_METADATA_URI"]
+container_metadata = requests.get(METADATA_URI).json()
+ALLOWED_HOSTS.append(container_metadata["Networks"][0]["IPv4Addresses"][0])
 DEBUG = True
 
 # DATABASES
@@ -84,8 +91,6 @@ AWS_S3_REGION_NAME = env("DJANGO_AWS_S3_REGION_NAME", default=None)
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#cloudfront
 AWS_S3_CUSTOM_DOMAIN = env("DJANGO_AWS_S3_CUSTOM_DOMAIN", default=None)
 aws_s3_domain = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-
-from storages.backends.s3boto3 import S3Boto3Storage
 
 
 class StaticRootS3Boto3Storage(S3Boto3Storage):
@@ -172,27 +177,10 @@ LOGGING = {
         },
     },
     "handlers": {
-        "mail_admins": {
-            "level": "ERROR",
-            "filters": ["require_debug_false"],
-            "class": "django.utils.log.AdminEmailHandler",
-        },
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "django.request": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-        "django.security.DisallowedHost": {
-            "level": "ERROR",
-            "handlers": ["console", "mail_admins"],
-            "propagate": True,
         },
     },
 }
