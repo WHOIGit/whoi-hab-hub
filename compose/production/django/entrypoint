@@ -21,13 +21,18 @@ import sys
 import psycopg2
 
 try:
-    psycopg2.connect(
+    conn = psycopg2.connect(
         dbname="${POSTGRES_DB}",
         user="${POSTGRES_USER}",
         password="${POSTGRES_PASSWORD}",
         host="${POSTGRES_HOST}",
         port="${POSTGRES_PORT}",
     )
+    cur = conn.cursor()
+    cur.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+    conn.commit()
+    cur.close()
+    conn.close()
 except psycopg2.OperationalError:
     sys.exit(-1)
 sys.exit(0)
@@ -40,4 +45,10 @@ until postgres_ready; do
 done
 >&2 echo 'PostgreSQL is available'
 
+#python /app/manage.py collectstatic --noinput
+#python /app/manage.py migrate
+# clear out any old Celery Beat files
+# rm -f './celerybeat.pid'
+>&2 echo "Postgres Env variable: ${POSTGRES_USER}"
+#/usr/local/bin/gunicorn config.wsgi --bind 0.0.0.0:8000 --chdir=/app  --access-logfile '-' --error-logfile '-' --capture-output
 exec "$@"
