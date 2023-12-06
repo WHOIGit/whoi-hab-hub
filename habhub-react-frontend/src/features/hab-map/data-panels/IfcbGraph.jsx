@@ -70,7 +70,9 @@ function IfcbGraph({
     const newChartOptions = {
       chart: {
         type: chartType,
-        zoomType: "x",
+        zooming: {
+          type: "x",
+        },
       },
       boost: {
         useGPUTranslations: true,

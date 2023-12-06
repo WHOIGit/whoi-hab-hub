@@ -39,7 +39,9 @@ function StationsGraph({ results, chartExpanded, yAxisScale }) {
     const chartOptions = {
       chart: {
         type: "spline",
-        zoomType: "x",
+        zooming: {
+          type: "x",
+        },
       },
       title: {
         text: null,
