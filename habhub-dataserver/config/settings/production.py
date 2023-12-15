@@ -15,7 +15,7 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
 METADATA_URI = os.environ["ECS_CONTAINER_METADATA_URI"]
 container_metadata = requests.get(METADATA_URI).json()
 ALLOWED_HOSTS.append(container_metadata["Networks"][0]["IPv4Addresses"][0])
-DEBUG = True
+DEBUG = False
 
 # DATABASES
 # ------------------------------------------------------------------------------

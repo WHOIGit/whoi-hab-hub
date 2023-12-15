@@ -21,7 +21,7 @@ class BinFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
 
@@ -115,7 +115,7 @@ class DatasetFiltersMixin:
             self.request.query_params.get("exclude_month_range", None) == "true"
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
-        smoothing_factor = self.request.query_params.get("smoothing_factor", 4)
+        smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
         fixed_locations = self.request.query_params.get("fixed_locations", False)

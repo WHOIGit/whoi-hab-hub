@@ -297,7 +297,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
+    "DEFAULT_THROTTLE_RATES": {"anon": "1000/day", "user": "10000/day"},
 }
 
 # django-cors-headers settings
@@ -331,7 +331,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 CELERY_BEAT_SCHEDULE = {
     "get_ifcb_dashboard_data_task": {
         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
-        "schedule": crontab(minute=30, hour="*/3"),
+        "schedule": crontab(minute=0, hour=2),
     },
     # "prewarm_api_cache_task": {
     #    "task": "habhub.core.tasks.prewarm_api_cache",
