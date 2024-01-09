@@ -11,6 +11,13 @@ if (import.meta.env.VITE_INITIAL_SPECIES_LIST) {
   INITIAL_SPECIES_LIST = import.meta.env.VITE_INITIAL_SPECIES_LIST.split(",");
 }
 
+let SHOW_SPECIES_LIST = null;
+// eslint-disable-next-line no-undef
+if (import.meta.env.VITE_SHOW_SPECIES_LIST) {
+  SHOW_SPECIES_LIST = import.meta.env.VITE_SHOW_SPECIES_LIST.split(",");
+}
+console.log(SHOW_SPECIES_LIST);
+
 const initialState = {
   species: [],
   enviroments: ENVIRONMENTS,
@@ -77,7 +84,18 @@ export const fetchHabSpecies = createAsyncThunk(
   async () => {
     const endpoint = "api/v1/core/target-species/";
     const response = await axiosInstance.get(endpoint);
-    return response.data;
+    console.log(response.data);
+
+    let data = response.data;
+    if (SHOW_SPECIES_LIST) {
+      const newData = data.filter((element) =>
+        SHOW_SPECIES_LIST.includes(element.id)
+      );
+      data = newData;
+      console.log(data);
+    }
+
+    return data;
   }
 );
 
