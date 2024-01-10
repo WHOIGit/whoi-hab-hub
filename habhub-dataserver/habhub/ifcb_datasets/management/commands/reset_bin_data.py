@@ -17,32 +17,65 @@ class Command(BaseCommand):
         end_date = options["end_date"]
 
         for dataset_name in options["datasets"]:
-            try:
-                dataset = Dataset.objects.get(dashboard_id_name=dataset_name)
-            except Dataset.DoesNotExist:
-                raise CommandError('Dataset "%s" does not exist' % dataset_name)
+            if dataset_name == "all":
+                # run through all datasets
+                datasets = Dataset.objects.all()
+                for dataset in datasets:
+                    try:
+                        earliest_bin = Bin.objects.earliest()
+                    except Bin.DoesNotExist:
+                        return "Error. No Bins exist."
 
-            try:
-                earliest_bin = Bin.objects.earliest()
-            except Bin.DoesNotExist:
-                return "Error. No Bins exist."
+                    if start_date:
+                        start_date_obj = datetime.datetime.strptime(
+                            start_date, "%Y-%m-%d"
+                        ).date()
+                    else:
+                        start_date_obj = earliest_bin.sample_time
 
-            if start_date:
-                start_date_obj = datetime.datetime.strptime(
-                    start_date, "%Y-%m-%d"
-                ).date()
+                    if end_date:
+                        end_date_obj = datetime.datetime.strptime(
+                            end_date, "%Y-%m-%d"
+                        ).date()
+                    else:
+                        end_date_obj = timezone.now()
+                    print("Dates: ", start_date_obj, end_date_obj)
+                    dataset.reset_bin_data(start_date_obj, end_date_obj)
+
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            'Successfully started data reset for "%s"' % dataset_name
+                        )
+                    )
             else:
-                start_date_obj = earliest_bin.sample_time
+                try:
+                    dataset = Dataset.objects.get(dashboard_id_name=dataset_name)
+                except Dataset.DoesNotExist:
+                    raise CommandError('Dataset "%s" does not exist' % dataset_name)
 
-            if end_date:
-                end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-            else:
-                end_date_obj = timezone.now()
-            print("Dates: ", start_date_obj, end_date_obj)
-            dataset.reset_bin_data(start_date_obj, end_date_obj)
+                try:
+                    earliest_bin = Bin.objects.earliest()
+                except Bin.DoesNotExist:
+                    return "Error. No Bins exist."
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    'Successfully started data reset for "%s"' % dataset_name
+                if start_date:
+                    start_date_obj = datetime.datetime.strptime(
+                        start_date, "%Y-%m-%d"
+                    ).date()
+                else:
+                    start_date_obj = earliest_bin.sample_time
+
+                if end_date:
+                    end_date_obj = datetime.datetime.strptime(
+                        end_date, "%Y-%m-%d"
+                    ).date()
+                else:
+                    end_date_obj = timezone.now()
+                print("Dates: ", start_date_obj, end_date_obj)
+                dataset.reset_bin_data(start_date_obj, end_date_obj)
+
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        'Successfully started data reset for "%s"' % dataset_name
+                    )
                 )
-            )
