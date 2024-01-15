@@ -1,5 +1,5 @@
 import datetime
-
+from urllib.parse import unquote
 from rest_framework import viewsets
 from drf_multiple_model.viewsets import ObjectMultipleModelAPIViewSet
 from django_filters import rest_framework as filters
@@ -22,7 +22,7 @@ from .serializers import (
     ClosureNoticeSerializer,
     TargetSpeciesSerializer,
     DataLayerSerializer,
-    MapBookmarkSerializer
+    MapBookmarkSerializer,
 )
 
 
@@ -46,9 +46,34 @@ class MapBookmarkViewSet(viewsets.ModelViewSet):
 
 class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
     def get_querylist(self):
+        print("REQUEST", self.request.query_params)
+        data_layers = self.request.query_params.get("data_layers", None)
+        limit_start_date = self.request.query_params.get("limit_start_date", None)
+
+        if data_layers:
+            data_layers = data_layers.split(",")
+
+        if limit_start_date:
+            # if limit_start_date param exists, run initial date filter on all data layers
+            start_date_obj = datetime.datetime.strptime(
+                limit_start_date, "%Y-%m-%d"
+            ).date()
+
+            datapoints_qs = Datapoint.objects.filter(
+                measurement_date__gt=start_date_obj
+            )
+            bins_qs = Bin.objects.filter(sample_time__gt=start_date_obj)
+            closures_qs = ClosureNotice.objects.filter(
+                effective_date__gt=start_date_obj
+            )
+        else:
+            datapoints_qs = Datapoint.objects.all()
+            bins_qs = Bin.objects.all()
+            closures_qs = ClosureNotice.objects.all()
+
         # use a separate subquery to get the max count value
         datapoint_max = (
-            Datapoint.objects.annotate(timestamp=TruncMonth("measurement_date"))
+            datapoints_qs.annotate(timestamp=TruncMonth("measurement_date"))
             .values("timestamp")
             .annotate(data_count=Count("id"))
             .order_by("-data_count")
@@ -56,7 +81,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
         )
 
         datapoint_query = (
-            Datapoint.objects
+            datapoints_qs
             # Truncate to Month and add to values
             .annotate(timestamp=TruncMonth("measurement_date"))
             .values("timestamp")  # Group By Month
@@ -75,7 +100,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
         # use a separate subquery to get the max count value
         bin_max = (
-            Bin.objects.filter(cell_concentration_data__isnull=False)
+            bins_qs.filter(cell_concentration_data__isnull=False)
             .annotate(timestamp=TruncMonth("sample_time"))
             .values("timestamp")
             .annotate(data_count=Count("id"))
@@ -84,7 +109,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
         )
 
         bin_query = (
-            Bin.objects.filter(cell_concentration_data__isnull=False)
+            bins_qs.filter(cell_concentration_data__isnull=False)
             # Truncate to Month and add to values
             .annotate(timestamp=TruncMonth("sample_time"))
             .values("timestamp")  # Group By Month
@@ -104,7 +129,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
 
         # use a separate subquery to get the max count value
         closure_max = (
-            ClosureNotice.objects.filter(notice_action="Closed")
+            closures_qs.filter(notice_action="Closed")
             .annotate(timestamp=TruncMonth("effective_date"))
             .values("timestamp")
             .annotate(data_count=Count("id"))
@@ -113,7 +138,7 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
         )
 
         closure_query = (
-            ClosureNotice.objects.filter(notice_action="Closed")
+            closures_qs.filter(notice_action="Closed")
             .annotate(
                 timestamp=TruncMonth("effective_date")
             )  # Truncate to Month and add to values
@@ -133,6 +158,9 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
         )
 
         active_layers = DataLayer.objects.filter(is_active=True)
+        # filter the layers to use if there's a data_layer url parameter
+        if data_layers:
+            active_layers = active_layers.filter(layer_id__in=data_layers)
         querylist = []
 
         for layer in active_layers:
