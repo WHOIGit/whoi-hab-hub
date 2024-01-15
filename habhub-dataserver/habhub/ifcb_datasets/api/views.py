@@ -92,10 +92,11 @@ class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
 class DatasetViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = DatasetListSerializer
     detail_serializer_class = DatasetDetailSerializer
-
+    """
     @method_decorator(cache_page(CACHE_TTL))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+    """
 
     def get_queryset(self):
         queryset = Dataset.objects.all().defer("bins")

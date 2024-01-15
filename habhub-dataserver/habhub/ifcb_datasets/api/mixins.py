@@ -24,16 +24,33 @@ class BinFiltersMixin:
         smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
+        limit_start_date = self.request.query_params.get("limit_start_date", None)
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
             start_date_obj = timezone.now() - relativedelta(years=1)
 
+        print("LIMIT", limit_start_date)
+        if limit_start_date:
+            # if limit_start_date param exists, limit results to specified range
+
+            limit_start_date_obj = datetime.datetime.strptime(
+                limit_start_date, "%Y-%m-%d"
+            ).date()
+
+            if limit_start_date_obj > start_date_obj:
+                start_date_obj = limit_start_date_obj
+                print(start_date_obj, limit_start_date_obj)
+
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             end_date_obj = timezone.now()
+
+        if end_date_obj < start_date_obj:
+            # check if end_date is BEFORE start_date. Invalid option, so reset to no results
+            end_date_obj = start_date_obj
 
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()
@@ -119,6 +136,7 @@ class DatasetFiltersMixin:
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
         fixed_locations = self.request.query_params.get("fixed_locations", False)
+        limit_start_date = self.request.query_params.get("limit_start_date", None)
 
         # limit results to only fixed locations for HABHub map
         if fixed_locations:
@@ -129,13 +147,24 @@ class DatasetFiltersMixin:
         else:
             start_date_obj = timezone.now() - relativedelta(years=1)
 
-        print(start_date_obj)
-        print("SMOOTHING", smoothing_factor)
+        if limit_start_date:
+            # if limit_start_date param exists, limit results to specified range
+
+            limit_start_date_obj = datetime.datetime.strptime(
+                limit_start_date, "%Y-%m-%d"
+            ).date()
+
+            if limit_start_date_obj > start_date_obj:
+                start_date_obj = limit_start_date_obj
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             end_date_obj = timezone.now()
+
+        if end_date_obj < start_date_obj:
+            # check if end_date is BEFORE start_date. Invalid option, so reset to no results
+            end_date_obj = start_date_obj
 
         # create empty Q objects to handle conditional filtering
         date_q_filters = Q()

@@ -60,11 +60,11 @@ class DataDensityAPIView(ObjectMultipleModelAPIViewSet):
             ).date()
 
             datapoints_qs = Datapoint.objects.filter(
-                measurement_date__gt=start_date_obj
+                measurement_date__gte=start_date_obj
             )
-            bins_qs = Bin.objects.filter(sample_time__gt=start_date_obj)
+            bins_qs = Bin.objects.filter(sample_time__gte=start_date_obj)
             closures_qs = ClosureNotice.objects.filter(
-                effective_date__gt=start_date_obj
+                effective_date__gte=start_date_obj
             )
         else:
             datapoints_qs = Datapoint.objects.all()
