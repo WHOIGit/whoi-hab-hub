@@ -92,7 +92,7 @@ class BinFiltersMixin:
                         "end_date": range_end_date,
                     }
                     date_ranges.append(range_dict)
-
+                print("RANGES", date_ranges)
                 for dr in date_ranges:
                     date_q_filters |= Q(
                         sample_time__range=(dr["start_date"], dr["end_date"])
