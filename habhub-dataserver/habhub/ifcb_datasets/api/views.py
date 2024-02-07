@@ -6,24 +6,32 @@ import datetime
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 
 from habhub.core.models import TargetSpecies
-from ..models import Dataset, Bin
+from ..models import Dataset, Bin, AutoclassScore
 from .serializers import (
     DatasetListSerializer,
     DatasetDetailSerializer,
     BinSerializer,
     BinSpatialGridSerializer,
     BinSpatialGridDetailSerializer,
+    AutoclassScoreSerializer,
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
 env = environ.Env()
 
 CACHE_TTL = env("CACHE_TTL", default=60 * 60)
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = "page_size"
+    max_page_size = 1000
 
 
 def create_cache_key(request, pk=0):
@@ -34,6 +42,12 @@ def create_cache_key(request, pk=0):
     cache_key = f"{request.path}:{qp_hash.hexdigest()}:{pk}"
     print(cache_key)
     return cache_key
+
+
+class AutoclassScoreViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AutoclassScore.objects.all()
+    serializer_class = AutoclassScoreSerializer
+    pagination_class = StandardResultsSetPagination
 
 
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):

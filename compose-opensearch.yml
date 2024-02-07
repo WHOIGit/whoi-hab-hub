@@ -10,6 +10,7 @@ services:
       - cluster.initial_cluster_manager_nodes=habhub-opensearch-node1,habhub-opensearch-node2 # Nodes eligible to serve as cluster manager
       - bootstrap.memory_lock=true # Disable JVM heap memory swapping
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+      - DISABLE_SECURITY_PLUGIN=true
     ulimits:
       memlock:
         soft: -1 # Set memlock to unlimited (no soft or hard limit)
@@ -35,6 +36,7 @@ services:
       - cluster.initial_cluster_manager_nodes=habhub-opensearch-node1,habhub-opensearch-node2
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
     ulimits:
       memlock:
         soft: -1
@@ -55,7 +57,8 @@ services:
     expose:
       - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
     environment:
-      OPENSEARCH_HOSTS: '["https://habhub-opensearch-node1:9200","https://habhub-opensearch-node2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      OPENSEARCH_HOSTS: '["http://habhub-opensearch-node1:9200","http://habhub-opensearch-node2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
     networks:
       - habhub-opensearch-net
 

@@ -8,7 +8,7 @@ from rest_framework_gis.serializers import (
 )
 from rest_framework_gis.fields import GeometryField
 
-from ..models import Dataset, Bin
+from ..models import Dataset, Bin, AutoclassScore
 from habhub.core.models import TargetSpecies, Metric, DataLayer
 
 
@@ -24,6 +24,31 @@ class BinSerializer(GeoFeatureModelSerializer):
             "species_found",
             "cell_concentration_data",
         ]
+
+
+class AutoclassScoreSerializer(serializers.ModelSerializer):
+    species = serializers.SerializerMethodField()
+    bin_pid = serializers.SerializerMethodField()
+    sample_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AutoclassScore
+        fields = [
+            "pid",
+            "score",
+            "bin_pid",
+            "species",
+            "sample_time",
+        ]
+
+    def get_bin_pid(self, obj):
+        return obj.bin.pid
+
+    def get_species(self, obj):
+        return obj.species.species_id
+
+    def get_sample_time(self, obj):
+        return obj.bin.sample_time
 
 
 class DatasetListSerializer(GeoFeatureModelSerializer):
@@ -80,8 +105,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
             date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
             for datapoint in bin.cell_concentration_data:
-
-                for (index, data) in enumerate(concentration_timeseries):
+                for index, data in enumerate(concentration_timeseries):
                     if data["species"] == datapoint["species"]:
                         data_dict = {
                             "sample_time": date_str,
@@ -292,7 +316,7 @@ class BinSpatialGridDetailSerializer(serializers.Serializer):
             date_str = bin.sample_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
             for datapoint in bin.cell_concentration_data:
-                for (index, data) in enumerate(timeseries_data):
+                for index, data in enumerate(timeseries_data):
                     if data["species"] == datapoint["species"]:
                         data_dict = {
                             "sample_time": date_str,
