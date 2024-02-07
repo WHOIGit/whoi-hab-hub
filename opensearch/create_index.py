@@ -12,21 +12,22 @@ os_client = OpenSearch(
 )
 
 # Create an index with non-default settings.
-index_name = "score-test"
+index_name = "scores-test"
 # mapping dictionary that contains the settings and
 # _mapping schema for a new Elasticsearch index:
+# _id = imagePid#modelName
 index_body = {
     "settings": {"number_of_shards": 2, "number_of_replicas": 1},
     "mappings": {
         "properties": {
-            "image_pid": {"type": "keyword"},
+            "imagePid": {"type": "keyword"},
             "score": {"type": "float"},
-            "model_name": {"type": "keyword"},
+            "modelName": {"type": "keyword"},
             "species": {"type": "keyword"},
-            "bin_pid": {"type": "keyword"},
-            "sample_time": {"type": "date"},
-            "date_created": {"type": "date"},
-            "dataset_id": {"type": "keyword"},
+            "binPid": {"type": "keyword"},
+            "sampleTime": {"type": "date"},
+            "dateCreated": {"type": "date"},
+            "datasetId": {"type": "keyword"},
             "point": {"type": "geo_point"},
         }
     },

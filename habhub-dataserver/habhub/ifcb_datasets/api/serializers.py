@@ -27,19 +27,27 @@ class BinSerializer(GeoFeatureModelSerializer):
 
 
 class AutoclassScoreSerializer(serializers.ModelSerializer):
+    os_id = serializers.SerializerMethodField()
+    image_pid = serializers.CharField(source="pid")
     species = serializers.SerializerMethodField()
     bin_pid = serializers.SerializerMethodField()
     sample_time = serializers.SerializerMethodField()
+    point = serializers.SerializerMethodField()
 
     class Meta:
         model = AutoclassScore
         fields = [
-            "pid",
+            "os_id",
+            "image_pid",
             "score",
             "bin_pid",
             "species",
             "sample_time",
+            "point",
         ]
+
+    def get_os_id(self, obj):
+        return f"{obj.pid}#{None}"
 
     def get_bin_pid(self, obj):
         return obj.bin.pid
@@ -49,6 +57,9 @@ class AutoclassScoreSerializer(serializers.ModelSerializer):
 
     def get_sample_time(self, obj):
         return obj.bin.sample_time
+
+    def get_point(self, obj):
+        return [obj.bin.geom.coords[0], obj.bin.geom.coords[1]]
 
 
 class DatasetListSerializer(GeoFeatureModelSerializer):
