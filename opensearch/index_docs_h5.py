@@ -1,8 +1,10 @@
 import h5py
 import numpy
+from pathlib import Path
 from opensearchpy import OpenSearch
 
 # get local data
+bin_pid = Path("D20220906/D20220906T004515_IFCB145_class.h5").stem
 f = h5py.File("D20220906/D20220906T004515_IFCB145_class.h5", "r")
 print(list(f.keys()))
 scores = f["output_scores"]
@@ -15,6 +17,8 @@ for score in scores:
     species = classes[max_index].decode("UTF-8")
     roi = rois[max_index]
     print(species, max_value, roi)
+
+print(bin_pid)
 
 # connect to OS
 host = "localhost"
