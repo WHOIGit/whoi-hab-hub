@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "stable"
+  image_tag     = "1.1"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -48,6 +48,17 @@ module "lambda_function" {
       service    = "s3"
       source_arn = module.s3_bucket.s3_bucket_arn
     }
+  }
+
+  # role and policy config
+  attach_policy_statements = true
+  policy_statements = {
+    GetS3Objects = {
+      effect    = "Allow",
+      actions   = ["s3:GetObject"],
+      resources = ["*"]
+    },
+
   }
 }
 

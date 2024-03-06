@@ -1,8 +1,6 @@
 import json
 import boto3
-import io
 import h5py
-from io import StringIO
 
 s3_client = boto3.client("s3")
 
@@ -13,10 +11,11 @@ def lambda_handler(event, context):
         s3_Bucket_Name = event["Records"][0]["s3"]["bucket"]["name"]
         s3_File_Name = event["Records"][0]["s3"]["object"]["key"]
 
-        object = s3_client.get_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
-        body = object["Body"]
-        h5_string = body.read().decode("utf-8")
-        f = h5py.File(h5_string, "r")
+        # download file to tmp directory
+        result = s3_client.download_file(
+            s3_Bucket_Name, s3_File_Name, f"/tmp/{s3_File_Name}"
+        )
+        f = h5py.File(f"/tmp/{s3_File_Name}", "r")
         print(list(f.keys()))
 
     except Exception as err:
