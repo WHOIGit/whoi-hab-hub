@@ -1,21 +1,47 @@
+data "aws_ecr_authorization_token" "token" {}
+
+provider "docker" {
+  registry_auth {
+    address  = var.ecr_root
+    username = data.aws_ecr_authorization_token.token.user_name
+    password = data.aws_ecr_authorization_token.token.password
+  }
+}
+
+module "docker_image" {
+  source = "terraform-aws-modules/lambda/aws//modules/docker-build"
+
+  create_ecr_repo = true
+  ecr_repo        = "ingest-class-scores-lambda"
+
+  use_image_tag = true
+  image_tag     = "stable"
+
+  source_path = "${path.module}/../lambdas/ingest-class-scores"
+
+}
+
 #############################################
-# Lambda Function (building package locally)
+# Lambda Function (from image)
 #############################################
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.2.1"
 
-  function_name                     = "ingest-class-scores-lambda"
-  description                       = "Ingest classifier scores from H5 files"
-  handler                           = "ingest_class_scores.lambda_handler"
-  runtime                           = "python3.11"
-  publish                           = true
-  cloudwatch_logs_retention_in_days = 14
-  architectures                     = ["x86_64"]
-  build_in_docker                   = true
+  function_name  = "ingest-class-scores-lambda"
+  description    = "Ingest classifier scores from H5 files"
+  create_package = false
+  publish        = true
 
-  source_path = "${path.module}/../lambdas/ingest-class-scores"
+  # architecture config
+  memory_size = 2000
+  timeout     = 300
+
+  # container config
+  image_uri     = module.docker_image.image_uri
+  package_type  = "Image"
+  architectures = ["x86_64"]
 
   allowed_triggers = {
     AllowExecutionFromS3Bucket = {
@@ -23,37 +49,8 @@ module "lambda_function" {
       source_arn = module.s3_bucket.s3_bucket_arn
     }
   }
-
-  layers = [
-    "arn:aws:lambda:us-east-1:139464377685:layer:h5py-python-layer:1",
-  ]
 }
 
-#############################################
-# Lambda Layer (install Python dependencies)
-#############################################
-
-module "lambda_layer" {
-  source  = "terraform-aws-modules/lambda/aws"
-  version = "7.2.1"
-
-  create_layer = true
-
-  layer_name               = "python-h5py-numpy-layer"
-  description              = "H5py and Numpy Python layer (pip install)"
-  compatible_runtimes      = ["python3.11"]
-  compatible_architectures = ["x86_64"]
-  runtime                  = "python3.11" # Runtime is required for "pip install" to work
-  build_in_docker          = true
-
-  source_path = [
-    {
-      path             = "${path.module}/../lambdas/dependencies/h5py-numpy"
-      pip_requirements = true     # Will run "pip install" with default "requirements.txt" from the path
-      prefix_in_zip    = "python" # required to get the path correct
-    }
-  ]
-}
 
 ###################
 # S3 bucket with notification
