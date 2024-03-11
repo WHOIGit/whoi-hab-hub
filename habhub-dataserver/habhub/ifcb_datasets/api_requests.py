@@ -101,7 +101,7 @@ def _handle_dataset_reset(dataset, start_date=None, end_date=None):
     print(f"DATASET: {dataset}")
     print(f"Bins deleted")
     # update DB with any new Bins, then replace all existing IFCB data
-    _get_ifcb_bins_dataset(dataset)
+    _get_ifcb_bins_dataset(dataset, start_date, end_date)
 
     if start_date:
         bins = dataset.bins.filter(sample_time__range=(start_date, end_date))
@@ -136,22 +136,27 @@ def reset_ifcb_data(dataset_id=None, start_date=None, end_date=None):
     print("Complete data ingestion.")
 
 
-def _get_ifcb_bins_dataset(dataset_obj):
+def _get_ifcb_bins_dataset(dataset_obj, start_date=None, end_date=None):
     """
     Function to make API request for all IFCB bins by dataset
     Args: 'dataset_obj' - Dataset object
     """
     from .models import Bin
 
-    # get the most recent Bin
-    try:
-        latest_bin = dataset_obj.bins.latest()
-    except Bin.DoesNotExist:
-        latest_bin = None
+    csv_start_date = None
 
-    if latest_bin:
-        start_date = latest_bin.sample_time
-        params = {"start_date": start_date}
+    if start_date:
+        csv_start_date = start_date
+    else:
+        # get the most recent Bin
+        try:
+            latest_bin = dataset_obj.bins.latest()
+            csv_start_date = latest_bin.sample_time
+        except Bin.DoesNotExist:
+            latest_bin = None
+
+    if csv_start_date:
+        params = {"start_date": csv_start_date}
     else:
         params = {}
 
