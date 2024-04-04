@@ -143,6 +143,7 @@ def _get_ifcb_bins_dataset(dataset_obj, start_date=None, end_date=None):
     """
     from .models import Bin
 
+    print("CSV START DATE", start_date)
     csv_start_date = None
 
     if start_date:
