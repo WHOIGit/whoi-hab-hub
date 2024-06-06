@@ -12,6 +12,7 @@ from habhub.ifcb_datasets.api.views import (
     BinViewSet,
     BinSpatialGridViewSet,
     AutoclassScoreViewSet,
+    BinMetadataViewSet,
 )
 from habhub.closures.api.views import (
     ShellfishAreaViewSet,
@@ -31,6 +32,7 @@ router.register(r"closures", ShellfishAreaViewSet, "closures")
 router.register(r"area-closures", ShellfishAreaAllDataViewSet, "area-closures")
 router.register(r"stations", StationViewSet, "stations")
 router.register(r"scores", AutoclassScoreViewSet, "scores")
+router.register(r"bins", BinMetadataViewSet, "bins")
 
 app_name = "api_v1"
 urlpatterns = [

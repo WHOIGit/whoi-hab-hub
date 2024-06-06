@@ -50,6 +50,12 @@ class AutoclassScoreViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = StandardResultsSetPagination
 
 
+class BinMetadataViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Bin.objects.all()
+    serializer_class = BinSerializer
+    pagination_class = StandardResultsSetPagination
+
+
 class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = BinSerializer
     lookup_field = "pid"

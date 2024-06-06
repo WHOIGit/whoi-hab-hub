@@ -1,0 +1,12 @@
+{
+  "imagePid": "D20160815T124421_IFCB101_00117",
+  "score": "0.869600",
+  "modelName": "HABLAB_20240110_Tripos1",
+  "species": "Alexandrium_catenella",
+  "binPid": "D20160815T124421_IFCB101",
+  "sampleTime": "2016-08-15T12:44:21Z",
+  "dateCreated": "now",
+  "datasetId": "NESLTER_broadscale",
+  "point": [-68.7996826172, 40.7528190613],
+  "ml_analyzed": "2.75"
+}

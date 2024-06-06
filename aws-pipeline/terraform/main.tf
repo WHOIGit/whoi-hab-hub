@@ -97,3 +97,33 @@ module "s3_notification" {
     }
   }
 }
+
+# IAM User for S3 access
+resource "aws_iam_user" "prod_bucket" {
+  name = "${var.project_name}-s3-bucket"
+}
+
+resource "aws_iam_user_policy" "prod_bucket" {
+  user = aws_iam_user.prod_bucket.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:*",
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${module.s3_bucket.s3_bucket_arn}",
+          "${module.s3_bucket.s3_bucket_arn}/*"
+        ]
+      },
+    ]
+  })
+}
+
+/*
+resource "aws_iam_access_key" "prod_bucket" {
+  user = aws_iam_user.prod_bucket.name
+}
+*/

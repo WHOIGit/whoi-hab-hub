@@ -1,0 +1,16 @@
+{
+  "name": "file-watcher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ethan Andrews",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.554.0",
+    "chokidar": "^3.6.0"
+  },
+  "type": "module"
+}

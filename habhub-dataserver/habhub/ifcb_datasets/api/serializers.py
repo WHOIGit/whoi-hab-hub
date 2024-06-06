@@ -17,6 +17,7 @@ class BinSerializer(GeoFeatureModelSerializer):
         model = Bin
         geo_field = "geom"
         fields = [
+            "id",
             "pid",
             "geom",
             "dataset",

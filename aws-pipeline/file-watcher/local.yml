@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  node_filewatcher_app:
+    build:
+      context: .
+    image: node_filewatcher_app_local
+    volumes:
+      - ./files_h5:/usr/src/app/files_h5
+      - ./files_metadata:/usr/src/app/files_metadata
+    
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    command: node app.js
