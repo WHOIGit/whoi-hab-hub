@@ -23,8 +23,7 @@ os_client = OpenSearch(
 """
 for doc in docs:
     response = os_client.index(index="scores-test", body=doc)
-    print(response)
-"""
+
 
 
 def insert_documents(documents):
@@ -35,27 +34,30 @@ def insert_documents(documents):
     response = os_client.bulk(operations)
     print(response)
     return response
+    print(response)
+"""
 
 
 def upsert_documents(documents):
     operations = []
     for document in documents:
+        doc_id = document["osId"]
         operations.append(
-            {"_op_type": 'update',
-            "_index": 'scores-test',
-            "_type": 'my_type',
-            "_id": document["osId"],
-            "doc": document,
-            "doc_as_upsert": True}
+            {
+                "_op_type": "update",
+                "_index": "scores-test",
+                "_id": doc_id,
+                "doc": document,
+                "doc_as_upsert": True,
+            }
         )
-        operations.append(document)
-    response = helpers.bulk(os_client, operations, max_retries=3)
+    response = helpers.bulk(os_client, operations, index="scores-test", max_retries=3)
     print(response)
     return response
 
 
-#insert_documents(docs)
-#print("Bulk insert")
+# insert_documents(docs)
+# print("Bulk insert")
 
 upsert_documents(docs)
-print("Bulk upsert")
+print("Bulk upsert ", len(docs))

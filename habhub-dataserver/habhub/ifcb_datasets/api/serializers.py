@@ -48,7 +48,7 @@ class AutoclassScoreSerializer(serializers.ModelSerializer):
         ]
 
     def get_os_id(self, obj):
-        return f"{obj.pid}#{None}"
+        return f"{obj.pid}_{obj.species.species_id}"
 
     def get_bin_pid(self, obj):
         return obj.bin.pid
