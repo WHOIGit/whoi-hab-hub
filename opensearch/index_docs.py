@@ -1,5 +1,5 @@
 import requests
-from opensearchpy import OpenSearch
+from opensearchpy import OpenSearch, helpers
 
 # get local data
 api_url = "http://localhost:8000/api/v1/scores/"
@@ -37,5 +37,25 @@ def insert_documents(documents):
     return response
 
 
-insert_documents(docs)
-print("Bulk insert")
+def upsert_documents(documents):
+    operations = []
+    for document in documents:
+        operations.append(
+            {"_op_type": 'update',
+            "_index": 'scores-test',
+            "_type": 'my_type',
+            "_id": document["osId"],
+            "doc": document,
+            "doc_as_upsert": True}
+        )
+        operations.append(document)
+    response = helpers.bulk(os_client, operations, max_retries=3)
+    print(response)
+    return response
+
+
+#insert_documents(docs)
+#print("Bulk insert")
+
+upsert_documents(docs)
+print("Bulk upsert")

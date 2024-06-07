@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     except Exception as err:
         print(err)
 
-    host = "vpc-habhub-35t2qo3gb5rttzl6if4dupcvki.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+    host = "vpc-habhub-prod-3jxcbqq7ogktcoym3jnmjhgxsi.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
     region = "us-east-1"
     service = "es"
     credentials = boto3.Session().get_credentials()
