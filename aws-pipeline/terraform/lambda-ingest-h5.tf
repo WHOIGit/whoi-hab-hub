@@ -35,7 +35,7 @@ module "lambda_function" {
   publish        = true
 
   # architecture config
-  memory_size = 2000
+  memory_size = 512
   timeout     = 300
 
   # container config
@@ -54,9 +54,12 @@ module "lambda_function" {
   attach_policy_statements = true
   policy_statements = {
     GetS3Objects = {
-      effect    = "Allow",
-      actions   = ["s3:GetObject"],
-      resources = ["*"]
+      effect  = "Allow",
+      actions = ["s3:GetObject"],
+      resources = [
+        "${module.s3_bucket.s3_bucket_arn}",
+        "${module.s3_bucket.s3_bucket_arn}/*"
+      ]
     },
 
   }
@@ -94,6 +97,13 @@ module "s3_notification" {
       events        = ["s3:ObjectCreated:*"]
       //filter_prefix = "data/"
       filter_suffix = ".h5"
+    }
+    lambda2 = {
+      function_arn  = module.lambda_function_metadata.lambda_function_arn
+      function_name = module.lambda_function_metadata.lambda_function_name
+      events        = ["s3:ObjectCreated:*"]
+      //filter_prefix = "data/"
+      filter_suffix = ".adc"
     }
   }
 }
