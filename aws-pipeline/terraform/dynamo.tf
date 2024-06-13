@@ -10,18 +10,6 @@ module "dynamodb_table" {
     {
       name = "pid"
       type = "S"
-    },
-    {
-      name = "ml_analyzed"
-      type = "N"
-    },
-    {
-      name = "latitude"
-      type = "N"
-    },
-    {
-      name = "longitude"
-      type = "N"
     }
   ]
 

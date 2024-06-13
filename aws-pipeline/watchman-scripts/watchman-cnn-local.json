@@ -1,9 +1,0 @@
-[
-  "trigger",
-  ".",
-  {
-    "name": "class_file_aws_uploader_test",
-    "expression": ["match", "**/*.txt", "wholename"],
-    "command": ["./class_file_aws_uploader.sh"]
-  }
-]

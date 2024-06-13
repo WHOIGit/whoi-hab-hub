@@ -71,7 +71,7 @@ module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "4.1.0"
 
-  bucket        = "habhub.cnn-classifier-files"
+  bucket        = "habhub.data-pipeline-files"
   force_destroy = true
   acl           = "private"
 
@@ -93,7 +93,7 @@ module "s3_notification" {
       function_name = module.lambda_function.lambda_function_name
       events        = ["s3:ObjectCreated:*"]
       //filter_prefix = "data/"
-      //filter_suffix = ".json"
+      filter_suffix = ".h5"
     }
   }
 }

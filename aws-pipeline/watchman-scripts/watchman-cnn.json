@@ -1,9 +1,0 @@
-[
-  "trigger",
-  "/home/eandrews/newtest",
-  {
-    "name": "class_file_aws_uploader_test",
-    "expression": ["match", "**/*.txt", "wholename"],
-    "command": ["/opt/aws-pipeline/class_file_aws_uploader.sh"]
-  }
-]
