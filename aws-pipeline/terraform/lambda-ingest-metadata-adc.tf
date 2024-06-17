@@ -6,7 +6,7 @@ module "docker_image_metadata" {
   ecr_repo        = "ingest-metadata-adc-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.4"
+  image_tag     = "1.8"
 
   source_path = "${path.module}/../lambdas/ingest-metadata-adc-files"
 
@@ -26,7 +26,7 @@ module "lambda_function_metadata" {
   publish        = true
 
   # architecture config
-  memory_size = 512
+  memory_size = 256
   timeout     = 300
 
   # container config

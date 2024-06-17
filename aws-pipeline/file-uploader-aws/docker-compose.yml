@@ -1,3 +1,4 @@
+version: "3"
 
 services:
   node_filewatcher_app:
@@ -5,9 +6,8 @@ services:
       context: .
     image: node_fileuploader_aws
     volumes:
-      - ../files_h5:/usr/src/app/files_h5
-      #- ./files_metadata:/usr/src/app/files_metadata
-    
+      - /opt/ifcbdb/ifcbdb/ifcb_data/primary/:/usr/src/app/data_files
+
     env_file:
       - ./.env
     restart: "no"

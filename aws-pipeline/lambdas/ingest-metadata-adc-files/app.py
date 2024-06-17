@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 from pathlib import Path
 from decimal import Decimal
 
@@ -16,19 +17,32 @@ def lambda_handler(event, context):
     try:
         s3_Bucket_Name = event["Records"][0]["s3"]["bucket"]["name"]
         s3_File_Name = event["Records"][0]["s3"]["object"]["key"]
+        print(s3_File_Name)
+        # get the Bin pid
+        bin_pid = Path(s3_File_Name).stem
 
         # download file to tmp directory
         result = s3_client.download_file(
-            s3_Bucket_Name, s3_File_Name, f"/tmp/{s3_File_Name}"
+            s3_Bucket_Name, s3_File_Name, f"/tmp/{bin_pid}.adc"
         )
-        # get the Bin pid
-        bin_pid = Path(s3_File_Name).stem
+
+        # get the dataset id from S3 key path
+        try:
+            dataset = s3_File_Name.split("/")[1]
+        except:
+            dataset = "unknown"
+
         # parse file with pyifcb package
-        adc = AdcFile(f"/tmp/{s3_File_Name}")
-        print(adc)
+        adc = AdcFile(f"/tmp/{bin_pid}.adc")
+        print(adc, dataset)
         ml_results = compute_ml_analyzed_adc(adc)
         ml_analyzed = ml_results[0]
         print(ml_analyzed)
+        # delete file from tmp dir
+        os.remove(f"/tmp/{bin_pid}.adc")
+        # delete file from S3
+        s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+        print("file deleted")
 
     except Exception as err:
         print(err)
@@ -41,14 +55,14 @@ def lambda_handler(event, context):
     try:
         print("saving to Dynamo...")
         # Dynamo needs float converted to Decimal for N type
-        # ml_analyzed = Decimal(str(ml_analyzed))
         response = table.update_item(
             Key={
                 "pid": bin_pid,
             },
-            UpdateExpression="SET ml_analyzed = :ml_analyzed",
+            UpdateExpression="SET ml_analyzed = :ml_analyzed, dataset = :dataset",
             ExpressionAttributeValues={
                 ":ml_analyzed": Decimal(str(ml_analyzed)),
+                ":dataset": dataset,
             },
             ReturnValues="UPDATED_NEW",
         )

@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     try:
         s3_Bucket_Name = event["Records"][0]["s3"]["bucket"]["name"]
         s3_File_Name = event["Records"][0]["s3"]["object"]["key"]
-
+        print(s3_File_Name)
         # download file to tmp directory
         result = s3_client.download_file(
             s3_Bucket_Name, s3_File_Name, f"/tmp/{s3_File_Name}"
