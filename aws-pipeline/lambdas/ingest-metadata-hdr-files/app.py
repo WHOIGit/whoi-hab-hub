@@ -17,14 +17,14 @@ def lambda_handler(event, context):
         print(s3_File_Name)
         # get the Bin pid
         bin_pid = Path(s3_File_Name).stem
-        # set local file path
-        file_path = f"/tmp/{s3_File_Name}"
 
         # download file to tmp directory
-        result = s3_client.download_file(s3_Bucket_Name, s3_File_Name, file_path)
+        result = s3_client.download_file(
+            s3_Bucket_Name, s3_File_Name, f"/tmp/{bin_pid}.hdr"
+        )
 
         # parse HDR file with HDR utilities
-        resp = parse_hdr_file(file_path)
+        resp = parse_hdr_file(f"/tmp/{bin_pid}.hdr")
         latitude = resp.get("gpsLatitude", None)
         longitude = resp.get("gpsLongitude", None)
 
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
             print("No lat/long")
 
         # delete file from tmp dir
-        os.remove(file_path)
+        os.remove(f"/tmp/{bin_pid}.hdr")
         # delete file from S3
         s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
         print("file deleted")
