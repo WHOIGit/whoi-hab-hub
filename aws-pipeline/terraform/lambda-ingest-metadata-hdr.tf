@@ -1,38 +1,24 @@
 
-module "docker_image_metadata" {
-  source = "terraform-aws-modules/lambda/aws//modules/docker-build"
-
-  create_ecr_repo = true
-  ecr_repo        = "ingest-metadata-adc-files-lambda"
-
-  use_image_tag = true
-  image_tag     = "1.9"
-
-  source_path = "${path.module}/../lambdas/ingest-metadata-adc-files"
-
-}
-
 #############################################
-# Lambda Function (from image)
+# Lambda Function (from local files)
 #############################################
 
-module "lambda_function_metadata" {
+module "lambda_function_metadata_2" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.2.1"
 
-  function_name  = "ingest-metadata-adc-files-lambda"
-  description    = "Ingest ml_analyzed metadata from ADC files"
-  create_package = false
+  function_name  = "ingest-metadata-hdr-files-lambda"
+  description    = "Ingest lat/long metadata from HDR files"
+  handler        = "app.lambda_handler"
+  runtime        = "python3.12"
+  create_package = true
   publish        = true
 
-  # architecture config
-  memory_size = 256
-  timeout     = 300
+  source_path = "../lambdas/ingest-metadata-hdr-files"
 
-  # container config
-  image_uri     = module.docker_image_metadata.image_uri
-  package_type  = "Image"
-  architectures = ["x86_64"]
+  # architecture config
+  memory_size = 200
+  timeout     = 300
 
   allowed_triggers = {
     AllowExecutionFromS3Bucket = {

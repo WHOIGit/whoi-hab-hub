@@ -105,6 +105,13 @@ module "s3_notification" {
       //filter_prefix = "data/"
       filter_suffix = ".adc"
     }
+    lambda3 = {
+      function_arn  = module.lambda_function_metadata_2.lambda_function_arn
+      function_name = module.lambda_function_metadata_2.lambda_function_name
+      events        = ["s3:ObjectCreated:*"]
+      //filter_prefix = "data/"
+      filter_suffix = ".hdr"
+    }
   }
 }
 
