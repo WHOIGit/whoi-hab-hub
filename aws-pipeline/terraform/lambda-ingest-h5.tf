@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.4"
+  image_tag     = "1.9"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -35,13 +35,17 @@ module "lambda_function" {
   publish        = true
 
   # architecture config
-  memory_size = 512
+  memory_size = 256
   timeout     = 300
 
   # container config
   image_uri     = module.docker_image.image_uri
   package_type  = "Image"
   architectures = ["x86_64"]
+
+  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5"]
+  vpc_security_group_ids = [aws_security_group.lambda_sg.id]
+  attach_network_policy  = true
 
   allowed_triggers = {
     AllowExecutionFromS3Bucket = {
@@ -53,16 +57,52 @@ module "lambda_function" {
   # role and policy config
   attach_policy_statements = true
   policy_statements = {
+    DynamoItems = {
+      effect    = "Allow",
+      actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
+      resources = [module.dynamodb_table.dynamodb_table_arn]
+    },
     GetS3Objects = {
       effect  = "Allow",
-      actions = ["s3:GetObject"],
+      actions = ["s3:GetObject", "s3:DeleteObject"],
       resources = [
         "${module.s3_bucket.s3_bucket_arn}",
         "${module.s3_bucket.s3_bucket_arn}/*"
       ]
-    },
+    }
+    OpenSearch = {
+      effect    = "Allow",
+      actions   = ["es:*"],
+      resources = ["arn:aws:es:us-east-1:139464377685:domain/habhub-prod/*"]
+    }
 
   }
+}
+
+resource "aws_security_group" "lambda_sg" {
+  name        = "lambda_sg"
+  description = "Allow TLS inbound traffic and all outbound traffic"
+  vpc_id      = "vpc-0f786e98f5cdba188"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
+  security_group_id = aws_security_group.lambda_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  #from_port         = 443
+  ip_protocol = "-1"
+  #to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+  security_group_id = aws_security_group.lambda_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
+  security_group_id = aws_security_group.lambda_sg.id
+  cidr_ipv6         = "::/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
 }
 
 

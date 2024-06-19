@@ -33,13 +33,11 @@ index_body = {
     },
 }
 
-response = os_client.indices.delete(index=index_name, ignore_unavailable=True)
-print("\nDeleting index:")
-print(response)
-
-response = os_client.indices.create(index_name, body=index_body)
-print("\nCreating index:")
-print(response)
+if not os_client.indices.exists(index=index_name):
+    # response = os_client.indices.delete(index=index_name, ignore_unavailable=True)
+    response = os_client.indices.create(index_name, body=index_body)
+    print("\nCreating index:")
+    print(response)
 
 # Delete the index.
 # response = os_client.indices.delete(index=index_name)
