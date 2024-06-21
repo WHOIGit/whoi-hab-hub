@@ -2,6 +2,7 @@ import json
 import boto3
 import h5py
 import numpy
+import requests
 from pathlib import Path
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
@@ -50,10 +51,22 @@ def lambda_handler(event, context):
         table_name = "habhub-bins-metadata"
         table = dynamodb.Table(table_name)
         # get metadata item from database
+        test_bin = "D20200309T180635_IFCB124"
         item = table.get_item(Key={"pid": "D20200309T180635_IFCB124"})
         print("Metadata", item)
         metadata = item.get("Item", None)
         print(metadata)
+    except Exception as err:
+        print(err)
+        return None
+
+    # Get metadata from HABON IFCB dashboard
+    dashboard_url = f"https://habon-ifcb.whoi.edu/api/bin/{test_bin}"
+    try:
+        response = requests.get(dashboard_url)
+        print(response)
+        if response.status_code == 200:
+            print(response.json())
     except Exception as err:
         print(err)
         return None
@@ -130,7 +143,8 @@ def lambda_handler(event, context):
             roi = rois[index]
             # print(score)
             if species not in BLACKLIST:
-                print(species, max_value, roi)
+                # print(species, max_value, roi)
+                index_obj = {"species": species, "score": max_value, "binPid": bin_pid}
 
     except Exception as err:
         print(err)

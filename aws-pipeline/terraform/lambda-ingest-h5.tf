@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.9"
+  image_tag     = "1.11"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -43,7 +43,7 @@ module "lambda_function" {
   package_type  = "Image"
   architectures = ["x86_64"]
 
-  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5"]
+  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5", "subnet-04dcb4b0fe6271d4b"]
   vpc_security_group_ids = [aws_security_group.lambda_sg.id]
   attach_network_policy  = true
 
@@ -83,14 +83,6 @@ resource "aws_security_group" "lambda_sg" {
   name        = "lambda_sg"
   description = "Allow TLS inbound traffic and all outbound traffic"
   vpc_id      = "vpc-0f786e98f5cdba188"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
-  security_group_id = aws_security_group.lambda_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  #from_port         = 443
-  ip_protocol = "-1"
-  #to_port           = 443
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {

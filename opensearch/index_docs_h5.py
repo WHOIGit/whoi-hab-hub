@@ -23,15 +23,10 @@ BLACKLIST = [
 bin_pid = Path("D20220906T024350_IFCB145_class.h5").stem
 f = h5py.File("D20220906T024350_IFCB145_class.h5", "r")
 print(list(f.keys()))
+print(f["metadata"])
 scores = f["output_scores"]
 classes = f["class_labels"]
 rois = f["roi_numbers"]
-
-for c in classes:
-    print(c)
-
-for r in rois:
-    print(r)
 
 print("Scores Lenght", len(scores))
 print("ROIS Lenght", len(rois))
@@ -46,6 +41,9 @@ for index, score in enumerate(scores):
         print(species, max_value, roi)
 
 print(bin_pid)
+
+for m in f["metadata"]:
+    print(m)
 
 # connect to OS
 """
