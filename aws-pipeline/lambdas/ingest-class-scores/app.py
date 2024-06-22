@@ -3,6 +3,7 @@ import boto3
 import h5py
 import numpy
 import requests
+from datetime import datetime
 from pathlib import Path
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
@@ -33,19 +34,27 @@ def lambda_handler(event, context):
         s3_Bucket_Name = event["Records"][0]["s3"]["bucket"]["name"]
         s3_File_Name = event["Records"][0]["s3"]["object"]["key"]
         print(s3_File_Name)
-        # download file to tmp directory
-        result = s3_client.download_file(
-            s3_Bucket_Name, s3_File_Name, f"/tmp/{s3_File_Name}"
-        )
         # get the Bin pid
-        bin_pid = Path(s3_File_Name).stem
+        file_name = Path(s3_File_Name).stem
+        file_path = f"/tmp/{file_name}.h5"
+        # download file to tmp directory
+        result = s3_client.download_file(s3_Bucket_Name, s3_File_Name, file_path)
+
+        bin_pid = file_name.replace("_class", "")
         print("Bin pid:", bin_pid)
+
+        # get the model name from S3 key path
+        try:
+            model_name = s3_File_Name.split("/")[1]
+        except:
+            model_name = "unknown"
 
     except Exception as err:
         print(err)
         return {"statusCode": 400, "body": json.dumps("Error reading S3")}
 
     # Get Dynamo metadata record
+    """
     try:
         dynamodb = boto3.resource("dynamodb")
         table_name = "habhub-bins-metadata"
@@ -59,14 +68,39 @@ def lambda_handler(event, context):
     except Exception as err:
         print(err)
         return None
+    """
 
     # Get metadata from HABON IFCB dashboard
-    dashboard_url = f"https://habon-ifcb.whoi.edu/api/bin/{test_bin}"
+    test_bin = "D20200309T180635_IFCB124"
+    dashboard_url = f"https://habon-ifcb.whoi.edu/api/bin/{bin_pid}"
     try:
         response = requests.get(dashboard_url)
         print(response)
         if response.status_code == 200:
             print(response.json())
+            metadata = response.json()
+            # check for Skip flag
+            if not metadata["skip"]:
+                # parse ml_analyzed to just get the float
+                ml_analyzed = float(metadata["ml_analyzed"].split(" ")[0])
+                print("ml_analyzed", ml_analyzed)
+                point = [metadata["lng"], metadata["lat"]]
+                score_obj = {
+                    "binPid": bin_pid,
+                    "point": point,
+                    "modelName": "model",
+                    "mlAnalyzed": ml_analyzed,
+                    "datasetId": metadata["primary_dataset"],
+                    "sampleTime": metadata["timestamp_iso"],
+                    "dateCreated": datetime.now().isoformat(),
+                }
+                print("score_obj", score_obj)
+            else:
+                print(f"Skip flag is true. Skip {bin_pid}")
+                return None
+        else:
+            print(f"No metadata available on HABON IFCB. Skip {bin_pid}")
+            return None
     except Exception as err:
         print(err)
         return None
@@ -87,6 +121,7 @@ def lambda_handler(event, context):
         "mappings": {
             "properties": {
                 "binPid": {"type": "keyword"},
+                "imageNumber": {"type": "keyword"},
                 "imagePid": {"type": "keyword"},
                 "score": {"type": "float"},
                 "modelName": {"type": "keyword"},
@@ -95,6 +130,7 @@ def lambda_handler(event, context):
                 "dateCreated": {"type": "date"},
                 "datasetId": {"type": "keyword"},
                 "point": {"type": "geo_point"},
+                "mlAnalyzed": {"type": "float"},
             }
         },
     }
@@ -144,7 +180,11 @@ def lambda_handler(event, context):
             # print(score)
             if species not in BLACKLIST:
                 # print(species, max_value, roi)
-                index_obj = {"species": species, "score": max_value, "binPid": bin_pid}
+                score_obj["species"] = species
+                score_obj["score"] = max_value
+                score_obj["imageNumber"] = roi
+                score_obj["imagePid"] = f"{bin_pid}_{roi:05}"
+                print(score_obj)
 
     except Exception as err:
         print(err)
