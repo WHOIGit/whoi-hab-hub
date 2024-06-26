@@ -1,3 +1,3 @@
 #/bin/bash
-
-aws s3 cp /Volumes/brosnahan/primary/cell_imaging/ifcb/ak/ s3://habhub.data-pipeline-files/ak/ --recursive  --exclude "*" --include "*.adc"
+# filter by single file extension
+aws s3 cp /opt/ifcbdb/ifcbdb/ifcb_data/products/cnn/v3/HABLAB_20240110_Tripos2  s3://habhub.data-pipeline-files/h5-files/ --recursive  --exclude "*" --include "*.h5"

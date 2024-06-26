@@ -24,6 +24,7 @@ bin_pid = Path("D20220906T024350_IFCB145_class.h5").stem
 f = h5py.File("D20220906T024350_IFCB145_class.h5", "r")
 print(list(f.keys()))
 print(f["metadata"])
+metadata = f["metadata"]
 scores = f["output_scores"]
 classes = f["class_labels"]
 rois = f["roi_numbers"]
@@ -37,13 +38,14 @@ for index, score in enumerate(scores):
     species = classes[max_index].decode("UTF-8")
     roi = rois[index]
     # print(score)
+    """
     if species not in BLACKLIST:
         print(species, max_value, roi)
-
+    """
 print(bin_pid)
 
-for m in f["metadata"]:
-    print(m)
+print(metadata.attrs.keys())
+print(metadata.attrs["model_id"])
 
 # connect to OS
 """

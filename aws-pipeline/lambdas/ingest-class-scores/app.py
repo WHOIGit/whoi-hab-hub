@@ -5,7 +5,7 @@ import numpy
 import requests
 from datetime import datetime
 from pathlib import Path
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 
 s3_client = boto3.client("s3")
 
@@ -27,6 +27,25 @@ BLACKLIST = [
 ]
 
 
+def upsert_documents(documents, index_name, os_client):
+    operations = []
+    for document in documents:
+        print(document)
+        doc_id = document["osId"]
+        operations.append(
+            {
+                "_op_type": "update",
+                "_index": index_name,
+                "_id": doc_id,
+                "doc": document,
+                "doc_as_upsert": True,
+            }
+        )
+    response = helpers.bulk(os_client, operations, index=index_name, max_retries=3)
+    print(response)
+    return response
+
+
 def lambda_handler(event, context):
     print(event)
     # parse the S3 file received
@@ -43,11 +62,11 @@ def lambda_handler(event, context):
         bin_pid = file_name.replace("_class", "")
         print("Bin pid:", bin_pid)
 
-        # get the model name from S3 key path
+        # get the model name from S3 key path in case missing from metadata
         try:
-            model_name = s3_File_Name.split("/")[1]
+            model_name_s3 = s3_File_Name.split("/")[1]
         except:
-            model_name = "unknown"
+            model_name_s3 = "unknown"
 
     except Exception as err:
         print(err)
@@ -85,16 +104,15 @@ def lambda_handler(event, context):
                 ml_analyzed = float(metadata["ml_analyzed"].split(" ")[0])
                 print("ml_analyzed", ml_analyzed)
                 point = [metadata["lng"], metadata["lat"]]
-                score_obj = {
+                metadata_obj = {
                     "binPid": bin_pid,
                     "point": point,
-                    "modelName": "model",
                     "mlAnalyzed": ml_analyzed,
                     "datasetId": metadata["primary_dataset"],
                     "sampleTime": metadata["timestamp_iso"],
                     "dateCreated": datetime.now().isoformat(),
                 }
-                print("score_obj", score_obj)
+                print("metadata_obj", metadata_obj)
             else:
                 print(f"Skip flag is true. Skip {bin_pid}")
                 return None
@@ -124,7 +142,7 @@ def lambda_handler(event, context):
                 "imageNumber": {"type": "keyword"},
                 "imagePid": {"type": "keyword"},
                 "score": {"type": "float"},
-                "modelName": {"type": "keyword"},
+                "modelId": {"type": "keyword"},
                 "species": {"type": "keyword"},
                 "sampleTime": {"type": "date"},
                 "dateCreated": {"type": "date"},
@@ -143,6 +161,7 @@ def lambda_handler(event, context):
             verify_certs=True,
             connection_class=RequestsHttpConnection,
             pool_maxsize=20,
+            timeout=20,
         )
         print("Connect to OS", os_client)
         info = os_client.info()
@@ -164,13 +183,22 @@ def lambda_handler(event, context):
 
         # parse the H5 file and index results
         # read file into h5py
-        f = h5py.File(f"/tmp/{s3_File_Name}", "r")
+        f = h5py.File(file_path, "r")
         print(list(f.keys()))
         # get the data frames
+        metadata = f["metadata"]
         scores = f["output_scores"]
         classes = f["class_labels"]
         rois = f["roi_numbers"]
 
+        try:
+            model_id = metadata.attrs["model_id"]
+        except Exception as err:
+            print(err)
+            print("model_id missing from metadata, set from S3 key")
+            model_id = model_name_s3
+
+        documents = []
         # calculate the species with the max score
         for index, score in enumerate(scores):
             max_index = numpy.argmax(score)
@@ -179,16 +207,25 @@ def lambda_handler(event, context):
             roi = rois[index]
             # print(score)
             if species not in BLACKLIST:
+                score_obj = {}
                 # print(species, max_value, roi)
                 score_obj["species"] = species
                 score_obj["score"] = max_value
                 score_obj["imageNumber"] = roi
                 score_obj["imagePid"] = f"{bin_pid}_{roi:05}"
-                print(score_obj)
+                score_obj["modelId"] = model_id
+                score_obj["osId"] = f"{bin_pid}_{roi:05}_{model_id}"
+                document_obj = metadata_obj | score_obj
+                print("document obj", document_obj)
+                documents.append(document_obj)
+        # insert or update document into OpenSearch
+        print("Start upsert ", len(documents), documents)
+        upsert_documents(documents, index_name, os_client)
+        print("Bulk upsert ", len(documents))
 
     except Exception as err:
         print(err)
-        return None
+        return {"statusCode": 400, "body": json.dumps("Error indexing documents")}
 
     # TODO implement
     return {"statusCode": 200, "body": json.dumps("Hello from Lambda and OS!")}

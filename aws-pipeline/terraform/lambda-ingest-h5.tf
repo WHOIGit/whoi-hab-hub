@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.15"
+  image_tag     = "1.21"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -43,6 +43,7 @@ module "lambda_function" {
   package_type  = "Image"
   architectures = ["x86_64"]
 
+  # put lambda in VPC to connect to OS
   vpc_subnet_ids         = ["subnet-08d09516ed3c309e5", "subnet-04dcb4b0fe6271d4b"]
   vpc_security_group_ids = [aws_security_group.lambda_sg.id]
   attach_network_policy  = true
@@ -53,6 +54,8 @@ module "lambda_function" {
       source_arn = module.s3_bucket.s3_bucket_arn
     }
   }
+  # cloudwatch
+  cloudwatch_logs_retention_in_days = 7
 
   # role and policy config
   attach_policy_statements = true
