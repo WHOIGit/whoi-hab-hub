@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.21"
+  image_tag     = "1.25"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -37,6 +37,8 @@ module "lambda_function" {
   # architecture config
   memory_size = 256
   timeout     = 300
+  # throttle lambda execution to not kill habon-ifcb api with requests
+  reserved_concurrent_executions = 10
 
   # container config
   image_uri     = module.docker_image.image_uri
@@ -44,7 +46,7 @@ module "lambda_function" {
   architectures = ["x86_64"]
 
   # put lambda in VPC to connect to OS
-  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5", "subnet-04dcb4b0fe6271d4b"]
+  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5"]
   vpc_security_group_ids = [aws_security_group.lambda_sg.id]
   attach_network_policy  = true
 

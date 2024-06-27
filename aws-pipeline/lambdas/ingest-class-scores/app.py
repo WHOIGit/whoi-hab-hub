@@ -3,6 +3,7 @@ import boto3
 import h5py
 import numpy
 import requests
+import os
 from datetime import datetime
 from pathlib import Path
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
@@ -30,7 +31,7 @@ BLACKLIST = [
 def upsert_documents(documents, index_name, os_client):
     operations = []
     for document in documents:
-        print(document)
+        # print(document)
         doc_id = document["osId"]
         operations.append(
             {
@@ -64,9 +65,10 @@ def lambda_handler(event, context):
 
         # get the model name from S3 key path in case missing from metadata
         try:
-            model_name_s3 = s3_File_Name.split("/")[1]
+            model_id = s3_File_Name.split("/")[1]
         except:
-            model_name_s3 = "unknown"
+            model_id = "unknown"
+        print("Model id:", model_id)
 
     except Exception as err:
         print(err)
@@ -191,12 +193,13 @@ def lambda_handler(event, context):
         classes = f["class_labels"]
         rois = f["roi_numbers"]
 
+        """
         try:
             model_id = metadata.attrs["model_id"]
         except Exception as err:
             print(err)
             print("model_id missing from metadata, set from S3 key")
-            model_id = model_name_s3
+        """
 
         documents = []
         # calculate the species with the max score
@@ -216,12 +219,18 @@ def lambda_handler(event, context):
                 score_obj["modelId"] = model_id
                 score_obj["osId"] = f"{bin_pid}_{roi:05}_{model_id}"
                 document_obj = metadata_obj | score_obj
-                print("document obj", document_obj)
                 documents.append(document_obj)
         # insert or update document into OpenSearch
-        print("Start upsert ", len(documents), documents)
+        print("Start upsert ", len(documents))
         upsert_documents(documents, index_name, os_client)
         print("Bulk upsert ", len(documents))
+
+        ### clean up files ###
+        # delete file from tmp dir
+        os.remove(file_path)
+        # delete file from S3
+        s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+        print("file deleted")
 
     except Exception as err:
         print(err)
