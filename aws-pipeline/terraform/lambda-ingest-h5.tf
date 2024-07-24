@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.25"
+  image_tag     = "1.26"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
