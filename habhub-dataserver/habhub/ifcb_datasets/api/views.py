@@ -2,6 +2,9 @@ import environ
 import hashlib
 import json
 import datetime
+import boto3
+from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from requests_aws4auth import AWS4Auth
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -24,6 +27,9 @@ from .serializers import (
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
 env = environ.Env()
+
+AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("DJANGO_AWS_SECRET_ACCESS_KEY")
 
 CACHE_TTL = env("CACHE_TTL", default=60 * 60)
 
@@ -172,3 +178,40 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
         # set cache
         cache.set(cache_key, serializer.data)
         return Response(serializer.data)
+
+
+# Test viewset to connect to AWS Opensearch and retrieve data
+class ScoresIndexViewSet(BinFiltersMixin, viewsets.ViewSet):
+    def list(self, request):
+        # Connect to OS for indexing
+        host = "vpc-habhub-prod-3jxcbqq7ogktcoym3jnmjhgxsi.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+        region = "us-east-1"
+        service = "es"
+        awsauth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region, service)
+        index_name = "species-scores"
+
+        try:
+            os_client = OpenSearch(
+                hosts=[{"host": host, "port": 443}],
+                http_auth=awsauth,
+                use_ssl=True,
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
+                pool_maxsize=20,
+                timeout=20,
+            )
+            print("Connect to OS", os_client)
+            info = os_client.info()
+            print(
+                f"Welcome to {info['version']['distribution']} {info['version']['number']}!"
+            )
+        except Exception as err:
+            print(err)
+            return Response(
+                {
+                    "statusCode": 400,
+                    "body": "Error Connecting",
+                }
+            )
+
+        return Response({"foo": "bar"})
