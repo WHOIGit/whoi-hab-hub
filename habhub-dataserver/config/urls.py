@@ -51,6 +51,8 @@ urlpatterns = [
     ),
     # API urls
     path("api/v1/", include("habhub.core.api.urls", namespace="api_v1")),
+    # Opensearch API
+    path("api/v2/", include("habhub.core.api2.urls", namespace="api_v2")),
     # Summernote WYSIWYG
     path("summernote/", include("django_summernote.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

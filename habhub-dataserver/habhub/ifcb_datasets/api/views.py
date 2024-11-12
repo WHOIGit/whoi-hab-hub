@@ -190,6 +190,18 @@ class ScoresIndexViewSet(BinFiltersMixin, viewsets.ViewSet):
         awsauth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region, service)
         index_name = "species-scores"
 
+        # build the query
+        query = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match": {"species": "Alexandrium_catenella"}},
+                        {"match": {"datasetId": "arctic"}},
+                    ]
+                }
+            }
+        }
+
         try:
             os_client = OpenSearch(
                 hosts=[{"host": host, "port": 443}],
@@ -205,6 +217,9 @@ class ScoresIndexViewSet(BinFiltersMixin, viewsets.ViewSet):
             print(
                 f"Welcome to {info['version']['distribution']} {info['version']['number']}!"
             )
+            # search the DB
+            response = os_client.search(body=query, index=index_name)
+            print(response)
         except Exception as err:
             print(err)
             return Response(
