@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from .mixins import ScoresFiltersMixin
 
 env = environ.Env()
 
@@ -20,8 +21,8 @@ AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("DJANGO_AWS_SECRET_ACCESS_KEY")
 
 
-# Test viewset to connect to AWS Opensearch and retrieve data
-class ScoresIndexViewSet(viewsets.ViewSet):
+# API view to return species scorer resutls from AWS Opensearch
+class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
     def list(self, request):
         # Connect to OS for indexing
         host = "vpc-habhub-prod-3jxcbqq7ogktcoym3jnmjhgxsi.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
@@ -31,16 +32,7 @@ class ScoresIndexViewSet(viewsets.ViewSet):
         index_name = "species-scores"
 
         # build the query
-        query = {
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match": {"species": "Alexandrium_catenella"}},
-                        {"match": {"datasetId": "arctic"}},
-                    ]
-                }
-            }
-        }
+        query = self.handle_query_param_filters()
 
         try:
             os_client = OpenSearch(
@@ -59,7 +51,7 @@ class ScoresIndexViewSet(viewsets.ViewSet):
             )
             # search the DB
             response = os_client.search(body=query, index=index_name)
-            print(response)
+            print(response["hits"])
         except Exception as err:
             print(err)
             return Response(
@@ -69,4 +61,4 @@ class ScoresIndexViewSet(viewsets.ViewSet):
                 }
             )
 
-        return Response({"foo": "bar"})
+        return Response(response)
