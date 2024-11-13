@@ -14,6 +14,9 @@ class ScoresFiltersMixin:
         species = self.request.query_params.get("species", None)
         dataset_id = self.request.query_params.get("dataset_id", None)
         model_id = self.request.query_params.get("model_id", None)
+        # score threshold
+        score_gte = self.request.query_params.get("score_gte", None)
+        # date parameters
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
         seasonal = self.request.query_params.get("seasonal", None) == "true"
@@ -22,8 +25,10 @@ class ScoresFiltersMixin:
         )
         # integer to divide the total dataset bins by to smooth out long term graphs/improve performance
         smoothing_factor = self.request.query_params.get("smoothing_factor", 1)
-        bbox_sw = self.request.query_params.get("bbox_sw", None)
+        bbox_nw = self.request.query_params.get("bbox_nw", None)
         bbox_ne = self.request.query_params.get("bbox_ne", None)
+        bbox_sw = self.request.query_params.get("bbox_sw", None)
+        bbox_se = self.request.query_params.get("bbox_se", None)
         limit_start_date = self.request.query_params.get("limit_start_date", None)
 
         if start_date:
@@ -97,6 +102,15 @@ class ScoresFiltersMixin:
             }
         }
 
+        # score filtering
+        score_query = {
+            "range": {
+                "score": {
+                    "gte": score_gte,
+                }
+            }
+        }
+
         # species filtering
         if species:
             species_list = species.split(",")
@@ -112,14 +126,35 @@ class ScoresFiltersMixin:
             model_list = model_id.split(",")
             model_query = {"terms": {"modelId": model_list}}
 
+        # bounding box geo filtering
+        if bbox_sw and bbox_ne:
+            bottom_left = bbox_sw.split(",")
+            bottom_left = [round(float(i), 2) for i in bottom_left]
+            top_right = bbox_ne.split(",")
+            top_right = [round(float(i), 2) for i in top_right]
+            bbox_query = {
+                "geo_bounding_box": {
+                    "point": {"bottom_left": bottom_left, "top_right": top_right}
+                }
+            }
+
         # build the Elastic Search "must" array
         must_array = [date_query]
         must_array.append(species_query) if species else False
         must_array.append(dataset_query) if dataset_id else False
         must_array.append(model_query) if model_id else False
+        must_array.append(score_query) if score_gte else False
+        # build the ES filter array
+        filter_obj = {}
+        filter_obj = bbox_query if bbox_sw and bbox_ne else False
 
         query = {
-            "query": {"bool": {"must": must_array}},
+            "query": {
+                "bool": {
+                    "must": must_array,
+                    "filter": filter_obj,
+                }
+            },
             "size": 1000,
             "sort": [
                 {
@@ -129,7 +164,9 @@ class ScoresFiltersMixin:
                 },
                 "datasetId",
                 "species",
+                "osId",
             ],
         }
         print(query)
+        print(bbox_query)
         return query

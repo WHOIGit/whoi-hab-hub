@@ -3,7 +3,7 @@ import hashlib
 import json
 import datetime
 import boto3
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
 from rest_framework import viewsets, status
@@ -50,8 +50,21 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 f"Welcome to {info['version']['distribution']} {info['version']['number']}!"
             )
             # search the DB
-            response = os_client.search(body=query, index=index_name)
-            print(response["hits"])
+            # response = os_client.search(body=query, index=index_name)
+            # print(response["hits"])
+
+            # use scan to get more than 10000 responses
+            response = helpers.scan(
+                os_client, index=index_name, scroll="10m", size=1000, query=query
+            )
+
+            # iterate documents one by one
+            # for row in response:
+            #    print(row["_source"])
+
+            data = list(response)
+            api_response = {"count": len(data), "results": data}
+            print(api_response)
         except Exception as err:
             print(err)
             return Response(
@@ -61,4 +74,4 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 }
             )
 
-        return Response(response)
+        return Response(api_response)
