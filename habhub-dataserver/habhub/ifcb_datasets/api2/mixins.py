@@ -30,6 +30,8 @@ class ScoresFiltersMixin:
         bbox_sw = self.request.query_params.get("bbox_sw", None)
         bbox_se = self.request.query_params.get("bbox_se", None)
         limit_start_date = self.request.query_params.get("limit_start_date", None)
+        # parameter to paginate Open Search results
+        search_after = self.request.query_params.get("search_after", None)
 
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -145,28 +147,21 @@ class ScoresFiltersMixin:
         must_array.append(model_query) if model_id else False
         must_array.append(score_query) if score_gte else False
         # build the ES filter array
-        filter_obj = {}
         filter_obj = bbox_query if bbox_sw and bbox_ne else False
+        # build the ES bool object
+        bool = {"must": must_array}
+        if filter_obj:
+            bool["filter"] = filter_obj
 
         query = {
-            "query": {
-                "bool": {
-                    "must": must_array,
-                    "filter": filter_obj,
-                }
-            },
-            "size": 1000,
-            "sort": [
-                {
-                    "sampleTime": {
-                        "order": "asc",
-                    }
-                },
-                "datasetId",
-                "species",
-                "osId",
-            ],
+            "query": {"bool": bool},
+            # "size": 10000,
+            "track_total_hits": True,
         }
+
+        # add pagination if search_after exists
+        if search_after:
+            search_after = search_after.split(",")
+            query["search_after"] = search_after
         print(query)
-        print(bbox_query)
         return query

@@ -12,6 +12,20 @@ from ..models import Dataset, Bin, AutoclassScore
 from habhub.core.models import TargetSpecies, Metric, DataLayer
 
 
+class DatasetBasicSerializer(GeoFeatureModelSerializer):
+
+    class Meta:
+        model = Dataset
+        geo_field = "geom"
+        fields = [
+            "id",
+            "name",
+            "location",
+            "dashboard_id_name",
+            "geom",
+        ]
+
+
 class BinSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = Bin

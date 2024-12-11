@@ -216,17 +216,18 @@ def lambda_handler(event, context):
                 species = classes[max_index].decode("UTF-8")
                 roi = rois[index]
                 # print(score)
-                if species not in BLACKLIST:
-                    score_obj = {}
-                    # print(species, max_value, roi)
-                    score_obj["species"] = species
-                    score_obj["score"] = max_value
-                    score_obj["imageNumber"] = roi
-                    score_obj["imagePid"] = f"{bin_pid}_{roi:05}"
-                    score_obj["modelId"] = model_id
-                    score_obj["osId"] = f"{bin_pid}_{roi:05}_{model_id}"
-                    document_obj = metadata_obj | score_obj
-                    documents.append(document_obj)
+
+                score_obj = {}
+                # print(species, max_value, roi)
+                score_obj["species"] = species
+                score_obj["score"] = max_value
+                score_obj["imageNumber"] = roi
+                score_obj["imagePid"] = f"{bin_pid}_{roi:05}"
+                score_obj["modelId"] = model_id
+                score_obj["osId"] = f"{bin_pid}_{roi:05}_{model_id}"
+                document_obj = metadata_obj | score_obj
+                documents.append(document_obj)
+
             # insert or update document into OpenSearch
             print("Start upsert ", len(documents))
             upsert_documents(documents, index_name, os_client)
