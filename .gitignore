@@ -291,3 +291,5 @@ dist/
 .terraform/
 builds/
 dependencies/
+
+opensearch/api-test.py
