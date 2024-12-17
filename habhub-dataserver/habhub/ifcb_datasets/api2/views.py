@@ -67,6 +67,7 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         index_name = "species-scores"
 
         # set up initial pagination options
+        per_page = 100  # result per page returned by OS
         query_params = request.query_params.dict()
         query_params.pop("search_after", None)
         query_params.pop("page", None)
@@ -102,6 +103,7 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             # use search_after to paginate through all results
             response = os_client.search(body=query, index=index_name, size=100)
             # print(response)
+            results = response["hits"]["hits"]
             total_hits = response["hits"]["total"]["value"]
             # create next/prev link using the "sort" value from OS
             last_element = response["hits"]["hits"][-1]
@@ -119,7 +121,10 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                     f"{uri}&search_after={current_search_after}&page={prev_page}"
                 )
 
-            next_link = f"{uri}&search_after={next_sort}&page={next_page}"
+            if len(results) < per_page:
+                next_link = None
+            else:
+                next_link = f"{uri}&search_after={next_sort}&page={next_page}"
 
             # use scan to get more than 10000 responses
             # response = helpers.scan(
@@ -134,7 +139,7 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 },
                 "totalHits": total_hits,
                 "page": current_page,
-                "results": response,
+                "results": results,
             }
         except Exception as err:
             print(err)
