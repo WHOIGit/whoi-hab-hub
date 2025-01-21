@@ -3,7 +3,7 @@ import requests
 # set your filter parameters
 # all parameters are optional, but unfiltered searches may return millions of results so use caution
 start_date = "2023-06-01"
-end_date = "2023-06-30"
+end_date = "2023-07-30"
 species = "Alexandrium_catenella"
 # dataset_id = ""
 model_id = "HABLAB_20240110_Tripos2"
@@ -29,9 +29,6 @@ def fetch_paginated_results(api_url, params=None):
     all_results = []
 
     while True:
-        # Update the parameters to
-        # params.update({"page": page})
-
         # Make the API request
         response = requests.get(api_url, params=params)
 
@@ -40,19 +37,18 @@ def fetch_paginated_results(api_url, params=None):
 
         # Parse the JSON response
         data = response.json()
+        # Get the results
+        results = data["results"]
+        print(results, len(results))
+        # Add the current page's results to the combined list
+        all_results.extend(results)
 
         # Get next/prev links
         links = data.get("links", None)
         # Check if there are more pages
         # Assuming the API provides a "next" field to indicate the next page
-        if not links:
+        if not links["next"]:
             break
-
-        # Get the results
-        results = data["results"]["hits"]["hits"]
-        print(results, len(results))
-        # Add the current page's results to the combined list
-        all_results.extend(results)
 
         # Update the API URL to get next page of results
         api_url = links["next"]
