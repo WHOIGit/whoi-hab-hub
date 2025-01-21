@@ -1,21 +1,13 @@
 import environ
-import hashlib
-import json
-import datetime
-import boto3
 import urllib.parse
 from collections import OrderedDict
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.reverse import reverse
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_gis.fields import GeometryField
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 from .mixins import ScoresFiltersMixin
 from ..models import Dataset
 
