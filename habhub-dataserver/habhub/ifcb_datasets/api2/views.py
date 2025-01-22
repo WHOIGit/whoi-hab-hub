@@ -4,12 +4,15 @@ from collections import OrderedDict
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
+from django.urls import reverse
 from rest_framework import viewsets
-from rest_framework.reverse import reverse
+
+# from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework_gis.fields import GeometryField
 from .mixins import ScoresFiltersMixin
 from ..models import Dataset
+from habhub.core.constants import API_URL
 
 env = environ.Env()
 
@@ -63,8 +66,10 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         query_params = request.query_params.dict()
         query_params.pop("search_after", None)
         query_params.pop("page", None)
-        link = reverse("api_v2:ifcb-species-scores-list", request=request)
-        print("link", link)
+        relative_link = reverse("api_v2:ifcb-species-scores-list")
+        print("link", relative_link)
+        link = f"{API_URL}{relative_link}"
+        print(link)
         uri = f"{link}?{urllib.parse.urlencode(query_params)}"
 
         current_page = int(request.query_params.get("page", 1))

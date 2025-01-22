@@ -1,5 +1,5 @@
 # Global constants
-
+API_URL = "https://habhub-api.whoi.edu"
 # DATA_LAYERS constant = default Data Layers
 CELL_CONCENTRATION_LAYER = "cell_concentration_layer"
 CELL_CONCENTRATION_SPATIALGRID_LAYER = "cell_concentration_spatialgrid_layer"
