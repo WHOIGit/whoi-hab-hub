@@ -1,0 +1,38 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: WHOI HAB hub
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ethan
+    family-names: Andrews
+    email: eandrews@whoi.edu
+    affiliation: Woods Hole Oceanographic Institution
+  - given-names: Claire
+    family-names: Anacreon
+    email: canacreon@whoi.edu
+    affiliation: Woods Hole Oceanographic Institution
+  - given-names: Kali
+    family-names: Horn
+    email: khorn@whoi.edu
+    affiliation: Woods Hole Oceanographic Institution
+  - given-names: Mindy
+    family-names: Richlen
+    email: mrichlen@whoi.edu
+    affiliation: Woods Hole Oceanographic Institution
+    orcid: 'https://orcid.org/0000-0002-1302-9342'
+  - given-names: Michael
+    family-names: Brosnahan
+    email: mbrosnahan@whoi.edu
+    affiliation: Woods Hole Oceanographic Institution
+    orcid: 'https://orcid.org/0000-0002-2620-7638'
+repository-code: 'https://github.com/WHOIGit/whoi-hab-hub.git'
+license: GPL-3.0
+commit: >-
+  https://github.com/WHOIGit/whoi-hab-hub/commit/1cbd55c803b581b11efb296c7494af285946254a
+version: '1'
+date-released: '2025-01-22'
