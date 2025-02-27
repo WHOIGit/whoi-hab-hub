@@ -20,6 +20,11 @@ from habhub.closures.api.views import (
     ShellfishAreaAllDataViewSet,
 )
 
+from habhub.monitoring_systems.api.views import (
+    MonitoringSystemViewSet,
+    ForecastingSystemViewSet,
+)
+
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 router.register(r"core/data-density", DataDensityAPIView, "data-density")
@@ -35,6 +40,8 @@ router.register(r"stations", StationViewSet, "stations")
 router.register(r"scores", AutoclassScoreViewSet, "scores")
 router.register(r"bins", BinMetadataViewSet, "bins")
 router.register(r"datasets", DatasetBasicViewSet, "datasets")
+router.register(r"monitoring-systems", MonitoringSystemViewSet, "monitoring-systems")
+router.register(r"forecasting-systems", ForecastingSystemViewSet, "forecasting-systems")
 
 app_name = "api_v1"
 urlpatterns = [
