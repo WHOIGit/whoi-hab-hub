@@ -39,12 +39,11 @@ def connect_opensearch():
         )
         print("Connect to OS", os_client)
         info = os_client.info()
-        print(
-            f"Welcome to {info['version']['distribution']} {info['version']['number']}!"
-        )
+        print(os_client.info())
+        print(f"Welcome to {info['version']['number']}!")
 
     except Exception as err:
-        print(err)
+        print("Connection error", err)
         return Response(
             {
                 "statusCode": 400,
@@ -98,6 +97,7 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         try:
             # search the DB
             # use search_after to paginate through all results
+            print("search the DB", os_client)
             response = os_client.search(body=query, index=index_name, size=100)
             # print(response)
             results = response["hits"]["hits"]
@@ -139,7 +139,7 @@ class SpeciesScoresIndexViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 "results": results,
             }
         except Exception as err:
-            print(err)
+            print("Search error", err)
             return Response(
                 {
                     "statusCode": 400,

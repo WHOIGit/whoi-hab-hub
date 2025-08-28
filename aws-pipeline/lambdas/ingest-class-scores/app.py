@@ -174,9 +174,7 @@ def lambda_handler(event, context):
             )
             print("Connect to OS", os_client)
             info = os_client.info()
-            print(
-                f"Welcome to {info['version']['distribution']} {info['version']['number']}!"
-            )
+            print(info)
 
             # create index if it's missing
             if not os_client.indices.exists(index=index_name):
@@ -244,6 +242,6 @@ def lambda_handler(event, context):
     # delete file from tmp dir
     os.remove(file_path)
     # delete file from S3
-    s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
-    print("file deleted")
+    response = s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+    print("file deleted", s3_Bucket_Name, s3_File_Name)
     return {"statusCode": 200, "body": json.dumps(f"{bin_pid} successfully indexed")}
