@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster AS base
+FROM docker.io/python:3.12.2-slim-bookworm AS base
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 
@@ -18,7 +18,7 @@ RUN pip install --prefix=/install -r /requirements/production.txt \
     && rm -rf /requirements
 
 # Build optimized image
-FROM python:3.8-slim-buster AS build-image
+FROM docker.io/python:3.12.2-slim-bookworm AS build-image
 
 ENV PYTHONUNBUFFERED 1
 

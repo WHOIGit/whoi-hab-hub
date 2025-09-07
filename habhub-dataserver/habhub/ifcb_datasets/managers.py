@@ -13,7 +13,7 @@ from django.db.models.functions import Cast
 from django.contrib.gis.db.models import Extent
 from django.apps import apps
 from django.contrib.gis.geos import Point
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models.fields.json import KeyTextTransform
 from django.contrib.gis.db.models.functions import GeoHash, SnapToGrid
 
 from habhub.core.models import TargetSpecies, Metric, DataLayer

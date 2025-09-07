@@ -7,7 +7,6 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import View, DetailView, TemplateView
 from django.db.models import Avg, Max, Prefetch
-from django.contrib.postgres.fields.jsonb import KeyTransform, KeyTextTransform
 
 from habhub.core.models import TargetSpecies
 from .models import *
@@ -15,6 +14,7 @@ from .utils import _get_image_ifcb_dashboard
 from .api.serializers import DatasetListSerializer
 
 env = environ.Env()
+
 
 # Function to load IFBC map sidebar
 class BinAjaxGetImagesBySpecies(View):
