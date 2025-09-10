@@ -1,4 +1,4 @@
-FROM ghcr.io/baosystems/postgis:13-3.2
+FROM ghcr.io/baosystems/postgis:13-3.5
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 

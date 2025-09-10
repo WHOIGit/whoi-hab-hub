@@ -9,7 +9,7 @@ from storages.backends.s3boto3 import S3Boto3Storage
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["whoi.edu"])
 # Get the IP addresss for AWS Fargate container from AWS API,
 # add to ALLOWED_HOSTS so AWS Health Checks work
 METADATA_URI = os.environ["ECS_CONTAINER_METADATA_URI"]
@@ -54,6 +54,7 @@ SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=False)
 SESSION_COOKIE_SECURE = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
 CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_ALLOWED_HOSTS", default=["whoi.edu"])
 # https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
 # TODO: set this to 60 seconds first and then to 518400 once you prove the former works
