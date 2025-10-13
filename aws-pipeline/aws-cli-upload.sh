@@ -1,0 +1,1 @@
+aws s3 cp ./GoM_20230119_GoM1/ s3://habhub.data-pipeline-files --recursive --exclude "*" --include "*.h5" --profile habhub-data-pipeline

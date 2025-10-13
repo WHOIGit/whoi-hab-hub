@@ -133,7 +133,8 @@ def lambda_handler(event, context):
 
     if not lambda_resp:
         # Connect to OS for indexing
-        host = "vpc-habhub-prod-3jxcbqq7ogktcoym3jnmjhgxsi.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+        # host = "vpc-habhub-prod-3jxcbqq7ogktcoym3jnmjhgxsi.us-east-1.es.amazonaws.com"  # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+        host = "search-habhub-production-li4bxtldklbdlnyv6kuav3p4kq.us-east-1.es.amazonaws.com"
         region = "us-east-1"
         service = "es"
         credentials = boto3.Session().get_credentials()

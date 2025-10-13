@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "ingest-class-scores-lambda"
 
   use_image_tag = true
-  image_tag     = "1.30"
+  image_tag     = "1.33"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores"
 
@@ -46,9 +46,9 @@ module "lambda_function" {
   architectures = ["x86_64"]
 
   # put lambda in VPC to connect to OS
-  vpc_subnet_ids         = ["subnet-08d09516ed3c309e5"]
-  vpc_security_group_ids = [aws_security_group.lambda_sg.id]
-  attach_network_policy  = true
+  #vpc_subnet_ids         = [var.subnet_prv1]
+  #vpc_security_group_ids = [aws_security_group.lambda_sg_new.id]
+  #attach_network_policy  = true
 
   allowed_triggers = {
     AllowExecutionFromS3Bucket = {
@@ -78,7 +78,7 @@ module "lambda_function" {
     OpenSearch = {
       effect    = "Allow",
       actions   = ["es:*"],
-      resources = ["arn:aws:es:us-east-1:139464377685:domain/habhub-prod/*"]
+      resources = ["arn:aws:es:us-east-1:139464377685:domain/habhub-production/*"]
     }
 
   }
@@ -98,6 +98,24 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
   security_group_id = aws_security_group.lambda_sg.id
+  cidr_ipv6         = "::/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
+
+resource "aws_security_group" "lambda_sg_new" {
+  name        = "lambda_sg_new"
+  description = "Allow TLS inbound traffic and all outbound traffic"
+  vpc_id      = var.vpc
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_new" {
+  security_group_id = aws_security_group.lambda_sg_new.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6_new" {
+  security_group_id = aws_security_group.lambda_sg_new.id
   cidr_ipv6         = "::/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
