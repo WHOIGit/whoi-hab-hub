@@ -66,7 +66,7 @@ def lambda_handler(event, context):
 
         # get the model name from S3 key path in case missing from metadata
         try:
-            model_id = s3_File_Name.split("/")[1]
+            model_id = s3_File_Name.split("/")[2]
         except:
             model_id = "unknown"
         print("Model id:", model_id)
