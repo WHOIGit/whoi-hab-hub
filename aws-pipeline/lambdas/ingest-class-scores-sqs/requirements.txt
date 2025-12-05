@@ -1,0 +1,3 @@
+h5py==3.10.0
+numpy==1.26.4
+opensearch-py==2.5.0

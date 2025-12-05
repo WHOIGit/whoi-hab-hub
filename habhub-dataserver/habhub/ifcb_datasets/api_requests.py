@@ -17,6 +17,7 @@ env = environ.Env()
 
 # IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
 IFCB_DASHBOARD_THROTTLE_RATE = env("IFCB_DASHBOARD_THROTTLE_RATE", default=50)
+MVCO_GEOM_POINT = Point(41.325, -70.5667)
 
 
 def valid_lonlat(lon: float, lat: float):
@@ -176,7 +177,10 @@ def _get_ifcb_bins_dataset(dataset_obj, start_date=None, end_date=None):
                 print("Skip value set to 1, skipping row")
                 continue
 
-            if row["longitude"] and row["latitude"]:
+            if dataset_obj.dashboard_id_name == "mvco":
+                print("MVCO lat/long fix")
+                geom = MVCO_GEOM_POINT
+            elif row["longitude"] and row["latitude"]:
                 lon = float(row["longitude"])
                 lat = float(row["latitude"])
                 lon_lat = valid_lonlat(lon, lat)

@@ -1,12 +1,3 @@
-data "aws_ecr_authorization_token" "token" {}
-
-provider "docker" {
-  registry_auth {
-    address  = var.ecr_root
-    username = data.aws_ecr_authorization_token.token.user_name
-    password = data.aws_ecr_authorization_token.token.password
-  }
-}
 
 module "docker_image" {
   source = "terraform-aws-modules/lambda/aws//modules/docker-build"
@@ -127,6 +118,15 @@ module "s3_notification" {
 
   eventbridge = true
 
+  sqs_notifications = {
+    sqs1 = {
+      queue_arn     = aws_sqs_queue.main.arn
+      events        = ["s3:ObjectCreated:*"]
+      filter_suffix = ".h5"
+
+      #      queue_id =  aws_sqs_queue.main.id // optional
+    }
+  }
   lambda_notifications = {
     lambda1 = {
       function_arn  = module.lambda_function.lambda_function_arn
