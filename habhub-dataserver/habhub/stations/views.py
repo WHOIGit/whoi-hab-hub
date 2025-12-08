@@ -348,11 +348,15 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
         # csv_file = self.request.FILES["datapoints_csv"]
         csv_file = form.cleaned_data["datapoints_csv"]
 
-        uploader = self.upload_csv(csv_file)
-        if uploader["status"] == "fail":
-            for error in uploader["errors"]:
-                messages.error(self.request, error)
-            return HttpResponseRedirect(reverse("admin:upload_station_data"))
+        try:
+            uploader = self.upload_csv(csv_file)
+            if uploader["status"] == "fail":
+                for error in uploader["errors"]:
+                    messages.error(self.request, error)
+                return HttpResponseRedirect(reverse("admin:upload_station_data"))
+        except Exception as e:
+            print("Error in uploader")
+            print(e)
 
         return super(DatapointCsvUploadView, self).form_valid(form)
 
