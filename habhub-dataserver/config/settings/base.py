@@ -84,6 +84,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_csv",
     "colorfield",
     "rest_framework.authtoken",
+    "crispy_bootstrap4",
 ]
 LOCAL_APPS = [
     "habhub.users.apps.UsersAppConfig",

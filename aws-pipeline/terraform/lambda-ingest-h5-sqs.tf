@@ -39,6 +39,7 @@ module "lambda_function_h5" {
   timeout     = 300
   # throttle lambda execution to not kill habon-ifcb api with requests
   reserved_concurrent_executions = 10
+  ephemeral_storage_size         = 1024
 
   # container config
   image_uri     = module.docker_image_h5.image_uri
@@ -61,7 +62,6 @@ module "lambda_function_h5" {
 
   # cloudwatch
   cloudwatch_logs_retention_in_days = 7
-
   event_source_mapping = {
     sqs = {
       event_source_arn        = aws_sqs_queue.main.arn

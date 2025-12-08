@@ -30,6 +30,7 @@ module "lambda_function" {
   timeout     = 300
   # throttle lambda execution to not kill habon-ifcb api with requests
   reserved_concurrent_executions = 10
+  ephemeral_storage_size         = 1024
 
   # container config
   image_uri     = module.docker_image.image_uri
