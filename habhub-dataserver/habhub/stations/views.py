@@ -284,7 +284,8 @@ class DatapointCsvUploadView(LoginRequiredMixin, FormView):
             # get matching Station object from station_location
             try:
                 station = Station.objects.get(station_location=row["station"].strip())
-            except Station.DoesNotExist:
+            except Exception as e:
+                print(e)
                 error = f"Error: No Matching Station - {row_info}"
                 uploader["errors"].append(error)
                 continue
