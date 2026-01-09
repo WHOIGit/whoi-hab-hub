@@ -12,12 +12,12 @@ module "docker_image_h5" {
   source = "terraform-aws-modules/lambda/aws//modules/docker-build"
 
   create_ecr_repo = true
-  ecr_repo        = "ingest-class-scores-lambda"
+  ecr_repo        = "ingest-class-scores-lambda-sqs"
 
   use_image_tag = true
-  image_tag     = "1.0"
+  image_tag     = "1.4"
 
-  source_path = "${path.module}/../lambdas/ingest-class-scores"
+  source_path = "${path.module}/../lambdas/ingest-class-scores-sqs"
 
 }
 
@@ -35,10 +35,10 @@ module "lambda_function_h5" {
   publish        = true
 
   # architecture config
-  memory_size = 256
-  timeout     = 300
+  memory_size = 200
+  timeout     = 180
   # throttle lambda execution to not kill habon-ifcb api with requests
-  reserved_concurrent_executions = 10
+  reserved_concurrent_executions = 2
   ephemeral_storage_size         = 1024
 
   # container config
@@ -67,7 +67,8 @@ module "lambda_function_h5" {
       event_source_arn        = aws_sqs_queue.main.arn
       function_response_types = ["ReportBatchItemFailures"]
       scaling_config = {
-        maximum_concurrency = 20
+        maximum_concurrency = 2
+
       }
       metrics_config = {
         metrics = ["EventCount"]
@@ -117,8 +118,20 @@ module "lambda_function_h5" {
 # SQS
 resource "aws_sqs_queue" "main" {
   name = "ingest-class-scores"
+  # The redrive_policy connects the source queue to the DLQ
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq.arn
+    maxReceiveCount     = 1 # Max retries before moving to DLQ
+  })
 }
 
 resource "aws_sqs_queue" "failure" {
-  name = "ingest-class-scores-failure"
+  name                      = "ingest-class-scores-failure"
+  message_retention_seconds = 86400 # 1 day
+}
+
+resource "aws_sqs_queue" "dlq" {
+  name = "ingest-class-scores-dlq"
+  # Best practice: DLQ retention should be longer than the source queue
+  message_retention_seconds = 86400 # 1 day
 }
