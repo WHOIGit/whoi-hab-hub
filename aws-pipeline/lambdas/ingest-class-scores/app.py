@@ -73,7 +73,7 @@ def lambda_handler(event, context):
 
     except Exception as err:
         print(err)
-        lambda_resp = {"statusCode": 400, "body": json.dumps("Error reading S3")}
+        lambda_resp = {"statusCode": 500, "body": json.dumps("Error reading S3")}
 
     # Get Dynamo metadata record
     """
@@ -120,10 +120,18 @@ def lambda_handler(event, context):
                     print("metadata_obj", metadata_obj)
                 else:
                     print(f"Skip flag is true. Skip {bin_pid}")
-                    return None
+                    lambda_resp = {
+                        "statusCode": 500,
+                        "body": json.dumps(f"Skip flag is true. Skip {bin_pid}"),
+                    }
             else:
                 print(f"No metadata available on HABON IFCB. Skip {bin_pid}")
-                return None
+                lambda_resp = {
+                    "statusCode": 500,
+                    "body": json.dumps(
+                        f"No metadata available on HABON IFCB. Skip {bin_pid}"
+                    ),
+                }
         except Exception as err:
             print(err)
             lambda_resp = {
@@ -231,11 +239,15 @@ def lambda_handler(event, context):
             print("Start upsert ", len(documents))
             upsert_documents(documents, index_name, os_client)
             print("Bulk upsert ", len(documents))
+            lambda_resp = {
+                "statusCode": 200,
+                "body": json.dumps(f"{bin_pid} successfully indexed"),
+            }
 
         except Exception as err:
             print(err)
             lambda_resp = {
-                "statusCode": 400,
+                "statusCode": 500,
                 "body": json.dumps("Error indexing documents"),
             }
 
@@ -245,4 +257,4 @@ def lambda_handler(event, context):
     # delete file from S3
     response = s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
     print("file deleted", s3_Bucket_Name, s3_File_Name)
-    return {"statusCode": 200, "body": json.dumps(f"{bin_pid} successfully indexed")}
+    return lambda_resp

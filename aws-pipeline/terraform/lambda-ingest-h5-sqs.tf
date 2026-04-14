@@ -15,7 +15,7 @@ module "docker_image_h5" {
   ecr_repo        = "ingest-class-scores-lambda-sqs"
 
   use_image_tag = true
-  image_tag     = "1.4"
+  image_tag     = "1.5"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores-sqs"
 
@@ -133,5 +133,5 @@ resource "aws_sqs_queue" "failure" {
 resource "aws_sqs_queue" "dlq" {
   name = "ingest-class-scores-dlq"
   # Best practice: DLQ retention should be longer than the source queue
-  message_retention_seconds = 86400 # 1 day
+  message_retention_seconds = 172800 # 1 day
 }
