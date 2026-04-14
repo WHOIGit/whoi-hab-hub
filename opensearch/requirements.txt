@@ -1,6 +1,6 @@
 boto3==1.40.47
 botocore==1.40.47
-certifi==2024.6.2
+certifi==2024.7.4
 charset-normalizer==3.3.2
 Events==0.5
 h5py==3.10.0
