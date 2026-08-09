@@ -15,11 +15,22 @@ def get_ifcb_dashboard_data():
     sets = Dataset.objects.all()
     for set in sets:
         print(set)
-        run_species_classifed_import(set)
+        run_species_classifed_import(set, 100)
         print("set complete")
     # clear the cache of stale results
     cache.clear()
 
+@shared_task(time_limit=84600, soft_time_limit=84600)
+def get_ifcb_dashboard_data_high_priority():
+    from .models import Dataset
+    print("run high priority data ingestion")
+    sets = Dataset.objects.filter(high_priority_updates=True)
+    for set in sets:
+        print(set)
+        run_species_classifed_import(set, None)
+        print("set complete")
+    # clear the cache of stale results
+    cache.clear()
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
 def reset_ifcb_dataset_data(self, dataset_id=None, start_date=None, end_date=None):

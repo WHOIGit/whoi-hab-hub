@@ -16,7 +16,7 @@ from django.utils import timezone
 env = environ.Env()
 
 # IFCB_DASHBOARD_URL = env("IFCB_DASHBOARD_URL", default="https://habon-ifcb.whoi.edu")
-IFCB_DASHBOARD_THROTTLE_RATE = env("IFCB_DASHBOARD_THROTTLE_RATE", default=50)
+IFCB_DASHBOARD_THROTTLE_RATE = env("IFCB_DASHBOARD_THROTTLE_RATE", default=500)
 MVCO_GEOM_POINT = Point(41.325, -70.5667)
 
 
@@ -71,17 +71,20 @@ def run_species_classifed_import(dataset_obj):
 """
 
 
-def run_species_classifed_import(dataset_obj):
+def run_species_classifed_import(dataset_obj, throttle_rate=100):
     """
     Function to run import of Bins/Autoclass/Image data from IFCB dashboard
     Args: 'dataset_obj' - Dataset object
     """
     # Get all new bins
     _get_ifcb_bins_dataset(dataset_obj)
+    print("Throttle Rate", throttle_rate)
     print("Complete Bin import.")
-    bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[
-        :IFCB_DASHBOARD_THROTTLE_RATE
-    ]
+    if throttle_rate:
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[throttle_rate]
+    else:
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)
+        
     for bin in bins:
         print("Start autoclass processing...")
         _get_ifcb_autoclass_file(bin)

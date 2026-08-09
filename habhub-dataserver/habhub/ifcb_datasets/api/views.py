@@ -22,6 +22,7 @@ from .serializers import (
     BinSpatialGridDetailSerializer,
     AutoclassScoreSerializer,
     DatasetBasicSerializer,
+    CruiseTrackViewSetSerializer
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
 
@@ -180,3 +181,13 @@ class BinSpatialGridViewSet(BinFiltersMixin, viewsets.ViewSet):
         # set cache
         cache.set(cache_key, serializer.data)
         return Response(serializer.data)
+
+# Viewset to show full cruise track of vessel-based Datasets
+class CruiseTrackViewSet(DatasetFiltersMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = CruiseTrackViewSetSerializer
+
+    def get_queryset(self):
+        queryset = Dataset.objects.filter(fixed_location=False).defer('bins')
+        # call custom filter method from mixin
+        queryset = self.handle_query_param_filters(queryset)
+        return queryset

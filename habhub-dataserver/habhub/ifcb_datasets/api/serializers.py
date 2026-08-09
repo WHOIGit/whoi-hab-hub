@@ -40,7 +40,17 @@ class BinSerializer(GeoFeatureModelSerializer):
             "cell_concentration_data",
         ]
 
-
+class CruiseTrackViewSetSerializer(serializers.ModelSerializer):
+    bins = BinSerializer(many=True, read_only=True) 
+    class Meta:
+        model = Dataset
+        fields = [
+            "id",
+            "name",
+            "location",
+            "dashboard_id_name",
+            "bins"
+        ]
 class AutoclassScoreSerializer(serializers.ModelSerializer):
     os_id = serializers.SerializerMethodField()
     image_pid = serializers.CharField(source="pid")

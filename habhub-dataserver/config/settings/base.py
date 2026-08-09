@@ -335,6 +335,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
         "schedule": crontab(minute=0, hour=2),
     },
+    "get_ifcb_dashboard_data_high_priority_task": {
+            "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data_high_priority",
+            # Executes every 5 minutes
+            'schedule': crontab(minute='*/10'), 
+        },
     # "prewarm_api_cache_task": {
     #    "task": "habhub.core.tasks.prewarm_api_cache",
     #    "schedule": crontab(minute="*/5"),

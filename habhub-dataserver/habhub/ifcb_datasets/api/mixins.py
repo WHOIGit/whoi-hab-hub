@@ -29,7 +29,7 @@ class BinFiltersMixin:
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = timezone.now() - relativedelta(years=1)
+            start_date_obj = (timezone.now() - relativedelta(years=1)).date()
 
         print("LIMIT", limit_start_date)
         if limit_start_date:
@@ -46,7 +46,7 @@ class BinFiltersMixin:
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
-            end_date_obj = timezone.now()
+            end_date_obj = timezone.now().date()
 
         if end_date_obj < start_date_obj:
             # check if end_date is BEFORE start_date. Invalid option, so reset to no results
@@ -95,10 +95,10 @@ class BinFiltersMixin:
                 print("RANGES", date_ranges)
                 for dr in date_ranges:
                     date_q_filters |= Q(
-                        sample_time__range=(dr["start_date"], dr["end_date"])
+                        sample_time__date__range=(dr["start_date"], dr["end_date"])
                     )  # 'or' the Q objects together
             else:
-                date_q_filters |= Q(sample_time__range=([start_date_obj, end_date_obj]))
+                date_q_filters |= Q(sample_time__date__range=([start_date_obj, end_date_obj]))
 
         queryset = (
             queryset.filter(date_q_filters)
@@ -145,7 +145,7 @@ class DatasetFiltersMixin:
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = timezone.now() - relativedelta(years=1)
+            start_date_obj = (timezone.now() - relativedelta(years=1)).date()
 
         if limit_start_date:
             # if limit_start_date param exists, limit results to specified range
@@ -160,7 +160,7 @@ class DatasetFiltersMixin:
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
-            end_date_obj = timezone.now()
+            end_date_obj = timezone.now().date()
 
         if end_date_obj < start_date_obj:
             # check if end_date is BEFORE start_date. Invalid option, so reset to no results
@@ -210,10 +210,10 @@ class DatasetFiltersMixin:
 
                 for dr in date_ranges:
                     date_q_filters |= Q(
-                        sample_time__range=(dr["start_date"], dr["end_date"])
+                        sample_time__date__range=(dr["start_date"], dr["end_date"])
                     )  # 'or' the Q objects together
             else:
-                date_q_filters |= Q(sample_time__range=([start_date_obj, end_date_obj]))
+                date_q_filters |= Q(sample_time__date__range=([start_date_obj, end_date_obj]))
 
         queryset = queryset.prefetch_related(
             Prefetch(

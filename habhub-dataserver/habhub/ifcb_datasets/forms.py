@@ -29,10 +29,12 @@ class DatasetForm(forms.ModelForm):
             "latitude",
             "longitude",
             "geom",
+            "high_priority_updates"
         ]
 
         help_texts = {
-            "dashboard_public_url": "optional field - enter public URL for IFCB dashboard links if it differs from data ingestion URL",
+            "dashboard_public_url": "Optional field - enter public URL for IFCB dashboard links if it differs from data ingestion URL",
+            "high_priority_updates": "Increase the frequency of data ingestion from IFCB Dashboard. Use with caution to avoid impacting the Dashboard performance",
         }
 
     def __init__(self, *args, **kwargs):

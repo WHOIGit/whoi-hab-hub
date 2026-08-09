@@ -13,7 +13,8 @@ class DatasetAdmin(LeafletGeoAdmin):
         "dashboard_base_url",
         "dashboard_id_name",
         "fixed_location",
-        "geom",
+        "high_priority_updates",
+        "geom",    
     )
     list_editable = ("geom",)
 

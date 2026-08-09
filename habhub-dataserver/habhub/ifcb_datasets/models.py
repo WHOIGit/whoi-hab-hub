@@ -25,6 +25,7 @@ class Dataset(models.Model):
     # OPTIONAL: public dashboard URL if it differs from data ingestion
     dashboard_public_url = models.URLField(max_length=200, null=False, blank=True)
     fixed_location = models.BooleanField(default=True)
+    high_priority_updates = models.BooleanField(default=False)
 
     # objects = DatasetQuerySet.as_manager()
 

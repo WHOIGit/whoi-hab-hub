@@ -14,6 +14,7 @@ from habhub.ifcb_datasets.api.views import (
     AutoclassScoreViewSet,
     BinMetadataViewSet,
     DatasetBasicViewSet,
+    CruiseTrackViewSet
 )
 from habhub.closures.api.views import (
     ShellfishAreaViewSet,
@@ -40,6 +41,7 @@ router.register(r"stations", StationViewSet, "stations")
 router.register(r"scores", AutoclassScoreViewSet, "scores")
 router.register(r"bins", BinMetadataViewSet, "bins")
 router.register(r"datasets", DatasetBasicViewSet, "datasets")
+router.register(r"cruise-tracks", CruiseTrackViewSet, "cruise-tracks")
 router.register(r"monitoring-systems", MonitoringSystemViewSet, "monitoring-systems")
 router.register(r"forecasting-systems", ForecastingSystemViewSet, "forecasting-systems")
 
