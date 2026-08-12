@@ -81,10 +81,10 @@ def run_species_classifed_import(dataset_obj, throttle_rate=100):
     print("Throttle Rate", throttle_rate)
     print("Complete Bin import.")
     if throttle_rate:
-        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[throttle_rate]
+        bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)[:throttle_rate]
     else:
         bins = dataset_obj.bins.filter(cell_concentration_data__isnull=True)
-        
+
     for bin in bins:
         print("Start autoclass processing...")
         _get_ifcb_autoclass_file(bin)

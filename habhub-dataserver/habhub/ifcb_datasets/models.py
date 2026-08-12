@@ -4,6 +4,7 @@ from statistics import mean
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
+from django.contrib.postgres.indexes import GinIndex
 
 from habhub.core.models import TargetSpecies, DataLayer, Metric
 from habhub.ifcb_datasets.tasks import reset_ifcb_dataset_data
@@ -159,6 +160,10 @@ class Bin(models.Model):
     class Meta:
         ordering = ["-sample_time"]
         get_latest_by = "sample_time"
+        # Creates a GIN index on the entire JSONField
+        indexes = [
+            GinIndex(fields=['cell_concentration_data'], name='cell_concentration_gin_idx')
+        ]
 
     def __str__(self):
         return self.pid
