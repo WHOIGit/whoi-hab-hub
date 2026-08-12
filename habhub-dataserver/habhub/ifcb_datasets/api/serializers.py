@@ -11,7 +11,7 @@ from rest_framework_gis.fields import GeometryField
 
 from ..models import Dataset, Bin, AutoclassScore
 from habhub.core.models import TargetSpecies, Metric, DataLayer
-from .cache_utils import create_cache_key
+from .cache_utils import create_dataset_summary_cache_key
 
 
 class DatasetBasicSerializer(GeoFeatureModelSerializer):
@@ -107,12 +107,12 @@ class DatasetListSerializer(GeoFeatureModelSerializer):
     def get_max_mean_values(self, obj):
         request = self.context.get("request")
         # get_max_mean_values() is an expensive per-bin Python aggregation, so cache
-        # it per dataset/query-params. Invalidated by the cache.clear() calls that
-        # already run after bin ingestion (see ifcb_datasets/tasks.py).
+        # it per dataset/query-params. Invalidated per-dataset by clear_dataset_summary_cache()
+        # after bin ingestion (see ifcb_datasets/tasks.py).
         if request is None:
             return obj.get_max_mean_values()
 
-        cache_key = create_cache_key(request, obj.id)
+        cache_key = create_dataset_summary_cache_key(request, obj.id)
         cached_data = cache.get(cache_key)
         if cached_data is not None:
             return cached_data

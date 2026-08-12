@@ -6,6 +6,7 @@ from .api_requests import (
     reset_ifcb_data,
     _calculate_metrics,
 )
+from .api.cache_utils import clear_dataset_summary_cache, clear_spatial_grid_cache
 
 
 @shared_task(time_limit=84600, soft_time_limit=84600)
@@ -17,8 +18,9 @@ def get_ifcb_dashboard_data():
         print(set)
         run_species_classifed_import(set, 100)
         print("set complete")
-    # clear the cache of stale results
-    cache.clear()
+        # clear only this dataset's stale cached results
+        clear_dataset_summary_cache(set.id)
+    clear_spatial_grid_cache()
 
 @shared_task(time_limit=84600, soft_time_limit=84600)
 def get_ifcb_dashboard_data_high_priority():
@@ -29,16 +31,24 @@ def get_ifcb_dashboard_data_high_priority():
         print(set)
         run_species_classifed_import(set, None)
         print("set complete")
-    # clear the cache of stale results
-    cache.clear()
+        # clear only this dataset's stale cached results
+        clear_dataset_summary_cache(set.id)
+    clear_spatial_grid_cache()
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
 def reset_ifcb_dataset_data(self, dataset_id=None, start_date=None, end_date=None):
+    from .models import Dataset
+
     print("DATASET ID ", dataset_id)
     print("Task Dates: ", start_date, end_date)
     reset_ifcb_data(dataset_id, start_date, end_date)
-    # clear the cache of stale results
-    cache.clear()
+    # clear stale cached results for the affected dataset(s)
+    if dataset_id:
+        clear_dataset_summary_cache(dataset_id)
+    else:
+        for id in Dataset.objects.values_list("id", flat=True):
+            clear_dataset_summary_cache(id)
+    clear_spatial_grid_cache()
 
 
 @shared_task(time_limit=84600, soft_time_limit=84600, bind=True)
@@ -56,5 +66,8 @@ def recalculate_metrics(self, species_id=None):
 
     for bin in bins:
         _calculate_metrics(bin)
-    # clear the cache of stale results
-    cache.clear()
+
+    # clear stale cached results for every dataset touched by these bins
+    for id in bins.values_list("dataset_id", flat=True).distinct():
+        clear_dataset_summary_cache(id)
+    clear_spatial_grid_cache()
