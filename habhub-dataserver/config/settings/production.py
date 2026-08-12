@@ -39,7 +39,7 @@ CACHES = {
         },
     }
 }
-CACHE_TTL = 60 * 15
+CACHE_TTL = 60 * 60 * 12
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
