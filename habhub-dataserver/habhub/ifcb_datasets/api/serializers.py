@@ -1,4 +1,5 @@
 from django.db.models.expressions import ExpressionWrapper
+from django.core.cache import cache
 from statistics import mean
 from collections import OrderedDict
 
@@ -10,6 +11,7 @@ from rest_framework_gis.fields import GeometryField
 
 from ..models import Dataset, Bin, AutoclassScore
 from habhub.core.models import TargetSpecies, Metric, DataLayer
+from .cache_utils import create_cache_key
 
 
 class DatasetBasicSerializer(GeoFeatureModelSerializer):
@@ -103,7 +105,21 @@ class DatasetListSerializer(GeoFeatureModelSerializer):
         ]
 
     def get_max_mean_values(self, obj):
-        return obj.get_max_mean_values()
+        request = self.context.get("request")
+        # get_max_mean_values() is an expensive per-bin Python aggregation, so cache
+        # it per dataset/query-params. Invalidated by the cache.clear() calls that
+        # already run after bin ingestion (see ifcb_datasets/tasks.py).
+        if request is None:
+            return obj.get_max_mean_values()
+
+        cache_key = create_cache_key(request, obj.id)
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            return cached_data
+
+        max_mean_values = obj.get_max_mean_values()
+        cache.set(cache_key, max_mean_values)
+        return max_mean_values
 
 
 class DatasetDetailSerializer(DatasetListSerializer):
@@ -210,6 +226,15 @@ class BinSpatialGridSerializer(serializers.Serializer):
         # use custom queryset to build geospatial grid data
         grid_qs = obj.add_grid_metrics_data(grid_level)
 
+        # these are the same for every grid square, so compute them once up front
+        # instead of re-querying inside format_max_mean() per square
+        target_list = list(TargetSpecies.objects.values_list("species_id", flat=True))
+        metrics = list(
+            Metric.objects.filter(
+                data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
+            ).distinct()
+        )
+
         for square in grid_qs:
             feature = OrderedDict()
             # required type attribute
@@ -223,19 +248,16 @@ class BinSpatialGridSerializer(serializers.Serializer):
             feature["geometry"] = geo_field.to_representation(square["grid"])
             # set GeoJSON properties
             properties = OrderedDict()
-            properties["max_mean_values"] = self.format_max_mean(square)
+            properties["max_mean_values"] = self.format_max_mean(
+                square, target_list, metrics
+            )
             feature["properties"] = properties
             features.append(feature)
 
         return features
 
-    def format_max_mean(self, square):
-        target_list = TargetSpecies.objects.values_list("species_id", flat=True)
-        index_list = [*range(0, target_list.count(), 1)]
-
-        metrics = Metric.objects.filter(
-            data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
-        ).distinct()
+    def format_max_mean(self, square, target_list, metrics):
+        index_list = [*range(0, len(target_list), 1)]
         max_mean_values = []
 
         # set up initial data structure

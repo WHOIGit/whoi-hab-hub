@@ -30,7 +30,7 @@ def get_ifcb_dashboard_data_high_priority():
         run_species_classifed_import(set, None)
         print("set complete")
     # clear the cache of stale results
-    #cache.clear()
+    cache.clear()
 
 @shared_task(time_limit=345600, soft_time_limit=345600, bind=True)
 def reset_ifcb_dataset_data(self, dataset_id=None, start_date=None, end_date=None):

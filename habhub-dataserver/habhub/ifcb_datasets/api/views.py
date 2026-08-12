@@ -1,6 +1,4 @@
 import environ
-import hashlib
-import json
 import datetime
 
 from rest_framework import viewsets, status
@@ -25,6 +23,7 @@ from .serializers import (
     CruiseTrackViewSetSerializer
 )
 from .mixins import DatasetFiltersMixin, BinFiltersMixin
+from .cache_utils import create_cache_key
 
 
 # CACHE_TTL = env("CACHE_TTL", default=60 * 60)
@@ -36,16 +35,6 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-def create_cache_key(request, pk=0):
-    print(request.query_params)
-    qp_encoded = json.dumps(request.query_params, sort_keys=True).encode()
-    qp_hash = hashlib.md5(qp_encoded)
-    print(qp_hash.hexdigest())
-    cache_key = f"{request.path}:{qp_hash.hexdigest()}:{pk}"
-    print(cache_key)
-    return cache_key
-
-
 class DatasetBasicViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Dataset.objects.all()
     serializer_class = DatasetBasicSerializer
@@ -54,13 +43,13 @@ class DatasetBasicViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class AutoclassScoreViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = AutoclassScore.objects.all()
+    queryset = AutoclassScore.objects.select_related("bin", "species")
     serializer_class = AutoclassScoreSerializer
     pagination_class = StandardResultsSetPagination
 
 
 class BinMetadataViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Bin.objects.all()
+    queryset = Bin.objects.select_related("dataset")
     serializer_class = BinSerializer
     pagination_class = StandardResultsSetPagination
 
@@ -70,7 +59,9 @@ class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
     lookup_field = "pid"
 
     def get_queryset(self):
-        queryset = Bin.objects.filter(cell_concentration_data__isnull=False)
+        queryset = Bin.objects.select_related("dataset").filter(
+            cell_concentration_data__isnull=False
+        )
         # call custom filter method from mixin
         queryset = self.handle_query_param_filters(queryset)
         return queryset
@@ -81,10 +72,7 @@ class BinViewSet(BinFiltersMixin, viewsets.ReadOnlyModelViewSet):
         species_name = request.query_params.get("species", None)
 
         # API request is sending display name
-        target_list = TargetSpecies.objects.all()
-        species = next(
-            (item for item in target_list if item.display_name == species_name), False
-        )
+        species = TargetSpecies.objects.filter(display_name=species_name).first()
 
         bin_images_json = {}
         images = []
