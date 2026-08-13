@@ -188,7 +188,7 @@ class Bin(models.Model):
 class AutoclassScore(models.Model):
     # the primary ID from the IFCB dashboard, also denotes the image file name
     pid = models.CharField(max_length=100, unique=True, db_index=True)
-    score = models.DecimalField(max_digits=7, decimal_places=6)
+    score = models.DecimalField(max_digits=7, decimal_places=6, db_index=True)
     species = models.ForeignKey(
         TargetSpecies, related_name="autoclass_scores", on_delete=models.CASCADE
     )
