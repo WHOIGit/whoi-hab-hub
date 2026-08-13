@@ -331,19 +331,19 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 
 # Celery Beat Periodic Tasks
 CELERY_BEAT_SCHEDULE = {
-    # "get_ifcb_dashboard_data_task": {
-    #     "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
-    #     "schedule": crontab(minute=0, hour=2),
-    # },
-    # "get_ifcb_dashboard_data_high_priority_task": {
-    #         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data_high_priority",
-    #         # Executes every 5 minutes
-    #         'schedule': crontab(minute='*/10'),
-    #     },
-    # "prewarm_api_cache_task": {
-    #    "task": "habhub.core.tasks.prewarm_api_cache",
-    #    "schedule": crontab(minute="*/5"),
-    # },
+    "get_ifcb_dashboard_data_task": {
+         "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data",
+         "schedule": crontab(minute=0, hour=2),
+     },
+    "get_ifcb_dashboard_data_high_priority_task": {
+             "task": "habhub.ifcb_datasets.tasks.get_ifcb_dashboard_data_high_priority",
+             # Executes every 5 minutes
+             'schedule': crontab(minute='*/10'),
+         },
+     #"prewarm_api_cache_task": {
+     #   "task": "habhub.core.tasks.prewarm_api_cache",
+     #   "schedule": crontab(minute="*/5"),
+     #},
 }
 
 # Summernote config
