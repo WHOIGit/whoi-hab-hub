@@ -195,3 +195,7 @@ class AutoclassScore(models.Model):
     bin = models.ForeignKey(
         Bin, related_name="autoclass_scores", on_delete=models.CASCADE
     )
+
+    class Meta:
+        ordering = ["-pid"]
+            
