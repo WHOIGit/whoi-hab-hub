@@ -166,6 +166,12 @@ class ClosureNotice(models.Model):
     class Meta:
         ordering = ["-effective_date", "title"]
         get_latest_by = "effective_date"
+        indexes = [
+            models.Index(
+                fields=["notice_action", "effective_date"],
+                name="closurenotice_action_date_idx",
+            ),
+        ]
 
     def __str__(self):
         return self.title
