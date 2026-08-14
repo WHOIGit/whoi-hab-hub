@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
 from config.admin import HabHubAdminSite
+from habhub.core.views import health_check
 from habhub.stations import views as stations_views
 from habhub.closures import views as closures_views
 from habhub.esp_instrument import views as esp_instrument_views
@@ -17,6 +18,8 @@ admin.site.index_title = "Site administration"
 admin.site.site_title = "WHOI HABHub Administration"
 
 urlpatterns = [
+    # Lightweight liveness endpoint for the AWS load balancer health check
+    path("health/", health_check, name="health_check"),
     # path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/",
