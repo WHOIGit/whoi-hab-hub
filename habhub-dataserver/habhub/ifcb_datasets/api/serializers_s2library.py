@@ -669,7 +669,14 @@ class BinSpatialGridSerializer(serializers.Serializer):
 
         geo_field = GeometryField()
         # use custom queryset to build geospatial grid data
-        grid_qs = obj.add_grid_metrics_data(grid_level)
+        grid_qs, field_map = obj.add_grid_metrics_data(grid_level)
+        target_list = list(TargetSpecies.objects.values_list("species_id", flat=True))
+        metrics_by_id = {
+            metric.metric_id: metric
+            for metric in Metric.objects.filter(
+                data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
+            ).distinct()
+        }
 
         for square in grid_qs:
             feature = OrderedDict()
@@ -684,62 +691,33 @@ class BinSpatialGridSerializer(serializers.Serializer):
             feature["geometry"] = geo_field.to_representation(square["grid"])
             # set GeoJSON properties
             properties = OrderedDict()
-            properties["max_mean_values"] = self.format_max_mean(square)
+            properties["max_mean_values"] = self.format_max_mean(
+                square, target_list, metrics_by_id, field_map
+            )
             feature["properties"] = properties
             features.append(feature)
 
         return features
 
-    def format_max_mean(self, square):
-        # print(square)
-        target_list = TargetSpecies.objects.values_list("species_id", flat=True)
-        index_list = [*range(0, target_list.count(), 1)]
-        metrics = Metric.objects.filter(
-            data_layers__belongs_to_app=DataLayer.IFCB_DATASETS
-        ).distinct()
+    def format_max_mean(self, square, target_list, metrics_by_id, field_map):
         max_mean_values = []
 
-        # set up initial data structure
-        for species in target_list:
-            data_dict = {"species": species, "data": []}
-            for metric in metrics:
-                metric_data = {
-                    "metric_id": metric.metric_id,
-                    "metric_name": metric.name,
-                    "max_value": 0,
-                    "mean_value": 0,
-                    "units": metric.units,
-                }
-                data_dict["data"].append(metric_data)
+        for species_id in target_list:
+            data_dict = {"species": species_id, "data": []}
+            for entry in field_map:
+                if entry["species_id"] != species_id:
+                    continue
+                metric = metrics_by_id[entry["metric_id"]]
+                data_dict["data"].append(
+                    {
+                        "metric_id": entry["metric_id"],
+                        "metric_name": metric.name,
+                        "max_value": square[entry["max_field"]] or 0,
+                        "mean_value": square[entry["mean_field"]] or 0,
+                        "units": metric.units,
+                    }
+                )
             max_mean_values.append(data_dict)
-
-        # regroup the query results by species is using index numbers
-        data_by_index = []
-        for i in index_list:
-            list_item = {"species": None, "data": []}
-            for key, val in square.items():
-                if str(i) in key:
-                    # get the species ID for the index, else add it to the data list as it's a metric
-                    if "species" in key:
-                        list_item["species"] = val
-                    else:
-                        data_item = {key: val}
-                        list_item["data"].append(data_item)
-            data_by_index.append(list_item)
-
-        for item in max_mean_values:
-            res = next(
-                (data for data in data_by_index if data["species"] == item["species"]),
-                None,
-            )
-            if res:
-                for metric in item["data"]:
-                    for d in res["data"]:
-                        if metric["metric_id"] in list(d.keys())[0]:
-                            if "max" in list(d.keys())[0]:
-                                metric["max_value"] = list(d.values())[0]
-                            elif "mean" in list(d.keys())[0]:
-                                metric["mean_value"] = list(d.values())[0]
 
         return max_mean_values
 
