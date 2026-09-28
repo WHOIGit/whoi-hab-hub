@@ -3,21 +3,8 @@ version: "3.7"
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
-  node_modules: {}
 
 services:
-  react_frontend:
-    build:
-      context: .
-      dockerfile: ./compose/local/react-frontend/Dockerfile
-    image: habhub_local_react_frontend
-    volumes:
-      - ./habhub-react-frontend:/usr/src/app:z
-      - /usr/src/app/node_modules #<- Use anonymous volume to keep node_modules directory
-    ports:
-      - "3000:3000"
-    command: npm start
-
   django: &django
     build:
       context: .
@@ -31,13 +18,13 @@ services:
       - ./habhub-dataserver/.envs/.local/.django
       - ./habhub-dataserver/.envs/.local/.postgres
     ports:
-      - "8888:8000"
+      - "8000:8000"
     command: /start
 
   postgres_habhub:
     build:
       context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
+      dockerfile: ./compose/production/postgres/m1.Dockerfile
     image: habhub_production_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
@@ -68,16 +55,3 @@ services:
   redis_habhub:
     image: redis:6.0
     restart: unless-stopped
-
-  flower:
-    <<: *django
-    container_name: django_flower
-    ports:
-      - "5555:5555"
-    command: /start-flower
-
-
-networks:
-  default:
-    external:
-      name: ifcbdb_nginx_network
