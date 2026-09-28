@@ -381,6 +381,9 @@ def snap_to_grid(value, grid_level):
 # API view to return spatial grid of species cell concentrations from AWS Opensearch.
 # Matches the response format of the v1 "ifcb-spatial-grid" endpoint, but a species
 # is only counted as present in a Bin if at least `min_models` ML models agree.
+# Bins processed by fewer than `min_models` models (mostly older data) require all
+# of their models to agree, unless `strict_agreement=true`. The number of models that
+# agreed/ran is returned with the results so clients can show lower confidence data.
 # Uses the per-Bin "bin-species-summary" index (see ifcb_datasets/opensearch.py)
 # instead of aggregating the image level "species-scores" index on every request.
 class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
@@ -414,12 +417,14 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             species_list = [s for s in species_list if s[0] in requested_species]
 
         model_param = query_params.get("model_id", None)
+        strict_agreement = query_params.get("strict_agreement", None) == "true"
 
         metric = Metric.objects.filter(metric_id="cell_concentration").first()
 
         return {
             "grid_level": grid_level,
             "min_models": min_models,
+            "strict_agreement": strict_agreement,
             "species_ids": [species_id for species_id, _ in species_list],
             "species_display": dict(species_list),
             "model_list": model_param.split(",") if model_param else None,
@@ -469,26 +474,40 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             if bin_data.get("mlAnalyzed") and bin_data.get("point")
         ]
 
-    def get_bin_concentrations(self, bin_data, options):
-        # return the cell concentration for each species in the Bin that enough models agree on
-        concentrations = {}
+    def get_bin_agreement(self, bin_data, options):
+        # return the number of models that ran on the Bin, the number required to
+        # agree, and the cell concentration/number of agreeing models for each species
+        model_ids = bin_data.get("modelIds", [])
+        if options["model_list"]:
+            model_ids = [model for model in model_ids if model in options["model_list"]]
+        models_run = len(model_ids)
+
+        models_required = options["min_models"]
+        if not options["strict_agreement"]:
+            # require all models to agree if fewer than min_models ran
+            models_required = max(min(models_required, models_run), 1)
+
+        species_results = {}
         species_counts = bin_data.get("speciesCounts", {})
         for species in options["species_ids"]:
-            model_counts = species_counts.get(species, {})
-            if options["model_list"]:
-                model_counts = {
-                    model: count
-                    for model, count in model_counts.items()
-                    if model in options["model_list"]
-                }
+            model_counts = {
+                model: count
+                for model, count in species_counts.get(species, {}).items()
+                if model in model_ids
+            }
+            value = 0
             # species is only present if enough models agree
-            if len(model_counts) < options["min_models"]:
-                continue
-            # use the mean cell concentration of the agreeing models
-            mean_count = sum(model_counts.values()) / len(model_counts)
-            concentrations[species] = round(mean_count / bin_data["mlAnalyzed"] * 1000)
+            if model_counts and len(model_counts) >= models_required:
+                # use the mean cell concentration of the agreeing models
+                mean_count = sum(model_counts.values()) / len(model_counts)
+                value = round(mean_count / bin_data["mlAnalyzed"] * 1000)
 
-        return concentrations
+            species_results[species] = {
+                "value": value,
+                "models_agreed": len(model_counts),
+            }
+
+        return models_run, models_required, species_results
 
     def get_grid_point(self, bin_data, grid_level):
         lng, lat = bin_data["point"]
@@ -514,7 +533,7 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         options = self.get_options()
         try:
             bins = self.fetch_bins(
-                options, ["point", "mlAnalyzed"], [{"binPid": "asc"}]
+                options, ["point", "mlAnalyzed", "modelIds"], [{"binPid": "asc"}]
             )
         except Exception as err:
             return self.error_response(err)
@@ -526,13 +545,23 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 self.get_grid_point(bin_data, options["grid_level"]),
                 {
                     "bin_count": 0,
+                    "relaxed_bin_count": 0,
+                    "models_run": [],
                     "values": {species: [] for species in options["species_ids"]},
                 },
             )
+            models_run, models_required, species_results = self.get_bin_agreement(
+                bin_data, options
+            )
             square["bin_count"] += 1
+            square["models_run"].append(models_run)
+            if models_required < options["min_models"]:
+                square["relaxed_bin_count"] += 1
 
-            for species, value in self.get_bin_concentrations(bin_data, options).items():
-                square["values"][species].append(value)
+            for species, result in species_results.items():
+                square["values"][species].append(
+                    (result["value"], result["models_agreed"], models_run)
+                )
 
         # build the GeoJSON response
         geo_field = GeometryField()
@@ -541,6 +570,10 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             max_mean_values = []
             for species in options["species_ids"]:
                 values = square["values"][species]
+                # model agreement is reported for the Bin with the max value
+                max_value, models_agreed, max_models_run = max(values)
+                if not max_value:
+                    models_agreed, max_models_run = 0, 0
                 max_mean_values.append(
                     {
                         "species": species,
@@ -548,10 +581,13 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                             {
                                 "metric_id": "cell_concentration",
                                 "metric_name": options["metric_name"],
-                                "max_value": max(values, default=0),
+                                "max_value": max_value,
                                 # Bins without the species count as 0
-                                "mean_value": sum(values) / square["bin_count"],
+                                "mean_value": sum(v[0] for v in values)
+                                / square["bin_count"],
                                 "units": options["metric_units"],
+                                "models_agreed": models_agreed,
+                                "models_run": max_models_run,
                             }
                         ],
                     }
@@ -566,7 +602,20 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             feature["geometry"] = geo_field.to_representation(
                 Point(grid_lng, grid_lat, srid=4326)
             )
-            feature["properties"] = OrderedDict(max_mean_values=max_mean_values)
+            properties = OrderedDict()
+            properties["max_mean_values"] = max_mean_values
+            # summary of model agreement for all Bins in the grid square.
+            # relaxed_bin_count is the number of Bins that ran fewer than min_models
+            # and used a lower agreement threshold
+            properties["model_agreement"] = {
+                "min_models": options["min_models"],
+                "strict_agreement": options["strict_agreement"],
+                "bin_count": square["bin_count"],
+                "relaxed_bin_count": square["relaxed_bin_count"],
+                "min_models_run": min(square["models_run"]),
+                "max_models_run": max(square["models_run"]),
+            }
+            feature["properties"] = properties
             features.append(feature)
 
         geojson = OrderedDict()
@@ -630,7 +679,7 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         try:
             bins = self.fetch_bins(
                 options,
-                ["binPid", "sampleTime", "point", "mlAnalyzed"],
+                ["binPid", "sampleTime", "point", "mlAnalyzed", "modelIds"],
                 [{"sampleTime": "asc"}, {"binPid": "asc"}],
                 extra_filters=[bbox_filter],
             )
@@ -659,9 +708,12 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             date_str = sample_time.astimezone(datetime.UTC).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             )
-            concentrations = self.get_bin_concentrations(bin_data, options)
+            models_run, models_required, species_results = self.get_bin_agreement(
+                bin_data, options
+            )
 
             for species_item in timeseries_data:
+                result = species_results[species_item["species"]]
                 species_item["data"].append(
                     {
                         "sample_time": date_str,
@@ -670,13 +722,16 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                             {
                                 "metric_id": "cell_concentration",
                                 "metric_name": options["metric_name"],
-                                # Bins without the species are 0
-                                "value": concentrations.get(
-                                    species_item["species"], 0
-                                ),
+                                # 0 if the species wasn't found by enough models
+                                "value": result["value"],
                                 "units": options["metric_units"],
                             }
                         ],
+                        # number of models that found the species, the number that
+                        # ran on the Bin, and the number required to agree
+                        "models_agreed": result["models_agreed"],
+                        "models_run": models_run,
+                        "models_required": models_required,
                     }
                 )
 
