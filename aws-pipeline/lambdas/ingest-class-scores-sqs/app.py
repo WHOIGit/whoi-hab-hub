@@ -63,6 +63,105 @@ def upsert_documents(documents, index_name, os_client):
     return response
 
 
+# Per-Bin summary index used by the HABhub API spatial grid.
+# One document per Bin (_id = binPid). "speciesCounts" holds the number of images
+# classified as each species by each model: {species: {modelId: count}}.
+# It's stored in _source only (enabled: false) so dynamic species/model keys
+# don't add fields to the index mapping.
+# Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
+SUMMARY_INDEX_NAME = "bin-species-summary"
+SUMMARY_INDEX_BODY = {
+    "settings": {"number_of_shards": 1, "number_of_replicas": 1},
+    "mappings": {
+        "properties": {
+            "binPid": {"type": "keyword"},
+            "datasetId": {"type": "keyword"},
+            "sampleTime": {"type": "date"},
+            "dateUpdated": {"type": "date"},
+            "point": {"type": "geo_point"},
+            "mlAnalyzed": {"type": "float"},
+            "modelIds": {"type": "keyword"},
+            "speciesCounts": {"type": "object", "enabled": False},
+        }
+    },
+}
+
+# Merge one model's species counts into the Bin summary document. Multiple models
+# for the same Bin can be ingested concurrently, so this runs as a script update
+# (with retry_on_conflict) instead of replacing the whole document.
+# Any previous counts for this model are removed first so re-ingesting a file is idempotent.
+SUMMARY_UPDATE_SCRIPT = """
+if (ctx._source.speciesCounts == null) {
+    ctx._source.speciesCounts = new HashMap();
+}
+for (def modelCounts : ctx._source.speciesCounts.values()) {
+    modelCounts.remove(params.modelId);
+}
+for (def entry : params.counts.entrySet()) {
+    if (!ctx._source.speciesCounts.containsKey(entry.getKey())) {
+        ctx._source.speciesCounts.put(entry.getKey(), new HashMap());
+    }
+    ctx._source.speciesCounts.get(entry.getKey()).put(params.modelId, entry.getValue());
+}
+ctx._source.speciesCounts.values().removeIf(modelCounts -> modelCounts.isEmpty());
+ctx._source.putAll(params.metadata);
+if (ctx._source.modelIds == null) {
+    ctx._source.modelIds = new ArrayList();
+}
+if (!ctx._source.modelIds.contains(params.modelId)) {
+    ctx._source.modelIds.add(params.modelId);
+}
+"""
+
+
+def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
+    # count the images classified as each species by this model
+    counts = {}
+    for document in documents:
+        counts[document["species"]] = counts.get(document["species"], 0) + 1
+
+    metadata = {
+        "binPid": metadata_obj["binPid"],
+        "datasetId": metadata_obj["datasetId"],
+        "sampleTime": metadata_obj["sampleTime"],
+        "point": metadata_obj["point"],
+        "mlAnalyzed": metadata_obj["mlAnalyzed"],
+        "dateUpdated": datetime.now().isoformat(),
+    }
+
+    # create index if it's missing, ignore error if another Lambda just created it
+    if not os_client.indices.exists(index=SUMMARY_INDEX_NAME):
+        os_client.indices.create(
+            index=SUMMARY_INDEX_NAME, body=SUMMARY_INDEX_BODY, ignore=400
+        )
+
+    response = os_client.update(
+        index=SUMMARY_INDEX_NAME,
+        id=metadata_obj["binPid"],
+        body={
+            "script": {
+                "source": SUMMARY_UPDATE_SCRIPT,
+                "lang": "painless",
+                "params": {
+                    "modelId": model_id,
+                    "counts": counts,
+                    "metadata": metadata,
+                },
+            },
+            "upsert": metadata
+            | {
+                "modelIds": [model_id],
+                "speciesCounts": {
+                    species: {model_id: count} for species, count in counts.items()
+                },
+            },
+        },
+        retry_on_conflict=10,
+    )
+    print(response)
+    return response
+
+
 def process_message(event):
     print(event)
     body = json.loads(event["body"])
@@ -256,6 +355,9 @@ def process_message(event):
             print("Start upsert ", len(documents))
             upsert_documents(documents, index_name, os_client)
             print("Bulk upsert ", len(documents))
+            # update the per-Bin species counts summary
+            upsert_bin_summary(documents, metadata_obj, model_id, os_client)
+            print("Bin summary upsert ", bin_pid)
 
         except Exception as err:
             print(err)
