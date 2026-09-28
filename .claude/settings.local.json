@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 -m py_compile habhub/ifcb_datasets/managers.py habhub/ifcb_datasets/api/serializers.py habhub/ifcb_datasets/api/serializers_s2library.py)",
-      "Bash(docker exec whoi-hab-hub-django-1 python manage.py shell -c ' *)",
-      "Bash(docker exec *)"
-    ]
-  }
-}
