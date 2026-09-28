@@ -32,8 +32,6 @@ LANGUAGE_CODE = "en-us"
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 USE_I18N = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#use-l10n
-USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 
@@ -45,6 +43,9 @@ DATABASES = {
 }
 DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#default-auto-field
+# Keep 32-bit primary keys; Django 6.0 changed the default to BigAutoField
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -65,6 +66,7 @@ DJANGO_APPS = [
     "django.contrib.humanize",  # Handy template tags
     "django.contrib.admin",
     "django.contrib.gis",  # enable GeoDjango
+    "django.contrib.postgres",  # required for ArrayField
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -260,9 +262,9 @@ MANAGERS = ADMINS
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = "username"
+ACCOUNT_LOGIN_METHODS = {"username"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html

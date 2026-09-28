@@ -104,14 +104,22 @@ class MediaRootS3Boto3Storage(S3Boto3Storage):
     file_overwrite = False
 
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#storages
+STORAGES = {
+    "default": {
+        "BACKEND": "config.settings.production.MediaRootS3Boto3Storage",
+    },
+    "staticfiles": {
+        # "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "config.settings.production.StaticRootS3Boto3Storage",
+    },
+}
+
 # STATIC
 # ------------------------
-# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATICFILES_STORAGE = "config.settings.production.StaticRootS3Boto3Storage"
 STATIC_URL = f"https://{aws_s3_domain}/static/"
 # MEDIA
 # ------------------------------------------------------------------------------
-DEFAULT_FILE_STORAGE = "config.settings.production.MediaRootS3Boto3Storage"
 MEDIA_URL = f"https://{aws_s3_domain}/media/"
 
 # TEMPLATES

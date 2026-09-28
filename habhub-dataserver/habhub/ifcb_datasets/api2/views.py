@@ -5,7 +5,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, he
 from requests_aws4auth import AWS4Auth
 
 from django.urls import reverse
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 
 # from rest_framework.reverse import reverse
 from rest_framework.response import Response
@@ -160,29 +160,51 @@ class IfcbFixedMetricsViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         dataset_id = self.request.query_params.get("dataset_id", None)
         species = self.request.query_params.get("species", None)
 
-        if not dataset_id or not species:
+        missing_params = [
+            name
+            for name, value in (("dataset_id", dataset_id), ("species", species))
+            if not value
+        ]
+        if missing_params:
             return Response(
                 {
                     "statusCode": 400,
-                    "body": "Dataset ID required",
-                }
+                    "body": f"Missing required parameter(s): {', '.join(missing_params)}",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         species_list = species.split(",")
 
+        # get the Dataset
+        dataset = Dataset.objects.filter(dashboard_id_name=dataset_id).first()
+        if not dataset:
+            return Response(
+                {
+                    "statusCode": 404,
+                    "body": f"Dataset not found: {dataset_id}",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         # build the query
         query = self.handle_query_param_filters()
-        # add aggregation
+        # add aggregation, bucket by species first so each species gets its own bin counts
         agg = {
-            "bin-agg": {
-                "terms": {"field": "binPid", "size": 10000},
+            "species-agg": {
+                "terms": {"field": "species", "size": len(species_list)},
                 "aggs": {
-                    "mlAnalyzed": {"max": {"field": "mlAnalyzed"}},
-                    "hits": {
-                        "top_hits": {
-                            "_source": ["sampleTime", "mlAnalyzed", "point"],
-                            "size": 1,
-                        }
+                    "bin-agg": {
+                        "terms": {"field": "binPid", "size": 10000},
+                        "aggs": {
+                            "mlAnalyzed": {"max": {"field": "mlAnalyzed"}},
+                            "hits": {
+                                "top_hits": {
+                                    "_source": ["sampleTime", "mlAnalyzed", "point"],
+                                    "size": 1,
+                                }
+                            },
+                        },
                     },
                 },
             },
@@ -222,12 +244,14 @@ class IfcbFixedMetricsViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 {
                     "statusCode": 400,
                     "body": "Error Running Query",
-                }
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        # get the Dataset
-        dataset = Dataset.objects.get(dashboard_id_name=dataset_id)
-        print(dataset)
+        species_buckets = {
+            bucket["key"]: bucket["bin-agg"]["buckets"]
+            for bucket in response["aggregations"]["species-agg"]["buckets"]
+        }
 
         # parse OpenSearch response
         timeseries_data = []
@@ -239,7 +263,7 @@ class IfcbFixedMetricsViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             timeseries_data.append(species_item)
 
             data = []
-            for item in response["aggregations"]["bin-agg"]["buckets"]:
+            for item in species_buckets.get(species, []):
                 os_data = item["hits"]["hits"]["hits"][0]["_source"]
                 print(os_data)
                 data_item = {

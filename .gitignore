@@ -292,4 +292,6 @@ dist/
 builds/
 dependencies/
 
+.claude/
+
 opensearch/api-test.py

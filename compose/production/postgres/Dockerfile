@@ -1,5 +1,5 @@
 #FROM postgis/postgis:12-3.1-alpine
-FROM ghcr.io/baosystems/postgis:13-3.5
+FROM ghcr.io/baosystems/postgis:18-3.6
 
 
 LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"

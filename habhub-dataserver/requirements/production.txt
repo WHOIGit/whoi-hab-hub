@@ -3,9 +3,9 @@
 -r base.txt
 
 gunicorn==21.2.0  # https://github.com/benoitc/gunicorn
-psycopg[c]==3.1.18  # https://github.com/psycopg/psycopg2
+psycopg[c]==3.3.6  # https://github.com/psycopg/psycopg2
 sentry-sdk==1.43.0  # https://github.com/getsentry/sentry-python
 
 # Django
 # ------------------------------------------------------------------------------
-django-anymail[mailgun]==10.3  # https://github.com/anymail/django-anymail
+django-anymail[mailgun]==15.2  # https://github.com/anymail/django-anymail

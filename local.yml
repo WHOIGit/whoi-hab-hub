@@ -24,10 +24,10 @@ services:
   postgres_habhub:
     build:
       context: .
-      dockerfile: ./compose/production/postgres/m1.Dockerfile
+      dockerfile: ./compose/production/postgres/Dockerfile
     image: habhub_production_postgres
     volumes:
-      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_data:/var/lib/postgresql
       - local_postgres_data_backups:/backups
     ports:
       - "5432:5432"
