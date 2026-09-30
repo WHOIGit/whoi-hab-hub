@@ -66,7 +66,10 @@ def upsert_documents(documents, index_name, os_client):
 # Per-Bin summary index used by the HABhub API spatial grid.
 # One document per Bin (_id = binPid). "speciesCounts" holds the number of images
 # classified as each species by each model: {species: {modelId: count}}.
-# It's stored in _source only (enabled: false) so dynamic species/model keys
+# "speciesScores" holds a histogram of those images' scores in 0.01 buckets so any
+# score threshold can be applied at query time:
+# {species: {modelId: [[bucket, count], ...]}}, bucket = floor(score * 100), 0-99.
+# Both are stored in _source only (enabled: false) so dynamic species/model keys
 # don't add fields to the index mapping.
 # Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
 SUMMARY_INDEX_NAME = "bin-species-summary"
@@ -82,28 +85,32 @@ SUMMARY_INDEX_BODY = {
             "mlAnalyzed": {"type": "float"},
             "modelIds": {"type": "keyword"},
             "speciesCounts": {"type": "object", "enabled": False},
+            "speciesScores": {"type": "object", "enabled": False},
         }
     },
 }
 
-# Merge one model's species counts into the Bin summary document. Multiple models
+# Merge one model's species counts/scores into the Bin summary document. Multiple models
 # for the same Bin can be ingested concurrently, so this runs as a script update
 # (with retry_on_conflict) instead of replacing the whole document.
-# Any previous counts for this model are removed first so re-ingesting a file is idempotent.
+# Any previous values for this model are removed first so re-ingesting a file is idempotent.
 SUMMARY_UPDATE_SCRIPT = """
-if (ctx._source.speciesCounts == null) {
-    ctx._source.speciesCounts = new HashMap();
-}
-for (def modelCounts : ctx._source.speciesCounts.values()) {
-    modelCounts.remove(params.modelId);
-}
-for (def entry : params.counts.entrySet()) {
-    if (!ctx._source.speciesCounts.containsKey(entry.getKey())) {
-        ctx._source.speciesCounts.put(entry.getKey(), new HashMap());
+for (def field : params.speciesValues.entrySet()) {
+    if (ctx._source[field.getKey()] == null) {
+        ctx._source[field.getKey()] = new HashMap();
     }
-    ctx._source.speciesCounts.get(entry.getKey()).put(params.modelId, entry.getValue());
+    def speciesMap = ctx._source[field.getKey()];
+    for (def modelValues : speciesMap.values()) {
+        modelValues.remove(params.modelId);
+    }
+    for (def entry : field.getValue().entrySet()) {
+        if (!speciesMap.containsKey(entry.getKey())) {
+            speciesMap.put(entry.getKey(), new HashMap());
+        }
+        speciesMap.get(entry.getKey()).put(params.modelId, entry.getValue());
+    }
+    speciesMap.values().removeIf(modelValues -> modelValues.isEmpty());
 }
-ctx._source.speciesCounts.values().removeIf(modelCounts -> modelCounts.isEmpty());
 ctx._source.putAll(params.metadata);
 if (ctx._source.modelIds == null) {
     ctx._source.modelIds = new ArrayList();
@@ -114,11 +121,29 @@ if (!ctx._source.modelIds.contains(params.modelId)) {
 """
 
 
+def score_bucket(score):
+    # 0.01 wide histogram bucket for a score. The small offset keeps float32 scores
+    # like 0.7 (stored as 0.69999999) in the right bucket.
+    # Keep in sync with habhub-dataserver backfill_bin_species_summary command
+    return min(int(float(score) * 100 + 0.0001), 99)
+
+
 def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
-    # count the images classified as each species by this model
+    # count the images classified as each species by this model,
+    # and the histogram of their scores
     counts = {}
+    buckets = {}
     for document in documents:
-        counts[document["species"]] = counts.get(document["species"], 0) + 1
+        species = document["species"]
+        counts[species] = counts.get(species, 0) + 1
+        species_buckets = buckets.setdefault(species, {})
+        bucket = score_bucket(document["score"])
+        species_buckets[bucket] = species_buckets.get(bucket, 0) + 1
+
+    scores = {
+        species: sorted([bucket, count] for bucket, count in species_buckets.items())
+        for species, species_buckets in buckets.items()
+    }
 
     metadata = {
         "binPid": metadata_obj["binPid"],
@@ -144,7 +169,10 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                 "lang": "painless",
                 "params": {
                     "modelId": model_id,
-                    "counts": counts,
+                    "speciesValues": {
+                        "speciesCounts": counts,
+                        "speciesScores": scores,
+                    },
                     "metadata": metadata,
                 },
             },
@@ -153,6 +181,10 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                 "modelIds": [model_id],
                 "speciesCounts": {
                     species: {model_id: count} for species, count in counts.items()
+                },
+                "speciesScores": {
+                    species: {model_id: histogram}
+                    for species, histogram in scores.items()
                 },
             },
         },

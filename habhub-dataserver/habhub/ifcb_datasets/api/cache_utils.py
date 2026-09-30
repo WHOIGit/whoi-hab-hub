@@ -42,3 +42,9 @@ def clear_spatial_grid_cache():
     since SESSION_CACHE_ALIAS shares the "default" cache).
     """
     cache.delete_pattern("*ifcb-spatial-grid*")
+
+
+def clear_v2_spatial_grid_cache():
+    # v2 results are calculated from Opensearch at request time, so only the
+    # cache needs clearing when a TargetSpecies autoclass_threshold changes
+    cache.delete_pattern("*/api/v2/ifcb-spatial-grid/*")

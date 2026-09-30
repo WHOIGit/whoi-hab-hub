@@ -9,6 +9,7 @@ from colorfield.fields import ColorField
 from config import celery_app
 from .utils import linear_gradient
 from habhub.ifcb_datasets.tasks import recalculate_metrics, reset_ifcb_dataset_data
+from habhub.ifcb_datasets.api.cache_utils import clear_v2_spatial_grid_cache
 
 
 class TargetSpecies(models.Model):
@@ -114,6 +115,8 @@ class TargetSpecies(models.Model):
                 cache.delete(cache_key)
 
             transaction.on_commit(lambda: recalculate_metrics.delay(self.species_id))
+            # v2 API applies the new threshold at request time, just clear its cache
+            transaction.on_commit(clear_v2_spatial_grid_cache)
 
 
 class DataLayer(models.Model):

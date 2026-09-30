@@ -1,7 +1,10 @@
 # Per-Bin summary index used by the v2 spatial grid API.
 # One document per Bin (_id = binPid). "speciesCounts" holds the number of images
 # classified as each species by each model: {species: {modelId: count}}.
-# It's stored in _source only (enabled: false) so dynamic species/model keys
+# "speciesScores" holds a histogram of those images' scores in 0.01 buckets so any
+# score threshold can be applied at query time:
+# {species: {modelId: [[bucket, count], ...]}}, bucket = floor(score * 100), 0-99.
+# Both are stored in _source only (enabled: false) so dynamic species/model keys
 # don't add fields to the index mapping.
 # Written by the "ingest-class-scores-sqs" Lambda, keep the mapping in sync with
 # aws-pipeline/lambdas/ingest-class-scores-sqs/app.py
@@ -19,6 +22,7 @@ SUMMARY_INDEX_BODY = {
             "mlAnalyzed": {"type": "float"},
             "modelIds": {"type": "keyword"},
             "speciesCounts": {"type": "object", "enabled": False},
+            "speciesScores": {"type": "object", "enabled": False},
         }
     },
 }
@@ -30,3 +34,8 @@ def create_summary_index(os_client):
         os_client.indices.create(
             index=SUMMARY_INDEX_NAME, body=SUMMARY_INDEX_BODY, ignore=400
         )
+    # add any fields missing from an existing index. Needs to run before the
+    # ingest Lambda writes a new field, or its dynamic keys would be mapped
+    os_client.indices.put_mapping(
+        index=SUMMARY_INDEX_NAME, body=SUMMARY_INDEX_BODY["mappings"]
+    )

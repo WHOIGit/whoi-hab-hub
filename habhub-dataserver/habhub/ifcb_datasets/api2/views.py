@@ -384,6 +384,8 @@ def snap_to_grid(value, grid_level):
 # Bins processed by fewer than `min_models` models (mostly older data) require all
 # of their models to agree, unless `strict_agreement=true`. The number of models that
 # agreed/ran is returned with the results so clients can show lower confidence data.
+# Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
+# (or the `score_gte` param), applied at query time from the per-Bin score histograms.
 # Uses the per-Bin "bin-species-summary" index (see ifcb_datasets/opensearch.py)
 # instead of aggregating the image level "species-scores" index on every request.
 class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
@@ -411,10 +413,25 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             min_models = self.default_min_models
 
         species_param = query_params.get("species", None)
-        species_list = list(TargetSpecies.objects.values_list("species_id", "display_name"))
+        species_list = list(
+            TargetSpecies.objects.values_list(
+                "species_id", "display_name", "autoclass_threshold"
+            )
+        )
         if species_param:
             requested_species = species_param.split(",")
             species_list = [s for s in species_list if s[0] in requested_species]
+
+        # score threshold for each species, the score_gte param overrides the
+        # TargetSpecies thresholds for all species
+        try:
+            score_gte = float(query_params["score_gte"])
+        except (KeyError, ValueError):
+            score_gte = None
+        score_thresholds = {
+            species_id: score_gte if score_gte is not None else float(threshold)
+            for species_id, _, threshold in species_list
+        }
 
         model_param = query_params.get("model_id", None)
         strict_agreement = query_params.get("strict_agreement", None) == "true"
@@ -425,8 +442,11 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             "grid_level": grid_level,
             "min_models": min_models,
             "strict_agreement": strict_agreement,
-            "species_ids": [species_id for species_id, _ in species_list],
-            "species_display": dict(species_list),
+            "species_ids": [species_id for species_id, _, _ in species_list],
+            "species_display": {
+                species_id: display for species_id, display, _ in species_list
+            },
+            "score_thresholds": score_thresholds,
             "model_list": model_param.split(",") if model_param else None,
             "metric_name": metric.name if metric else "Cell Concentration",
             "metric_units": metric.units if metric else "cells/L",
@@ -448,9 +468,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         query["track_total_hits"] = False
         query["size"] = self.bins_page_size
         query["sort"] = sort
-        # only return the species counts needed
+        # only return the species score histograms needed
         query["_source"] = source_fields + [
-            f"speciesCounts.{species}" for species in options["species_ids"]
+            f"speciesScores.{species}" for species in options["species_ids"]
         ]
 
         os_client = connect_opensearch()
@@ -488,13 +508,16 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             models_required = max(min(models_required, models_run), 1)
 
         species_results = {}
-        species_counts = bin_data.get("speciesCounts", {})
+        species_scores = bin_data.get("speciesScores", {})
         for species in options["species_ids"]:
-            model_counts = {
-                model: count
-                for model, count in species_counts.get(species, {}).items()
-                if model in model_ids
-            }
+            # histogram buckets are 0.01 wide, so count the images in the
+            # buckets >= the threshold
+            min_bucket = round(options["score_thresholds"][species] * 100)
+            model_counts = {}
+            for model, histogram in species_scores.get(species, {}).items():
+                count = sum(c for bucket, c in histogram if bucket >= min_bucket)
+                if model in model_ids and count:
+                    model_counts[model] = count
             value = 0
             # species is only present if enough models agree
             if model_counts and len(model_counts) >= models_required:
@@ -508,6 +531,13 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             }
 
         return models_run, models_required, species_results
+
+    def format_score_thresholds(self, options):
+        # list instead of a dict so the camelCase renderer doesn't change the species IDs
+        return [
+            {"species": species, "score_threshold": threshold}
+            for species, threshold in options["score_thresholds"].items()
+        ]
 
     def get_grid_point(self, bin_data, grid_level):
         lng, lat = bin_data["point"]
@@ -621,7 +651,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         geojson = OrderedDict()
         # must be "FeatureCollection" according to GeoJSON spec
         geojson["type"] = "FeatureCollection"
-        geojson["metadata"] = OrderedDict()
+        geojson["metadata"] = OrderedDict(
+            score_thresholds=self.format_score_thresholds(options)
+        )
         # required features attribute
         # MUST be present in output according to GeoJSON spec
         geojson["features"] = features
@@ -746,7 +778,10 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         geojson["geometry"] = geo_field.to_representation(
             Point(grid_lng, grid_lat, srid=4326)
         )
-        geojson["properties"] = OrderedDict(timeseries_data=timeseries_data)
+        geojson["properties"] = OrderedDict(
+            score_thresholds=self.format_score_thresholds(options),
+            timeseries_data=timeseries_data,
+        )
 
         cache.set(cache_key, geojson, self.cache_timeout)
         return Response(geojson)

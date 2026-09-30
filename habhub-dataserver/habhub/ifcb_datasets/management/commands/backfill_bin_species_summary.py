@@ -1,4 +1,5 @@
 import datetime
+from concurrent.futures import ThreadPoolExecutor
 from django.core.management.base import BaseCommand, CommandError
 from opensearchpy import helpers
 from opensearchpy.exceptions import TransportError
@@ -8,6 +9,10 @@ from habhub.ifcb_datasets.opensearch import (
     SUMMARY_INDEX_NAME,
     create_summary_index,
 )
+
+
+# offset for the score histogram buckets, see score_bucket() in the ingest Lambda
+SCORE_BUCKET_OFFSET = 0.000001
 
 
 class TooManyBucketsError(Exception):
@@ -80,7 +85,22 @@ def build_summary_documents(os_client, start_time, end_time):
                     "model-agg": {
                         "terms": {"field": "modelId", "size": 100},
                         "aggs": {
-                            "species-agg": {"terms": {"field": "species", "size": 1000}}
+                            "species-agg": {
+                                "terms": {"field": "species", "size": 1000},
+                                "aggs": {
+                                    # 0.01 wide score histogram. The offset matches
+                                    # score_bucket() in the ingest Lambda so float32
+                                    # scores like 0.7 land in the same bucket
+                                    "score-agg": {
+                                        "histogram": {
+                                            "field": "score",
+                                            "interval": 0.01,
+                                            "offset": -SCORE_BUCKET_OFFSET,
+                                            "min_doc_count": 1,
+                                        }
+                                    }
+                                },
+                            }
                         },
                     },
                 },
@@ -99,6 +119,7 @@ def build_summary_documents(os_client, start_time, end_time):
     for bin_bucket in bin_agg["buckets"]:
         metadata = bin_bucket["metadata"]["hits"]["hits"][0]["_source"]
         species_counts = {}
+        species_scores = {}
         model_ids = []
         for model_bucket in bin_bucket["model-agg"]["buckets"]:
             model_ids.append(model_bucket["key"])
@@ -106,6 +127,17 @@ def build_summary_documents(os_client, start_time, end_time):
                 species_counts.setdefault(species_bucket["key"], {})[
                     model_bucket["key"]
                 ] = species_bucket["doc_count"]
+                histogram = {}
+                for score_bucket in species_bucket["score-agg"]["buckets"]:
+                    bucket = min(
+                        round((score_bucket["key"] + SCORE_BUCKET_OFFSET) * 100), 99
+                    )
+                    histogram[bucket] = (
+                        histogram.get(bucket, 0) + score_bucket["doc_count"]
+                    )
+                species_scores.setdefault(species_bucket["key"], {})[
+                    model_bucket["key"]
+                ] = sorted([bucket, count] for bucket, count in histogram.items())
 
         documents.append(
             {
@@ -116,6 +148,7 @@ def build_summary_documents(os_client, start_time, end_time):
                 "mlAnalyzed": metadata["mlAnalyzed"],
                 "modelIds": model_ids,
                 "speciesCounts": species_counts,
+                "speciesScores": species_scores,
                 "dateUpdated": date_updated,
             }
         )
@@ -138,12 +171,13 @@ def index_summary_documents(os_client, documents):
 
 class Command(BaseCommand):
     # ex: python manage.py backfill_bin_species_summary --start_date=2025-01-01 --end_date=2026-01-01
-    help = "Build the Opensearch 'bin-species-summary' index from the 'species-scores' index. Args: --start_date and --end_date range in yyyy-mm-dd format, optional --chunk_hours to set the time range aggregated per query (default 6)"
+    help = "Build the Opensearch 'bin-species-summary' index from the 'species-scores' index. Args: --start_date and --end_date range in yyyy-mm-dd format, optional --chunk_hours to set the time range aggregated per query (default 1), optional --workers to set the number of months processed in parallel (default 1)"
 
     def add_arguments(self, parser):
         parser.add_argument("--start_date", type=str, required=True)
         parser.add_argument("--end_date", type=str, required=True)
-        parser.add_argument("--chunk_hours", type=int, default=6)
+        parser.add_argument("--chunk_hours", type=int, default=1)
+        parser.add_argument("--workers", type=int, default=1)
 
     def handle(self, *args, **options):
         try:
@@ -156,8 +190,7 @@ class Command(BaseCommand):
         os_client = connect_opensearch()
         create_summary_index(os_client)
 
-        total_bins = 0
-        for month_start in get_months_with_data(os_client, start_date, end_date):
+        def backfill_month(month_start):
             month_end = (month_start + datetime.timedelta(days=32)).replace(day=1)
             chunk_start = max(month_start, start_date)
             month_end = min(month_end, end_date)
@@ -167,8 +200,12 @@ class Command(BaseCommand):
                 month_bins += self.backfill_chunk(os_client, chunk_start, chunk_end)
                 chunk_start = chunk_end
 
-            total_bins += month_bins
             self.stdout.write(f"{month_start.strftime('%Y-%m')}: {month_bins} Bins")
+            return month_bins
+
+        months = get_months_with_data(os_client, start_date, end_date)
+        with ThreadPoolExecutor(max_workers=options["workers"]) as executor:
+            total_bins = sum(executor.map(backfill_month, months))
 
         self.stdout.write(self.style.SUCCESS(f"Done. {total_bins} Bins indexed"))
 
