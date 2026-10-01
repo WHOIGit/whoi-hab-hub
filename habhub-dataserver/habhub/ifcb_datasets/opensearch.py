@@ -49,29 +49,6 @@ SUMMARY_INDEX_BODY = {
     },
 }
 
-# Per-Bin, per-species score histograms. One small document per Bin/species
-# (_id = {binPid}_{species}) so the API only loads the species it needs, instead of
-# every species' histograms in the summary document.
-# "modelScores" is the species' entry from the summary "speciesScores":
-# {modelId: [[bucket, count], ...]}
-SPECIES_SCORES_INDEX_NAME = "bin-species-scores"
-SPECIES_SCORES_INDEX_BODY = {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 1},
-    "mappings": {
-        "properties": {
-            "binPid": {"type": "keyword"},
-            "species": {"type": "keyword"},
-            "datasetId": {"type": "keyword"},
-            "sampleTime": {"type": "date"},
-            "dateUpdated": {"type": "date"},
-            "point": {"type": "geo_point"},
-            "modelScores": {"type": "object", "enabled": False},
-        }
-    },
-}
-
-
-
 def create_index(os_client, index_name, index_body):
     if not os_client.indices.exists(index=index_name):
         # ignore error if the index was just created by the ingest Lambda
@@ -88,7 +65,6 @@ def create_summary_index(os_client):
         index=SUMMARY_INDEX_NAME,
         body={"index.mapping.total_fields.limit": SUMMARY_FIELDS_LIMIT},
     )
-    create_index(os_client, SPECIES_SCORES_INDEX_NAME, SPECIES_SCORES_INDEX_BODY)
 
 
 def build_histogram_fields(species_scores):
@@ -101,36 +77,6 @@ def build_histogram_fields(species_scores):
         }
         for species, model_scores in species_scores.items()
     }
-
-
-def build_species_score_documents(summary_document):
-    # split a Bin summary document into one document per species
-    return [
-        {
-            "binPid": summary_document["binPid"],
-            "species": species,
-            "datasetId": summary_document["datasetId"],
-            "sampleTime": summary_document["sampleTime"],
-            "dateUpdated": summary_document["dateUpdated"],
-            "point": summary_document["point"],
-            "modelScores": model_scores,
-        }
-        for species, model_scores in summary_document.get("speciesScores", {}).items()
-    ]
-
-
-def species_score_operations(summary_documents):
-    # bulk index operations for the species score documents of each Bin
-    return (
-        {
-            "_op_type": "index",
-            "_index": SPECIES_SCORES_INDEX_NAME,
-            "_id": f"{document['binPid']}_{document['species']}",
-            "_source": document,
-        }
-        for summary_document in summary_documents
-        for document in build_species_score_documents(summary_document)
-    )
 
 
 # Painless function to calculate a Bin's species results from the summary index doc

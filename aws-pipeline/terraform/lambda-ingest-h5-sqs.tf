@@ -15,7 +15,7 @@ module "docker_image_h5" {
   ecr_repo        = "ingest-class-scores-lambda-sqs"
 
   use_image_tag = true
-  image_tag     = "1.9"
+  image_tag     = "1.10"
 
   source_path = "${path.module}/../lambdas/ingest-class-scores-sqs"
 

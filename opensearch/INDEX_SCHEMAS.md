@@ -1,20 +1,20 @@
 # HABhub OpenSearch indexes
 
-HABhub stores IFCB classifier results in three indexes on the `habhub-production`
+HABhub stores IFCB classifier results in two indexes on the `habhub-production`
 OpenSearch domain:
 
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
 | `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/` |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list and detail), `build_bin_species_scores` command |
-| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | Nothing. Kept until the Lambda stops writing it, then to be deleted |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list and detail) |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
 without aggregating millions of image documents on every request. Its `h` fields let
-OpenSearch build the whole spatial grid in one aggregation. `bin-species-scores`
-splits each summary's score histograms into one small document per species. The API
-no longer reads it, and it will be deleted once the Lambda stops writing it.
+OpenSearch build the whole spatial grid in one aggregation.
+
+An earlier `bin-species-scores` index (one document per Bin and species) was replaced
+by the `h` fields in October 2026 and is no longer written or read.
 
 The examples below are real documents from production, Bin `D20251204T005155_IFCB125`.
 
@@ -95,8 +95,7 @@ classified as each species, and a histogram of those images' scores.
 
 Settings: 1 shard, 1 replica, `index.mapping.total_fields.limit: 10000`.
 Defined in `habhub-dataserver/habhub/ifcb_datasets/opensearch.py`, with a copy in
-`aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync. This
-applies to `bin-species-scores` too.
+`aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync.
 
 ```json
 {
@@ -228,79 +227,12 @@ About `speciesScores`:
 ### How it's written
 
 - **Lambda:** `ingest-class-scores-sqs` processes one H5 file, meaning one Bin and one model. It merges that model's counts, histograms and `h` values into the Bin's document with a script update, using `retry_on_conflict` because several models' files for the same Bin can arrive at once. It removes that model's old values first, so re-ingesting a file is safe.
-- **Backfill:** `python manage.py backfill_bin_species_summary --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--chunk_hours=1] [--workers=2]` rebuilds documents from `species-scores`, replacing each one completely. It also writes their `bin-species-scores` documents. A Lambda update to the same Bin during a backfill can be overwritten, so re-run the last few days afterwards. Chunks that fail because the cluster is busy are retried up to 5 times.
+- **Backfill:** `python manage.py backfill_bin_species_summary --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--chunk_hours=1] [--workers=2]` rebuilds documents from `species-scores`, replacing each one completely. A Lambda update to the same Bin during a backfill can be overwritten, so re-run the last few days afterwards. Chunks that fail because the cluster is busy are retried up to 5 times.
 - **Histogram fields only:** `python manage.py backfill_summary_histograms --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--workers=2]` adds `h` to existing documents from their `speciesScores` as partial updates, without re-aggregating `species-scores`.
 - **Bulk size:** AWS OpenSearch limits requests to 10 MB on smaller instances, and summary documents are large, so the commands cap bulk requests at 5 MB.
-- **Adding a field:** add it to both mapping definitions. Then run `create_summary_index()` against the existing index **before** deploying a Lambda that writes the field. Both commands call it, and it creates or updates both summary indexes. Otherwise OpenSearch maps the new field's keys automatically.
+- **Adding a field:** add it to both mapping definitions. Then run `create_summary_index()` against the existing index **before** deploying a Lambda that writes the field. Both commands call it. Otherwise OpenSearch maps the new field's keys automatically.
 
-## `bin-species-scores`
-
-One document per Bin and species (`_id` = `{binPid}_{species}`). Its `modelScores` is
-that species' entry from the summary document's `speciesScores`. There's a document
-for every class a model found in the Bin, not only target species. A species no model
-found has no document.
-
-### Mapping
-
-Settings: 1 shard, 1 replica.
-
-```json
-{
-  "properties": {
-    "binPid":      { "type": "keyword" },
-    "species":     { "type": "keyword" },
-    "datasetId":   { "type": "keyword" },
-    "sampleTime":  { "type": "date" },
-    "dateUpdated": { "type": "date" },
-    "point":       { "type": "geo_point" },
-    "modelScores": { "type": "object", "enabled": false }
-  }
-}
-```
-
-`modelScores` is in `_source` only, like the summary's `speciesCounts` and
-`speciesScores`. Unlike the summary, each document is small, a few hundred bytes, so
-loading it is cheap.
-
-### Example document
-
-The Pseudo-nitzschia document for the Bin above:
-
-`_id`: `D20251204T005155_IFCB125_Pseudo-nitzschia`
-
-```json
-{
-  "binPid": "D20251204T005155_IFCB125",
-  "species": "Pseudo-nitzschia",
-  "datasetId": "harpswell",
-  "sampleTime": "2025-12-04T00:51:55+00:00",
-  "dateUpdated": "2026-09-30T18:43:26.023546",
-  "point": [-69.957882, 43.792114],
-  "modelScores": {
-    "HABLAB_20230626_AKsup2": [[87, 1], [97, 1]],
-    "HABLAB_20240110_Tripos1": [[89, 1]],
-    "HABLAB_20240110_Tripos2": [[83, 1]]
-  }
-}
-```
-
-### Fields
-
-| Field | Description |
-|---|---|
-| `binPid`, `datasetId`, `sampleTime`, `point` | Copied from the Bin, so the same date, dataset and bounding box filters work on both summary indexes |
-| `species` | The class |
-| `modelScores` | `{modelId: [[bucket, count], ...]}`: score histogram of the images each model classified as this species. Same buckets as `speciesScores` |
-| `dateUpdated` | Last time the document was written. The build command copies it from the summary document |
-
-### How it's written
-
-- **Lambda:** after updating the summary, it sets the model's histogram in the document for each species the model found, using a script update with `retry_on_conflict`. If the model had already been ingested for the Bin, it also removes the model from species it no longer finds, and deletes documents with no models left.
-- **Build from the summary:** `python manage.py build_bin_species_scores --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--workers=2]` creates the documents from existing `bin-species-summary` documents, without re-aggregating `species-scores`.
-- **Summary backfill:** `backfill_bin_species_summary` writes these documents as well.
-- **Full rebuild:** both commands replace documents but don't delete ones whose species is no longer in the summary. For a full rebuild, delete the index first. `create_summary_index()` recreates it.
-
-## How `/api/v2/ifcb-spatial-grid/` uses the indexes
+## How `/api/v2/ifcb-spatial-grid/` uses the summary
 
 **List (the grid):** one `scripted_metric` aggregation on `bin-species-summary`, filtered
 by date, dataset and bounding box. `GRID_MAP_SCRIPT` (in `ifcb_datasets/opensearch.py`)
