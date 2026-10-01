@@ -93,7 +93,7 @@ classified as each species, and a histogram of those images' scores.
 
 ### Mapping
 
-Settings: 1 shard, 1 replica, `index.mapping.total_fields.limit: 5000`.
+Settings: 1 shard, 1 replica, `index.mapping.total_fields.limit: 10000`.
 Defined in `habhub-dataserver/habhub/ifcb_datasets/opensearch.py`, with a copy in
 `aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync. This
 applies to `bin-species-scores` too.
@@ -127,9 +127,10 @@ applies to `bin-species-scores` too.
 Every `h.{species}.{modelId}` is its own field, created by the `histograms` dynamic
 template. It's stored as doc values only, not indexed for search. `match_mapping_type: long`
 applies the template to the numeric values only, not to the `h.{species}` objects.
-About 160–200 classes × the models run make well over the default limit of 1,000 fields,
-so the limit is raised to 5,000. Watch the field count if many new classes or models
-are added.
+About 220 classes × the models run make well over the default limit of 1,000 fields
+(2,874 `h` fields in October 2026), so the limit is raised to 10,000. Each new model can
+add about 220 fields. If the limit is reached, Lambda updates that add new fields fail,
+so watch the field count as classes and models are added.
 
 `speciesCounts` and `speciesScores` have `"enabled": false`. They're kept in `_source`
 but not indexed, so their species and model keys don't add fields to the mapping. The

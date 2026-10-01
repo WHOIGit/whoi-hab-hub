@@ -17,7 +17,7 @@ SCORES_INDEX_NAME = "species-scores"
 # mapping grows with the number of species/models and needs a higher field limit.
 SUMMARY_INDEX_NAME = "bin-species-summary"
 HISTOGRAM_BUCKET_FACTOR = 1000000
-SUMMARY_FIELDS_LIMIT = 5000
+SUMMARY_FIELDS_LIMIT = 10000
 SUMMARY_INDEX_BODY = {
     "settings": {
         "number_of_shards": 1,

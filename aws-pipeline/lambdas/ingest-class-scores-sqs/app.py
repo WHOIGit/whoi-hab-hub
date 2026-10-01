@@ -80,7 +80,7 @@ SUMMARY_INDEX_BODY = {
     "settings": {
         "number_of_shards": 1,
         "number_of_replicas": 1,
-        "index.mapping.total_fields.limit": 5000,
+        "index.mapping.total_fields.limit": 10000,
     },
     "mappings": {
         "dynamic_templates": [
