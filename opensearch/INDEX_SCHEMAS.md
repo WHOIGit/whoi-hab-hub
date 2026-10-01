@@ -1,16 +1,19 @@
 # HABhub OpenSearch indexes
 
-HABhub stores IFCB classifier results in two indexes on the `habhub-production`
+HABhub stores IFCB classifier results in three indexes on the `habhub-production`
 OpenSearch domain:
 
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
 | `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/` |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` command | `/api/v2/ifcb-spatial-grid/` |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` command | `/api/v2/ifcb-spatial-grid/` (metadata only), `build_bin_species_scores` command |
+| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | `/api/v2/ifcb-spatial-grid/` |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
-without aggregating millions of image documents on every request.
+without aggregating millions of image documents on every request. `bin-species-scores`
+splits each summary's score histograms into one small document per species, so the
+spatial grid only loads the target species instead of all ~100 classes.
 
 The examples below are real documents from production, Bin `D20251204T005155_IFCB125`.
 
@@ -91,7 +94,8 @@ classified as each species, and a histogram of those images' scores.
 
 Settings: 1 shard, 1 replica.
 Defined in `habhub-dataserver/habhub/ifcb_datasets/opensearch.py`, with a copy in
-`aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync.
+`aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync. This
+applies to `bin-species-scores` too.
 
 ```json
 {
@@ -113,6 +117,11 @@ Defined in `habhub-dataserver/habhub/ifcb_datasets/opensearch.py`, with a copy i
 but not indexed, so their species and model keys don't add fields to the mapping. The
 catch is that they can't be used in queries or aggregations, not even `exists`. Filter
 on the other fields and read these from `_source`.
+
+These fields make each document large, 20–33 KB for a recent Bin. OpenSearch loads the
+whole `_source` even when `_source` filtering returns only a few fields, so don't
+read them for many Bins per request. The spatial grid reads only this index's indexed
+fields through `docvalue_fields`, and gets the histograms from `bin-species-scores`.
 
 ### Example document
 
@@ -190,14 +199,87 @@ About `speciesScores`:
 ### How it's written
 
 - **Lambda:** `ingest-class-scores-sqs` processes one H5 file, meaning one Bin and one model. It merges that model's counts and histograms into the Bin's document with a script update, using `retry_on_conflict` because several models' files for the same Bin can arrive at once. It removes that model's old values first, so re-ingesting a file is safe.
-- **Backfill:** `python manage.py backfill_bin_species_summary --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--chunk_hours=1] [--workers=4]` rebuilds documents from `species-scores`, replacing each one completely. A Lambda update to the same Bin during a backfill can be overwritten, so re-run the last few days afterwards.
-- **Adding a field:** add it to both mapping definitions. Then run `create_summary_index()` (the backfill command calls it) against the existing index **before** deploying a Lambda that writes the field. Otherwise OpenSearch maps the new field's keys automatically.
+- **Backfill:** `python manage.py backfill_bin_species_summary --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--chunk_hours=1] [--workers=2]` rebuilds documents from `species-scores`, replacing each one completely. It also writes their `bin-species-scores` documents. A Lambda update to the same Bin during a backfill can be overwritten, so re-run the last few days afterwards. Chunks that fail because the cluster is busy are retried up to 5 times.
+- **Adding a field:** add it to both mapping definitions. Then run `create_summary_index()` against the existing index **before** deploying a Lambda that writes the field. Both commands call it, and it creates or updates both summary indexes. Otherwise OpenSearch maps the new field's keys automatically.
 
-## How `/api/v2/ifcb-spatial-grid/` uses the summary
+## `bin-species-scores`
 
-For each Bin and target species:
+One document per Bin and species (`_id` = `{binPid}_{species}`). Its `modelScores` is
+that species' entry from the summary document's `speciesScores`. There's a document
+for every class a model found in the Bin, not only target species. A species no model
+found has no document.
 
-1. **Count the images at or above the threshold** for each model, using `speciesScores`. The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
+### Mapping
+
+Settings: 1 shard, 1 replica.
+
+```json
+{
+  "properties": {
+    "binPid":      { "type": "keyword" },
+    "species":     { "type": "keyword" },
+    "datasetId":   { "type": "keyword" },
+    "sampleTime":  { "type": "date" },
+    "dateUpdated": { "type": "date" },
+    "point":       { "type": "geo_point" },
+    "modelScores": { "type": "object", "enabled": false }
+  }
+}
+```
+
+`modelScores` is in `_source` only, like the summary's `speciesCounts` and
+`speciesScores`. Unlike the summary, each document is small, a few hundred bytes, so
+loading it is cheap.
+
+### Example document
+
+The Pseudo-nitzschia document for the Bin above:
+
+`_id`: `D20251204T005155_IFCB125_Pseudo-nitzschia`
+
+```json
+{
+  "binPid": "D20251204T005155_IFCB125",
+  "species": "Pseudo-nitzschia",
+  "datasetId": "harpswell",
+  "sampleTime": "2025-12-04T00:51:55+00:00",
+  "dateUpdated": "2026-09-30T18:43:26.023546",
+  "point": [-69.957882, 43.792114],
+  "modelScores": {
+    "HABLAB_20230626_AKsup2": [[87, 1], [97, 1]],
+    "HABLAB_20240110_Tripos1": [[89, 1]],
+    "HABLAB_20240110_Tripos2": [[83, 1]]
+  }
+}
+```
+
+### Fields
+
+| Field | Description |
+|---|---|
+| `binPid`, `datasetId`, `sampleTime`, `point` | Copied from the Bin, so the same date, dataset and bounding box filters work on both summary indexes |
+| `species` | The class |
+| `modelScores` | `{modelId: [[bucket, count], ...]}`: score histogram of the images each model classified as this species. Same buckets as `speciesScores` |
+| `dateUpdated` | Last time the document was written. The build command copies it from the summary document |
+
+### How it's written
+
+- **Lambda:** after updating the summary, it sets the model's histogram in the document for each species the model found, using a script update with `retry_on_conflict`. If the model had already been ingested for the Bin, it also removes the model from species it no longer finds, and deletes documents with no models left.
+- **Build from the summary:** `python manage.py build_bin_species_scores --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--workers=2]` creates the documents from existing `bin-species-summary` documents, without re-aggregating `species-scores`.
+- **Summary backfill:** `backfill_bin_species_summary` writes these documents as well.
+- **Full rebuild:** both commands replace documents but don't delete ones whose species is no longer in the summary. For a full rebuild, delete the index first. `create_summary_index()` recreates it.
+
+## How `/api/v2/ifcb-spatial-grid/` uses the indexes
+
+The endpoint runs two paged queries at the same time, with the same date, dataset and
+bounding box filters:
+
+1. **`bin-species-summary`:** every Bin in range, so Bins without a species still count as 0. It reads `binPid`, `sampleTime`, `point`, `mlAnalyzed` and `modelIds` through `docvalue_fields` with `_source: false`, so the large histograms aren't loaded.
+2. **`bin-species-scores`:** only the target species' documents. The script field `MODEL_COUNTS_SCRIPT` (in `ifcb_datasets/opensearch.py`) applies each species' threshold inside OpenSearch and returns only each model's image count, so the histograms aren't sent to Django.
+
+Both use `filter_path` to keep the responses small. Then, for each Bin and target species:
+
+1. **Count the images at or above the threshold** for each model (done by the script). The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
 2. **Count the agreeing models.** A model agrees if its count is above 0.
 3. **Work out how many models must agree.** It's `min_models` (default 3). If fewer models processed the Bin (`len(modelIds)`), all of them must agree instead, unless the request has `strict_agreement=true`.
 4. **Calculate the concentration.** If enough models agree: `cell concentration = mean(agreeing counts) / mlAnalyzed * 1000` cells/L. Otherwise the value is 0.
@@ -209,6 +291,11 @@ Worked example, using the Bin above (5 models ran, so 3 must agree):
 | Pseudo-nitzschia | 0.00 | AKsup2 2, Tripos1 1, Tripos2 1 | 3 | (4 / 3) / 3.936 × 1000 = **339 cells/L** |
 | Pseudo-nitzschia | 0.85 | AKsup2 2 (buckets 87, 97), Tripos1 1 (89), Tripos2 0 (83) | 2 | **0** (fewer than 3) |
 | Karenia | any | only GoM3 and Tripos2 found it | at most 2 | **0** (fewer than 3) |
+
+`geo_point` and `float` doc values are encoded, so `point` comes back as a
+`"lat, lon"` string with about 1e-7° precision loss. `mlAnalyzed` comes back as float32
+(3.473 → 3.4730000495910645), and the endpoint rounds it to 6 decimal places to get the
+original value back.
 
 Grid squares group Bins by snapping `point` to `grid_level` degrees, matching PostGIS
 `ST_SnapToGrid()`. Each square's ID is the precision-5 geohash of its snapped point,

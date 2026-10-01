@@ -90,6 +90,49 @@ SUMMARY_INDEX_BODY = {
     },
 }
 
+# Per-Bin, per-species score histograms, so the API only loads the species it needs.
+# One document per Bin/species (_id = {binPid}_{species}).
+# "modelScores" is the species' entry from the summary "speciesScores":
+# {modelId: [[bucket, count], ...]}
+# Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
+SPECIES_SCORES_INDEX_NAME = "bin-species-scores"
+SPECIES_SCORES_INDEX_BODY = {
+    "settings": {"number_of_shards": 1, "number_of_replicas": 1},
+    "mappings": {
+        "properties": {
+            "binPid": {"type": "keyword"},
+            "species": {"type": "keyword"},
+            "datasetId": {"type": "keyword"},
+            "sampleTime": {"type": "date"},
+            "dateUpdated": {"type": "date"},
+            "point": {"type": "geo_point"},
+            "modelScores": {"type": "object", "enabled": False},
+        }
+    },
+}
+
+# Set one model's histogram in a species score document
+SPECIES_UPDATE_SCRIPT = """
+if (ctx._source.modelScores == null) {
+    ctx._source.modelScores = new HashMap();
+}
+ctx._source.modelScores.put(params.modelId, params.histogram);
+ctx._source.putAll(params.metadata);
+"""
+
+# Remove a model from species score documents it no longer found when a file is
+# re-ingested, delete the document if no models are left
+SPECIES_REMOVE_MODEL_SCRIPT = """
+if (!ctx._source.modelScores.containsKey(params.modelId)) {
+    ctx.op = 'noop';
+} else {
+    ctx._source.modelScores.remove(params.modelId);
+    if (ctx._source.modelScores.isEmpty()) {
+        ctx.op = 'delete';
+    }
+}
+"""
+
 # Merge one model's species counts/scores into the Bin summary document. Multiple models
 # for the same Bin can be ingested concurrently, so this runs as a script update
 # (with retry_on_conflict) instead of replacing the whole document.
@@ -154,11 +197,22 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
         "dateUpdated": datetime.now().isoformat(),
     }
 
-    # create index if it's missing, ignore error if another Lambda just created it
-    if not os_client.indices.exists(index=SUMMARY_INDEX_NAME):
-        os_client.indices.create(
-            index=SUMMARY_INDEX_NAME, body=SUMMARY_INDEX_BODY, ignore=400
-        )
+    # create indexes if they're missing, ignore error if another Lambda just created them
+    for index_name, index_body in (
+        (SUMMARY_INDEX_NAME, SUMMARY_INDEX_BODY),
+        (SPECIES_SCORES_INDEX_NAME, SPECIES_SCORES_INDEX_BODY),
+    ):
+        if not os_client.indices.exists(index=index_name):
+            os_client.indices.create(index=index_name, body=index_body, ignore=400)
+
+    # check if this model has already been ingested for the Bin
+    existing = os_client.get(
+        index=SUMMARY_INDEX_NAME,
+        id=metadata_obj["binPid"],
+        _source_includes=["modelIds"],
+        ignore=404,
+    )
+    is_reingest = model_id in existing.get("_source", {}).get("modelIds", [])
 
     response = os_client.update(
         index=SUMMARY_INDEX_NAME,
@@ -191,7 +245,61 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
         retry_on_conflict=10,
     )
     print(response)
+
+    upsert_species_scores(scores, metadata, model_id, is_reingest, os_client)
     return response
+
+
+def upsert_species_scores(scores, metadata, model_id, is_reingest, os_client):
+    # set this model's histogram in the score document for each species it found
+    species_metadata = {
+        key: metadata[key]
+        for key in ("binPid", "datasetId", "sampleTime", "point", "dateUpdated")
+    }
+    operations = []
+    for species, histogram in scores.items():
+        operations.append(
+            {
+                "_op_type": "update",
+                "_index": SPECIES_SCORES_INDEX_NAME,
+                "_id": f"{metadata['binPid']}_{species}",
+                "retry_on_conflict": 10,
+                "script": {
+                    "source": SPECIES_UPDATE_SCRIPT,
+                    "lang": "painless",
+                    "params": {
+                        "modelId": model_id,
+                        "histogram": histogram,
+                        "metadata": species_metadata,
+                    },
+                },
+                "upsert": species_metadata
+                | {"species": species, "modelScores": {model_id: histogram}},
+            }
+        )
+    response = helpers.bulk(os_client, operations, max_retries=3)
+    print("Species scores upsert", response)
+
+    if is_reingest:
+        # remove this model from species it found before, but not in this file
+        response = os_client.update_by_query(
+            index=SPECIES_SCORES_INDEX_NAME,
+            body={
+                "query": {
+                    "bool": {
+                        "must": [{"term": {"binPid": metadata["binPid"]}}],
+                        "must_not": [{"terms": {"species": list(scores)}}],
+                    }
+                },
+                "script": {
+                    "source": SPECIES_REMOVE_MODEL_SCRIPT,
+                    "lang": "painless",
+                    "params": {"modelId": model_id},
+                },
+            },
+            conflicts="proceed",
+        )
+        print("Species scores re-ingest cleanup", response)
 
 
 def process_message(event):

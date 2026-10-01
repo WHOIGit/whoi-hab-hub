@@ -2,6 +2,7 @@ import datetime
 import environ
 import urllib.parse
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
@@ -16,7 +17,11 @@ from rest_framework_gis.fields import GeometryField
 from .mixins import ScoresFiltersMixin
 from ..models import Dataset
 from ..api.cache_utils import create_cache_key
-from ..opensearch import SUMMARY_INDEX_NAME
+from ..opensearch import (
+    SUMMARY_INDEX_NAME,
+    SPECIES_SCORES_INDEX_NAME,
+    MODEL_COUNTS_SCRIPT,
+)
 from habhub.core.constants import API_URL
 from habhub.core.models import TargetSpecies, Metric
 
@@ -42,6 +47,8 @@ def connect_opensearch():
             connection_class=RequestsHttpConnection,
             pool_maxsize=20,
             timeout=20,
+            # gzip requests/responses, the spatial grid responses are several MB
+            http_compress=True,
         )
         print("Connect to OS", os_client)
         info = os_client.info()
@@ -452,47 +459,122 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             "metric_units": metric.units if metric else "cells/L",
         }
 
-    def fetch_bins(self, options, source_fields, sort, extra_filters=None):
-        # return the summary documents for all Bins matching the query params
+    def search_all(self, os_client, index, query):
+        # use search_after to page through all results. filter_path only returns
+        # the fields needed to keep the response small
+        query = dict(query, size=self.bins_page_size, track_total_hits=False)
+        hits = []
+        while True:
+            response = os_client.search(
+                body=query,
+                index=index,
+                request_timeout=60,
+                filter_path="hits.hits.sort,hits.hits.fields",
+            )
+            page = response.get("hits", {}).get("hits", [])
+            hits.extend(page)
+
+            if len(page) < self.bins_page_size:
+                return hits
+            query["search_after"] = page[-1]["sort"]
+
+    def fetch_bins(self, options, extra_filters=None):
+        # return all Bins matching the query params, with the number of images
+        # each model found for each species above its score threshold
         query = self.handle_query_param_filters()
         # species/model/score are image level filters that don't exist in the summary
-        # index. Every Bin in the date range is returned so Bins without the species
+        # indexes. Every Bin in the date range is returned so Bins without the species
         # still count as 0, matching the v1 endpoint.
         must = [
             clause
             for clause in query["query"]["bool"]["must"]
             if not {"species", "modelId"} & clause.get("terms", {}).keys()
             and "score" not in clause.get("range", {})
-        ]
-        query["query"]["bool"]["must"] = must + (extra_filters or [])
-        query["track_total_hits"] = False
-        query["size"] = self.bins_page_size
-        query["sort"] = sort
-        # only return the species score histograms needed
-        query["_source"] = source_fields + [
-            f"speciesScores.{species}" for species in options["species_ids"]
-        ]
+        ] + (extra_filters or [])
+        bool_query = dict(query["query"]["bool"], must=must)
+
+        # Bin metadata from doc values, so the large summary _source isn't loaded
+        bins_query = {
+            "query": {"bool": bool_query},
+            "sort": [{"binPid": "asc"}],
+            "_source": False,
+            "docvalue_fields": [
+                "binPid",
+                "mlAnalyzed",
+                "modelIds",
+                "point",
+                {"field": "sampleTime", "format": "strict_date_time_no_millis"},
+            ],
+        }
+        # each model's image count above the threshold, calculated in Opensearch
+        # so the histograms aren't returned
+        species_query = {
+            "query": {
+                "bool": dict(
+                    bool_query,
+                    must=must + [{"terms": {"species": options["species_ids"]}}],
+                )
+            },
+            "sort": [{"binPid": "asc"}, {"species": "asc"}],
+            "_source": False,
+            "docvalue_fields": ["binPid", "species"],
+            "script_fields": {
+                "modelCounts": {
+                    "script": {
+                        "source": MODEL_COUNTS_SCRIPT,
+                        "params": {
+                            "minBuckets": {
+                                species: round(threshold * 100)
+                                for species, threshold in options[
+                                    "score_thresholds"
+                                ].items()
+                            }
+                        },
+                    }
+                }
+            },
+        }
 
         os_client = connect_opensearch()
-        bins = []
-        # use search_after to page through all Bins
-        while True:
-            response = os_client.search(
-                body=query, index=SUMMARY_INDEX_NAME, request_timeout=60
+        # run both queries at the same time
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            bin_hits = executor.submit(
+                self.search_all, os_client, SUMMARY_INDEX_NAME, bins_query
             )
-            hits = response["hits"]["hits"]
-            bins.extend(hit["_source"] for hit in hits)
+            species_hits = executor.submit(
+                self.search_all, os_client, SPECIES_SCORES_INDEX_NAME, species_query
+            )
+            bin_hits, species_hits = bin_hits.result(), species_hits.result()
 
-            if len(hits) < self.bins_page_size:
-                break
-            query["search_after"] = hits[-1]["sort"]
+        model_counts = {}
+        for hit in species_hits:
+            fields = hit["fields"]
+            model_counts.setdefault(fields["binPid"][0], {})[fields["species"][0]] = (
+                fields["modelCounts"][0]
+            )
 
-        # skip Bins that can't be placed on the grid or have no volume
-        return [
-            bin_data
-            for bin_data in bins
-            if bin_data.get("mlAnalyzed") and bin_data.get("point")
-        ]
+        bins = []
+        for hit in bin_hits:
+            fields = hit["fields"]
+            # skip Bins that can't be placed on the grid or have no volume
+            if not fields.get("mlAnalyzed") or not fields.get("point"):
+                continue
+            # geo_point doc values are "lat, lon" strings
+            lat, lng = (float(value) for value in fields["point"][0].split(","))
+            bin_pid = fields["binPid"][0]
+            bins.append(
+                {
+                    "binPid": bin_pid,
+                    "sampleTime": fields["sampleTime"][0],
+                    "point": [lng, lat],
+                    # doc values are float32, round to the original mL value
+                    "mlAnalyzed": round(fields["mlAnalyzed"][0], 6),
+                    "modelIds": fields.get("modelIds", []),
+                    "modelCounts": model_counts.get(bin_pid, {}),
+                }
+            )
+
+        return bins
 
     def get_bin_agreement(self, bin_data, options):
         # return the number of models that ran on the Bin, the number required to
@@ -508,16 +590,13 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             models_required = max(min(models_required, models_run), 1)
 
         species_results = {}
-        species_scores = bin_data.get("speciesScores", {})
         for species in options["species_ids"]:
-            # histogram buckets are 0.01 wide, so count the images in the
-            # buckets >= the threshold
-            min_bucket = round(options["score_thresholds"][species] * 100)
-            model_counts = {}
-            for model, histogram in species_scores.get(species, {}).items():
-                count = sum(c for bucket, c in histogram if bucket >= min_bucket)
-                if model in model_ids and count:
-                    model_counts[model] = count
+            # image counts are already filtered by the species' score threshold
+            model_counts = {
+                model: count
+                for model, count in bin_data["modelCounts"].get(species, {}).items()
+                if model in model_ids
+            }
             value = 0
             # species is only present if enough models agree
             if model_counts and len(model_counts) >= models_required:
@@ -562,9 +641,7 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
 
         options = self.get_options()
         try:
-            bins = self.fetch_bins(
-                options, ["point", "mlAnalyzed", "modelIds"], [{"binPid": "asc"}]
-            )
+            bins = self.fetch_bins(options)
         except Exception as err:
             return self.error_response(err)
 
@@ -709,20 +786,18 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             }
         }
         try:
-            bins = self.fetch_bins(
-                options,
-                ["binPid", "sampleTime", "point", "mlAnalyzed", "modelIds"],
-                [{"sampleTime": "asc"}, {"binPid": "asc"}],
-                extra_filters=[bbox_filter],
-            )
+            bins = self.fetch_bins(options, extra_filters=[bbox_filter])
         except Exception as err:
             return self.error_response(err)
 
-        bins = [
-            bin_data
-            for bin_data in bins
-            if self.get_grid_point(bin_data, grid_level) == (grid_lng, grid_lat)
-        ]
+        bins = sorted(
+            (
+                bin_data
+                for bin_data in bins
+                if self.get_grid_point(bin_data, grid_level) == (grid_lng, grid_lat)
+            ),
+            key=lambda bin_data: (bin_data["sampleTime"], bin_data["binPid"]),
+        )
         if not bins:
             return not_found
 

@@ -9,6 +9,7 @@ from habhub.ifcb_datasets.opensearch import (
     SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
     create_summary_index,
+    species_score_operations,
 )
 
 
@@ -158,6 +159,7 @@ def build_summary_documents(os_client, start_time, end_time):
 
 
 def index_summary_documents(os_client, documents):
+    # index the Bin summary documents and their per-species score documents
     operations = [
         {
             "_op_type": "index",
@@ -167,12 +169,19 @@ def index_summary_documents(os_client, documents):
         }
         for document in documents
     ]
-    return helpers.bulk(os_client, operations, max_retries=3, request_timeout=120)
+    helpers.bulk(os_client, operations, max_retries=3, request_timeout=120)
+    return helpers.bulk(
+        os_client,
+        species_score_operations(documents),
+        chunk_size=2000,
+        max_retries=3,
+        request_timeout=120,
+    )
 
 
 class Command(BaseCommand):
     # ex: python manage.py backfill_bin_species_summary --start_date=2025-01-01 --end_date=2026-01-01
-    help = "Build the Opensearch 'bin-species-summary' index from the 'species-scores' index. Args: --start_date and --end_date range in yyyy-mm-dd format, optional --chunk_hours to set the time range aggregated per query (default 1), optional --workers to set the number of months processed in parallel (default 1)"
+    help = "Build the Opensearch 'bin-species-summary' and 'bin-species-scores' indexes from the 'species-scores' index. Args: --start_date and --end_date range in yyyy-mm-dd format, optional --chunk_hours to set the time range aggregated per query (default 1), optional --workers to set the number of months processed in parallel (default 1)"
 
     def add_arguments(self, parser):
         parser.add_argument("--start_date", type=str, required=True)
