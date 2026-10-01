@@ -6,14 +6,15 @@ OpenSearch domain:
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
 | `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/` |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` command | `/api/v2/ifcb-spatial-grid/` (metadata only), `build_bin_species_scores` command |
-| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | `/api/v2/ifcb-spatial-grid/` |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list aggregation, detail metadata), `build_bin_species_scores` command |
+| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | `/api/v2/ifcb-spatial-grid/{geohash}/` (detail) |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
-without aggregating millions of image documents on every request. `bin-species-scores`
+without aggregating millions of image documents on every request. Its `h` fields let
+OpenSearch build the whole spatial grid in one aggregation. `bin-species-scores`
 splits each summary's score histograms into one small document per species, so the
-spatial grid only loads the target species instead of all ~100 classes.
+detail endpoint only loads the target species instead of all ~100 classes.
 
 The examples below are real documents from production, Bin `D20251204T005155_IFCB125`.
 
@@ -92,13 +93,22 @@ classified as each species, and a histogram of those images' scores.
 
 ### Mapping
 
-Settings: 1 shard, 1 replica.
+Settings: 1 shard, 1 replica, `index.mapping.total_fields.limit: 5000`.
 Defined in `habhub-dataserver/habhub/ifcb_datasets/opensearch.py`, with a copy in
 `aws-pipeline/lambdas/ingest-class-scores-sqs/app.py`. Keep the two in sync. This
 applies to `bin-species-scores` too.
 
 ```json
 {
+  "dynamic_templates": [
+    {
+      "histograms": {
+        "path_match": "h.*",
+        "match_mapping_type": "long",
+        "mapping": { "type": "long", "index": false, "doc_values": true }
+      }
+    }
+  ],
   "properties": {
     "binPid":        { "type": "keyword" },
     "datasetId":     { "type": "keyword" },
@@ -108,10 +118,18 @@ applies to `bin-species-scores` too.
     "mlAnalyzed":    { "type": "float" },
     "modelIds":      { "type": "keyword" },
     "speciesCounts": { "type": "object", "enabled": false },
-    "speciesScores": { "type": "object", "enabled": false }
+    "speciesScores": { "type": "object", "enabled": false },
+    "h":             { "type": "object" }
   }
 }
 ```
+
+Every `h.{species}.{modelId}` is its own field, created by the `histograms` dynamic
+template. It's stored as doc values only, not indexed for search. `match_mapping_type: long`
+applies the template to the numeric values only, not to the `h.{species}` objects.
+About 160–200 classes × the models run make well over the default limit of 1,000 fields,
+so the limit is raised to 5,000. Watch the field count if many new classes or models
+are added.
 
 `speciesCounts` and `speciesScores` have `"enabled": false`. They're kept in `_source`
 but not indexed, so their species and model keys don't add fields to the mapping. The
@@ -120,8 +138,8 @@ on the other fields and read these from `_source`.
 
 These fields make each document large, 20–33 KB for a recent Bin. OpenSearch loads the
 whole `_source` even when `_source` filtering returns only a few fields, so don't
-read them for many Bins per request. The spatial grid reads only this index's indexed
-fields through `docvalue_fields`, and gets the histograms from `bin-species-scores`.
+read them for many Bins per request. Use the `h` doc values in scripts and
+aggregations, or `docvalue_fields` for the other fields.
 
 ### Example document
 
@@ -175,6 +193,14 @@ not only target species. Its histograms are shortened to their last few buckets.
       "...": "4 more models"
     }
   },
+  "h": {
+    "Pseudo-nitzschia": {
+      "HABLAB_20230626_AKsup2": [87000001, 97000001],
+      "HABLAB_20240110_Tripos1": [89000001],
+      "HABLAB_20240110_Tripos2": [83000001]
+    },
+    "...": "same species and models as speciesScores"
+  },
   "dateUpdated": "2026-09-30T18:43:26.023546"
 }
 ```
@@ -188,18 +214,22 @@ not only target species. Its histograms are shortened to their last few buckets.
 | `modelIds` | Every model that has classified this Bin, including models that found none of a given species |
 | `speciesCounts` | `{species: {modelId: count}}`: number of images each model classified as each species |
 | `speciesScores` | `{species: {modelId: [[bucket, count], ...]}}`: score histogram of those images |
+| `h` | `{species: {modelId: [bucket * 1000000 + count, ...]}}`: the same histograms as doc values, for aggregation scripts |
 | `dateUpdated` | Last time the document was written |
 
 About `speciesScores`:
 - **Buckets:** each is 0.01 wide: `bucket = floor(score * 100)`, from 0 to 99, where 99 holds scores of 0.99–1.00. Only non-empty buckets are stored, in ascending order.
 - **Totals:** a histogram's counts add up to the matching `speciesCounts` value.
 - **Thresholds:** to count images scoring at or above a threshold `t`, sum the buckets that are ≥ `round(t * 100)`. Because the buckets are 0.01 wide, this is exact for any 2-decimal threshold, which is the precision of `TargetSpecies.autoclass_threshold`.
+- **`h` encoding:** each value is `bucket * 1000000 + count`, so `value / 1000000` is the bucket and `value % 1000000` the count. Doc values are sorted, and because the bucket is the high part, they come back in bucket order. Counts are always under 1,000,000, since a Bin has far fewer images than that.
 - **float32 rounding:** scores are float32, so 0.7 is stored as 0.69999999. The Lambda's `score_bucket()` and the backfill's histogram `offset` both add a small offset so a score like this lands in bucket 70, not 69.
 
 ### How it's written
 
-- **Lambda:** `ingest-class-scores-sqs` processes one H5 file, meaning one Bin and one model. It merges that model's counts and histograms into the Bin's document with a script update, using `retry_on_conflict` because several models' files for the same Bin can arrive at once. It removes that model's old values first, so re-ingesting a file is safe.
+- **Lambda:** `ingest-class-scores-sqs` processes one H5 file, meaning one Bin and one model. It merges that model's counts, histograms and `h` values into the Bin's document with a script update, using `retry_on_conflict` because several models' files for the same Bin can arrive at once. It removes that model's old values first, so re-ingesting a file is safe.
 - **Backfill:** `python manage.py backfill_bin_species_summary --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--chunk_hours=1] [--workers=2]` rebuilds documents from `species-scores`, replacing each one completely. It also writes their `bin-species-scores` documents. A Lambda update to the same Bin during a backfill can be overwritten, so re-run the last few days afterwards. Chunks that fail because the cluster is busy are retried up to 5 times.
+- **Histogram fields only:** `python manage.py backfill_summary_histograms --start_date=YYYY-MM-DD --end_date=YYYY-MM-DD [--workers=2]` adds `h` to existing documents from their `speciesScores` as partial updates, without re-aggregating `species-scores`.
+- **Bulk size:** AWS OpenSearch limits requests to 10 MB on smaller instances, and summary documents are large, so the commands cap bulk requests at 5 MB.
 - **Adding a field:** add it to both mapping definitions. Then run `create_summary_index()` against the existing index **before** deploying a Lambda that writes the field. Both commands call it, and it creates or updates both summary indexes. Otherwise OpenSearch maps the new field's keys automatically.
 
 ## `bin-species-scores`
@@ -271,15 +301,28 @@ The Pseudo-nitzschia document for the Bin above:
 
 ## How `/api/v2/ifcb-spatial-grid/` uses the indexes
 
-The endpoint runs two paged queries at the same time, with the same date, dataset and
-bounding box filters:
+**List (the grid):** one `scripted_metric` aggregation on `bin-species-summary`, filtered
+by date, dataset and bounding box. `GRID_MAP_SCRIPT` (in `ifcb_datasets/opensearch.py`)
+runs once per Bin, using doc values only. It snaps `point` to the grid, applies the steps
+below, and adds the result to its grid square. The response has one entry per square,
+keyed `"{lng index}|{lat index}"`, where the grid point is `index * grid_level`. Django
+only adds geohashes and builds the GeoJSON, so the response size depends on the number
+of squares, not the length of the date range. A 2-year range takes about 2 seconds in
+OpenSearch.
 
-1. **`bin-species-summary`:** every Bin in range, so Bins without a species still count as 0. It reads `binPid`, `sampleTime`, `point`, `mlAnalyzed` and `modelIds` through `docvalue_fields` with `_source: false`, so the large histograms aren't loaded.
-2. **`bin-species-scores`:** only the target species' documents. The script field `MODEL_COUNTS_SCRIPT` (in `ifcb_datasets/opensearch.py`) applies each species' threshold inside OpenSearch and returns only each model's image count, so the histograms aren't sent to Django.
+**Detail (one square):** two paged queries at the same time, filtered to the square's
+bounding box:
 
-Both use `filter_path` to keep the responses small. Then, for each Bin and target species:
+1. **`bin-species-summary`:** every Bin in the square, so Bins without a species still count as 0. It reads `binPid`, `sampleTime`, `point`, `mlAnalyzed` and `modelIds` through `docvalue_fields` with `_source: false`.
+2. **`bin-species-scores`:** only the target species' documents. The script field `MODEL_COUNTS_SCRIPT` applies each species' threshold inside OpenSearch and returns only each model's image count.
 
-1. **Count the images at or above the threshold** for each model (done by the script). The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
+Both use `filter_path` to keep the responses small. The detail view applies the same
+steps in Python, in `IfcbSpatialGridViewSet.get_bin_agreement()`. Keep it and
+`GRID_MAP_SCRIPT` in sync.
+
+For each Bin and target species:
+
+1. **Count the images at or above the threshold** for each model. The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
 2. **Count the agreeing models.** A model agrees if its count is above 0.
 3. **Work out how many models must agree.** It depends on the `agreement` param and N, the number of models that processed the Bin (`len(modelIds)`, after any `model_id` filter):
 
@@ -304,10 +347,11 @@ and `any` needs 1:
 Values are cells/L. The concentration is always the mean of the agreeing models' counts,
 so `any` doesn't average in models that found nothing.
 
-`geo_point` and `float` doc values are encoded, so `point` comes back as a
-`"lat, lon"` string with about 1e-7° precision loss. `mlAnalyzed` comes back as float32
-(3.473 → 3.4730000495910645), and the endpoint rounds it to 6 decimal places to get the
-original value back.
+`geo_point` and `float` doc values are encoded, so `point` has about 1e-7° precision
+loss. `mlAnalyzed` comes back as float32 (3.473 → 3.4730000495910645), and both the
+script and the detail view round it to 6 decimal places to get the original value back.
+Rounding to the grid and of concentrations is half-even in both: `Math.rint` in Painless,
+`round()` in Python.
 
 Grid squares group Bins by snapping `point` to `grid_level` degrees, matching PostGIS
 `ST_SnapToGrid()`. Each square's ID is the precision-5 geohash of its snapped point,

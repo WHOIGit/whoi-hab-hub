@@ -71,11 +71,27 @@ def upsert_documents(documents, index_name, os_client):
 # {species: {modelId: [[bucket, count], ...]}}, bucket = floor(score * 100), 0-99.
 # Both are stored in _source only (enabled: false) so dynamic species/model keys
 # don't add fields to the index mapping.
+# "h" holds the same histograms as doc values so the spatial grid can be aggregated
+# in Opensearch: {species: {modelId: [bucket * 1000000 + count, ...]}}
 # Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
 SUMMARY_INDEX_NAME = "bin-species-summary"
+HISTOGRAM_BUCKET_FACTOR = 1000000
 SUMMARY_INDEX_BODY = {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 1},
+    "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "index.mapping.total_fields.limit": 5000,
+    },
     "mappings": {
+        "dynamic_templates": [
+            {
+                "histograms": {
+                    "path_match": "h.*",
+                    "match_mapping_type": "long",
+                    "mapping": {"type": "long", "index": False, "doc_values": True},
+                }
+            }
+        ],
         "properties": {
             "binPid": {"type": "keyword"},
             "datasetId": {"type": "keyword"},
@@ -86,7 +102,8 @@ SUMMARY_INDEX_BODY = {
             "modelIds": {"type": "keyword"},
             "speciesCounts": {"type": "object", "enabled": False},
             "speciesScores": {"type": "object", "enabled": False},
-        }
+            "h": {"type": "object"},
+        },
     },
 }
 
@@ -187,6 +204,10 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
         species: sorted([bucket, count] for bucket, count in species_buckets.items())
         for species, species_buckets in buckets.items()
     }
+    histogram_fields = {
+        species: [bucket * HISTOGRAM_BUCKET_FACTOR + count for bucket, count in histogram]
+        for species, histogram in scores.items()
+    }
 
     metadata = {
         "binPid": metadata_obj["binPid"],
@@ -226,6 +247,7 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                     "speciesValues": {
                         "speciesCounts": counts,
                         "speciesScores": scores,
+                        "h": histogram_fields,
                     },
                     "metadata": metadata,
                 },
@@ -239,6 +261,10 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                 "speciesScores": {
                     species: {model_id: histogram}
                     for species, histogram in scores.items()
+                },
+                "h": {
+                    species: {model_id: values}
+                    for species, values in histogram_fields.items()
                 },
             },
         },

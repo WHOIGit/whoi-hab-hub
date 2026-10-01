@@ -8,9 +8,13 @@ from habhub.ifcb_datasets.api2.views import connect_opensearch
 from habhub.ifcb_datasets.opensearch import (
     SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
+    build_histogram_fields,
     create_summary_index,
     species_score_operations,
 )
+
+# max bulk request size, AWS Opensearch limits requests to 10MB on smaller instances
+MAX_CHUNK_BYTES = 5 * 1024 * 1024
 
 
 # offset for the score histogram buckets, see score_bucket() in the ingest Lambda
@@ -151,6 +155,7 @@ def build_summary_documents(os_client, start_time, end_time):
                 "modelIds": model_ids,
                 "speciesCounts": species_counts,
                 "speciesScores": species_scores,
+                "h": build_histogram_fields(species_scores),
                 "dateUpdated": date_updated,
             }
         )
@@ -169,11 +174,18 @@ def index_summary_documents(os_client, documents):
         }
         for document in documents
     ]
-    helpers.bulk(os_client, operations, max_retries=3, request_timeout=120)
+    helpers.bulk(
+        os_client,
+        operations,
+        max_chunk_bytes=MAX_CHUNK_BYTES,
+        max_retries=3,
+        request_timeout=120,
+    )
     return helpers.bulk(
         os_client,
         species_score_operations(documents),
         chunk_size=2000,
+        max_chunk_bytes=MAX_CHUNK_BYTES,
         max_retries=3,
         request_timeout=120,
     )

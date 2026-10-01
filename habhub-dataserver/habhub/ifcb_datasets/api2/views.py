@@ -22,6 +22,10 @@ from ..opensearch import (
     SUMMARY_INDEX_NAME,
     SPECIES_SCORES_INDEX_NAME,
     MODEL_COUNTS_SCRIPT,
+    GRID_INIT_SCRIPT,
+    GRID_MAP_SCRIPT,
+    GRID_COMBINE_SCRIPT,
+    GRID_REDUCE_SCRIPT,
 )
 from habhub.core.constants import API_URL
 from habhub.core.models import TargetSpecies, Metric
@@ -397,8 +401,9 @@ def snap_to_grid(value, grid_level):
 # agreed/ran is returned with the results so clients can show lower confidence data.
 # Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
 # (or the `score_gte` param), applied at query time from the per-Bin score histograms.
-# Uses the per-Bin "bin-species-summary" index (see ifcb_datasets/opensearch.py)
-# instead of aggregating the image level "species-scores" index on every request.
+# The list view aggregates the per-Bin "bin-species-summary" index into grid squares
+# in Opensearch (see ifcb_datasets/opensearch.py). The detail view gets each Bin in
+# the grid square from "bin-species-summary" and "bin-species-scores".
 class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
     default_grid_level = 0.5
     agreement_options = ("all", "majority", "any")
@@ -482,9 +487,8 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 return hits
             query["search_after"] = page[-1]["sort"]
 
-    def fetch_bins(self, options, extra_filters=None):
-        # return all Bins matching the query params, with the number of images
-        # each model found for each species above its score threshold
+    def get_bool_query(self, extra_filters=None):
+        # Opensearch bool query for the Bins matching the query params
         query = self.handle_query_param_filters()
         # species/model/score are image level filters that don't exist in the summary
         # indexes. Every Bin in the date range is returned so Bins without the species
@@ -495,7 +499,59 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             if not {"species", "modelId"} & clause.get("terms", {}).keys()
             and "score" not in clause.get("range", {})
         ] + (extra_filters or [])
-        bool_query = dict(query["query"]["bool"], must=must)
+        return dict(query["query"]["bool"], must=must)
+
+    def fetch_grid_squares(self, options):
+        # aggregate all Bins matching the query params into grid squares in
+        # Opensearch, see GRID_MAP_SCRIPT in ifcb_datasets/opensearch.py
+        params = {
+            "gridLevel": options["grid_level"],
+            "species": options["species_ids"],
+            "minBuckets": {
+                species: round(threshold * 100)
+                for species, threshold in options["score_thresholds"].items()
+            },
+            "agreement": options["agreement"],
+        }
+        if options["model_list"]:
+            params["models"] = options["model_list"]
+
+        query = {
+            "size": 0,
+            "track_total_hits": False,
+            "query": {"bool": self.get_bool_query()},
+            "aggs": {
+                "grid": {
+                    "scripted_metric": {
+                        "init_script": GRID_INIT_SCRIPT,
+                        "map_script": GRID_MAP_SCRIPT,
+                        "combine_script": GRID_COMBINE_SCRIPT,
+                        "reduce_script": GRID_REDUCE_SCRIPT,
+                        "params": params,
+                    }
+                }
+            },
+        }
+        response = connect_opensearch().search(
+            body=query, index=SUMMARY_INDEX_NAME, request_timeout=60
+        )
+
+        # square keys are the grid point as "{lng index}|{lat index}"
+        grid_squares = {}
+        for key, square in (response["aggregations"]["grid"]["value"] or {}).items():
+            lng_index, lat_index = (int(value) for value in key.split("|"))
+            grid_point = (
+                lng_index * options["grid_level"],
+                lat_index * options["grid_level"],
+            )
+            grid_squares[grid_point] = square
+        return grid_squares
+
+    def fetch_bins(self, options, extra_filters=None):
+        # return all Bins matching the query params, with the number of images
+        # each model found for each species above its score threshold
+        bool_query = self.get_bool_query(extra_filters)
+        must = bool_query["must"]
 
         # Bin metadata from doc values, so the large summary _source isn't loaded
         bins_query = {
@@ -649,31 +705,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
 
         options = self.get_options()
         try:
-            bins = self.fetch_bins(options)
+            grid_squares = self.fetch_grid_squares(options)
         except Exception as err:
             return self.error_response(err)
-
-        # group Bins into grid squares, calculate cell concentration for each species
-        grid_squares = {}
-        for bin_data in bins:
-            square = grid_squares.setdefault(
-                self.get_grid_point(bin_data, options["grid_level"]),
-                {
-                    "bin_count": 0,
-                    "models_run": [],
-                    "values": {species: [] for species in options["species_ids"]},
-                },
-            )
-            models_run, models_required, species_results = self.get_bin_agreement(
-                bin_data, options
-            )
-            square["bin_count"] += 1
-            square["models_run"].append(models_run)
-
-            for species, result in species_results.items():
-                square["values"][species].append(
-                    (result["value"], result["models_agreed"], models_run)
-                )
 
         # build the GeoJSON response
         geo_field = GeometryField()
@@ -681,11 +715,7 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         for (grid_lng, grid_lat), square in sorted(grid_squares.items()):
             max_mean_values = []
             for species in options["species_ids"]:
-                values = square["values"][species]
-                # model agreement is reported for the Bin with the max value
-                max_value, models_agreed, max_models_run = max(values)
-                if not max_value:
-                    models_agreed, max_models_run = 0, 0
+                result = square["species"][species]
                 max_mean_values.append(
                     {
                         "species": species,
@@ -693,13 +723,13 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                             {
                                 "metric_id": "cell_concentration",
                                 "metric_name": options["metric_name"],
-                                "max_value": max_value,
+                                "max_value": result["max"],
                                 # Bins without the species count as 0
-                                "mean_value": sum(v[0] for v in values)
-                                / square["bin_count"],
+                                "mean_value": result["sum"] / square["bins"],
                                 "units": options["metric_units"],
-                                "models_agreed": models_agreed,
-                                "models_run": max_models_run,
+                                # model agreement for the Bin with the max value
+                                "models_agreed": result["modelsAgreed"],
+                                "models_run": result["modelsRun"],
                             }
                         ],
                     }
@@ -721,12 +751,10 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             # where a species counts without any other model agreeing
             properties["model_agreement"] = {
                 "agreement": options["agreement"],
-                "bin_count": square["bin_count"],
-                "single_model_bin_count": sum(
-                    1 for models_run in square["models_run"] if models_run == 1
-                ),
-                "min_models_run": min(square["models_run"]),
-                "max_models_run": max(square["models_run"]),
+                "bin_count": square["bins"],
+                "single_model_bin_count": square["singleModelBins"],
+                "min_models_run": square["minModelsRun"],
+                "max_models_run": square["maxModelsRun"],
             }
             feature["properties"] = properties
             features.append(feature)
