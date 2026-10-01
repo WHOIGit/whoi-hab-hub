@@ -281,16 +281,28 @@ Both use `filter_path` to keep the responses small. Then, for each Bin and targe
 
 1. **Count the images at or above the threshold** for each model (done by the script). The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
 2. **Count the agreeing models.** A model agrees if its count is above 0.
-3. **Work out how many models must agree.** It's `min_models` (default 3). If fewer models processed the Bin (`len(modelIds)`), all of them must agree instead, unless the request has `strict_agreement=true`.
+3. **Work out how many models must agree.** It depends on the `agreement` param and N, the number of models that processed the Bin (`len(modelIds)`, after any `model_id` filter):
+
+   | `agreement` | Models required | N = 1 | N = 4 | N = 5 |
+   |---|---|---|---|---|
+   | `all` | N | 1 | 4 | 5 |
+   | `majority` (default) | more than half: ⌊N/2⌋ + 1 | 1 | 3 | 3 |
+   | `any` | 1 | 1 | 1 | 1 |
+
+   A Bin only one model processed counts in every mode if that model found the species.
 4. **Calculate the concentration.** If enough models agree: `cell concentration = mean(agreeing counts) / mlAnalyzed * 1000` cells/L. Otherwise the value is 0.
 
-Worked example, using the Bin above (5 models ran, so 3 must agree):
+Worked example, using the Bin above. 5 models ran, so `all` needs 5, `majority` needs 3
+and `any` needs 1:
 
-| Species | Threshold | Count per model at or above threshold | Agreeing models | Cell concentration |
-|---|---|---|---|---|
-| Pseudo-nitzschia | 0.00 | AKsup2 2, Tripos1 1, Tripos2 1 | 3 | (4 / 3) / 3.936 × 1000 = **339 cells/L** |
-| Pseudo-nitzschia | 0.85 | AKsup2 2 (buckets 87, 97), Tripos1 1 (89), Tripos2 0 (83) | 2 | **0** (fewer than 3) |
-| Karenia | any | only GoM3 and Tripos2 found it | at most 2 | **0** (fewer than 3) |
+| Species | Threshold | Count per model at or above threshold | Agreeing | `all` | `majority` | `any` |
+|---|---|---|---|---|---|---|
+| Pseudo-nitzschia | 0.00 | AKsup2 2, Tripos1 1, Tripos2 1 | 3 | 0 | (4 / 3) / 3.936 × 1000 = **339** | **339** |
+| Pseudo-nitzschia | 0.85 | AKsup2 2 (buckets 87, 97), Tripos1 1 (89), Tripos2 0 (83) | 2 | 0 | 0 | (3 / 2) / 3.936 × 1000 = **381** |
+| Karenia | 0.00 | GoM3 16, Tripos2 3 | 2 | 0 | 0 | (19 / 2) / 3.936 × 1000 = **2,414** |
+
+Values are cells/L. The concentration is always the mean of the agreeing models' counts,
+so `any` doesn't average in models that found nothing.
 
 `geo_point` and `float` doc values are encoded, so `point` comes back as a
 `"lat, lon"` string with about 1e-7° precision loss. `mlAnalyzed` comes back as float32

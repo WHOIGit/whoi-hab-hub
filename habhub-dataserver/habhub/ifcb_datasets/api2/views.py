@@ -12,6 +12,7 @@ from django.urls import reverse
 from rest_framework import status, viewsets
 
 # from rest_framework.reverse import reverse
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework_gis.fields import GeometryField
 from .mixins import ScoresFiltersMixin
@@ -387,9 +388,12 @@ def snap_to_grid(value, grid_level):
 
 # API view to return spatial grid of species cell concentrations from AWS Opensearch.
 # Matches the response format of the v1 "ifcb-spatial-grid" endpoint, but a species
-# is only counted as present in a Bin if at least `min_models` ML models agree.
-# Bins processed by fewer than `min_models` models (mostly older data) require all
-# of their models to agree, unless `strict_agreement=true`. The number of models that
+# is only counted as present in a Bin if enough of the ML models run on the Bin agree,
+# set by the `agreement` param:
+#   all:      every model run on the Bin found the species
+#   majority: more than half of the models found it (default)
+#   any:      at least one model found it
+# A single model run on a Bin counts for all three. The number of models that
 # agreed/ran is returned with the results so clients can show lower confidence data.
 # Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
 # (or the `score_gte` param), applied at query time from the per-Bin score histograms.
@@ -397,7 +401,8 @@ def snap_to_grid(value, grid_level):
 # instead of aggregating the image level "species-scores" index on every request.
 class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
     default_grid_level = 0.5
-    default_min_models = 3
+    agreement_options = ("all", "majority", "any")
+    default_agreement = "majority"
     # number of Bin documents to return per page, max allowed by Opensearch
     bins_page_size = 10000
     cache_timeout = 60 * 60
@@ -414,10 +419,11 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         if grid_level <= 0:
             grid_level = self.default_grid_level
 
-        try:
-            min_models = int(query_params.get("min_models", self.default_min_models))
-        except ValueError:
-            min_models = self.default_min_models
+        agreement = query_params.get("agreement", self.default_agreement)
+        if agreement not in self.agreement_options:
+            raise ValidationError(
+                {"agreement": f"Must be one of: {', '.join(self.agreement_options)}"}
+            )
 
         species_param = query_params.get("species", None)
         species_list = list(
@@ -441,14 +447,12 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         }
 
         model_param = query_params.get("model_id", None)
-        strict_agreement = query_params.get("strict_agreement", None) == "true"
 
         metric = Metric.objects.filter(metric_id="cell_concentration").first()
 
         return {
             "grid_level": grid_level,
-            "min_models": min_models,
-            "strict_agreement": strict_agreement,
+            "agreement": agreement,
             "species_ids": [species_id for species_id, _, _ in species_list],
             "species_display": {
                 species_id: display for species_id, display, _ in species_list
@@ -584,10 +588,14 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             model_ids = [model for model in model_ids if model in options["model_list"]]
         models_run = len(model_ids)
 
-        models_required = options["min_models"]
-        if not options["strict_agreement"]:
-            # require all models to agree if fewer than min_models ran
-            models_required = max(min(models_required, models_run), 1)
+        # number of models that need to find the species
+        if options["agreement"] == "all":
+            models_required = models_run
+        elif options["agreement"] == "majority":
+            models_required = models_run // 2 + 1
+        else:
+            models_required = 1
+        models_required = max(models_required, 1)
 
         species_results = {}
         for species in options["species_ids"]:
@@ -652,7 +660,6 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                 self.get_grid_point(bin_data, options["grid_level"]),
                 {
                     "bin_count": 0,
-                    "relaxed_bin_count": 0,
                     "models_run": [],
                     "values": {species: [] for species in options["species_ids"]},
                 },
@@ -662,8 +669,6 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             )
             square["bin_count"] += 1
             square["models_run"].append(models_run)
-            if models_required < options["min_models"]:
-                square["relaxed_bin_count"] += 1
 
             for species, result in species_results.items():
                 square["values"][species].append(
@@ -712,13 +717,14 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             properties = OrderedDict()
             properties["max_mean_values"] = max_mean_values
             # summary of model agreement for all Bins in the grid square.
-            # relaxed_bin_count is the number of Bins that ran fewer than min_models
-            # and used a lower agreement threshold
+            # single_model_bin_count is the number of Bins only one model ran on,
+            # where a species counts without any other model agreeing
             properties["model_agreement"] = {
-                "min_models": options["min_models"],
-                "strict_agreement": options["strict_agreement"],
+                "agreement": options["agreement"],
                 "bin_count": square["bin_count"],
-                "relaxed_bin_count": square["relaxed_bin_count"],
+                "single_model_bin_count": sum(
+                    1 for models_run in square["models_run"] if models_run == 1
+                ),
                 "min_models_run": min(square["models_run"]),
                 "max_models_run": max(square["models_run"]),
             }
