@@ -70,25 +70,6 @@ SPECIES_SCORES_INDEX_BODY = {
     },
 }
 
-# script field to count each model's images with a score >= the species' threshold,
-# so only the counts are returned instead of the histograms.
-# params.minBuckets: {species: round(threshold * 100)}
-MODEL_COUNTS_SCRIPT = """
-def counts = new HashMap();
-int minBucket = params.minBuckets.get(doc['species'].value);
-for (def entry : params._source.modelScores.entrySet()) {
-    int count = 0;
-    for (def bucket : entry.getValue()) {
-        if (bucket[0] >= minBucket) {
-            count += bucket[1];
-        }
-    }
-    if (count > 0) {
-        counts.put(entry.getKey(), count);
-    }
-}
-return counts;
-"""
 
 
 def create_index(os_client, index_name, index_body):
@@ -152,30 +133,97 @@ def species_score_operations(summary_documents):
     )
 
 
-# Scripted metric to build the spatial grid in Opensearch from the summary index doc
-# values, so only one result per grid square is returned instead of every Bin.
-# For each Bin: snap the point to the grid, count each model's images above the
-# species' score threshold from the "h" histograms, apply the model agreement rule,
-# and calculate the cell concentration. For each grid square: the number of Bins,
-# the number of models run, and each species' max/sum value and model agreement at
-# the max value.
-# Matches IfcbSpatialGridViewSet.get_bin_agreement(), Math.rint rounds half to even
-# like Python round() and PostGIS ST_SnapToGrid().
+# Painless function to calculate a Bin's species results from the summary index doc
+# values: count each model's images above the species' score threshold from the "h"
+# histograms, apply the model agreement rule, and calculate the cell concentration.
+# Shared by the grid aggregation (list view) and the Bin results script field (detail
+# view) so both use the same rule. Math.rint rounds half to even like Python round()
+# and PostGIS ST_SnapToGrid().
+# Returns null for Bins without a point or volume, otherwise
+#   ['modelsRun': int, 'modelsRequired': int,
+#    'species': {species: ['value': long, 'modelsAgreed': int]}]
 # params:
-#   gridLevel: grid square size in degrees
 #   species: species IDs
 #   minBuckets: {species: round(threshold * 100)}
 #   agreement: "all", "majority" or "any"
 #   models: optional list of model IDs to use, omitted for all models
-#           (scripted metric params can't contain nulls)
-GRID_INIT_SCRIPT = "state.squares = new HashMap();"
-GRID_MAP_SCRIPT = """
-if (doc['mlAnalyzed'].size() == 0 || doc['point'].size() == 0) {
-    return;
+#           (script params can't contain nulls)
+BIN_RESULT_FUNCTION = """
+Map binResult(Map doc, Map params) {
+    if (doc['mlAnalyzed'].size() == 0 || doc['point'].size() == 0) {
+        return null;
+    }
+    // doc values are float32, round to the original mL value
+    double mlAnalyzed = Math.round(doc['mlAnalyzed'].value * 1000000.0) / 1000000.0;
+    if (mlAnalyzed == 0) {
+        return null;
+    }
+
+    List modelIds = new ArrayList();
+    for (def model : doc['modelIds']) {
+        if (!params.containsKey('models') || params.models.contains(model)) {
+            modelIds.add(model);
+        }
+    }
+    int modelsRun = modelIds.size();
+
+    // number of models that need to find the species
+    int modelsRequired = 1;
+    if (params.agreement == 'all') {
+        modelsRequired = modelsRun;
+    } else if (params.agreement == 'majority') {
+        modelsRequired = modelsRun / 2 + 1;
+    }
+    if (modelsRequired < 1) {
+        modelsRequired = 1;
+    }
+
+    Map speciesResults = new HashMap();
+    for (def species : params.species) {
+        int minBucket = params.minBuckets.get(species);
+        int modelsAgreed = 0;
+        long totalCount = 0;
+        for (def model : modelIds) {
+            String field = 'h.' + species + '.' + model;
+            if (!doc.containsKey(field) || doc[field].size() == 0) {
+                continue;
+            }
+            long count = 0;
+            for (long value : doc[field]) {
+                if (value / 1000000 >= minBucket) {
+                    count += value % 1000000;
+                }
+            }
+            if (count > 0) {
+                modelsAgreed += 1;
+                totalCount += count;
+            }
+        }
+        // use the mean cell concentration of the agreeing models
+        long concentration = 0;
+        if (modelsAgreed > 0 && modelsAgreed >= modelsRequired) {
+            concentration = (long) Math.rint(((double) totalCount / modelsAgreed) / mlAnalyzed * 1000);
+        }
+        speciesResults.put(species, ['value': concentration, 'modelsAgreed': modelsAgreed]);
+    }
+    return ['modelsRun': modelsRun, 'modelsRequired': modelsRequired, 'species': speciesResults];
 }
-// doc values are float32, round to the original mL value
-double mlAnalyzed = Math.round(doc['mlAnalyzed'].value * 1000000.0) / 1000000.0;
-if (mlAnalyzed == 0) {
+"""
+
+# script field returning binResult() for each Bin, used by the detail view
+BIN_RESULT_SCRIPT = BIN_RESULT_FUNCTION + "return binResult(doc, params);"
+
+# Scripted metric to build the spatial grid in Opensearch from the summary index doc
+# values, so only one result per grid square is returned instead of every Bin.
+# For each Bin: snap the point to the grid and calculate binResult(). For each grid
+# square: the number of Bins, the number of models run, and each species' max/sum
+# value and model agreement at the max value.
+# params: binResult() params, and
+#   gridLevel: grid square size in degrees
+GRID_INIT_SCRIPT = "state.squares = new HashMap();"
+GRID_MAP_SCRIPT = BIN_RESULT_FUNCTION + """
+def bin = binResult(doc, params);
+if (bin == null) {
     return;
 }
 String key = (long) Math.rint(doc['point'].lon / params.gridLevel) + '|'
@@ -192,13 +240,7 @@ if (square == null) {
     state.squares.put(key, square);
 }
 
-List modelIds = new ArrayList();
-for (def model : doc['modelIds']) {
-    if (!params.containsKey('models') || params.models.contains(model)) {
-        modelIds.add(model);
-    }
-}
-int modelsRun = modelIds.size();
+int modelsRun = bin.modelsRun;
 square.bins += 1;
 if (modelsRun == 1) {
     square.singleModelBins += 1;
@@ -210,47 +252,13 @@ if (modelsRun > square.maxModelsRun) {
     square.maxModelsRun = modelsRun;
 }
 
-// number of models that need to find the species
-int modelsRequired = 1;
-if (params.agreement == 'all') {
-    modelsRequired = modelsRun;
-} else if (params.agreement == 'majority') {
-    modelsRequired = modelsRun / 2 + 1;
-}
-if (modelsRequired < 1) {
-    modelsRequired = 1;
-}
-
-for (def species : params.species) {
-    int minBucket = params.minBuckets.get(species);
-    int modelsAgreed = 0;
-    long totalCount = 0;
-    for (def model : modelIds) {
-        String field = 'h.' + species + '.' + model;
-        if (!doc.containsKey(field) || doc[field].size() == 0) {
-            continue;
-        }
-        long count = 0;
-        for (long value : doc[field]) {
-            if (value / 1000000 >= minBucket) {
-                count += value % 1000000;
-            }
-        }
-        if (count > 0) {
-            modelsAgreed += 1;
-            totalCount += count;
-        }
-    }
-    // use the mean cell concentration of the agreeing models
-    long concentration = 0;
-    if (modelsAgreed > 0 && modelsAgreed >= modelsRequired) {
-        concentration = (long) Math.rint(((double) totalCount / modelsAgreed) / mlAnalyzed * 1000);
-    }
-
-    def result = square.species.get(species);
+for (def entry : bin.species.entrySet()) {
+    long concentration = entry.getValue().value;
+    int modelsAgreed = entry.getValue().modelsAgreed;
+    def result = square.species.get(entry.getKey());
     if (result == null) {
         result = ['max': 0L, 'sum': 0L, 'modelsAgreed': 0, 'modelsRun': 0];
-        square.species.put(species, result);
+        square.species.put(entry.getKey(), result);
     }
     result.sum += concentration;
     // ties keep the Bin with the most agreeing models, then the most models run

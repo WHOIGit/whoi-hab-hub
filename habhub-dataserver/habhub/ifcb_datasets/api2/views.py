@@ -2,7 +2,6 @@ import datetime
 import environ
 import urllib.parse
 from collections import OrderedDict
-from concurrent.futures import ThreadPoolExecutor
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
@@ -20,8 +19,7 @@ from ..models import Dataset
 from ..api.cache_utils import create_cache_key
 from ..opensearch import (
     SUMMARY_INDEX_NAME,
-    SPECIES_SCORES_INDEX_NAME,
-    MODEL_COUNTS_SCRIPT,
+    BIN_RESULT_SCRIPT,
     GRID_INIT_SCRIPT,
     GRID_MAP_SCRIPT,
     GRID_COMBINE_SCRIPT,
@@ -401,9 +399,10 @@ def snap_to_grid(value, grid_level):
 # agreed/ran is returned with the results so clients can show lower confidence data.
 # Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
 # (or the `score_gte` param), applied at query time from the per-Bin score histograms.
-# The list view aggregates the per-Bin "bin-species-summary" index into grid squares
-# in Opensearch (see ifcb_datasets/opensearch.py). The detail view gets each Bin in
-# the grid square from "bin-species-summary" and "bin-species-scores".
+# Both views use the per-Bin "bin-species-summary" index doc values, with the model
+# agreement rule in Opensearch scripts (see ifcb_datasets/opensearch.py). The list
+# view aggregates the Bins into grid squares, the detail view gets each Bin in the
+# grid square.
 class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
     default_grid_level = 0.5
     agreement_options = ("all", "majority", "any")
@@ -501,11 +500,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         ] + (extra_filters or [])
         return dict(query["query"]["bool"], must=must)
 
-    def fetch_grid_squares(self, options):
-        # aggregate all Bins matching the query params into grid squares in
-        # Opensearch, see GRID_MAP_SCRIPT in ifcb_datasets/opensearch.py
+    def get_script_params(self, options):
+        # params for binResult() in ifcb_datasets/opensearch.py
         params = {
-            "gridLevel": options["grid_level"],
             "species": options["species_ids"],
             "minBuckets": {
                 species: round(threshold * 100)
@@ -513,8 +510,15 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             },
             "agreement": options["agreement"],
         }
+        # script params can't contain nulls, so only add the model filter if it's set
         if options["model_list"]:
             params["models"] = options["model_list"]
+        return params
+
+    def fetch_grid_squares(self, options):
+        # aggregate all Bins matching the query params into grid squares in
+        # Opensearch, see GRID_MAP_SCRIPT in ifcb_datasets/opensearch.py
+        params = dict(self.get_script_params(options), gridLevel=options["grid_level"])
 
         query = {
             "size": 0,
@@ -548,132 +552,48 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         return grid_squares
 
     def fetch_bins(self, options, extra_filters=None):
-        # return all Bins matching the query params, with the number of images
-        # each model found for each species above its score threshold
-        bool_query = self.get_bool_query(extra_filters)
-        must = bool_query["must"]
-
-        # Bin metadata from doc values, so the large summary _source isn't loaded
-        bins_query = {
-            "query": {"bool": bool_query},
+        # return all Bins matching the query params with their species results,
+        # calculated in Opensearch by binResult() in ifcb_datasets/opensearch.py
+        query = {
+            "query": {"bool": self.get_bool_query(extra_filters)},
             "sort": [{"binPid": "asc"}],
             "_source": False,
             "docvalue_fields": [
                 "binPid",
-                "mlAnalyzed",
-                "modelIds",
                 "point",
                 {"field": "sampleTime", "format": "strict_date_time_no_millis"},
             ],
-        }
-        # each model's image count above the threshold, calculated in Opensearch
-        # so the histograms aren't returned
-        species_query = {
-            "query": {
-                "bool": dict(
-                    bool_query,
-                    must=must + [{"terms": {"species": options["species_ids"]}}],
-                )
-            },
-            "sort": [{"binPid": "asc"}, {"species": "asc"}],
-            "_source": False,
-            "docvalue_fields": ["binPid", "species"],
             "script_fields": {
-                "modelCounts": {
+                "binResult": {
                     "script": {
-                        "source": MODEL_COUNTS_SCRIPT,
-                        "params": {
-                            "minBuckets": {
-                                species: round(threshold * 100)
-                                for species, threshold in options[
-                                    "score_thresholds"
-                                ].items()
-                            }
-                        },
+                        "source": BIN_RESULT_SCRIPT,
+                        "params": self.get_script_params(options),
                     }
                 }
             },
         }
-
-        os_client = connect_opensearch()
-        # run both queries at the same time
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            bin_hits = executor.submit(
-                self.search_all, os_client, SUMMARY_INDEX_NAME, bins_query
-            )
-            species_hits = executor.submit(
-                self.search_all, os_client, SPECIES_SCORES_INDEX_NAME, species_query
-            )
-            bin_hits, species_hits = bin_hits.result(), species_hits.result()
-
-        model_counts = {}
-        for hit in species_hits:
-            fields = hit["fields"]
-            model_counts.setdefault(fields["binPid"][0], {})[fields["species"][0]] = (
-                fields["modelCounts"][0]
-            )
+        hits = self.search_all(connect_opensearch(), SUMMARY_INDEX_NAME, query)
 
         bins = []
-        for hit in bin_hits:
+        for hit in hits:
             fields = hit["fields"]
+            result = fields["binResult"][0]
             # skip Bins that can't be placed on the grid or have no volume
-            if not fields.get("mlAnalyzed") or not fields.get("point"):
+            if not result:
                 continue
             # geo_point doc values are "lat, lon" strings
             lat, lng = (float(value) for value in fields["point"][0].split(","))
-            bin_pid = fields["binPid"][0]
             bins.append(
                 {
-                    "binPid": bin_pid,
+                    "binPid": fields["binPid"][0],
                     "sampleTime": fields["sampleTime"][0],
                     "point": [lng, lat],
-                    # doc values are float32, round to the original mL value
-                    "mlAnalyzed": round(fields["mlAnalyzed"][0], 6),
-                    "modelIds": fields.get("modelIds", []),
-                    "modelCounts": model_counts.get(bin_pid, {}),
+                    "modelsRun": result["modelsRun"],
+                    "modelsRequired": result["modelsRequired"],
+                    "species": result["species"],
                 }
             )
-
         return bins
-
-    def get_bin_agreement(self, bin_data, options):
-        # return the number of models that ran on the Bin, the number required to
-        # agree, and the cell concentration/number of agreeing models for each species
-        model_ids = bin_data.get("modelIds", [])
-        if options["model_list"]:
-            model_ids = [model for model in model_ids if model in options["model_list"]]
-        models_run = len(model_ids)
-
-        # number of models that need to find the species
-        if options["agreement"] == "all":
-            models_required = models_run
-        elif options["agreement"] == "majority":
-            models_required = models_run // 2 + 1
-        else:
-            models_required = 1
-        models_required = max(models_required, 1)
-
-        species_results = {}
-        for species in options["species_ids"]:
-            # image counts are already filtered by the species' score threshold
-            model_counts = {
-                model: count
-                for model, count in bin_data["modelCounts"].get(species, {}).items()
-                if model in model_ids
-            }
-            value = 0
-            # species is only present if enough models agree
-            if model_counts and len(model_counts) >= models_required:
-                # use the mean cell concentration of the agreeing models
-                mean_count = sum(model_counts.values()) / len(model_counts)
-                value = round(mean_count / bin_data["mlAnalyzed"] * 1000)
-
-            species_results[species] = {
-                "value": value,
-                "models_agreed": len(model_counts),
-            }
-
-        return models_run, models_required, species_results
 
     def format_score_thresholds(self, options):
         # list instead of a dict so the camelCase renderer doesn't change the species IDs
@@ -849,12 +769,8 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             date_str = sample_time.astimezone(datetime.UTC).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             )
-            models_run, models_required, species_results = self.get_bin_agreement(
-                bin_data, options
-            )
-
             for species_item in timeseries_data:
-                result = species_results[species_item["species"]]
+                result = bin_data["species"][species_item["species"]]
                 species_item["data"].append(
                     {
                         "sample_time": date_str,
@@ -870,9 +786,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
                         ],
                         # number of models that found the species, the number that
                         # ran on the Bin, and the number required to agree
-                        "models_agreed": result["models_agreed"],
-                        "models_run": models_run,
-                        "models_required": models_required,
+                        "models_agreed": result["modelsAgreed"],
+                        "models_run": bin_data["modelsRun"],
+                        "models_required": bin_data["modelsRequired"],
                     }
                 )
 

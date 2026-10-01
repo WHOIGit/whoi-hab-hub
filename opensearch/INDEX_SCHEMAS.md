@@ -6,15 +6,15 @@ OpenSearch domain:
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
 | `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/` |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list aggregation, detail metadata), `build_bin_species_scores` command |
-| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | `/api/v2/ifcb-spatial-grid/{geohash}/` (detail) |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list and detail), `build_bin_species_scores` command |
+| `bin-species-scores` | Bin and species | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `build_bin_species_scores` commands | Nothing. Kept until the Lambda stops writing it, then to be deleted |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
 without aggregating millions of image documents on every request. Its `h` fields let
 OpenSearch build the whole spatial grid in one aggregation. `bin-species-scores`
-splits each summary's score histograms into one small document per species, so the
-detail endpoint only loads the target species instead of all ~100 classes.
+splits each summary's score histograms into one small document per species. The API
+no longer reads it, and it will be deleted once the Lambda stops writing it.
 
 The examples below are real documents from production, Bin `D20251204T005155_IFCB125`.
 
@@ -311,17 +311,16 @@ only adds geohashes and builds the GeoJSON, so the response size depends on the 
 of squares, not the length of the date range. A 2-year range takes about 2 seconds in
 OpenSearch.
 
-**Detail (one square):** two paged queries at the same time, filtered to the square's
-bounding box:
+**Detail (one square):** one paged query on `bin-species-summary`, filtered to the
+square's bounding box. It returns every Bin in the square, so Bins without a species
+still show 0. It reads `binPid`, `sampleTime` and `point` through `docvalue_fields`,
+with `_source: false`. The script field `BIN_RESULT_SCRIPT` returns each Bin's species
+results, and `filter_path` keeps the response small. The view then keeps only the Bins
+that snap to the requested square.
 
-1. **`bin-species-summary`:** every Bin in the square, so Bins without a species still count as 0. It reads `binPid`, `sampleTime`, `point`, `mlAnalyzed` and `modelIds` through `docvalue_fields` with `_source: false`.
-2. **`bin-species-scores`:** only the target species' documents. The script field `MODEL_COUNTS_SCRIPT` applies each species' threshold inside OpenSearch and returns only each model's image count.
-
-Both use `filter_path` to keep the responses small. The detail view applies the same
-steps in Python, in `IfcbSpatialGridViewSet.get_bin_agreement()`. Keep it and
-`GRID_MAP_SCRIPT` in sync.
-
-For each Bin and target species:
+Both views run the same Painless function, `binResult()` (`BIN_RESULT_FUNCTION` in
+`ifcb_datasets/opensearch.py`), so the agreement rule exists in one place. It runs these
+steps for each Bin and target species:
 
 1. **Count the images at or above the threshold** for each model. The threshold is the species' `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
 2. **Count the agreeing models.** A model agrees if its count is above 0.
@@ -350,7 +349,7 @@ so `any` doesn't average in models that found nothing.
 
 `geo_point` and `float` doc values are encoded, so `point` has about 1e-7° precision
 loss. `mlAnalyzed` comes back as float32 (3.473 → 3.4730000495910645), and both the
-script and the detail view round it to 6 decimal places to get the original value back.
+script rounds it to 6 decimal places to get the original value back.
 Rounding to the grid and of concentrations is half-even in both: `Math.rint` in Painless,
 `round()` in Python.
 
