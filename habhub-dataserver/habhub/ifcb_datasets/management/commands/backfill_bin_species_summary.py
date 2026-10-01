@@ -1,4 +1,5 @@
 import datetime
+import time
 from concurrent.futures import ThreadPoolExecutor
 from django.core.management.base import BaseCommand, CommandError
 from opensearchpy import helpers
@@ -209,12 +210,21 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Done. {total_bins} Bins indexed"))
 
-    def backfill_chunk(self, os_client, start_time, end_time):
+    def backfill_chunk(self, os_client, start_time, end_time, attempt=1):
         try:
             documents = build_summary_documents(os_client, start_time, end_time)
         except (TooManyBucketsError, TransportError) as err:
             if isinstance(err, TransportError) and "too_many_buckets" not in str(err):
-                raise
+                # retry errors from a busy cluster, like cancelled queries or timeouts
+                if attempt >= 5:
+                    raise
+                self.stdout.write(
+                    f"Retrying {start_time.isoformat()} - {end_time.isoformat()} after error: {err}"
+                )
+                time.sleep(30 * attempt)
+                return self.backfill_chunk(
+                    os_client, start_time, end_time, attempt + 1
+                )
             # split the time range in half and try again
             if end_time - start_time <= datetime.timedelta(minutes=15):
                 raise CommandError(
