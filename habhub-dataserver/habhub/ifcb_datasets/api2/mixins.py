@@ -10,6 +10,9 @@ class ScoresFiltersMixin:
     custom mixin to handle all filtering by query_params for IFCB Scores from AWS Opensearch
     """
 
+    # date range to use if the start_date param isn't set
+    default_date_range = relativedelta(years=1)
+
     def handle_query_param_filters(self):
         species = self.request.query_params.get("species", None)
         dataset_id = self.request.query_params.get("dataset_id", None)
@@ -36,7 +39,7 @@ class ScoresFiltersMixin:
         if start_date:
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         else:
-            start_date_obj = timezone.now() - relativedelta(years=1)
+            start_date_obj = timezone.now() - self.default_date_range
 
         if end_date:
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()

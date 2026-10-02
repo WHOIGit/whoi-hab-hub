@@ -5,8 +5,8 @@ OpenSearch domain:
 
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
-| `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/` |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/` (list and detail) |
+| `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/`, `/api/v2/ifcb-bins/{binPid}/` (image names) |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/`, `/api/v2/ifcb-bins/` |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
@@ -288,3 +288,18 @@ Rounding to the grid and of concentrations is half-even in both: `Math.rint` in 
 Grid squares group Bins by snapping `point` to `grid_level` degrees, matching PostGIS
 `ST_SnapToGrid()`. Each square's ID is the precision-5 geohash of its snapped point,
 the same IDs as `/api/v1/ifcb-spatial-grid/`.
+
+## How `/api/v2/ifcb-bins/` uses the indexes
+
+The v2 version of `/api/v1/ifcb-bins/`, with the same `agreement`, `score_gte`,
+`model_id` and `species` params as the spatial grid. Both views share
+`ModelAgreementMixin` in `ifcb_datasets/api2/views.py`, and use the same
+`binResult()` script.
+
+- **List** (`/ifcb-bins/?start_date=...&end_date=...`): every Bin matching the date, dataset and bounding box filters, newest first. Reads `bin-species-summary` doc values and `binResult()`. Without `start_date`, it defaults to the past month (about 4,300 Bins, 4.5 MB), set by `default_date_range` on the viewset. The other v2 views default to the past year.
+- **Detail** (`/ifcb-bins/{binPid}/`): one Bin, regardless of the date params, with `image_numbers` for each species found. The images come from `species-scores`: images the agreeing models (from `binResult()` with `includeModels`) classified as the species, with `score >= (bucket - 0.0001) / 100`. That matches the histogram buckets, so each model's image count equals its `h` count. Images are ordered by how many models found them, then by their highest score.
+- **Species images** (`/ifcb-bins/{binPid}/get_species_images/?species=...`): v1 format. Up to 30 image links at `{dashboard URL}/{datasetId}/{imagePid}.png`. The dashboard URL comes from the HABhub Dataset, or `https://habon-ifcb.whoi.edu` if the Dataset isn't in the HABhub database.
+
+Per species, `image_count` is the mean number of images per agreeing model, the count
+behind `cell_concentration`. `image_numbers` (and `image_total` in species images) cover
+every image any agreeing model found, so they're usually more than `image_count`.

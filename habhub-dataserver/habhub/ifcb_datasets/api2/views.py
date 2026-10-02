@@ -1,14 +1,17 @@
 import datetime
 import environ
 import urllib.parse
+from dateutil.relativedelta import relativedelta
 from collections import OrderedDict
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 from requests_aws4auth import AWS4Auth
 
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
+from django.db.models import Q
 from django.urls import reverse
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 
 # from rest_framework.reverse import reverse
 from rest_framework.exceptions import ValidationError
@@ -18,6 +21,7 @@ from .mixins import ScoresFiltersMixin
 from ..models import Dataset
 from ..api.cache_utils import create_cache_key
 from ..opensearch import (
+    SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
     BIN_RESULT_SCRIPT,
     GRID_INIT_SCRIPT,
@@ -388,10 +392,9 @@ def snap_to_grid(value, grid_level):
     return round(value / grid_level) * grid_level
 
 
-# API view to return spatial grid of species cell concentrations from AWS Opensearch.
-# Matches the response format of the v1 "ifcb-spatial-grid" endpoint, but a species
-# is only counted as present in a Bin if enough of the ML models run on the Bin agree,
-# set by the `agreement` param:
+# Query param options and Opensearch queries shared by the v2 views that use the
+# per-Bin "bin-species-summary" index. A species is only counted as present in a Bin
+# if enough of the ML models run on the Bin agree, set by the `agreement` param:
 #   all:      every model run on the Bin found the species
 #   majority: more than half of the models found it (default)
 #   any:      at least one model found it
@@ -399,29 +402,18 @@ def snap_to_grid(value, grid_level):
 # agreed/ran is returned with the results so clients can show lower confidence data.
 # Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
 # (or the `score_gte` param), applied at query time from the per-Bin score histograms.
-# Both views use the per-Bin "bin-species-summary" index doc values, with the model
-# agreement rule in Opensearch scripts (see ifcb_datasets/opensearch.py). The list
-# view aggregates the Bins into grid squares, the detail view gets each Bin in the
-# grid square.
-class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
-    default_grid_level = 0.5
+# The model agreement rule is in Opensearch scripts, see binResult() in
+# ifcb_datasets/opensearch.py.
+class ModelAgreementMixin(ScoresFiltersMixin):
     agreement_options = ("all", "majority", "any")
     default_agreement = "majority"
-    # number of Bin documents to return per page, max allowed by Opensearch
+    # number of documents to return per page, max allowed by Opensearch
     bins_page_size = 10000
     cache_timeout = 60 * 60
 
     def get_options(self):
-        # parse the query params shared by the list and detail views
+        # parse the query params for the model agreement and species
         query_params = self.request.query_params
-
-        try:
-            grid_level = float(query_params.get("grid_level", self.default_grid_level))
-        except ValueError:
-            grid_level = self.default_grid_level
-
-        if grid_level <= 0:
-            grid_level = self.default_grid_level
 
         agreement = query_params.get("agreement", self.default_agreement)
         if agreement not in self.agreement_options:
@@ -455,7 +447,6 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
         metric = Metric.objects.filter(metric_id="cell_concentration").first()
 
         return {
-            "grid_level": grid_level,
             "agreement": agreement,
             "species_ids": [species_id for species_id, _, _ in species_list],
             "species_display": {
@@ -515,6 +506,96 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             params["models"] = options["model_list"]
         return params
 
+    def fetch_bins(self, options, extra_filters=None, bool_query=None, include_models=False):
+        # return all Bins matching the query params (or bool_query) with their
+        # species results, calculated in Opensearch by binResult()
+        params = self.get_script_params(options)
+        if include_models:
+            params["includeModels"] = True
+        query = {
+            "query": {"bool": bool_query or self.get_bool_query(extra_filters)},
+            "sort": [{"binPid": "asc"}],
+            "_source": False,
+            "docvalue_fields": [
+                "binPid",
+                "datasetId",
+                "mlAnalyzed",
+                "modelIds",
+                "point",
+                {"field": "sampleTime", "format": "strict_date_time_no_millis"},
+            ],
+            "script_fields": {
+                "binResult": {
+                    "script": {"source": BIN_RESULT_SCRIPT, "params": params}
+                }
+            },
+        }
+        hits = self.search_all(connect_opensearch(), SUMMARY_INDEX_NAME, query)
+
+        bins = []
+        for hit in hits:
+            fields = hit["fields"]
+            result = fields["binResult"][0]
+            # skip Bins that can't be placed on the grid or have no volume
+            if not result:
+                continue
+            # geo_point doc values are "lat, lon" strings
+            lat, lng = (float(value) for value in fields["point"][0].split(","))
+            bins.append(
+                {
+                    "binPid": fields["binPid"][0],
+                    "datasetId": fields.get("datasetId", [None])[0],
+                    "sampleTime": fields["sampleTime"][0],
+                    "point": [lng, lat],
+                    # doc values are float32, round to the original mL value
+                    "mlAnalyzed": round(fields["mlAnalyzed"][0], 6),
+                    "modelIds": fields.get("modelIds", []),
+                    "modelsRun": result["modelsRun"],
+                    "modelsRequired": result["modelsRequired"],
+                    "species": result["species"],
+                }
+            )
+        return bins
+
+    def format_score_thresholds(self, options):
+        # list instead of a dict so the camelCase renderer doesn't change the species IDs
+        return [
+            {"species": species, "score_threshold": threshold}
+            for species, threshold in options["score_thresholds"].items()
+        ]
+
+    def error_response(self, err):
+        print(err)
+        return Response(
+            {
+                "statusCode": 400,
+                "body": "Error Running Query",
+            },
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+
+# API view to return spatial grid of species cell concentrations from AWS Opensearch.
+# Matches the response format of the v1 "ifcb-spatial-grid" endpoint, with the model
+# agreement options from ModelAgreementMixin. The list view aggregates the Bins into
+# grid squares in Opensearch, the detail view gets each Bin in the grid square.
+class IfcbSpatialGridViewSet(ModelAgreementMixin, viewsets.ViewSet):
+    default_grid_level = 0.5
+
+    def get_options(self):
+        options = super().get_options()
+        try:
+            grid_level = float(
+                self.request.query_params.get("grid_level", self.default_grid_level)
+            )
+        except ValueError:
+            grid_level = self.default_grid_level
+
+        if grid_level <= 0:
+            grid_level = self.default_grid_level
+
+        return dict(options, grid_level=grid_level)
+
     def fetch_grid_squares(self, options):
         # aggregate all Bins matching the query params into grid squares in
         # Opensearch, see GRID_MAP_SCRIPT in ifcb_datasets/opensearch.py
@@ -551,70 +632,9 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
             grid_squares[grid_point] = square
         return grid_squares
 
-    def fetch_bins(self, options, extra_filters=None):
-        # return all Bins matching the query params with their species results,
-        # calculated in Opensearch by binResult() in ifcb_datasets/opensearch.py
-        query = {
-            "query": {"bool": self.get_bool_query(extra_filters)},
-            "sort": [{"binPid": "asc"}],
-            "_source": False,
-            "docvalue_fields": [
-                "binPid",
-                "point",
-                {"field": "sampleTime", "format": "strict_date_time_no_millis"},
-            ],
-            "script_fields": {
-                "binResult": {
-                    "script": {
-                        "source": BIN_RESULT_SCRIPT,
-                        "params": self.get_script_params(options),
-                    }
-                }
-            },
-        }
-        hits = self.search_all(connect_opensearch(), SUMMARY_INDEX_NAME, query)
-
-        bins = []
-        for hit in hits:
-            fields = hit["fields"]
-            result = fields["binResult"][0]
-            # skip Bins that can't be placed on the grid or have no volume
-            if not result:
-                continue
-            # geo_point doc values are "lat, lon" strings
-            lat, lng = (float(value) for value in fields["point"][0].split(","))
-            bins.append(
-                {
-                    "binPid": fields["binPid"][0],
-                    "sampleTime": fields["sampleTime"][0],
-                    "point": [lng, lat],
-                    "modelsRun": result["modelsRun"],
-                    "modelsRequired": result["modelsRequired"],
-                    "species": result["species"],
-                }
-            )
-        return bins
-
-    def format_score_thresholds(self, options):
-        # list instead of a dict so the camelCase renderer doesn't change the species IDs
-        return [
-            {"species": species, "score_threshold": threshold}
-            for species, threshold in options["score_thresholds"].items()
-        ]
-
     def get_grid_point(self, bin_data, grid_level):
         lng, lat = bin_data["point"]
         return snap_to_grid(lng, grid_level), snap_to_grid(lat, grid_level)
-
-    def error_response(self, err):
-        print(err)
-        return Response(
-            {
-                "statusCode": 400,
-                "body": "Error Running Query",
-            },
-            status=status.HTTP_502_BAD_GATEWAY,
-        )
 
     def list(self, request):
         cache_key = create_cache_key(request)
@@ -810,3 +830,266 @@ class IfcbSpatialGridViewSet(ScoresFiltersMixin, viewsets.ViewSet):
 
         cache.set(cache_key, geojson, self.cache_timeout)
         return Response(geojson)
+
+
+# IFCB Dashboard used by the ingest Lambda, for image links of Datasets that aren't
+# in the HABhub database
+DEFAULT_DASHBOARD_URL = "https://habon-ifcb.whoi.edu"
+
+
+# API view to return IFCB Bin metadata and species results from AWS Opensearch, like
+# the v1 "ifcb-bins" endpoint, with the model agreement options from
+# ModelAgreementMixin. The detail view also returns the images for each species from
+# the image level "species-scores" index, and "get_species_images" returns links to
+# a species' images.
+class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
+    # Bin pids are the lookup value
+    lookup_value_regex = "[^/]+"
+    # the list view returns every Bin, so default to a shorter range than the
+    # other views if the start_date param isn't set
+    default_date_range = relativedelta(months=1)
+    # max number of images returned by get_species_images, same as v1
+    images_limit = 30
+
+    def get_datasets(self):
+        # HABhub Datasets by IFCB Dashboard ID
+        return {dataset.dashboard_id_name: dataset for dataset in Dataset.objects.all()}
+
+    def fetch_bin(self, options, bin_pid):
+        # get one Bin by pid, regardless of the date range params
+        bins = self.fetch_bins(
+            options,
+            bool_query={"must": [{"term": {"binPid": bin_pid}}]},
+            include_models=True,
+        )
+        return bins[0] if bins else None
+
+    def fetch_images(self, bin_data, options):
+        # return the image pids for each species found in the Bin: the images the
+        # agreeing models classified as the species with a score >= its threshold.
+        # Images are ordered by the number of models that found them, then their
+        # highest score, so the most certain images come first.
+        species_filters = []
+        for species, result in bin_data["species"].items():
+            if not result["value"]:
+                continue
+            # same as the histogram buckets: bucket = floor(score * 100 + 0.0001)
+            min_bucket = round(options["score_thresholds"][species] * 100)
+            species_filters.append(
+                {
+                    "bool": {
+                        "must": [
+                            {"term": {"species": species}},
+                            {"terms": {"modelId": result["models"]}},
+                            {"range": {"score": {"gte": (min_bucket - 0.0001) / 100}}},
+                        ]
+                    }
+                }
+            )
+        if not species_filters:
+            return {}
+
+        query = {
+            "query": {
+                "bool": {
+                    "must": [{"term": {"binPid": bin_data["binPid"]}}],
+                    "should": species_filters,
+                    "minimum_should_match": 1,
+                }
+            },
+            "sort": [{"imagePid": "asc"}, {"modelId": "asc"}],
+            "_source": False,
+            "docvalue_fields": ["imagePid", "species", "modelId", "score"],
+        }
+        hits = self.search_all(connect_opensearch(), SCORES_INDEX_NAME, query)
+
+        images = {}
+        for hit in hits:
+            fields = hit["fields"]
+            image = images.setdefault(fields["species"][0], {}).setdefault(
+                fields["imagePid"][0], {"models": 0, "score": 0}
+            )
+            image["models"] += 1
+            image["score"] = max(image["score"], fields["score"][0])
+
+        return {
+            species: sorted(
+                species_images,
+                key=lambda pid: (
+                    -species_images[pid]["models"],
+                    -species_images[pid]["score"],
+                    pid,
+                ),
+            )
+            for species, species_images in images.items()
+        }
+
+    def build_feature(self, bin_data, options, datasets, images=None):
+        # GeoJSON Feature for a Bin, image_numbers are only included in the detail view
+        dataset = datasets.get(bin_data["datasetId"])
+        cell_concentration_data = []
+        for species in options["species_ids"]:
+            result = bin_data["species"][species]
+            species_data = {
+                "species": species,
+                "cell_concentration": result["value"],
+                "image_count": result["imageCount"],
+                "models_agreed": result["modelsAgreed"],
+            }
+            if images is not None:
+                species_data["image_numbers"] = images.get(species, [])
+            cell_concentration_data.append(species_data)
+
+        feature = OrderedDict()
+        feature["id"] = bin_data["binPid"]
+        # required type attribute
+        # must be "Feature" according to GeoJSON spec
+        feature["type"] = "Feature"
+        lng, lat = bin_data["point"]
+        feature["geometry"] = GeometryField().to_representation(
+            Point(lng, lat, srid=4326)
+        )
+        properties = OrderedDict()
+        properties["pid"] = bin_data["binPid"]
+        # HABhub Dataset id like v1, None if the Dataset isn't in the HABhub database
+        properties["dataset"] = dataset.id if dataset else None
+        properties["dataset_id"] = bin_data["datasetId"]
+        properties["sample_time"] = bin_data["sampleTime"]
+        properties["ml_analyzed"] = bin_data["mlAnalyzed"]
+        properties["model_ids"] = bin_data["modelIds"]
+        properties["models_run"] = bin_data["modelsRun"]
+        properties["models_required"] = bin_data["modelsRequired"]
+        properties["species_found"] = [
+            data["species"] for data in cell_concentration_data if data["cell_concentration"]
+        ]
+        properties["cell_concentration_data"] = cell_concentration_data
+        feature["properties"] = properties
+        return feature
+
+    def not_found(self, bin_pid):
+        return Response(
+            {"statusCode": 404, "body": f"Bin not found: {bin_pid}"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    def list(self, request):
+        # all Bins matching the query params, newest first like v1
+        cache_key = create_cache_key(request)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
+
+        options = self.get_options()
+        try:
+            bins = self.fetch_bins(options)
+        except Exception as err:
+            return self.error_response(err)
+
+        datasets = self.get_datasets()
+        bins.sort(key=lambda bin_data: (bin_data["sampleTime"], bin_data["binPid"]), reverse=True)
+
+        geojson = OrderedDict()
+        # must be "FeatureCollection" according to GeoJSON spec
+        geojson["type"] = "FeatureCollection"
+        geojson["metadata"] = OrderedDict(
+            agreement=options["agreement"],
+            score_thresholds=self.format_score_thresholds(options),
+        )
+        geojson["features"] = [
+            self.build_feature(bin_data, options, datasets) for bin_data in bins
+        ]
+
+        cache.set(cache_key, geojson, self.cache_timeout)
+        return Response(geojson)
+
+    def retrieve(self, request, pk=None):
+        # one Bin by pid, with the images for each species
+        cache_key = create_cache_key(request, pk)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
+
+        options = self.get_options()
+        try:
+            bin_data = self.fetch_bin(options, pk)
+            if not bin_data:
+                return self.not_found(pk)
+            images = self.fetch_images(bin_data, options)
+        except Exception as err:
+            return self.error_response(err)
+
+        feature = self.build_feature(bin_data, options, self.get_datasets(), images)
+        feature["properties"]["agreement"] = options["agreement"]
+        feature["properties"]["score_thresholds"] = self.format_score_thresholds(options)
+
+        cache.set(cache_key, feature, self.cache_timeout)
+        return Response(feature)
+
+    @action(detail=True, methods=["get"])
+    def get_species_images(self, request, pk=None):
+        # links to the images of one species in the Bin, same format as v1.
+        # The species param can be the species ID or display name.
+        species_name = request.query_params.get("species", None)
+        species = TargetSpecies.objects.filter(
+            Q(species_id=species_name) | Q(display_name=species_name)
+        ).first()
+        if not species_name or not species:
+            return Response(
+                {"statusCode": 400, "body": f"Unknown species: {species_name}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cache_key = create_cache_key(request, pk)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
+
+        options = self.get_options()
+        options = dict(
+            options,
+            species_ids=[species.species_id],
+            score_thresholds={
+                species.species_id: options["score_thresholds"].get(
+                    species.species_id, float(species.autoclass_threshold)
+                )
+            },
+        )
+        try:
+            bin_data = self.fetch_bin(options, pk)
+            if not bin_data:
+                return self.not_found(pk)
+            images = self.fetch_images(bin_data, options).get(species.species_id, [])
+        except Exception as err:
+            return self.error_response(err)
+
+        dataset = self.get_datasets().get(bin_data["datasetId"])
+        dashboard_url = DEFAULT_DASHBOARD_URL
+        if dataset:
+            dashboard_url = dataset.dashboard_public_url or dataset.dashboard_base_url
+        result = bin_data["species"][species.species_id]
+
+        bin_images = {
+            "bin": {
+                "pid": bin_data["binPid"],
+                "dataset_id": bin_data["datasetId"],
+                "dataset_link": dashboard_url,
+            },
+            "species": species.display_name,
+            "images": [
+                f"{dashboard_url}/{bin_data['datasetId']}/{image_pid}.png"
+                for image_pid in images[: self.images_limit]
+            ],
+            # number of different images the agreeing models found, image_count in
+            # the detail view is the mean number of images per agreeing model
+            "image_total": len(images),
+            "agreement": options["agreement"],
+            "models_agreed": result["modelsAgreed"],
+            "models_run": bin_data["modelsRun"],
+            "models_required": bin_data["modelsRequired"],
+        }
+
+        cache.set(cache_key, bin_images, self.cache_timeout)
+        return Response(bin_images)

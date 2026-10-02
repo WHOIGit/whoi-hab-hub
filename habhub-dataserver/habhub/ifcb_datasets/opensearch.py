@@ -87,13 +87,18 @@ def build_histogram_fields(species_scores):
 # and PostGIS ST_SnapToGrid().
 # Returns null for Bins without a point or volume, otherwise
 #   ['modelsRun': int, 'modelsRequired': int,
-#    'species': {species: ['value': long, 'modelsAgreed': int]}]
+#    'species': {species: ['value': long, 'imageCount': long, 'modelsAgreed': int,
+#                          'models': [modelId, ...] (only if params.includeModels)]}]
+# "value" is the cell concentration and "imageCount" the mean image count of the
+# agreeing models, both 0 if not enough models agree. "models" are the models that
+# found the species above its threshold.
 # params:
 #   species: species IDs
 #   minBuckets: {species: round(threshold * 100)}
 #   agreement: "all", "majority" or "any"
 #   models: optional list of model IDs to use, omitted for all models
 #           (script params can't contain nulls)
+#   includeModels: optional, true to return the agreeing models
 BIN_RESULT_FUNCTION = """
 Map binResult(Map doc, Map params) {
     if (doc['mlAnalyzed'].size() == 0 || doc['point'].size() == 0) {
@@ -129,6 +134,7 @@ Map binResult(Map doc, Map params) {
         int minBucket = params.minBuckets.get(species);
         int modelsAgreed = 0;
         long totalCount = 0;
+        List agreedModels = new ArrayList();
         for (def model : modelIds) {
             String field = 'h.' + species + '.' + model;
             if (!doc.containsKey(field) || doc[field].size() == 0) {
@@ -143,14 +149,22 @@ Map binResult(Map doc, Map params) {
             if (count > 0) {
                 modelsAgreed += 1;
                 totalCount += count;
+                agreedModels.add(model);
             }
         }
         // use the mean cell concentration of the agreeing models
         long concentration = 0;
+        long imageCount = 0;
         if (modelsAgreed > 0 && modelsAgreed >= modelsRequired) {
-            concentration = (long) Math.rint(((double) totalCount / modelsAgreed) / mlAnalyzed * 1000);
+            double meanCount = (double) totalCount / modelsAgreed;
+            concentration = (long) Math.rint(meanCount / mlAnalyzed * 1000);
+            imageCount = (long) Math.rint(meanCount);
         }
-        speciesResults.put(species, ['value': concentration, 'modelsAgreed': modelsAgreed]);
+        Map speciesResult = ['value': concentration, 'imageCount': imageCount, 'modelsAgreed': modelsAgreed];
+        if (params.containsKey('includeModels') && params.includeModels) {
+            speciesResult.put('models', agreedModels);
+        }
+        speciesResults.put(species, speciesResult);
     }
     return ['modelsRun': modelsRun, 'modelsRequired': modelsRequired, 'species': speciesResults];
 }
