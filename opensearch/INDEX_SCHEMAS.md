@@ -6,7 +6,7 @@ OpenSearch domain:
 | Index | One document per | Written by | Read by |
 |---|---|---|---|
 | `species-scores` | image (ROI) per model | `ingest-class-scores-sqs` Lambda | `/api/v2/ifcb-species-scores/`, `/api/v2/ifcb-fixed-metrics/`, `/api/v2/ifcb-bins/{binPid}/` (image names) |
-| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/`, `/api/v2/ifcb-bins/` |
+| `bin-species-summary` | Bin | `ingest-class-scores-sqs` Lambda, `backfill_bin_species_summary` and `backfill_summary_histograms` commands | `/api/v2/ifcb-spatial-grid/`, `/api/v2/ifcb-bins/`, `/api/v2/ifcb-bin-locations/` |
 
 `species-scores` is the raw data (about 1.6 billion documents). `bin-species-summary`
 is a per-Bin rollup of it (about 306,000 documents), so the spatial grid can be served
@@ -303,3 +303,17 @@ The v2 version of `/api/v1/ifcb-bins/`, with the same `agreement`, `score_gte`,
 Per species, `image_count` is the mean number of images per agreeing model, the count
 behind `cell_concentration`. `image_numbers` (and `image_total` in species images) cover
 every image any agreeing model found, so they're usually more than `image_count`.
+
+## How `/api/v2/ifcb-bin-locations/` uses the summary
+
+A lightweight endpoint for showing where Bins were sampled on a map. It returns one
+GeoJSON Point per location with Bins matching the date, dataset and bounding box
+params. The default range is the past year. There are no species or model agreement
+params.
+
+- **Query:** a `composite` aggregation on `bin-species-summary`, keyed on a `geotile_grid` of `point` at precision 29 (about 7 cm tiles). Only Bins at the same location are combined: a fixed station becomes one point, and a ship track becomes a point per Bin. The composite aggregation pages with `after_key`, so long date ranges can't hit the bucket limit.
+- **Per location:** `geo_centroid` for the point, `min` and `max` of `sampleTime`, and up to 10 `datasetId` terms. `filter_path` returns only those fields.
+- **Response:** each feature's `id` is the geotile key, and its properties are `bin_count`, `dataset_ids`, `start_time` and `end_time`. `metadata` has the `location_count` and `bin_count`.
+
+Measured in October 2026: a year (36,756 Bins at 13,288 locations) took about 2 seconds
+and 3.3 MB; all data (306,685 Bins at 50,476 locations) took about 7 seconds and 12 MB.

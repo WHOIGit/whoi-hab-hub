@@ -1,3 +1,4 @@
+import copy
 from decimal import Decimal
 
 import pytest
@@ -22,7 +23,8 @@ class FakeOpenSearch:
         self.searches = []
 
     def search(self, body=None, index=None, **kwargs):
-        self.searches.append({"index": index, "body": body, "kwargs": kwargs})
+        # copy the body, views update the same query dict to get the next page
+        self.searches.append({"index": index, "body": copy.deepcopy(body), "kwargs": kwargs})
         response = self.responses.get(index, {"hits": {"hits": []}})
         return response(body) if callable(response) else response
 

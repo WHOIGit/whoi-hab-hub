@@ -789,12 +789,18 @@ class IfcbSpatialGridViewSet(ModelAgreementMixin, viewsets.ViewSet):
             date_str = sample_time.astimezone(datetime.UTC).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             )
+            # the Bins in a grid square can come from one fixed deployment or be
+            # spread across the square by a moving platform, so clients get the
+            # location of each Bin to tell those apart
+            bin_lng, bin_lat = bin_data["point"]
             for species_item in timeseries_data:
                 result = bin_data["species"][species_item["species"]]
                 species_item["data"].append(
                     {
                         "sample_time": date_str,
                         "bin_pid": bin_data["binPid"],
+                        "latitude": bin_lat,
+                        "longitude": bin_lng,
                         "metrics": [
                             {
                                 "metric_id": "cell_concentration",
@@ -1093,3 +1099,124 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
 
         cache.set(cache_key, bin_images, self.cache_timeout)
         return Response(bin_images)
+
+
+# Lightweight API view for showing where Bins were sampled on a map. Returns one GeoJSON
+# Point for each location with Bins matching the date, dataset and bounding box params,
+# with the number of Bins and their date range. Bins are grouped in Opensearch by a
+# geotile grid fine enough (~7 cm) that only Bins at the same location are combined, so
+# fixed stations are one point and ship tracks a point for each Bin.
+class IfcbBinLocationsViewSet(ModelAgreementMixin, viewsets.ViewSet):
+    # geotile_grid precision, 29 is the max (~7 cm tiles)
+    tile_precision = 29
+    # number of locations to return per page of the composite aggregation
+    locations_page_size = 10000
+    # only return the aggregation fields needed to keep the response small
+    filter_path = ",".join(
+        f"aggregations.locations.{field}"
+        for field in (
+            "after_key",
+            "buckets.key",
+            "buckets.doc_count",
+            "buckets.point.location",
+            "buckets.start.value_as_string",
+            "buckets.end.value_as_string",
+            "buckets.datasets.buckets.key",
+        )
+    )
+
+    def fetch_locations(self):
+        composite = {
+            "size": self.locations_page_size,
+            "sources": [
+                {
+                    "tile": {
+                        "geotile_grid": {
+                            "field": "point",
+                            "precision": self.tile_precision,
+                        }
+                    }
+                }
+            ],
+        }
+        query = {
+            "size": 0,
+            "track_total_hits": False,
+            "query": {"bool": self.get_bool_query()},
+            "aggs": {
+                "locations": {
+                    "composite": composite,
+                    "aggs": {
+                        "point": {"geo_centroid": {"field": "point"}},
+                        "start": {"min": {"field": "sampleTime"}},
+                        "end": {"max": {"field": "sampleTime"}},
+                        "datasets": {"terms": {"field": "datasetId", "size": 10}},
+                    },
+                }
+            },
+        }
+
+        os_client = connect_opensearch()
+        locations = []
+        # page through all locations using the composite "after_key"
+        while True:
+            response = os_client.search(
+                body=query,
+                index=SUMMARY_INDEX_NAME,
+                request_timeout=60,
+                filter_path=self.filter_path,
+            )
+            results = response.get("aggregations", {}).get("locations", {})
+            buckets = results.get("buckets", [])
+            locations.extend(buckets)
+
+            if len(buckets) < self.locations_page_size or not results.get("after_key"):
+                return locations
+            composite["after"] = results["after_key"]
+
+    def list(self, request):
+        cache_key = create_cache_key(request)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("CACHE HIT")
+            return Response(cached_data)
+
+        try:
+            locations = self.fetch_locations()
+        except Exception as err:
+            return self.error_response(err)
+
+        features = []
+        for location in locations:
+            point = location["point"]["location"]
+            features.append(
+                {
+                    "type": "Feature",
+                    "id": location["key"]["tile"],
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [round(point["lon"], 6), round(point["lat"], 6)],
+                    },
+                    "properties": {
+                        "bin_count": location["doc_count"],
+                        "dataset_ids": [
+                            dataset["key"]
+                            for dataset in location.get("datasets", {}).get("buckets", [])
+                        ],
+                        "start_time": location["start"]["value_as_string"],
+                        "end_time": location["end"]["value_as_string"],
+                    },
+                }
+            )
+
+        geojson = OrderedDict()
+        # must be "FeatureCollection" according to GeoJSON spec
+        geojson["type"] = "FeatureCollection"
+        geojson["metadata"] = OrderedDict(
+            location_count=len(features),
+            bin_count=sum(location["doc_count"] for location in locations),
+        )
+        geojson["features"] = features
+
+        cache.set(cache_key, geojson, self.cache_timeout)
+        return Response(geojson)

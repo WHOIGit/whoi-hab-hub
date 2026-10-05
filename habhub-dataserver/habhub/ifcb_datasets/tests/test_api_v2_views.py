@@ -181,6 +181,9 @@ class TestSpatialGridDetail:
         assert karenia["data"][0] == {
             "sampleTime": "2026-08-10T12:00:00Z",
             "binPid": "BIN1",
+            # each Bin's location, to tell fixed and moving platforms apart
+            "latitude": 43.9,
+            "longitude": -70.1,
             "metrics": [
                 {
                     "metricId": "cell_concentration",
@@ -420,3 +423,81 @@ class TestSpeciesScores:
         assert data["links"] == {"next": None, "previous": None}
         # the camelCase renderer turns Opensearch's "_source" into "Source"
         assert data["results"][0]["Source"]["binPid"] == "BIN1"
+
+
+class TestBinLocations:
+    url = "/api/v2/ifcb-bin-locations/"
+
+    @staticmethod
+    def location(tile, lat, lng, bin_count, datasets, start, end):
+        # composite aggregation bucket for a location
+        return {
+            "key": {"tile": tile},
+            "doc_count": bin_count,
+            "point": {"location": {"lat": lat, "lon": lng}},
+            "start": {"value_as_string": start},
+            "end": {"value_as_string": end},
+            "datasets": {"buckets": [{"key": dataset} for dataset in datasets]},
+        }
+
+    def test_response(self, api_client, fake_opensearch):
+        fake_opensearch.responses[SUMMARY_INDEX_NAME] = {
+            "aggregations": {
+                "locations": {
+                    "buckets": [
+                        self.location("29/1/1", 43.7921140001, -69.9578820001, 120, ["harpswell"], "2026-08-01T00:00:00.000Z", "2026-08-30T00:00:00.000Z"),
+                        self.location("29/2/2", 41.5, -70.5, 1, ["mvco"], "2026-08-10T12:00:00.000Z", "2026-08-10T12:00:00.000Z"),
+                    ]
+                }
+            }
+        }
+
+        response = api_client.get(self.url, DATE_PARAMS)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["type"] == "FeatureCollection"
+        assert data["metadata"] == {"locationCount": 2, "binCount": 121}
+        assert data["features"][0] == {
+            "type": "Feature",
+            "id": "29/1/1",
+            "geometry": {"type": "Point", "coordinates": [-69.957882, 43.792114]},
+            "properties": {
+                "binCount": 120,
+                "datasetIds": ["harpswell"],
+                "startTime": "2026-08-01T00:00:00.000Z",
+                "endTime": "2026-08-30T00:00:00.000Z",
+            },
+        }
+
+    def test_query(self, api_client, fake_opensearch):
+        api_client.get(self.url, dict(DATE_PARAMS, dataset_id="harpswell", species="Karenia"))
+
+        search = fake_opensearch.searches_for(SUMMARY_INDEX_NAME)[0]
+        must = search["body"]["query"]["bool"]["must"]
+        assert {"range": {"sampleTime": {"gte": "2026-08-01", "lte": "2026-08-31"}}} in must
+        assert {"terms": {"datasetId": ["harpswell"]}} in must
+        # species is an image level filter, every Bin location is returned
+        assert not any("species" in clause.get("terms", {}) for clause in must)
+        composite = search["body"]["aggs"]["locations"]["composite"]
+        assert composite["sources"] == [{"tile": {"geotile_grid": {"field": "point", "precision": 29}}}]
+        # only the fields needed are returned
+        assert "aggregations.locations.after_key" in search["kwargs"]["filter_path"]
+
+    def test_pages_through_locations(self, api_client, fake_opensearch, monkeypatch):
+        from habhub.ifcb_datasets.api2.views import IfcbBinLocationsViewSet
+
+        monkeypatch.setattr(IfcbBinLocationsViewSet, "locations_page_size", 1)
+        pages = [
+            {"aggregations": {"locations": {"after_key": {"tile": "29/1/1"}, "buckets": [self.location("29/1/1", 44, -70, 5, ["a"], "t1", "t2")]}}},
+            {"aggregations": {"locations": {"after_key": {"tile": "29/2/2"}, "buckets": [self.location("29/2/2", 41, -70, 3, ["b"], "t1", "t2")]}}},
+            {"aggregations": {"locations": {"buckets": []}}},
+        ]
+        fake_opensearch.responses[SUMMARY_INDEX_NAME] = lambda body: pages[len(fake_opensearch.searches) - 1]
+
+        data = api_client.get(self.url, DATE_PARAMS).json()
+
+        assert [feature["id"] for feature in data["features"]] == ["29/1/1", "29/2/2"]
+        searches = fake_opensearch.searches_for(SUMMARY_INDEX_NAME)
+        assert len(searches) == 3
+        assert searches[1]["body"]["aggs"]["locations"]["composite"]["after"] == {"tile": "29/1/1"}
