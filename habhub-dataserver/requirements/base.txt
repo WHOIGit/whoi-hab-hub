@@ -35,7 +35,7 @@ jsonfield==3.2.0
 django-geojson==4.2.0
 django-leaflet==0.34.0
 django-summernote==0.8.20.0
-geopy==2.0.0
+geopy==2.5.0
 django-multiselectfield==1.0.1
 requests==2.33.0
 colour==0.1.5
