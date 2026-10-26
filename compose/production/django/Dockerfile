@@ -4,7 +4,7 @@ LABEL maintainer="Ethan Andrews <eandrews@whoi.edu>"
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update -qq && apt-get install -y -qq \
+RUN apt-get update -qq && apt-get upgrade -y -qq && apt-get install -y -qq \
     unzip wget sudo less nano curl git gosu build-essential software-properties-common \
     # python basic libs
     gettext \
@@ -22,7 +22,7 @@ FROM docker.io/python:3.12.2-slim-bookworm AS build-image
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update -qq && apt-get install -y -qq \
+RUN apt-get update -qq && apt-get upgrade -y -qq && apt-get install -y -qq \
     # python basic libs
     gettext \
     # geodjango
