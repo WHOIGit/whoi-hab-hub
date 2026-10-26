@@ -4,11 +4,40 @@ import h5py
 import numpy
 import requests
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, helpers
 
 s3_client = boto3.client("s3")
+
+# HABhub API for the target species list, the summary "i" fields are only written for
+# target species
+HABHUB_API_URL = os.environ.get("HABHUB_API_URL", "https://habhub-api.whoi.edu")
+# refresh the cached target species list after this many seconds
+TARGET_SPECIES_CACHE_SECONDS = 60 * 60
+target_species_cache = {"species": None, "fetched": 0}
+
+
+def get_target_species():
+    # target species IDs from the HABhub API, cached for the life of the Lambda container
+    if (
+        target_species_cache["species"] is not None
+        and time.time() - target_species_cache["fetched"] < TARGET_SPECIES_CACHE_SECONDS
+    ):
+        return target_species_cache["species"]
+    try:
+        response = requests.get(f"{HABHUB_API_URL}/api/v1/core/target-species/", timeout=10)
+        response.raise_for_status()
+        # the API "id" is the TargetSpecies species_id
+        target_species_cache["species"] = [species["id"] for species in response.json()]
+        target_species_cache["fetched"] = time.time()
+    except Exception as err:
+        if target_species_cache["species"] is None:
+            # raise so the SQS message is retried, and the S3 file isn't deleted
+            raise RuntimeError(f"Error getting target species from HABhub API: {err}")
+        print("Error refreshing target species, using cached list:", err)
+    return target_species_cache["species"]
 
 BLACKLIST = [
     "nanoplankton_mix",
@@ -73,9 +102,13 @@ def upsert_documents(documents, index_name, os_client):
 # don't add fields to the index mapping.
 # "h" holds the same histograms as doc values so the spatial grid can be aggregated
 # in Opensearch: {species: {modelId: [bucket * 1000000 + count, ...]}}
+# "i" holds each model's images of the target species as doc values, so the model
+# agreement can be checked image by image:
+# {species: {modelId: [imageNumber * 100 + bucket, ...]}}
 # Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
 SUMMARY_INDEX_NAME = "bin-species-summary"
 HISTOGRAM_BUCKET_FACTOR = 1000000
+IMAGE_BUCKET_FACTOR = 100
 SUMMARY_INDEX_BODY = {
     "settings": {
         "number_of_shards": 1,
@@ -90,7 +123,14 @@ SUMMARY_INDEX_BODY = {
                     "match_mapping_type": "long",
                     "mapping": {"type": "long", "index": False, "doc_values": True},
                 }
-            }
+            },
+            {
+                "images": {
+                    "path_match": "i.*",
+                    "match_mapping_type": "long",
+                    "mapping": {"type": "long", "index": False, "doc_values": True},
+                }
+            },
         ],
         "properties": {
             "binPid": {"type": "keyword"},
@@ -103,6 +143,7 @@ SUMMARY_INDEX_BODY = {
             "speciesCounts": {"type": "object", "enabled": False},
             "speciesScores": {"type": "object", "enabled": False},
             "h": {"type": "object"},
+            "i": {"type": "object"},
         },
     },
 }
@@ -145,7 +186,7 @@ def score_bucket(score):
     return min(int(float(score) * 100 + 0.0001), 99)
 
 
-def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
+def upsert_bin_summary(documents, metadata_obj, model_id, target_species, os_client):
     # count the images classified as each species by this model,
     # and the histogram of their scores
     counts = {}
@@ -165,6 +206,16 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
         species: [bucket * HISTOGRAM_BUCKET_FACTOR + count for bucket, count in histogram]
         for species, histogram in scores.items()
     }
+    # each target species image this model found, with its score bucket
+    image_fields = {}
+    for document in documents:
+        if document["species"] in target_species:
+            image_fields.setdefault(document["species"], []).append(
+                int(document["imageNumber"]) * IMAGE_BUCKET_FACTOR
+                + score_bucket(document["score"])
+            )
+    for values in image_fields.values():
+        values.sort()
 
     metadata = {
         "binPid": metadata_obj["binPid"],
@@ -194,6 +245,7 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                         "speciesCounts": counts,
                         "speciesScores": scores,
                         "h": histogram_fields,
+                        "i": image_fields,
                     },
                     "metadata": metadata,
                 },
@@ -212,6 +264,10 @@ def upsert_bin_summary(documents, metadata_obj, model_id, os_client):
                     species: {model_id: values}
                     for species, values in histogram_fields.items()
                 },
+                "i": {
+                    species: {model_id: values}
+                    for species, values in image_fields.items()
+                },
             },
         },
         retry_on_conflict=10,
@@ -224,6 +280,9 @@ def process_message(event):
     print(event)
     body = json.loads(event["body"])
     lambda_resp = None
+    # get the target species first, raises an error to retry the message if the
+    # HABhub API isn't available
+    target_species = get_target_species()
     # parse the S3 file received
     try:
         s3_Bucket_Name = body["Records"][0]["s3"]["bucket"]["name"]
@@ -414,7 +473,9 @@ def process_message(event):
             upsert_documents(documents, index_name, os_client)
             print("Bulk upsert ", len(documents))
             # update the per-Bin species counts summary
-            upsert_bin_summary(documents, metadata_obj, model_id, os_client)
+            upsert_bin_summary(
+                documents, metadata_obj, model_id, target_species, os_client
+            )
             print("Bin summary upsert ", bin_pid)
 
         except Exception as err:

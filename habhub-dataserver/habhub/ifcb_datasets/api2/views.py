@@ -21,7 +21,6 @@ from .mixins import ScoresFiltersMixin
 from ..models import Dataset
 from ..api.cache_utils import create_cache_key
 from ..opensearch import (
-    SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
     BIN_RESULT_SCRIPT,
     GRID_INIT_SCRIPT,
@@ -393,19 +392,20 @@ def snap_to_grid(value, grid_level):
 
 
 # Query param options and Opensearch queries shared by the v2 views that use the
-# per-Bin "bin-species-summary" index. A species is only counted as present in a Bin
-# if enough of the ML models run on the Bin agree, set by the `agreement` param:
-#   all:      every model run on the Bin found the species
-#   majority: more than half of the models found it (default)
-#   any:      at least one model found it
-# A single model run on a Bin counts for all three. The number of models that
-# agreed/ran is returned with the results so clients can show lower confidence data.
-# Images are only counted if their score is >= the species' TargetSpecies.autoclass_threshold
-# (or the `score_gte` param), applied at query time from the per-Bin score histograms.
-# The model agreement rule is in Opensearch scripts, see binResult() in
-# ifcb_datasets/opensearch.py.
+# per-Bin "bin-species-summary" index. The model agreement is checked image by image:
+# an image counts for a species if enough of the ML models run on the Bin classified
+# it as that species, set by the `agreement` param:
+#   any:      at least one model
+#   majority: more than half of the models (default)
+#   strict:   more than 80% of the models
+# A single model run on a Bin counts for all three. The cell concentration is the
+# number of images that count / mL analyzed. A model only finds an image if its score
+# is >= the species' TargetSpecies.autoclass_threshold (or the `score_gte` param).
+# The number of models that agreed/ran is returned with the results so clients can
+# show lower confidence data. The model agreement rule is in Opensearch scripts, see
+# binResult() in ifcb_datasets/opensearch.py.
 class ModelAgreementMixin(ScoresFiltersMixin):
-    agreement_options = ("all", "majority", "any")
+    agreement_options = ("any", "majority", "strict")
     default_agreement = "majority"
     # number of documents to return per page, max allowed by Opensearch
     bins_page_size = 10000
@@ -506,12 +506,12 @@ class ModelAgreementMixin(ScoresFiltersMixin):
             params["models"] = options["model_list"]
         return params
 
-    def fetch_bins(self, options, extra_filters=None, bool_query=None, include_models=False):
+    def fetch_bins(self, options, extra_filters=None, bool_query=None, include_images=False):
         # return all Bins matching the query params (or bool_query) with their
         # species results, calculated in Opensearch by binResult()
         params = self.get_script_params(options)
-        if include_models:
-            params["includeModels"] = True
+        if include_images:
+            params["includeImages"] = True
         query = {
             "query": {"bool": bool_query or self.get_bool_query(extra_filters)},
             "sort": [{"binPid": "asc"}],
@@ -845,9 +845,8 @@ DEFAULT_DASHBOARD_URL = "https://habon-ifcb.whoi.edu"
 
 # API view to return IFCB Bin metadata and species results from AWS Opensearch, like
 # the v1 "ifcb-bins" endpoint, with the model agreement options from
-# ModelAgreementMixin. The detail view also returns the images for each species from
-# the image level "species-scores" index, and "get_species_images" returns links to
-# a species' images.
+# ModelAgreementMixin. The detail view also returns the images that count for each
+# species, and "get_species_images" returns links to a species' images.
 class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
     # Bin pids are the lookup value
     lookup_value_regex = "[^/]+"
@@ -862,72 +861,26 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
         return {dataset.dashboard_id_name: dataset for dataset in Dataset.objects.all()}
 
     def fetch_bin(self, options, bin_pid):
-        # get one Bin by pid, regardless of the date range params
+        # get one Bin by pid with the images that count for each species,
+        # regardless of the date range params
         bins = self.fetch_bins(
             options,
             bool_query={"must": [{"term": {"binPid": bin_pid}}]},
-            include_models=True,
+            include_images=True,
         )
         return bins[0] if bins else None
 
-    def fetch_images(self, bin_data, options):
-        # return the image pids for each species found in the Bin: the images the
-        # agreeing models classified as the species with a score >= its threshold.
-        # Images are ordered by the number of models that found them, then their
-        # highest score, so the most certain images come first.
-        species_filters = []
-        for species, result in bin_data["species"].items():
-            if not result["value"]:
-                continue
-            # same as the histogram buckets: bucket = floor(score * 100 + 0.0001)
-            min_bucket = round(options["score_thresholds"][species] * 100)
-            species_filters.append(
-                {
-                    "bool": {
-                        "must": [
-                            {"term": {"species": species}},
-                            {"terms": {"modelId": result["models"]}},
-                            {"range": {"score": {"gte": (min_bucket - 0.0001) / 100}}},
-                        ]
-                    }
-                }
-            )
-        if not species_filters:
-            return {}
-
-        query = {
-            "query": {
-                "bool": {
-                    "must": [{"term": {"binPid": bin_data["binPid"]}}],
-                    "should": species_filters,
-                    "minimum_should_match": 1,
-                }
-            },
-            "sort": [{"imagePid": "asc"}, {"modelId": "asc"}],
-            "_source": False,
-            "docvalue_fields": ["imagePid", "species", "modelId", "score"],
-        }
-        hits = self.search_all(connect_opensearch(), SCORES_INDEX_NAME, query)
-
-        images = {}
-        for hit in hits:
-            fields = hit["fields"]
-            image = images.setdefault(fields["species"][0], {}).setdefault(
-                fields["imagePid"][0], {"models": 0, "score": 0}
-            )
-            image["models"] += 1
-            image["score"] = max(image["score"], fields["score"][0])
-
+    def get_images(self, bin_data):
+        # image pids that count for each species, ordered by the number of models
+        # that found them, then their highest score, so the most certain come first
         return {
-            species: sorted(
-                species_images,
-                key=lambda pid: (
-                    -species_images[pid]["models"],
-                    -species_images[pid]["score"],
-                    pid,
-                ),
-            )
-            for species, species_images in images.items()
+            species: [
+                f"{bin_data['binPid']}_{image:05}"
+                for image, _, _ in sorted(
+                    result["images"], key=lambda item: (-item[1], -item[2], item[0])
+                )
+            ]
+            for species, result in bin_data["species"].items()
         }
 
     def build_feature(self, bin_data, options, datasets, images=None):
@@ -1022,7 +975,7 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
             bin_data = self.fetch_bin(options, pk)
             if not bin_data:
                 return self.not_found(pk)
-            images = self.fetch_images(bin_data, options)
+            images = self.get_images(bin_data)
         except Exception as err:
             return self.error_response(err)
 
@@ -1067,7 +1020,7 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
             bin_data = self.fetch_bin(options, pk)
             if not bin_data:
                 return self.not_found(pk)
-            images = self.fetch_images(bin_data, options).get(species.species_id, [])
+            images = self.get_images(bin_data)[species.species_id]
         except Exception as err:
             return self.error_response(err)
 
@@ -1088,8 +1041,7 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
                 f"{dashboard_url}/{bin_data['datasetId']}/{image_pid}.png"
                 for image_pid in images[: self.images_limit]
             ],
-            # number of different images the agreeing models found, image_count in
-            # the detail view is the mean number of images per agreeing model
+            # number of images that count, the same as image_count in the detail view
             "image_total": len(images),
             "agreement": options["agreement"],
             "models_agreed": result["modelsAgreed"],

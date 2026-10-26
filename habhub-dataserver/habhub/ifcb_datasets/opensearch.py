@@ -15,8 +15,12 @@ SCORES_INDEX_NAME = "species-scores"
 # in Opensearch: {species: {modelId: [bucket * 1000000 + count, ...]}}. Each
 # h.{species}.{modelId} is its own field (not indexed, doc values only), so the
 # mapping grows with the number of species/models and needs a higher field limit.
+# "i" holds each model's images of the target species as doc values, so the model
+# agreement can be checked image by image: {species: {modelId: [imageNumber * 100 + bucket, ...]}}
+# Only TargetSpecies have "i" fields, the ingest Lambda gets them from the HABhub API.
 SUMMARY_INDEX_NAME = "bin-species-summary"
 HISTOGRAM_BUCKET_FACTOR = 1000000
+IMAGE_BUCKET_FACTOR = 100
 SUMMARY_FIELDS_LIMIT = 10000
 SUMMARY_INDEX_BODY = {
     "settings": {
@@ -32,7 +36,14 @@ SUMMARY_INDEX_BODY = {
                     "match_mapping_type": "long",
                     "mapping": {"type": "long", "index": False, "doc_values": True},
                 }
-            }
+            },
+            {
+                "images": {
+                    "path_match": "i.*",
+                    "match_mapping_type": "long",
+                    "mapping": {"type": "long", "index": False, "doc_values": True},
+                }
+            },
         ],
         "properties": {
             "binPid": {"type": "keyword"},
@@ -45,6 +56,7 @@ SUMMARY_INDEX_BODY = {
             "speciesCounts": {"type": "object", "enabled": False},
             "speciesScores": {"type": "object", "enabled": False},
             "h": {"type": "object"},
+            "i": {"type": "object"},
         },
     },
 }
@@ -79,26 +91,50 @@ def build_histogram_fields(species_scores):
     }
 
 
+def score_bucket(score):
+    # 0.01 wide score bucket. The small offset keeps float32 scores like 0.7
+    # (stored as 0.69999999) in the right bucket.
+    # Keep in sync with score_bucket() in the ingest Lambda
+    return min(int(float(score) * 100 + 0.0001), 99)
+
+
+def build_image_fields(species_images):
+    # encode {species: {modelId: [(imageNumber, bucket), ...]}} as the "i" doc value fields
+    # Keep in sync with the ingest Lambda
+    return {
+        species: {
+            model: sorted(image * IMAGE_BUCKET_FACTOR + bucket for image, bucket in images)
+            for model, images in model_images.items()
+        }
+        for species, model_images in species_images.items()
+    }
+
+
 # Painless function to calculate a Bin's species results from the summary index doc
-# values: count each model's images above the species' score threshold from the "h"
-# histograms, apply the model agreement rule, and calculate the cell concentration.
-# Shared by the grid aggregation (list view) and the Bin results script field (detail
-# view) so both use the same rule. Math.rint rounds half to even like Python round()
-# and PostGIS ST_SnapToGrid().
+# values. The model agreement is checked image by image from the "i" fields: an image
+# counts for a species if enough of the models run on the Bin classified it as that
+# species with a score >= the species' threshold, set by params.agreement:
+#   any:      at least one model
+#   majority: more than half of the models
+#   strict:   more than 80% of the models
+# A single model run on a Bin counts for all three. The cell concentration is the
+# number of images that count / mlAnalyzed * 1000.
+# Shared by the grid aggregation (list views) and the Bin results script field
+# (detail views) so all use the same rule. Math.rint rounds half to even like
+# Python round() and PostGIS ST_SnapToGrid().
 # Returns null for Bins without a point or volume, otherwise
 #   ['modelsRun': int, 'modelsRequired': int,
 #    'species': {species: ['value': long, 'imageCount': long, 'modelsAgreed': int,
-#                          'models': [modelId, ...] (only if params.includeModels)]}]
-# "value" is the cell concentration and "imageCount" the mean image count of the
-# agreeing models, both 0 if not enough models agree. "models" are the models that
-# found the species above its threshold.
+#                          'images': [[imageNumber, votes, maxBucket], ...] (only if params.includeImages)]}]
+# "modelsRequired" is the number of models that need to find an image, "modelsAgreed"
+# the number of models that found any image of the species above its threshold.
 # params:
 #   species: species IDs
 #   minBuckets: {species: round(threshold * 100)}
-#   agreement: "all", "majority" or "any"
+#   agreement: "any", "majority" or "strict"
 #   models: optional list of model IDs to use, omitted for all models
 #           (script params can't contain nulls)
-#   includeModels: optional, true to return the agreeing models
+#   includeImages: optional, true to return the images that count
 BIN_RESULT_FUNCTION = """
 Map binResult(Map doc, Map params) {
     if (doc['mlAnalyzed'].size() == 0 || doc['point'].size() == 0) {
@@ -118,51 +154,61 @@ Map binResult(Map doc, Map params) {
     }
     int modelsRun = modelIds.size();
 
-    // number of models that need to find the species
+    // number of models that need to find an image for it to count
     int modelsRequired = 1;
-    if (params.agreement == 'all') {
-        modelsRequired = modelsRun;
+    if (params.agreement == 'strict') {
+        // more than 80%
+        modelsRequired = modelsRun * 4 / 5 + 1;
     } else if (params.agreement == 'majority') {
+        // more than half
         modelsRequired = modelsRun / 2 + 1;
     }
-    if (modelsRequired < 1) {
-        modelsRequired = 1;
-    }
+    boolean includeImages = params.containsKey('includeImages') && params.includeImages;
 
     Map speciesResults = new HashMap();
     for (def species : params.species) {
         int minBucket = params.minBuckets.get(species);
+        // votes and highest score bucket for each image number
+        Map votes = new HashMap();
+        Map maxBuckets = new HashMap();
         int modelsAgreed = 0;
-        long totalCount = 0;
-        List agreedModels = new ArrayList();
         for (def model : modelIds) {
-            String field = 'h.' + species + '.' + model;
+            String field = 'i.' + species + '.' + model;
             if (!doc.containsKey(field) || doc[field].size() == 0) {
                 continue;
             }
-            long count = 0;
+            boolean found = false;
             for (long value : doc[field]) {
-                if (value / 1000000 >= minBucket) {
-                    count += value % 1000000;
+                long bucket = value % 100;
+                if (bucket < minBucket) {
+                    continue;
+                }
+                long image = value / 100;
+                votes.put(image, votes.getOrDefault(image, 0) + 1);
+                if (bucket > maxBuckets.getOrDefault(image, -1L)) {
+                    maxBuckets.put(image, bucket);
+                }
+                found = true;
+            }
+            if (found) {
+                modelsAgreed += 1;
+            }
+        }
+
+        long imageCount = 0;
+        List images = new ArrayList();
+        for (def entry : votes.entrySet()) {
+            if (entry.getValue() >= modelsRequired) {
+                imageCount += 1;
+                if (includeImages) {
+                    images.add([entry.getKey(), entry.getValue(), maxBuckets.get(entry.getKey())]);
                 }
             }
-            if (count > 0) {
-                modelsAgreed += 1;
-                totalCount += count;
-                agreedModels.add(model);
-            }
         }
-        // use the mean cell concentration of the agreeing models
-        long concentration = 0;
-        long imageCount = 0;
-        if (modelsAgreed > 0 && modelsAgreed >= modelsRequired) {
-            double meanCount = (double) totalCount / modelsAgreed;
-            concentration = (long) Math.rint(meanCount / mlAnalyzed * 1000);
-            imageCount = (long) Math.rint(meanCount);
-        }
+        long concentration = (long) Math.rint(imageCount / mlAnalyzed * 1000);
         Map speciesResult = ['value': concentration, 'imageCount': imageCount, 'modelsAgreed': modelsAgreed];
-        if (params.containsKey('includeModels') && params.includeModels) {
-            speciesResult.put('models', agreedModels);
+        if (includeImages) {
+            speciesResult.put('images', images);
         }
         speciesResults.put(species, speciesResult);
     }

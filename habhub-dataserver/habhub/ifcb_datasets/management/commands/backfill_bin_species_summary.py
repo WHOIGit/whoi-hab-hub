@@ -4,7 +4,12 @@ from concurrent.futures import ThreadPoolExecutor
 from django.core.management.base import BaseCommand, CommandError
 from opensearchpy import helpers
 from opensearchpy.exceptions import TransportError
+from habhub.core.models import TargetSpecies
 from habhub.ifcb_datasets.api2.views import connect_opensearch
+from habhub.ifcb_datasets.management.commands.backfill_summary_images import (
+    build_bin_images,
+    update_summary_images,
+)
 from habhub.ifcb_datasets.opensearch import (
     SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
@@ -201,6 +206,7 @@ class Command(BaseCommand):
         chunk = datetime.timedelta(hours=options["chunk_hours"])
         os_client = connect_opensearch()
         create_summary_index(os_client)
+        species_ids = list(TargetSpecies.objects.values_list("species_id", flat=True))
 
         def backfill_month(month_start):
             month_end = (month_start + datetime.timedelta(days=32)).replace(day=1)
@@ -212,6 +218,14 @@ class Command(BaseCommand):
                 month_bins += self.backfill_chunk(os_client, chunk_start, chunk_end)
                 chunk_start = chunk_end
 
+            # the summary documents are replaced, so add the target species
+            # "i" image fields again
+            month_range = (max(month_start, start_date), month_end)
+            bin_images = self.retry(
+                lambda: build_bin_images(os_client, *month_range, species_ids)
+            )
+            self.retry(lambda: update_summary_images(os_client, bin_images))
+
             self.stdout.write(f"{month_start.strftime('%Y-%m')}: {month_bins} Bins")
             return month_bins
 
@@ -220,6 +234,17 @@ class Command(BaseCommand):
             total_bins = sum(executor.map(backfill_month, months))
 
         self.stdout.write(self.style.SUCCESS(f"Done. {total_bins} Bins indexed"))
+
+    def retry(self, request, attempts=5):
+        # retry errors from a busy cluster, like cancelled queries or timeouts
+        for attempt in range(1, attempts + 1):
+            try:
+                return request()
+            except TransportError as err:
+                if attempt == attempts:
+                    raise
+                self.stdout.write(f"Retrying after error: {err}")
+                time.sleep(30 * attempt)
 
     def backfill_chunk(self, os_client, start_time, end_time, attempt=1):
         try:

@@ -1,17 +1,23 @@
+import copy
+
 import pytest
 
 from habhub.ifcb_datasets.opensearch import SCORES_INDEX_NAME, SUMMARY_INDEX_NAME
+
+
+def script_field_params(search):
+    return search["body"]["script_fields"]["binResult"]["script"]["params"]
 
 pytestmark = pytest.mark.django_db
 
 DATE_PARAMS = {"start_date": "2026-08-01", "end_date": "2026-08-31"}
 
 
-def species_result(value=0, image_count=0, models_agreed=0, models=None):
-    # binResult() result for a species
+def species_result(value=0, image_count=0, models_agreed=0, images=None):
+    # binResult() result for a species, images are [imageNumber, votes, maxBucket]
     result = {"value": value, "imageCount": image_count, "modelsAgreed": models_agreed}
-    if models is not None:
-        result["models"] = models
+    if images is not None:
+        result["images"] = images
     return result
 
 
@@ -137,8 +143,17 @@ class TestSpatialGridList:
         species = [item["species"] for item in response.json()["features"][0]["properties"]["maxMeanValues"]]
         assert species == ["Karenia"]
 
+    @pytest.mark.parametrize("agreement", ["any", "majority", "strict"])
+    def test_agreement_options(self, api_client, grid_response, agreement):
+        response = api_client.get(self.url, dict(DATE_PARAMS, agreement=agreement))
+
+        assert response.status_code == 200
+        assert script_params(grid_response.searches_for(SUMMARY_INDEX_NAME)[0])["agreement"] == agreement
+        assert response.json()["features"][0]["properties"]["modelAgreement"]["agreement"] == agreement
+
     def test_invalid_agreement(self, api_client, grid_response):
-        response = api_client.get(self.url, dict(DATE_PARAMS, agreement="most"))
+        # "all" was replaced by "strict"
+        response = api_client.get(self.url, dict(DATE_PARAMS, agreement="all"))
 
         assert response.status_code == 400
         assert "agreement" in response.json()
@@ -216,29 +231,31 @@ class TestSpatialGridDetail:
 class TestBins:
     @pytest.fixture
     def bin_responses(self, fake_opensearch, target_species, dataset):
-        karenia = species_result(4317, 18, 2, models=["modelA", "modelB"])
-        none = species_result(models=[])
-        bins = [
+        # 3 Karenia images count: image 3 found by 2 models, images 1 and 2 by 1
+        karenia = species_result(719, 3, 2, images=[[1, 1, 96], [2, 1, 99], [3, 2, 97]])
+        none = species_result(images=[])
+        self.bins = [
             bin_hit("BIN1", "2026-08-10T12:00:00Z", 43.9, -70.1, {"Karenia": karenia, "Pseudo-nitzschia": none}),
             bin_hit("BIN2", "2026-08-11T12:00:00Z", 44.1, -69.9, {"Karenia": none, "Pseudo-nitzschia": none}, dataset="mvco"),
         ]
 
         def summary_response(body):
-            # the detail views look up one Bin by pid
+            # the detail views look up one Bin by pid, and binResult() only
+            # returns the images if they're requested
             terms = [clause["term"]["binPid"] for clause in body["query"]["bool"]["must"] if "binPid" in clause.get("term", {})]
-            return hits(*(item for item in bins if not terms or item["fields"]["binPid"][0] in terms))
+            include_images = body["script_fields"]["binResult"]["script"]["params"].get("includeImages")
+            results = []
+            for item in self.bins:
+                if terms and item["fields"]["binPid"][0] not in terms:
+                    continue
+                item = copy.deepcopy(item)
+                if not include_images:
+                    for result in item["fields"]["binResult"][0]["species"].values():
+                        result.pop("images", None)
+                results.append(item)
+            return hits(*results)
 
         fake_opensearch.responses[SUMMARY_INDEX_NAME] = summary_response
-
-        def image(pid, model, score):
-            return {"fields": {"imagePid": [pid], "species": ["Karenia"], "modelId": [model], "score": [score]}}
-
-        fake_opensearch.responses[SCORES_INDEX_NAME] = hits(
-            image("BIN1_00001", "modelA", 0.96),
-            image("BIN1_00002", "modelA", 0.99),
-            image("BIN1_00003", "modelA", 0.96),
-            image("BIN1_00003", "modelB", 0.97),
-        )
         return fake_opensearch
 
     def test_list(self, api_client, bin_responses, dataset):
@@ -258,46 +275,31 @@ class TestBins:
         assert properties["speciesFound"] == ["Karenia"]
         assert properties["cellConcentrationData"][0] == {
             "species": "Karenia",
-            "cellConcentration": 4317,
-            "imageCount": 18,
+            "cellConcentration": 719,
+            "imageCount": 3,
             "modelsAgreed": 2,
         }
-        # images are only fetched in the detail view
-        assert not bin_responses.searches_for(SCORES_INDEX_NAME)
+        # images are only requested in the detail view
+        assert "includeImages" not in script_field_params(bin_responses.searches_for(SUMMARY_INDEX_NAME)[0])
 
     def test_retrieve(self, api_client, bin_responses):
         # date params don't apply to a single Bin
         response = api_client.get("/api/v2/ifcb-bins/BIN1/", {"start_date": "2020-01-01"})
 
         assert response.status_code == 200
-        summary_query = bin_responses.searches_for(SUMMARY_INDEX_NAME)[0]["body"]["query"]
-        assert summary_query == {"bool": {"must": [{"term": {"binPid": "BIN1"}}]}}
+        search = bin_responses.searches_for(SUMMARY_INDEX_NAME)[0]
+        assert search["body"]["query"] == {"bool": {"must": [{"term": {"binPid": "BIN1"}}]}}
+        assert script_field_params(search)["includeImages"] is True
+        # the images come from binResult(), not the image level index
+        assert not bin_responses.searches_for(SCORES_INDEX_NAME)
 
         properties = response.json()["properties"]
         karenia, pseudo_nitzschia = properties["cellConcentrationData"]
         # most models first, then highest score
         assert karenia["imageNumbers"] == ["BIN1_00003", "BIN1_00002", "BIN1_00001"]
+        assert karenia["imageCount"] == 3
         assert pseudo_nitzschia["imageNumbers"] == []
         assert properties["agreement"] == "majority"
-
-    def test_retrieve_image_query(self, api_client, bin_responses):
-        api_client.get("/api/v2/ifcb-bins/BIN1/")
-
-        query = bin_responses.searches_for(SCORES_INDEX_NAME)[0]["body"]["query"]["bool"]
-        assert query["must"] == [{"term": {"binPid": "BIN1"}}]
-        # only species found by enough models, from the models that agreed, with a
-        # score threshold matching the histogram buckets
-        assert query["should"] == [
-            {
-                "bool": {
-                    "must": [
-                        {"term": {"species": "Karenia"}},
-                        {"terms": {"modelId": ["modelA", "modelB"]}},
-                        {"range": {"score": {"gte": (95 - 0.0001) / 100}}},
-                    ]
-                }
-            }
-        ]
 
     def test_retrieve_unknown_bin(self, api_client, fake_opensearch, target_species):
         assert api_client.get("/api/v2/ifcb-bins/NOT_A_BIN/").status_code == 404
@@ -322,12 +324,9 @@ class TestBins:
         assert data["modelsAgreed"] == 2
 
     def test_species_images_limit(self, api_client, bin_responses):
-        bin_responses.responses[SCORES_INDEX_NAME] = hits(
-            *(
-                {"fields": {"imagePid": [f"BIN1_{n:05}"], "species": ["Karenia"], "modelId": ["modelA"], "score": [0.99]}}
-                for n in range(35)
-            )
-        )
+        images = [[n, 1, 99] for n in range(35)]
+        karenia = self.bins[0]["fields"]["binResult"][0]["species"]["Karenia"]
+        karenia.update(species_result(8393, 35, 1, images=images))
 
         data = api_client.get("/api/v2/ifcb-bins/BIN1/get_species_images/", {"species": "Karenia"}).json()
 
