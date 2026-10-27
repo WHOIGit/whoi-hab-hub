@@ -135,6 +135,21 @@ class TestSpatialGridList:
         assert params["agreement"] == "any"
         assert params["models"] == ["modelA", "modelB"]
 
+    def test_thresholds_below_min_score_are_raised(self, api_client, grid_response, target_species):
+        # only images scoring >= 0.5 are stored for the model agreement
+        from habhub.core.models import TargetSpecies
+
+        TargetSpecies.objects.filter(species_id="Karenia").update(autoclass_threshold="0.20")
+
+        response = api_client.get(self.url, DATE_PARAMS)
+        params = script_params(grid_response.searches_for(SUMMARY_INDEX_NAME)[0])
+        assert params["minBuckets"] == {"Karenia": 50, "Pseudo-nitzschia": 50}
+        assert response.json()["metadata"]["scoreThresholds"][0] == {"species": "Karenia", "scoreThreshold": 0.5}
+
+        api_client.get(self.url, dict(DATE_PARAMS, score_gte="0.1"))
+        params = script_params(grid_response.searches_for(SUMMARY_INDEX_NAME)[1])
+        assert params["minBuckets"] == {"Karenia": 50, "Pseudo-nitzschia": 50}
+
     def test_species_param(self, api_client, grid_response):
         response = api_client.get(self.url, dict(DATE_PARAMS, species="Karenia"))
 

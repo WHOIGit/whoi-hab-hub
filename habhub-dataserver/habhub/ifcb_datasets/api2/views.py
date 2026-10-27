@@ -21,6 +21,7 @@ from .mixins import ScoresFiltersMixin
 from ..models import Dataset
 from ..api.cache_utils import create_cache_key
 from ..opensearch import (
+    IMAGE_MIN_SCORE,
     SUMMARY_INDEX_NAME,
     BIN_RESULT_SCRIPT,
     GRID_INIT_SCRIPT,
@@ -400,7 +401,8 @@ def snap_to_grid(value, grid_level):
 #   strict:   more than 80% of the models
 # A single model run on a Bin counts for all three. The cell concentration is the
 # number of images that count / mL analyzed. A model only finds an image if its score
-# is >= the species' TargetSpecies.autoclass_threshold (or the `score_gte` param).
+# is >= the species' TargetSpecies.autoclass_threshold (or the `score_gte` param),
+# with a minimum of IMAGE_MIN_SCORE (0.5).
 # The number of models that agreed/ran is returned with the results so clients can
 # show lower confidence data. The model agreement rule is in Opensearch scripts, see
 # binResult() in ifcb_datasets/opensearch.py.
@@ -437,8 +439,13 @@ class ModelAgreementMixin(ScoresFiltersMixin):
             score_gte = float(query_params["score_gte"])
         except (KeyError, ValueError):
             score_gte = None
+        # only images with a score >= IMAGE_MIN_SCORE are stored for the model
+        # agreement, so lower thresholds are raised to it
         score_thresholds = {
-            species_id: score_gte if score_gte is not None else float(threshold)
+            species_id: max(
+                score_gte if score_gte is not None else float(threshold),
+                IMAGE_MIN_SCORE,
+            )
             for species_id, _, threshold in species_list
         }
 

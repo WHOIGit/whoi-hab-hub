@@ -232,7 +232,7 @@ not only target species. Its histograms are shortened to their last few buckets.
 | `speciesCounts` | `{species: {modelId: count}}`: number of images each model classified as each species |
 | `speciesScores` | `{species: {modelId: [[bucket, count], ...]}}`: score histogram of those images |
 | `h` | `{species: {modelId: [bucket * 1000000 + count, ...]}}`: the same histograms as doc values. No longer read by the API |
-| `i` | `{species: {modelId: [imageNumber * 100 + bucket, ...]}}`: each image the model classified as the species, with its score bucket, as doc values. Target species only. Used for the per-image model agreement |
+| `i` | `{species: {modelId: [imageNumber * 100 + bucket, ...]}}`: each image the model classified as the species with a score of 0.5 or more, with its score bucket, as doc values. Target species only. Used for the per-image model agreement |
 | `dateUpdated` | Last time the document was written |
 
 About `speciesScores`:
@@ -240,6 +240,7 @@ About `speciesScores`:
 - **Totals:** a histogram's counts add up to the matching `speciesCounts` value.
 - **Thresholds:** to count images scoring at or above a threshold `t`, sum the buckets that are ≥ `round(t * 100)`. Because the buckets are 0.01 wide, this is exact for any 2-decimal threshold, which is the precision of `TargetSpecies.autoclass_threshold`.
 - **`h` encoding:** each value is `bucket * 1000000 + count`, so `value / 1000000` is the bucket and `value % 1000000` the count. Doc values are sorted, and because the bucket is the high part, they come back in bucket order. Counts are always under 1,000,000, since a Bin has far fewer images than that.
+- **`i` minimum score:** only images scoring at least `IMAGE_MIN_SCORE` (0.5, in `ifcb_datasets/opensearch.py` and the Lambda) are stored, which keeps `i` small for common species. The API can't count lower-scoring images, so it raises any species threshold or `score_gte` below 0.5 to 0.5, and returns the threshold it used in `scoreThresholds`.
 - **`i` encoding:** each value is `imageNumber * 100 + bucket`, so `value / 100` is the image (ROI) number and `value % 100` the score bucket. The `i` values in the example above are illustrative: image 419 at 0.97 is `41997`.
 - **float32 rounding:** scores are float32, so 0.7 is stored as 0.69999999. The Lambda's `score_bucket()` and the backfill's histogram `offset` both add a small offset so a score like this lands in bucket 70, not 69.
 
@@ -275,7 +276,7 @@ Both views run the same Painless function, `binResult()` (`BIN_RESULT_FUNCTION` 
 `ifcb_datasets/opensearch.py`), so the agreement rule exists in one place. It checks model
 agreement image by image, for each Bin and target species:
 
-1. **Find each model's images of the species.** From the `i` fields, a model found an image if the species is its top class for that image, with a score at or above the species' threshold: `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one.
+1. **Find each model's images of the species.** From the `i` fields, a model found an image if the species is its top class for that image, with a score at or above the species' threshold: `TargetSpecies.autoclass_threshold`, or `score_gte` if the request passes one. The threshold is at least 0.5, the minimum score stored in `i`.
 2. **Count the votes for each image:** the number of models that found it.
 3. **Work out how many votes an image needs.** It depends on the `agreement` param and N, the number of models that processed the Bin (`len(modelIds)`, after any `model_id` filter):
 

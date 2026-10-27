@@ -109,6 +109,9 @@ def upsert_documents(documents, index_name, os_client):
 SUMMARY_INDEX_NAME = "bin-species-summary"
 HISTOGRAM_BUCKET_FACTOR = 1000000
 IMAGE_BUCKET_FACTOR = 100
+# minimum score of the images stored in the "i" fields
+# Keep in sync with habhub-dataserver ifcb_datasets/opensearch.py
+IMAGE_MIN_BUCKET = 50
 SUMMARY_INDEX_BODY = {
     "settings": {
         "number_of_shards": 1,
@@ -206,13 +209,14 @@ def upsert_bin_summary(documents, metadata_obj, model_id, target_species, os_cli
         species: [bucket * HISTOGRAM_BUCKET_FACTOR + count for bucket, count in histogram]
         for species, histogram in scores.items()
     }
-    # each target species image this model found, with its score bucket
+    # each target species image this model found with a score >= 0.5, with its
+    # score bucket
     image_fields = {}
     for document in documents:
-        if document["species"] in target_species:
+        bucket = score_bucket(document["score"])
+        if document["species"] in target_species and bucket >= IMAGE_MIN_BUCKET:
             image_fields.setdefault(document["species"], []).append(
-                int(document["imageNumber"]) * IMAGE_BUCKET_FACTOR
-                + score_bucket(document["score"])
+                int(document["imageNumber"]) * IMAGE_BUCKET_FACTOR + bucket
             )
     for values in image_fields.values():
         values.sort()

@@ -18,9 +18,15 @@ SCORES_INDEX_NAME = "species-scores"
 # "i" holds each model's images of the target species as doc values, so the model
 # agreement can be checked image by image: {species: {modelId: [imageNumber * 100 + bucket, ...]}}
 # Only TargetSpecies have "i" fields, the ingest Lambda gets them from the HABhub API.
+# Only images with a score >= IMAGE_MIN_SCORE are stored, to keep the fields small for
+# common species, so the API can't apply a lower score threshold.
 SUMMARY_INDEX_NAME = "bin-species-summary"
 HISTOGRAM_BUCKET_FACTOR = 1000000
 IMAGE_BUCKET_FACTOR = 100
+# minimum score of the images stored in the "i" fields, and its score bucket
+# Keep in sync with the ingest Lambda
+IMAGE_MIN_SCORE = 0.5
+IMAGE_MIN_BUCKET = round(IMAGE_MIN_SCORE * 100)
 SUMMARY_FIELDS_LIMIT = 10000
 SUMMARY_INDEX_BODY = {
     "settings": {

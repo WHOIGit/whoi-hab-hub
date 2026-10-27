@@ -7,6 +7,7 @@ from opensearchpy.exceptions import TransportError
 from habhub.core.models import TargetSpecies
 from habhub.ifcb_datasets.api2.views import connect_opensearch
 from habhub.ifcb_datasets.opensearch import (
+    IMAGE_MIN_BUCKET,
     SCORES_INDEX_NAME,
     SUMMARY_INDEX_NAME,
     build_image_fields,
@@ -36,6 +37,8 @@ def build_bin_images(os_client, start_time, end_time, species_ids):
                         }
                     },
                     {"terms": {"species": species_ids}},
+                    # only images that can be stored, matching the score buckets
+                    {"range": {"score": {"gte": (IMAGE_MIN_BUCKET - 0.0001) / 100}}},
                 ]
             }
         },
@@ -56,10 +59,13 @@ def build_bin_images(os_client, start_time, end_time, species_ids):
         scroll_kwargs={"request_timeout": 300},
     ):
         fields = hit["fields"]
+        bucket = score_bucket(fields["score"][0])
+        if bucket < IMAGE_MIN_BUCKET:
+            continue
         bin_images.setdefault(fields["binPid"][0], {}).setdefault(
             fields["species"][0], {}
         ).setdefault(fields["modelId"][0], []).append(
-            (int(fields["imageNumber"][0]), score_bucket(fields["score"][0]))
+            (int(fields["imageNumber"][0]), bucket)
         )
     return bin_images
 
