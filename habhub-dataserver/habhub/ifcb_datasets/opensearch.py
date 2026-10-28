@@ -125,6 +125,8 @@ def build_image_fields(species_images):
 #   strict:   more than 80% of the models
 # A single model run on a Bin counts for all three. The cell concentration is the
 # number of images that count / mlAnalyzed * 1000.
+# The votes are counted by walking each model's sorted image list together (a merge)
+# with primitive arrays, which is much faster than counting in a map for common species.
 # Shared by the grid aggregation (list views) and the Bin results script field
 # (detail views) so all use the same rule. Math.rint rounds half to even like
 # Python round() and PostGIS ST_SnapToGrid().
@@ -174,47 +176,96 @@ Map binResult(Map doc, Map params) {
     Map speciesResults = new HashMap();
     for (def species : params.species) {
         int minBucket = params.minBuckets.get(species);
-        // votes and highest score bucket for each image number
-        Map votes = new HashMap();
-        Map maxBuckets = new HashMap();
+        // each model's images above the threshold, packed one model after another
+        // into the same arrays. Doc values are sorted and a model has one value
+        // per image, so each model's image numbers are in ascending order
+        // look up each field's doc values once
+        def[] fieldValues = new def[modelsRun];
+        int total = 0;
+        for (int m = 0; m < modelsRun; m++) {
+            String field = 'i.' + species + '.' + modelIds.get(m);
+            if (doc.containsKey(field)) {
+                fieldValues[m] = doc[field];
+                total += fieldValues[m].size();
+            }
+        }
+        long[] images = new long[total];
+        long[] buckets = new long[total];
+        int[] starts = new int[modelsRun];
+        int[] counts = new int[modelsRun];
         int modelsAgreed = 0;
-        for (def model : modelIds) {
-            String field = 'i.' + species + '.' + model;
-            if (!doc.containsKey(field) || doc[field].size() == 0) {
+        int offset = 0;
+        for (int m = 0; m < modelsRun && total > 0; m++) {
+            def values = fieldValues[m];
+            if (values == null) {
                 continue;
             }
-            boolean found = false;
-            for (long value : doc[field]) {
+            int size = values.size();
+            int count = 0;
+            for (int v = 0; v < size; v++) {
+                long value = values.get(v);
                 long bucket = value % 100;
-                if (bucket < minBucket) {
-                    continue;
+                if (bucket >= minBucket) {
+                    images[offset + count] = value / 100;
+                    buckets[offset + count] = bucket;
+                    count += 1;
                 }
-                long image = value / 100;
-                votes.put(image, votes.getOrDefault(image, 0) + 1);
-                if (bucket > maxBuckets.getOrDefault(image, -1L)) {
-                    maxBuckets.put(image, bucket);
-                }
-                found = true;
             }
-            if (found) {
+            if (count > 0) {
+                starts[modelsAgreed] = offset;
+                counts[modelsAgreed] = count;
                 modelsAgreed += 1;
+                offset += count;
             }
         }
 
         long imageCount = 0;
-        List images = new ArrayList();
-        for (def entry : votes.entrySet()) {
-            if (entry.getValue() >= modelsRequired) {
-                imageCount += 1;
-                if (includeImages) {
-                    images.add([entry.getKey(), entry.getValue(), maxBuckets.get(entry.getKey())]);
+        List countedImages = new ArrayList();
+        if (modelsAgreed >= modelsRequired) {
+            if (modelsAgreed == 1 && !includeImages) {
+                // one model's images all count
+                imageCount = counts[0];
+            } else {
+                // walk the sorted image lists together, counting the models that
+                // found each image
+                int[] positions = new int[modelsAgreed];
+                boolean remaining = true;
+                while (remaining) {
+                    long image = Long.MAX_VALUE;
+                    for (int m = 0; m < modelsAgreed; m++) {
+                        if (positions[m] < counts[m] && images[starts[m] + positions[m]] < image) {
+                            image = images[starts[m] + positions[m]];
+                        }
+                    }
+                    if (image == Long.MAX_VALUE) {
+                        remaining = false;
+                        continue;
+                    }
+                    int votes = 0;
+                    long maxBucket = -1;
+                    for (int m = 0; m < modelsAgreed; m++) {
+                        int index = starts[m] + positions[m];
+                        if (positions[m] < counts[m] && images[index] == image) {
+                            votes += 1;
+                            if (buckets[index] > maxBucket) {
+                                maxBucket = buckets[index];
+                            }
+                            positions[m] += 1;
+                        }
+                    }
+                    if (votes >= modelsRequired) {
+                        imageCount += 1;
+                        if (includeImages) {
+                            countedImages.add([image, votes, maxBucket]);
+                        }
+                    }
                 }
             }
         }
         long concentration = (long) Math.rint(imageCount / mlAnalyzed * 1000);
         Map speciesResult = ['value': concentration, 'imageCount': imageCount, 'modelsAgreed': modelsAgreed];
         if (includeImages) {
-            speciesResult.put('images', images);
+            speciesResult.put('images', countedImages);
         }
         speciesResults.put(species, speciesResult);
     }

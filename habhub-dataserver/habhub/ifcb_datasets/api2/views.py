@@ -413,8 +413,10 @@ class ModelAgreementMixin(ScoresFiltersMixin):
     bins_page_size = 10000
     cache_timeout = 60 * 60
 
-    def get_options(self):
-        # parse the query params for the model agreement and species
+    def get_options(self, filter_species=True):
+        # parse the query params for the model agreement and species.
+        # filter_species=False ignores the species param, for views that read it
+        # themselves
         query_params = self.request.query_params
 
         agreement = query_params.get("agreement", self.default_agreement)
@@ -423,14 +425,22 @@ class ModelAgreementMixin(ScoresFiltersMixin):
                 {"agreement": f"Must be one of: {', '.join(self.agreement_options)}"}
             )
 
-        species_param = query_params.get("species", None)
+        species_param = query_params.get("species", None) if filter_species else None
         species_list = list(
             TargetSpecies.objects.values_list(
                 "species_id", "display_name", "autoclass_threshold"
             )
         )
         if species_param:
-            requested_species = species_param.split(",")
+            # comma separated TargetSpecies species_ids
+            requested_species = [s.strip() for s in species_param.split(",") if s.strip()]
+            unknown = [
+                s for s in requested_species if s not in {species[0] for species in species_list}
+            ]
+            if unknown:
+                raise ValidationError(
+                    {"species": f"Unknown species: {', '.join(unknown)}. Use TargetSpecies species IDs"}
+                )
             species_list = [s for s in species_list if s[0] in requested_species]
 
         # score threshold for each species, the score_gte param overrides the
@@ -589,8 +599,8 @@ class ModelAgreementMixin(ScoresFiltersMixin):
 class IfcbSpatialGridViewSet(ModelAgreementMixin, viewsets.ViewSet):
     default_grid_level = 0.5
 
-    def get_options(self):
-        options = super().get_options()
+    def get_options(self, filter_species=True):
+        options = super().get_options(filter_species)
         try:
             grid_level = float(
                 self.request.query_params.get("grid_level", self.default_grid_level)
@@ -1013,7 +1023,8 @@ class IfcbBinViewSet(ModelAgreementMixin, viewsets.ViewSet):
             print("CACHE HIT")
             return Response(cached_data)
 
-        options = self.get_options()
+        # the species param can be a display name, so it's handled above
+        options = self.get_options(filter_species=False)
         options = dict(
             options,
             species_ids=[species.species_id],

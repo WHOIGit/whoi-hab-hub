@@ -166,6 +166,19 @@ class TestSpatialGridList:
         assert script_params(grid_response.searches_for(SUMMARY_INDEX_NAME)[0])["agreement"] == agreement
         assert response.json()["features"][0]["properties"]["modelAgreement"]["agreement"] == agreement
 
+    def test_unknown_species(self, api_client, grid_response):
+        response = api_client.get(self.url, dict(DATE_PARAMS, species="Karenia,Pseudonitzschia,Unknown"))
+
+        assert response.status_code == 400
+        assert "Pseudonitzschia, Unknown" in response.json()["species"]
+        assert not grid_response.searches_for(SUMMARY_INDEX_NAME)
+
+    def test_species_param_spaces(self, api_client, grid_response):
+        response = api_client.get(self.url, dict(DATE_PARAMS, species="Karenia, Pseudo-nitzschia"))
+
+        assert response.status_code == 200
+        assert script_params(grid_response.searches_for(SUMMARY_INDEX_NAME)[0])["species"] == ["Karenia", "Pseudo-nitzschia"]
+
     def test_invalid_agreement(self, api_client, grid_response):
         # "all" was replaced by "strict"
         response = api_client.get(self.url, dict(DATE_PARAMS, agreement="all"))
@@ -353,6 +366,22 @@ class TestBins:
         data = api_client.get("/api/v2/ifcb-bins/BIN2/get_species_images/", {"species": "Karenia"}).json()
 
         assert data["bin"]["datasetLink"] == "https://habon-ifcb.whoi.edu"
+
+    def test_species_images_display_name(self, api_client, bin_responses, target_species):
+        # get_species_images accepts the display name, not only the species ID
+        from habhub.core.models import TargetSpecies
+
+        TargetSpecies.objects.filter(species_id="Karenia").update(display_name="Karenia brevis")
+
+        response = api_client.get("/api/v2/ifcb-bins/BIN1/get_species_images/", {"species": "Karenia brevis"})
+
+        assert response.status_code == 200
+        assert response.json()["species"] == "Karenia brevis"
+
+    def test_bins_unknown_species(self, api_client, bin_responses):
+        response = api_client.get("/api/v2/ifcb-bins/BIN1/", {"species": "Karenia_brevis"})
+
+        assert response.status_code == 400
 
     def test_species_images_unknown_species(self, api_client, bin_responses):
         response = api_client.get("/api/v2/ifcb-bins/BIN1/get_species_images/", {"species": "Unknown"})
