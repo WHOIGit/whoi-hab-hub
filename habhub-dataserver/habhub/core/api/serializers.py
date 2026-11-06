@@ -20,6 +20,7 @@ class TargetSpeciesSerializer(serializers.ModelSerializer):
             "color_gradient",
             "species_environment",
             "species_type",
+            "species_subtype",
         )
 
 

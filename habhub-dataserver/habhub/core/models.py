@@ -1,6 +1,7 @@
 from colour import Color
 from decimal import Decimal
 from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.contrib.postgres.fields import ArrayField
 from django.core.cache import cache
@@ -31,6 +32,18 @@ class TargetSpecies(models.Model):
         (OTHER, "Other"),
     ]
 
+    # Species Subtype, a subcategory for "Other" species only
+    DIATOMS = "Diatoms"
+    DINOFLAGELLATES = "Dinoflagellates"
+    CILIATES = "Ciliates"
+    OTHER_SUBTYPE = "Other"
+    SPECIES_SUBTYPE_CHOICES = [
+        (DIATOMS, "Diatoms"),
+        (DINOFLAGELLATES, "Dinoflagellates"),
+        (CILIATES, "Ciliates"),
+        (OTHER_SUBTYPE, "Other"),
+    ]
+
     # species_id needs to match the Autoclass files in the IFCB Dashboard
     species_id = models.CharField(
         max_length=100,
@@ -48,6 +61,12 @@ class TargetSpecies(models.Model):
         max_length=20,
         choices=SPECIES_TYPE_CHOICES,
         default=HAB,
+    )
+    species_subtype = models.CharField(
+        max_length=20,
+        choices=SPECIES_SUBTYPE_CHOICES,
+        blank=True,
+        help_text="Required for Other species, leave blank for HAB species",
     )
     species_environment = models.CharField(
         max_length=20,
@@ -68,7 +87,21 @@ class TargetSpecies(models.Model):
     def __str__(self):
         return self.display_name
 
+    def clean(self):
+        # only Other species have a subtype
+        if self.species_type == self.OTHER and not self.species_subtype:
+            raise ValidationError(
+                {"species_subtype": "Choose a subtype for Other species."}
+            )
+        if self.species_type != self.OTHER and self.species_subtype:
+            raise ValidationError(
+                {"species_subtype": "Only Other species have a subtype."}
+            )
+
     def save(self, *args, **kwargs):
+        # HAB species don't have a subtype
+        if self.species_type != self.OTHER:
+            self.species_subtype = ""
         # Custom save method to create color gradient based on primary_color
         dark_shade = Color(self.primary_color)
         dark_shade.luminance = 0.35

@@ -15,6 +15,8 @@ class MetricAdmin(admin.ModelAdmin):
 
 class TargetSpeciesAdmin(admin.ModelAdmin):
     readonly_fields = ("color_gradient",)
+    list_display = ("display_name", "species_id", "species_type", "species_subtype")
+    list_filter = ("species_type", "species_subtype", "species_environment")
 
 
 class MapBookmarkAdmin(admin.ModelAdmin):
