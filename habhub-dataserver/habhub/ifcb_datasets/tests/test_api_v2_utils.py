@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from habhub.ifcb_datasets.api2.mixins import ScoresFiltersMixin
+from habhub.ifcb_datasets.api2.mixins import ScoresFiltersMixin, get_seasonal_ranges
 from habhub.ifcb_datasets.api2.views import (
     IfcbBinViewSet,
     IfcbSpatialGridViewSet,
@@ -81,6 +81,48 @@ class TestScoresFilters:
         # the bins list defaults to the past month, the other views to the past year
         start = datetime.datetime.fromisoformat(sample_time_range(filters_for(view_class))["gte"])
         assert abs((timezone.now() - start) - datetime.timedelta(days=days)) < datetime.timedelta(days=2)
+
+    def test_seasonal_filter(self):
+        # June-July of every year from 2020 to 2026, inside the full date range
+        query = filters_for(
+            ScoresFiltersMixin,
+            {"start_date": "2020-06-01", "end_date": "2026-07-31", "seasonal": "true"},
+        )
+        date_query = query["query"]["bool"]["must"][0]["bool"]
+        assert date_query["filter"] == [
+            {"range": {"sampleTime": {"gte": "2020-06-01", "lte": "2026-07-31"}}}
+        ]
+        assert date_query["minimum_should_match"] == 1
+        seasons = [clause["range"]["sampleTime"] for clause in date_query["should"]]
+        assert {"gte": "2020-06-01", "lte": "2020-07-31"} in seasons
+        assert {"gte": "2026-06-01", "lte": "2026-07-31"} in seasons
+
+    def test_not_seasonal_without_dates(self):
+        query = filters_for(ScoresFiltersMixin, {"seasonal": "true"})
+        assert "range" in query["query"]["bool"]["must"][0]
+
+    @pytest.mark.parametrize(
+        "start, end, exclude, expected",
+        [
+            # May-June of each year
+            ("2024-05-01", "2025-06-30", False,
+             [("2023-05-01", "2023-06-30"), ("2024-05-01", "2024-06-30"), ("2025-05-01", "2025-06-30")]),
+            # exclude_month_range: July-April, spanning the new year
+            ("2024-05-01", "2025-06-30", True,
+             [("2023-06-30", "2024-05-01"), ("2024-06-30", "2025-05-01"), ("2025-06-30", "2026-05-01")]),
+            # a season spanning the new year: Nov-Feb
+            ("2024-11-01", "2025-02-28", False,
+             [("2023-11-01", "2024-02-28"), ("2024-11-01", "2025-02-28"), ("2025-11-01", "2026-02-28")]),
+            # Feb 29 becomes Feb 28 in other years
+            ("2023-02-01", "2024-02-29", False,
+             [("2022-02-01", "2022-02-28"), ("2023-02-01", "2023-02-28"), ("2024-02-01", "2024-02-29")]),
+        ],
+    )
+    def test_seasonal_ranges(self, start, end, exclude, expected):
+        ranges = get_seasonal_ranges(
+            datetime.date.fromisoformat(start), datetime.date.fromisoformat(end), exclude
+        )
+        assert ranges == [{"gte": gte, "lte": lte} for gte, lte in expected]
 
     def test_dataset_species_and_bbox_filters(self):
         query = filters_for(

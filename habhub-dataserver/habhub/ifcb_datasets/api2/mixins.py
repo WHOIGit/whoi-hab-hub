@@ -1,8 +1,33 @@
+import calendar
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Prefetch, F, Q, ExpressionWrapper, CharField
 from django.utils import timezone
-from django.utils.timezone import make_aware
+
+
+def same_day_in_year(date, year):
+    # the month/day of date in another year, Feb 29 becomes Feb 28 in other years
+    day = min(date.day, calendar.monthrange(year, date.month)[1])
+    return datetime.date(year, date.month, day)
+
+
+def get_seasonal_ranges(start_date, end_date, exclude_month_range=False):
+    # the "seasonal" date ranges for each year from start_date to end_date. The
+    # season runs from start_date's month/day to end_date's month/day, or the rest
+    # of the year between them if exclude_month_range is True. Seasons can span the
+    # new year, ex: Nov-Feb. Ranges outside start_date - end_date are clipped by
+    # the date range filter.
+    season_start, season_end = start_date, end_date
+    if exclude_month_range:
+        season_start, season_end = end_date, start_date
+    spans_new_year = (season_end.month, season_end.day) < (
+        season_start.month, season_start.day
+    )
+    ranges = []
+    for year in range(start_date.year - 1, end_date.year + 1):
+        range_start = same_day_in_year(season_start, year)
+        range_end = same_day_in_year(season_end, year + spans_new_year)
+        ranges.append({"gte": range_start.isoformat(), "lte": range_end.isoformat()})
+    return ranges
 
 
 class ScoresFiltersMixin:
@@ -50,53 +75,6 @@ class ScoresFiltersMixin:
             # check if end_date is BEFORE start_date. Invalid option, so reset to no results
             end_date_obj = start_date_obj
 
-        # create empty Q objects to handle conditional filtering
-        date_q_filters = Q()
-
-        if start_date or end_date:
-            # if "seaonsal" filter is True, need to get multiple date ranges across the time series
-            if seasonal:
-                date_ranges = []
-                year_range = [*range(start_date_obj.year, end_date_obj.year + 1)]
-
-                for year in year_range:
-                    # if exclude_month_range filter is true, need to invert the date ranges so they span the next year
-                    if exclude_month_range:
-                        range_start_date = make_aware(
-                            datetime.datetime(
-                                year, end_date_obj.month, end_date_obj.day
-                            )
-                        )
-                        range_end_date = make_aware(
-                            datetime.datetime(
-                                year + 1, start_date_obj.month, start_date_obj.day
-                            )
-                        )
-                    else:
-                        range_start_date = make_aware(
-                            datetime.datetime(
-                                year, start_date_obj.month, start_date_obj.day
-                            )
-                        )
-                        range_end_date = make_aware(
-                            datetime.datetime(
-                                year, end_date_obj.month, end_date_obj.day
-                            )
-                        )
-
-                    range_dict = {
-                        "year": year,
-                        "start_date": range_start_date,
-                        "end_date": range_end_date,
-                    }
-                    date_ranges.append(range_dict)
-                print("RANGES", date_ranges)
-                for dr in date_ranges:
-                    date_q_filters |= Q(
-                        sample_time__range=(dr["start_date"], dr["end_date"])
-                    )  # 'or' the Q objects together
-            else:
-                date_q_filters |= Q(sample_time__range=([start_date_obj, end_date_obj]))
         # date filtering
         date_query = {
             "range": {
@@ -106,6 +84,21 @@ class ScoresFiltersMixin:
                 }
             }
         }
+        # if "seasonal" filter is True, only return the same part of each year
+        # in the date range, ex: May-June for every year from 2020 to 2026
+        if seasonal and (start_date or end_date):
+            date_query = {
+                "bool": {
+                    "filter": [date_query],
+                    "should": [
+                        {"range": {"sampleTime": season}}
+                        for season in get_seasonal_ranges(
+                            start_date_obj, end_date_obj, exclude_month_range
+                        )
+                    ],
+                    "minimum_should_match": 1,
+                }
+            }
 
         # score filtering
         score_query = {
