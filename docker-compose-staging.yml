@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:6.0
+    image: redis:7.4
 
   celeryworker:
     <<: *django

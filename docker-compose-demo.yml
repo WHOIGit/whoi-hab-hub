@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
   
   redis_demo:
-    image: redis:6.0
+    image: redis:7.4
     container_name: redis_demo
 
   celeryworker_demo:

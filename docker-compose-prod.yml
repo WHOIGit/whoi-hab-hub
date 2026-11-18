@@ -62,7 +62,7 @@ services:
       - habhub-network
 
   redis:
-    image: redis:6.0
+    image: redis:7.4
     networks:
       - habhub-network
 

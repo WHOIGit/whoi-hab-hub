@@ -53,5 +53,5 @@ services:
     command: /start-celerybeat
 
   redis_habhub:
-    image: redis:6.0
+    image: redis:7.4
     restart: unless-stopped

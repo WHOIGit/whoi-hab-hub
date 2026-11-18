@@ -1,6 +1,7 @@
 -r base.txt
 
 Werkzeug[watchdog]==3.0.1 # https://github.com/pallets/werkzeug
+watchdog==6.0.0  # https://github.com/gorakhargosh/watchdog  7.x floods the runserver log with "Inotify queue overflowed" on Docker for Mac
 ipdb==0.13.13  # https://github.com/gotcha/ipdb
 psycopg[c]==3.3.6  # https://github.com/psycopg/psycopg
 
