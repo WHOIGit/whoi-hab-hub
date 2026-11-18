@@ -2,10 +2,11 @@
 #
 # upload_missing_bins.sh
 #
-# Recursively finds *.h5 files under a directory, checks each Bin ID against
+# Recursively finds *.h5 files under a parent directory that contains one
+# directory per model (named after the model ID), checks each Bin ID against
 # the HABhub API, and uploads a file to S3 if either:
 #   - the bin returns 404, or
-#   - the model name (= name of the search directory) is not in the
+#   - the file's model ID (= name of its model directory) is not in the
 #     response's .properties.modelIds list.
 #
 # Usage:
@@ -17,8 +18,12 @@
 #
 # Example:
 #   ./upload_missing_bins.sh -p wildharbor /data/ifcb my-bucket
-#   /data/ifcb/2026/D20260813T162616_IFCB236_class.h5
-#     -> s3://my-bucket/wildharbor/v3-scan/ifcb/2026/D20260813T162616_IFCB236_class.h5
+#   /data/ifcb/model_id/D2026/D20260813T162616_IFCB236_class.h5
+#     -> s3://my-bucket/wildharbor/v3-scan/model_id/D2026/D20260813T162616_IFCB236_class.h5
+#
+# The ingest Lambda reads the model ID from the third part of the S3 key, so the
+# model directory has to be the first directory under <search_dir>. Files
+# directly in <search_dir> aren't in a model directory and are skipped.
 #
 # Requires: curl, jq, aws CLI (configured with credentials for the bucket)
 
@@ -69,13 +74,7 @@ if [[ $DRY_RUN -eq 0 ]]; then
     fi
 fi
 
-# The S3 key starts with the searched directory's name, e.g. searching
-# /data/ifcb gives keys like wildharbor/v3-scan/ifcb/...
-PARENT_DIR="$(dirname "$SEARCH_DIR")"
-
-# Model name = name of the root search directory
-MODEL_NAME="$(basename "$SEARCH_DIR")"
-echo "Model name: $MODEL_NAME"
+echo "Searching $SEARCH_DIR for model directories"
 
 RESP_FILE="$(mktemp)"
 trap 'rm -f "$RESP_FILE"' EXIT
@@ -83,9 +82,11 @@ trap 'rm -f "$RESP_FILE"' EXIT
 checked=0; missing=0; nomodel=0; uploaded=0; failed=0; skipped=0
 
 # upload_file <file> <bin_id> <reason: MISSING|NOMODEL>
+# The S3 key is the file's path under the search directory, starting with the
+# model directory, e.g. wildharbor/v3-scan/model_id/D2026/...
 upload_file() {
     local file="$1" bin_id="$2" reason="$3"
-    local rel_path="${file#"$PARENT_DIR"/}"
+    local rel_path="${file#"$SEARCH_DIR"/}"
     local s3_uri="s3://${BUCKET}/${S3_PREFIX}/${rel_path}"
 
     if [[ "$reason" == "MISSING" ]]; then ((missing++)); else ((nomodel++)); fi
@@ -106,6 +107,15 @@ upload_file() {
 while IFS= read -r -d '' file; do
     filename="$(basename "$file")"
 
+    # Model ID = name of the first directory under the search directory
+    rel_path="${file#"$SEARCH_DIR"/}"
+    if [[ "$rel_path" != */* ]]; then
+        echo "SKIP   (not in a model directory) $file"
+        ((skipped++))
+        continue
+    fi
+    model_id="${rel_path%%/*}"
+
     # Extract Bin ID: e.g. D20260813T162616_IFCB236 from D20260813T162616_IFCB236_class.h5
     if [[ "$filename" =~ ^(D[0-9]{8}T[0-9]{6}_IFCB[0-9]+) ]]; then
         bin_id="${BASH_REMATCH[1]}"
@@ -121,13 +131,13 @@ while IFS= read -r -d '' file; do
 
     case "$status" in
         200)
-            # Is MODEL_NAME in .properties.modelIds? (missing/null list counts as "not present")
-            jq -e --arg m "$MODEL_NAME" \
+            # Is model_id in .properties.modelIds? (missing/null list counts as "not present")
+            jq -e --arg m "$model_id" \
                 '(.properties.modelIds // []) | index($m) != null' \
                 "$RESP_FILE" >/dev/null 2>&1
             jq_rc=$?
             if [[ $jq_rc -eq 0 ]]; then
-                echo "EXISTS $bin_id (model '$MODEL_NAME' present)"
+                echo "EXISTS $bin_id (model '$model_id' present)"
             elif [[ $jq_rc -eq 1 ]]; then
                 upload_file "$file" "$bin_id" "NOMODEL"
             else
